@@ -4,32 +4,38 @@ import './App.css';
 const data = {
     root: {
         title:'root',
+        type:'scene',
         children:[
             {
                 title:'camera',
+                type:'camera',
                 children:[]
             },
             {
                 title:'group',
+                type:'group',
                 children:[
                     {
                         title:'sphere1',
+                        type:'sphere',
                         children:[]
                     },
                     {
                         title:'sphere2',
+                        type:'sphere',
                         children:[]
                     }
                 ]
             },
             {
                 title:'cube',
+                type:'cube',
                 children:[]
             }
         ]
     },
 };
-data.selected = data.root.children[1];
+data.selected = data.root.children[1].children[1];
 
 
 const GridLayout = (props) => {
@@ -98,10 +104,31 @@ class TreeTable extends Component {
 const Canvas3D = (props) => {
     return <div className=''>three dee canvas</div>
 };
-const PropSheet = (props) => {
-    return <div className=''>this is a props sheet</div>
-};
 
+class PropSheet extends Component {
+    render() {
+        const props = this.calculateProps(this.props.selectedItem);
+        return <ul className="prop-sheet">{props.map((prop, i) => {
+            return <li key={i}><label>{prop.name}</label> <b>{prop.value}</b></li>
+        })}
+        </ul>
+    }
+
+    calculateProps(item) {
+        return [
+            {
+                name:'The Title',
+                key:'title',
+                value:item.title,
+            },
+            {
+                name:'Type',
+                key:'type',
+                value:item.type,
+            }
+        ]
+    }
+}
 
 class App extends Component {
   render() {

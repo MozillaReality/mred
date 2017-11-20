@@ -103,3 +103,21 @@ html, body {
 .tree-node.selected {
     background-color: aqua;
 }
+
+
+.prop-sheet {
+    padding:0;
+    margin:0;
+}
+.prop-sheet li {
+    display: grid;
+    grid-template-columns: [name]6em [value]auto [icon]2em;
+    grid-column-gap: 0.25em;
+    padding: 0.25em;
+    border: 1px solid black;
+    border-width: 0 0 1px 0;
+}
+.prop-sheet li label {
+    grid-column-start: name;
+    justify-self: right;
+}
