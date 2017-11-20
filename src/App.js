@@ -11,7 +11,16 @@ const data = {
             },
             {
                 title:'group',
-                children:[]
+                children:[
+                    {
+                        title:'sphere1',
+                        children:[]
+                    },
+                    {
+                        title:'sphere2',
+                        children:[]
+                    }
+                ]
             },
             {
                 title:'cube',
@@ -20,13 +29,14 @@ const data = {
         ]
     },
 };
-data.selected = root.children[1];
+data.selected = data.root.children[1];
+
 
 const GridLayout = (props) => {
     return <div className='grid'>{props.children}</div>
 };
 const Toolbar = (props) => {
-    var cls = "toolbar";
+    let cls = "toolbar";
     if(props.left) cls+= " left";
     if(props.right) cls+= " right";
     if(props.bottom) cls+= " bottom";
@@ -35,18 +45,56 @@ const Toolbar = (props) => {
     return <div className={cls}>{props.children}</div>
 };
 const Panel = (props) => {
-    var cls = 'panel';
-    if(props.left) cls+= ' left';
-    if(props.scroll) cls+= ' scroll';
-    return <div className='panel'>{props.children}</div>
+    let cls = 'panel';
+    if(props.left) cls+= " left";
+    if(props.right) cls+= " right";
+    if(props.bottom) cls+= " bottom";
+    if(props.top) cls+= " top";
+    if(props.scroll) cls+= " scroll";
+    return <div className={cls}>{props.children}</div>
 };
 const Spacer = (props) => {
     return <span className='spacer'/>
 };
 
-const TreeTable = (props) => {
-    return <div className=''>tree table</div>
-};
+
+class TreeTableItem extends Component {
+    onSelect = (e)=>{
+        console.log("selected",this.props.node.title)
+    }
+    render() {
+        return <li>
+            {this.renderSelf(this.props.node)}
+            {this.renderChildren(this.props.node)}
+        </li>
+    }
+    renderSelf(node) {
+        let cls = "tree-node";
+        if(node === data.selected) {
+            cls += " selected"
+        }
+        let arrow = "";
+        if(node.children && node.children.length >= 1) {
+            arrow = <button className="fa fa-caret-down"/>;
+        } else {
+            arrow = <span className=""/>
+        }
+        return <div className={cls} onClick={this.onSelect}>{arrow}{node.title}</div>
+    }
+    renderChildren(node) {
+        if(!node.children || node.children.length < 1) return "";
+        return <ul>{node.children.map((ch,i)=>{
+            return <TreeTableItem key={i} node={ch}/>
+        })}</ul>
+    }
+}
+class TreeTable extends Component {
+    render() {
+        console.log("root", this.props.root);
+        return <ul className='tree-table'><TreeTableItem node={this.props.root}/></ul>
+    }
+}
+
 const Canvas3D = (props) => {
     return <div className=''>three dee canvas</div>
 };
@@ -82,11 +130,11 @@ class App extends Component {
             </Panel>
 
             <Toolbar center bottom>
-                <button class="fa fa-caret-left" onClick={this.toggleLeftPane}/>
+                <button className="fa fa-caret-left" onClick={this.toggleLeftPane}/>
                 <Spacer/>
                 <label>saved or not</label>
                 <Spacer/>
-                <button class="fa fa-caret-right" onClick={this.toggleRightPane}/>
+                <button className="fa fa-caret-right" onClick={this.toggleRightPane}/>
             </Toolbar>
 
             <Toolbar right top>

@@ -64,7 +64,6 @@ html, body {
 
 .toolbar label {
     vertical-align: bottom;
-    display: inline-flex;
     line-height: 1.5em;
     padding: 0.25em;
 }
@@ -80,4 +79,27 @@ html, body {
 .toolbar button.fa:hover {
     background-color: var(--fg);
     color: var(--bg);
+}
+
+
+
+.tree-table li {
+    list-style: none;
+}
+.tree-table {
+    margin:0;
+    padding-left:0;
+}
+.tree-table ul {
+    margin:0;
+    padding-left: 1em;
+}
+
+.tree-node {
+    padding: 0.25em;
+    display: grid;
+    grid-template-columns: 2em auto;
+}
+.tree-node.selected {
+    background-color: aqua;
 }
