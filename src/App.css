@@ -1,28 +1,83 @@
-.App {
-  text-align: center;
+html, body {
+    padding:0;
+    border:0;
+    margin: 0;
+    font-family: sans-serif;
+    --bg: #e6e6e6;
+    --fg: #5b5b5b;
+    --bd: #909090;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+.grid {
+    display: grid;
+    grid-template-columns: [left] 250px [center] auto [right] 400px;
+    grid-template-rows: [top] 2em [middle] auto [bottom] 2em;
+    padding:0;
+    position: absolute;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+    grid-column-gap: 1px;
+    grid-row-gap: 1px;
+    background-color: var(--bd);
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.toolbar {
+    background-color: var(--bg);
+    color: var(--fg);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
 }
 
-.App-title {
-  font-size: 1.5em;
+.top {
+    grid-row-start:top;
+}
+.bottom {
+    grid-row-start:bottom;
+}
+.left {
+    grid-column-start: left;
+}
+.right {
+    grid-column-start: right;
+}
+.center {
+    grid-column: center/right
+}
+.middle {
+    grid-row:middle/bottom;
+}
+.panel {
+    background-color: var(--bg);
+}
+.scroll {
+    overflow: auto;
+}
+.spacer {
+    flex:1;
 }
 
-.App-intro {
-  font-size: large;
-}
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+
+.toolbar label {
+    vertical-align: bottom;
+    display: inline-flex;
+    line-height: 1.5em;
+    padding: 0.25em;
+}
+.toolbar h3 {
+    font-size: 100%;
+    margin:0;
+}
+.toolbar button.fa {
+    border-width: 0;
+    background-color: transparent;
+    color: var(--fg);
+}
+.toolbar button.fa:hover {
+    background-color: var(--fg);
+    color: var(--bg);
 }
