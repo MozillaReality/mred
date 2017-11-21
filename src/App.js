@@ -21,14 +21,34 @@ const data = {
                 children:[]
             },
             {
-                type:'rect',
-                title:'rect2',
-                x:200,
-                y:30,
-                w:40,
-                h:40,
-                color:'green',
-                visible:false,
+                type:'group',
+                title:'some group',
+                tx:0,
+                ty:0,
+                visible:true,
+                children:[
+                    {
+                        type:'rect',
+                        title:'rect2',
+                        x:0,
+                        y:0,
+                        w:50,
+                        h:50,
+                        color:'yellow',
+                        visible:true,
+                    },
+                    {
+                        type:'rect',
+                        title:'rect2',
+                        x:20,
+                        y:20,
+                        w:50,
+                        h:50,
+                        color:'yellow',
+                        visible:true,
+                    },
+
+                ]
             },
             {
                 type:'circle',
@@ -48,6 +68,7 @@ const SceneItemRenderer = (props) => {
     if(type === 'rect')   return <div><i className="fa fa-square"/> {props.item.title}</div>
     if(type === 'circle') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if(type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
+    if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -97,6 +118,7 @@ class SceneTreeItemProvider extends TreeItemProvider {
             let locked = false;
             if(key === 'visible') type = 'boolean';
             if(key === 'type') locked = true;
+            if(key === 'id') locked = true;
             if(key === 'x') type = 'number';
             defs.push({
                 name:key,
@@ -166,10 +188,18 @@ class CanvasSVG extends Component {
                 return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{drawChildren(item)}</svg>
             }
             if (item.type === 'rect') {
-                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key} visibility={item.visible?'visible':'hidden'}/>
+                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key}
+                             visibility={item.visible?'visible':'hidden'}/>
             }
             if (item.type === 'circle') {
                 return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}/>
+            }
+            if (item.type === 'group') {
+                return <g key={key}
+                          transform={`translate(${item.tx},${item.ty})`}
+                          visibility={item.visible?'visible':'hidden'}>
+                    {drawChildren(item)}
+                </g>
             }
         }
 
