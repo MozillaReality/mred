@@ -71,12 +71,12 @@ html, body {
     font-size: 100%;
     margin:0;
 }
-.toolbar button.fa {
+.toolbar button.fa, button.borderless {
     border-width: 0;
     background-color: transparent;
     color: var(--fg);
 }
-.toolbar button.fa:hover {
+.toolbar button.fa:hover, button.borderless:hover {
     background-color: var(--fg);
     color: var(--bg);
 }

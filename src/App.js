@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 
+
+
 const data = {
     root: {
         title:'root',
@@ -38,6 +40,56 @@ const data = {
 data.selected = data.root.children[1].children[1];
 
 
+const SceneItemRenderer = (props) => {
+    return <div>some props {props.item.title}</div>
+}
+
+const TREE_ITEM_PROVIDER = {
+    EXPANDED_CHANGED:'EXPANDED_CHANGED'
+}
+class TreeItemProvider {
+    constructor(root) {
+        this.root = root;
+        this.expanded_map = {};
+        this.listeners = {};
+    }
+    on(type,cb) {
+        if(!this.listeners[type]) this.listeners[type] = [];
+        this.listeners[type].push(cb);
+    }
+    fire(type, value) {
+        if(!this.listeners[type]) this.listeners[type] = [];
+        this.listeners[type].forEach((cb) => cb(value));
+    }
+    getSceneRoot() {
+        return this.root;
+    }
+    getRendererForItem(item) {
+        return <SceneItemRenderer item={item}/>
+    }
+    isExpanded(item) {
+        if(!item.id) item.id = ""+Math.random();
+        if(typeof this.expanded_map[item.id] === 'undefined') this.expanded_map[item.id] = true;
+        return this.expanded_map[item.id];
+    }
+    hasChildren(item) {
+        return (item.children && item.children.length>0)
+    }
+    getChildren(item) {
+        return item.children;
+    }
+    toggleItemCollapsed(item) {
+        const current = this.isExpanded(item);
+        this.expanded_map[item.id] = !current;
+        this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
+    }
+    getProperties() {
+
+    }
+}
+
+const SM = new TreeItemProvider(data.root);
+
 const GridLayout = (props) => {
     return <div className='grid'>{props.children}</div>
 };
@@ -68,6 +120,11 @@ class TreeTableItem extends Component {
     onSelect = (e)=>{
         console.log("selected",this.props.node.title)
     }
+    toggleItemCollapsed = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.props.provider.toggleItemCollapsed(this.props.node);
+    }
     render() {
         return <li>
             {this.renderSelf(this.props.node)}
@@ -80,28 +137,55 @@ class TreeTableItem extends Component {
             cls += " selected"
         }
         let arrow = "";
-        if(node.children && node.children.length >= 1) {
-            arrow = <button className="fa fa-caret-down"/>;
+        const children = this.props.provider.getChildren(node);
+        if(this.props.provider.hasChildren(node)) {
+            const expanded = this.props.provider.isExpanded(node)
+            if(expanded) {
+                arrow = <button className="fa fa-caret-down borderless" onClick={this.toggleItemCollapsed}/>;
+            } else {
+                arrow = <button className="fa fa-caret-right borderless" onClick={this.toggleItemCollapsed}/>;
+            }
         } else {
             arrow = <span className=""/>
         }
-        return <div className={cls} onClick={this.onSelect}>{arrow}{node.title}</div>
+        return <div className={cls} onClick={this.onSelect}>
+            {arrow}
+            {this.props.provider.getRendererForItem(node)}
+        </div>
     }
     renderChildren(node) {
-        if(!node.children || node.children.length < 1) return "";
-        return <ul>{node.children.map((ch,i)=>{
-            return <TreeTableItem key={i} node={ch}/>
+        if(!this.props.provider.hasChildren(node)) return "";
+        if(!this.props.provider.isExpanded(node)) return "";
+        const children = this.props.provider.getChildren(node);
+        return <ul>{children.map((ch,i)=>{
+            return <TreeTableItem key={i} node={ch} provider={this.props.provider}/>
         })}</ul>
     }
 }
 class TreeTable extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            root:this.props.root
+        }
+    }
+    componentDidMount() {
+        console.log("adding listener");
+        this.listener = SM.on(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, (item)=>{
+            console.log("item expanded");
+            this.setState({root:SM.getSceneRoot()})
+        })
+    }
+    componentWillUnmount() {
+        SM.off(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, this.listener);
+    }
     render() {
-        console.log("root", this.props.root);
-        return <ul className='tree-table'><TreeTableItem node={this.props.root}/></ul>
+        return <ul className='tree-table'><TreeTableItem node={this.state.root} provider={SM}/></ul>
     }
 }
 
 const Canvas3D = (props) => {
+    console.log("drawing the canvas")
     return <div className=''>three dee canvas</div>
 };
 
