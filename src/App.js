@@ -41,11 +41,19 @@ data.selected = data.root.children[1].children[1];
 
 
 const SceneItemRenderer = (props) => {
-    return <div>some props {props.item.title}</div>
+    if(props.item.type === 'camera') return <div><i className="fa fa-camera"/> {props.item.title}</div>
+    if(props.item.type === 'cube')  return <div><i className="fa fa-cube"/> {props.item.title}</div>
+    if(props.item.type === 'group')  return <div><i className="fa fa-cubes"/> {props.item.title}</div>
+    if(props.item.type === 'sphere')  return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if(props.item.type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
+    return <div>{props.item.title}</div>
 }
 
 const TREE_ITEM_PROVIDER = {
     EXPANDED_CHANGED:'EXPANDED_CHANGED'
+}
+const SELECTION_MANAGER = {
+    CHANGED:'CHANGED'
 }
 class TreeItemProvider {
     constructor(root) {
@@ -90,6 +98,29 @@ class TreeItemProvider {
 
 const SM = new TreeItemProvider(data.root);
 
+class SelectionManager {
+    constructor(props) {
+        this.listeners = {};
+        this.selected = [];
+    }
+    on(type,cb) {
+        if(!this.listeners[type]) this.listeners[type] = [];
+        this.listeners[type].push(cb);
+    }
+    fire(type, value) {
+        if(!this.listeners[type]) this.listeners[type] = [];
+        this.listeners[type].forEach((cb) => cb(value));
+    }
+    setSelection(node) {
+        this.selected = [node]
+        this.fire(SELECTION_MANAGER.CHANGED,this)
+    }
+    isSelected(node) {
+        return (this.selected.indexOf(node) >= 0)
+    }
+}
+const SMM = new SelectionManager();
+
 const GridLayout = (props) => {
     return <div className='grid'>{props.children}</div>
 };
@@ -117,9 +148,7 @@ const Spacer = (props) => {
 
 
 class TreeTableItem extends Component {
-    onSelect = (e)=>{
-        console.log("selected",this.props.node.title)
-    }
+    onSelect = (e)=>  SMM.setSelection(this.props.node)
     toggleItemCollapsed = (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -133,7 +162,7 @@ class TreeTableItem extends Component {
     }
     renderSelf(node) {
         let cls = "tree-node";
-        if(node === data.selected) {
+        if(this.props.selection && this.props.selection.isSelected(node)) {
             cls += " selected"
         }
         let arrow = "";
@@ -158,7 +187,7 @@ class TreeTableItem extends Component {
         if(!this.props.provider.isExpanded(node)) return "";
         const children = this.props.provider.getChildren(node);
         return <ul>{children.map((ch,i)=>{
-            return <TreeTableItem key={i} node={ch} provider={this.props.provider}/>
+            return <TreeTableItem key={i} node={ch} provider={this.props.provider} selection={this.props.selection}/>
         })}</ul>
     }
 }
@@ -166,21 +195,20 @@ class TreeTable extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            root:this.props.root
+            root:this.props.root,
+            selection:null
         }
     }
     componentDidMount() {
-        console.log("adding listener");
-        this.listener = SM.on(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, (item)=>{
-            console.log("item expanded");
-            this.setState({root:SM.getSceneRoot()})
-        })
+        this.listener = SM.on(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, (item)=>  this.setState({root:SM.getSceneRoot()}))
+        this.other_listener = SMM.on(SELECTION_MANAGER.CHANGED, (sel)=> this.setState({selection:sel}))
     }
     componentWillUnmount() {
-        SM.off(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, this.listener);
+        SM.off(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, this.listener)
+        SMM.off(SELECTION_MANAGER.CHANGED,this.other_listener)
     }
     render() {
-        return <ul className='tree-table'><TreeTableItem node={this.state.root} provider={SM}/></ul>
+        return <ul className='tree-table'><TreeTableItem node={this.state.root} provider={SM} selection={this.state.selection}/></ul>
     }
 }
 
@@ -190,6 +218,18 @@ const Canvas3D = (props) => {
 };
 
 class PropSheet extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            selection:null
+        }
+    }
+    componentDidMount() {
+        this.listener = SMM.on(SELECTION_MANAGER.CHANGED, (selection) => this.setState({selection:selection}))
+    }
+    componentWillUnmount() {
+        SM.off(SELECTION_MANAGER.CHANGED, this.listener);
+    }
     render() {
         const props = this.calculateProps(this.props.selectedItem);
         return <ul className="prop-sheet">{props.map((prop, i) => {
