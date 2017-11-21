@@ -29,15 +29,26 @@ const data = {
                 h:40,
                 color:'green',
                 visible:false,
+            },
+            {
+                type:'circle',
+                title:'next circle',
+                cx:100,
+                cy:300,
+                r:40,
+                color:'blue',
+                visible:true,
             }
         ]
     },
 };
 
 const SceneItemRenderer = (props) => {
-    if(props.item.type === 'rect') return <div><i className="fa fa-square"/> {props.item.title}</div>
-    if(props.item.type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
-    return <div>yo</div>
+    const type = props.item.type;
+    if(type === 'rect')   return <div><i className="fa fa-square"/> {props.item.title}</div>
+    if(type === 'circle') return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if(type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
+    return <div>unknown item type</div>
 }
 
 class SceneTreeItemProvider extends TreeItemProvider {
@@ -153,10 +164,13 @@ class CanvasSVG extends Component {
         function drawSVG(item, key) {
             if(!item) return "";
             if (item.type === 'scene') {
-                return <svg key={key}>{drawChildren(item)}</svg>
+                return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{drawChildren(item)}</svg>
             }
             if (item.type === 'rect') {
                 return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key}/>
+            }
+            if (item.type === 'circle') {
+                return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}/>
             }
         }
 
@@ -187,7 +201,7 @@ class App extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <CanvasSVG root={data.root}/>
+                <CanvasSVG/>
             </Panel>
 
             <Toolbar center bottom>

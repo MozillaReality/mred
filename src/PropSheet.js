@@ -23,8 +23,8 @@ class PropEditor extends Component {
     render() {
         const prop = this.props.def;
         if (prop.locked === true) return <i>{prop.value}</i>
-        if (prop.type === 'string') return <input type='string' value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (prop.type === 'number') return <input type='string' value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (prop.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (prop.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'boolean') return <input type='checkbox' value={prop.value}/>
         return <b>{prop.value}</b>
     }
