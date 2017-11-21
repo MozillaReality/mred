@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
 
-
-
 const data = {
     root: {
         title:'root',
@@ -91,8 +89,24 @@ class TreeItemProvider {
         this.expanded_map[item.id] = !current;
         this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
     }
-    getProperties() {
-
+    getProperties(item) {
+        var defs = [];
+        if(!item) return defs;
+        if(item.id){
+            defs.push({
+                name:'ID',
+                key:'id',
+                value:item.id
+            })
+        }
+        if(item.type) {
+            defs.push({
+                name:'type',
+                key:'type',
+                value:item.type
+            })
+        }
+        return defs;
     }
 }
 
@@ -117,6 +131,10 @@ class SelectionManager {
     }
     isSelected(node) {
         return (this.selected.indexOf(node) >= 0)
+    }
+    getSelection() {
+        if(this.selected.length === 0) return null;
+        return this.selected[0];
     }
 }
 const SMM = new SelectionManager();
@@ -237,20 +255,8 @@ class PropSheet extends Component {
         })}
         </ul>
     }
-
     calculateProps(item) {
-        return [
-            {
-                name:'The Title',
-                key:'title',
-                value:item.title,
-            },
-            {
-                name:'Type',
-                key:'type',
-                value:item.type,
-            }
-        ]
+        return SM.getProperties(SMM.getSelection());
     }
 }
 
@@ -293,7 +299,7 @@ class App extends Component {
                 <label>name</label>
             </Toolbar>
             <Panel scroll right>
-                <PropSheet selectedItem={data.selected}/>
+                <PropSheet/>
             </Panel>
             <Toolbar right bottom>
                 <label>some random extra stuff here</label>
