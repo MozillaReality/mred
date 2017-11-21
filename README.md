@@ -1,17 +1,6 @@
-class SelectionManager {
-    on(selection-changed | selection-updated)
-    getSelection(): SelectionProxy
-    updateProperty(PropProxy, newValue)
-}
-class SelectionProxy {
-    getProperties() iterator of PropProxy
-}
-class PropProxy {
-    name: string
-    title: string
-    type: NUMBER, STRING, BOOLEAN
+
     style: text, spin, color-picker, slider, dropdown
-}
+
 class LibraryManager {
 
 A scene has a library of objects which can be reused.

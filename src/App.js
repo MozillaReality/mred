@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
 import PropSheet from './PropSheet'
-import SMM, {SELECTION_MANAGER} from "./SelectionManager"
 import TreeTable from "./TreeTable";
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider';
 
@@ -11,43 +10,34 @@ const data = {
         type:'scene',
         children:[
             {
-                title:'camera',
-                type:'camera',
+                type:'rect',
+                title:'rect1',
+                x:20,
+                y:30,
+                w:40,
+                h:40,
+                color:'red',
+                visible:true,
                 children:[]
             },
             {
-                title:'group',
-                type:'group',
-                children:[
-                    {
-                        title:'sphere1',
-                        type:'sphere',
-                        children:[]
-                    },
-                    {
-                        title:'sphere2',
-                        type:'sphere',
-                        children:[]
-                    }
-                ]
-            },
-            {
-                title:'cube',
-                type:'cube',
-                children:[]
+                type:'rect',
+                title:'rect2',
+                x:200,
+                y:30,
+                w:40,
+                h:40,
+                color:'green',
+                visible:false,
             }
         ]
     },
 };
-data.selected = data.root.children[1].children[1];
 
 const SceneItemRenderer = (props) => {
-    if(props.item.type === 'camera') return <div><i className="fa fa-camera"/> {props.item.title}</div>
-    if(props.item.type === 'cube')  return <div><i className="fa fa-cube"/> {props.item.title}</div>
-    if(props.item.type === 'group')  return <div><i className="fa fa-cubes"/> {props.item.title}</div>
-    if(props.item.type === 'sphere')  return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if(props.item.type === 'rect') return <div><i className="fa fa-square"/> {props.item.title}</div>
     if(props.item.type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
-    return <div>{props.item.title}</div>
+    return <div>yo</div>
 }
 
 class SceneTreeItemProvider extends TreeItemProvider {
@@ -90,26 +80,32 @@ class SceneTreeItemProvider extends TreeItemProvider {
     getProperties(item) {
         var defs = [];
         if(!item) return defs;
-        if(item.id){
+        Object.keys(item).forEach((key)=>{
+            if(key === 'children') return;
+            let type = 'string';
+            let locked = false;
+            if(key === 'visible') type = 'boolean';
+            if(key === 'type') locked = true;
+            if(key === 'x') type = 'number';
             defs.push({
-                name:'ID',
-                key:'id',
-                value:item.id
+                name:key,
+                key:key,
+                value:item[key],
+                type:type,
+                locked:locked,
             })
-        }
-        if(item.type) {
-            defs.push({
-                name:'type',
-                key:'type',
-                value:item.type
-            })
-        }
+        })
         return defs;
+    }
+    setPropertyValue(item,def,value) {
+        if(def.type === 'number') value = parseFloat(value);
+        item[def.key] = value;
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+        console.log(this.root)
     }
 }
 
 const SM = new SceneTreeItemProvider(data.root);
-
 
 const GridLayout = (props) => {
     return <div className='grid'>{props.children}</div>
@@ -136,11 +132,37 @@ const Spacer = (props) => {
     return <span className='spacer'/>
 };
 
-const Canvas3D = (props) => {
-    console.log("drawing the canvas")
-    return <div className=''>three dee canvas</div>
-};
+class CanvasSVG extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            root:null
+        }
+    }
+    componentDidMount() {
+        this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        this.setState({root:SM.getSceneRoot()})
+    }
+    render() {
+        function drawChildren(item) {
+            return item.children.map((it, i) => {
+                return drawSVG(it, i)
+            })
+        }
 
+        function drawSVG(item, key) {
+            if(!item) return "";
+            if (item.type === 'scene') {
+                return <svg key={key}>{drawChildren(item)}</svg>
+            }
+            if (item.type === 'rect') {
+                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key}/>
+            }
+        }
+
+        return <div className=''>{drawSVG(this.state.root, 0)}</div>
+    }
+}
 
 class App extends Component {
   render() {
@@ -165,7 +187,7 @@ class App extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <Canvas3D root={data.root}/>
+                <CanvasSVG root={data.root}/>
             </Panel>
 
             <Toolbar center bottom>

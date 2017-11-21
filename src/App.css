@@ -115,7 +115,7 @@ html, body {
     grid-column-gap: 0.25em;
     padding: 0.25em;
     border: 1px solid black;
-    border-width: 0 0 1px 0;
+    border-width: 0 0 0px 0;
 }
 .prop-sheet li label {
     grid-column-start: name;

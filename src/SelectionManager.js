@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+
 
 export const SELECTION_MANAGER = {
     CHANGED:'CHANGED'
