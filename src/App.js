@@ -23,8 +23,8 @@ const data = {
             {
                 type:'group',
                 title:'some group',
-                tx:0,
-                ty:0,
+                tx:100,
+                ty:50,
                 visible:true,
                 children:[
                     {
@@ -175,35 +175,37 @@ class CanvasSVG extends Component {
         this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
         this.setState({root:SM.getSceneRoot()})
     }
+
     render() {
-        function drawChildren(item) {
-            return item.children.map((it, i) => {
-                return drawSVG(it, i)
-            })
-        }
+        return <div>{this.drawSVG(this.state.root, 0)}</div>
+    }
+    drawSVG(item,key) {
+        if(!item) return "";
+        const type = item.type;
+        if (type === 'scene')  return this.drawSVGRoot(item,key);
+        if (type === 'rect')   return this.drawRect(item,key)
+        if (type === 'circle') return this.drawCircle(item,key)
+        if (type === 'group')  return this.drawGroup(item,key);
+    }
+    drawChildren(item) {
+        return item.children.map((it, i) => this.drawSVG(it, i));
+    }
+    drawRect(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}/>
+    }
+    drawCircle(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key} visibility={vis}/>
+    }
 
-        function drawSVG(item, key) {
-            if(!item) return "";
-            if (item.type === 'scene') {
-                return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{drawChildren(item)}</svg>
-            }
-            if (item.type === 'rect') {
-                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key}
-                             visibility={item.visible?'visible':'hidden'}/>
-            }
-            if (item.type === 'circle') {
-                return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}/>
-            }
-            if (item.type === 'group') {
-                return <g key={key}
-                          transform={`translate(${item.tx},${item.ty})`}
-                          visibility={item.visible?'visible':'hidden'}>
-                    {drawChildren(item)}
-                </g>
-            }
-        }
+    drawGroup(item, key) {
+        const vis = item.visible?'visible':'hidden';
+        return <g key={key} transform={`translate(${item.tx},${item.ty})`} visibility={vis}>{this.drawChildren(item)}</g>
+    }
 
-        return <div className=''>{drawSVG(this.state.root, 0)}</div>
+    drawSVGRoot(item, key) {
+        return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
     }
 }
 
