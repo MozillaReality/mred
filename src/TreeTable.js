@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import SMM, {SELECTION_MANAGER} from "./SelectionManager";
+import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider';
 
 
 
 class TreeTableItem extends Component {
-    onSelect = (e)=>  SMM.setSelection(this.props.node)
+    onSelect = (e)=>  selMan.setSelection(this.props.node)
     toggleItemCollapsed = (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -60,11 +60,11 @@ export default class TreeTable extends Component {
     componentDidMount() {
         this.listener = this.props.provider.on(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,
             (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
-        this.other_listener = SMM.on(SELECTION_MANAGER.CHANGED, (sel)=> this.setState({selection:sel}))
+        this.other_listener = selMan.on(SELECTION_MANAGER.CHANGED, (sel)=> this.setState({selection:sel}))
     }
     componentWillUnmount() {
         this.props.provider.off(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, this.listener)
-        SMM.off(SELECTION_MANAGER.CHANGED,this.other_listener)
+        selMan.off(SELECTION_MANAGER.CHANGED,this.other_listener)
     }
     render() {
         return <ul className='tree-table'>

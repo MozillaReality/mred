@@ -30,5 +30,4 @@ class SelectionManager {
     }
 }
 
-const SMM = new SelectionManager();
-export default SMM
+export default new SelectionManager();
