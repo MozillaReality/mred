@@ -9,12 +9,23 @@ class PropEditor extends Component {
             value:this.props.def.value
         }
     }
+    componentWillReceiveProps(nextProps) {
+        if(this.props.def !== nextProps.def) {
+            this.setState({value:nextProps.def.value})
+        }
+    }
     changed = (e) => {
         if(this.props.def.type === 'string') this.setState({value:e.target.value})
         if(this.props.def.type === 'number') this.setState({value:e.target.value})
+        if(this.props.def.type === 'boolean') this.setState({value:e.target.checked})
     }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
+    }
+    booleanChanged = (e) => {
+        this.setState({value:e.target.checked});
+        const sel = selMan.getSelection();
+        this.props.provider.setPropertyValue(sel,this.props.def,e.target.checked);
     }
     commit = () => {
         const sel = selMan.getSelection();
@@ -25,7 +36,7 @@ class PropEditor extends Component {
         if (prop.locked === true) return <i>{prop.value}</i>
         if (prop.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (prop.type === 'boolean') return <input type='checkbox' value={prop.value}/>
+        if (prop.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
         return <b>{prop.value}</b>
     }
 }

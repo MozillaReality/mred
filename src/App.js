@@ -112,7 +112,6 @@ class SceneTreeItemProvider extends TreeItemProvider {
         if(def.type === 'number') value = parseFloat(value);
         item[def.key] = value;
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
-        console.log(this.root)
     }
 }
 
@@ -167,7 +166,7 @@ class CanvasSVG extends Component {
                 return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{drawChildren(item)}</svg>
             }
             if (item.type === 'rect') {
-                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key}/>
+                return <rect x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} key={key} visibility={item.visible?'visible':'hidden'}/>
             }
             if (item.type === 'circle') {
                 return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}/>
