@@ -3,6 +3,7 @@ import './App.css';
 import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable";
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider';
+import selMan from "./SelectionManager";
 
 const data = {
     root: {
@@ -104,6 +105,12 @@ class SceneTreeItemProvider extends TreeItemProvider {
     getChildren(item) {
         return item.children;
     }
+
+    appendChild(parent,child) {
+        parent.children.push(child);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+    }
+
     toggleItemCollapsed(item) {
         const current = this.isExpanded(item);
         this.expanded_map[item.id] = !current;
@@ -134,6 +141,19 @@ class SceneTreeItemProvider extends TreeItemProvider {
         if(def.type === 'number') value = parseFloat(value);
         item[def.key] = value;
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    }
+    createRect() {
+        return {
+            type:'rect',
+                title:'rect1',
+            x:20,
+            y:30,
+            w:40,
+            h:40,
+            color:'red',
+            visible:true,
+            children:[]
+        }
     }
 }
 
@@ -173,6 +193,7 @@ class CanvasSVG extends Component {
     }
     componentDidMount() {
         this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
         this.setState({root:SM.getSceneRoot()})
     }
 
@@ -210,6 +231,25 @@ class CanvasSVG extends Component {
 }
 
 class App extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            root: SM.getSceneRoot()
+        }
+    }
+    insertRect = (e) => {
+        let rect = SM.createRect();
+        let node = selMan.getSelection()
+        if(SM.hasChildren(node)) {
+            SM.appendChild(node,rect);
+        }
+    }
+    componentDidMount() {
+        this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        this.setState({root:SM.getSceneRoot()})
+    }
+
   render() {
     return (
         <GridLayout>
@@ -217,10 +257,10 @@ class App extends Component {
                 <h3>a really cool 3d editor</h3>
             </Toolbar>
             <Panel scroll left>
-                <TreeTable root={data.root} provider={SM}/>
+                <TreeTable root={this.state.root} provider={SM}/>
             </Panel>
             <Toolbar left bottom>
-                <button className="fa fa-plus-circle"/>
+                <button className="fa fa-plus-circle" onClick={this.insertRect}/>
                 <button className="fa fa-minus-circle"/>
             </Toolbar>
 
