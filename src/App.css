@@ -50,6 +50,27 @@ html, body {
 .middle {
     grid-row:middle/bottom;
 }
+
+
+.grid.hide-left {
+    grid-template-columns: [center] auto [right] 400px;
+}
+.grid.hide-right {
+    grid-template-columns: [left] 250px [center] auto;
+}
+.grid.hide-left.hide-right {
+    grid-template-columns: [center] auto;
+}
+
+.grid.hide-left .left {
+    display: none;
+}
+.grid.hide-right .right {
+    display: none;
+}
+
+
+
 .panel {
     background-color: var(--bg);
 }

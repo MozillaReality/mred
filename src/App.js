@@ -172,7 +172,10 @@ class SceneTreeItemProvider extends TreeItemProvider {
 const SM = new SceneTreeItemProvider(data.root);
 
 const GridLayout = (props) => {
-    return <div className='grid'>{props.children}</div>
+    let clss = "grid";
+    if(!props.showLeft) clss += ' hide-left';
+    if(!props.showRight) clss += ' hide-right';
+    return <div className={clss}>{props.children}</div>
 };
 const Toolbar = (props) => {
     let cls = "toolbar";
@@ -250,7 +253,9 @@ class App extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            root: SM.getSceneRoot()
+            root: SM.getSceneRoot(),
+            showLeft:true,
+            showRight:true,
         }
     }
     insertRect = (e) => {
@@ -260,6 +265,9 @@ class App extends Component {
             SM.appendChild(node,rect);
         }
     }
+    toggleLeftPane = (e) =>  this.setState({showLeft:!this.state.showLeft})
+    toggleRightPane = (e) => this.setState({showRight:!this.state.showRight})
+
     componentDidMount() {
         this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
         this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
@@ -268,7 +276,7 @@ class App extends Component {
 
   render() {
     return (
-        <GridLayout>
+        <GridLayout showLeft={this.state.showLeft} showRight={this.state.showRight}>
             <Toolbar left top>
                 <h3>a really cool 3d editor</h3>
             </Toolbar>
@@ -292,11 +300,11 @@ class App extends Component {
             </Panel>
 
             <Toolbar center bottom>
-                <button className="fa fa-caret-left" onClick={this.toggleLeftPane}/>
+                <button className={'fa' + (this.state.showLeft?' fa-caret-left':' fa-caret-right')} onClick={this.toggleLeftPane}/>
                 <Spacer/>
                 <label>saved or not</label>
                 <Spacer/>
-                <button className="fa fa-caret-right" onClick={this.toggleRightPane}/>
+                <button className={'fa' + (this.state.showRight?' fa-caret-right':' fa-caret-left')} onClick={this.toggleRightPane}/>
             </Toolbar>
 
             <Toolbar right top>
