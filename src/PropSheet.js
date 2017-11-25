@@ -1,7 +1,27 @@
 import React, { Component } from 'react';
+import {PopupManager} from "appy-comps";
 
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 
+const COLORS = [
+    'red','green','blue','purple'
+]
+class PaletteColorPicker extends Component {
+    chooseColor(c) {
+        console.log('chose',c,this.props)
+        this.props.onSelect(c);
+    }
+    render() {
+        const style = {
+            display:'flex',
+            flexDirection:'row',
+            flexWrap:'wrap'
+        }
+        return <div style={style}>
+            {COLORS.map((c,i)=> <button key={c} onClick={this.chooseColor.bind(this,c)}>{c}</button>)}
+        </div>
+    }
+}
 class PropEditor extends Component {
     constructor(props) {
         super(props);
@@ -27,9 +47,18 @@ class PropEditor extends Component {
         const sel = selMan.getSelection();
         this.props.provider.setPropertyValue(sel,this.props.def,e.target.checked);
     }
+    colorChanged = (color) => {
+        this.setState({value:color});
+        const sel = selMan.getSelection();
+        this.props.provider.setPropertyValue(sel,this.props.def,color);
+        PopupManager.hide();
+    }
     commit = () => {
         const sel = selMan.getSelection();
         this.props.provider.setPropertyValue(sel,this.props.def,this.state.value);
+    }
+    openColorEditor = (e) => {
+        PopupManager.show(<PaletteColorPicker onSelect={this.colorChanged}/>, e.target)
     }
     render() {
         const prop = this.props.def;
@@ -37,6 +66,7 @@ class PropEditor extends Component {
         if (prop.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
+        if (prop.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value} color</button>
         return <b>{prop.value}</b>
     }
 }

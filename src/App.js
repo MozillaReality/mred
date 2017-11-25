@@ -4,6 +4,7 @@ import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable";
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider';
 import selMan from "./SelectionManager";
+import {PopupContainer} from "appy-comps";
 
 const data = {
     root: {
@@ -127,6 +128,7 @@ class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'type') locked = true;
             if(key === 'id') locked = true;
             if(key === 'x') type = 'number';
+            if(key === 'color') type = 'color'
             defs.push({
                 name:key,
                 key:key,
@@ -293,6 +295,7 @@ class App extends Component {
             <Toolbar right bottom>
                 <label>some random extra stuff here</label>
             </Toolbar>
+            <PopupContainer/>
         </GridLayout>
     );
   }
