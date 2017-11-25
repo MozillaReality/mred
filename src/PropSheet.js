@@ -3,9 +3,41 @@ import {PopupManager} from "appy-comps";
 
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 
-const COLORS = [
-    'red','green','blue','purple'
-]
+const COLORS2 = {
+    "black": 0x000000,
+    "valhalla": 0x222034,
+    "loulou": 0x45283c,
+    "oiled-cedar": 0x663931,
+    "rope": 0x8f563b,
+    "tahiti-gold": 0xdf7126,
+    "twine": 0xd9a066,
+    "pancho": 0xeec39a,
+    "golden-fizz": 0xfbf236,
+    "atlantis": 0x99e550,
+    "christi": 0x6abe30,
+    "elf-green": 0x37946e,
+    "dell": 0x4b692f,
+    "verdigris": 0x524b24,
+    "opal": 0x323c39,
+    "deep-koamaru": 0x3f3f74,
+    "venice-blue": 0x306082,
+    "royal-blue": 0x5b6ee1,
+    "cornflower": 0x639bff,
+    "viking": 0x5fcde4,
+    "light-steel-blue": 0xcbdbfc,
+    "white": 0xffffff,
+    "heather": 0x9badb7,
+    "topaz": 0x847e87,
+    "dim-gray": 0x696a6a,
+    "smokey-ash": 0x595652,
+    "clairvoyant": 0x76428a,
+    "brown": 0xac3232,
+    "mandy": 0xd95763,
+    "plum": 0xd77bba,
+    "rainforest": 0x8f974a,
+    "stinger": 0x8a6f30,
+}
+
 class PaletteColorPicker extends Component {
     chooseColor(c) {
         console.log('chose',c,this.props)
@@ -18,7 +50,20 @@ class PaletteColorPicker extends Component {
             flexWrap:'wrap'
         }
         return <div style={style}>
-            {COLORS.map((c,i)=> <button key={c} onClick={this.chooseColor.bind(this,c)}>{c}</button>)}
+            {Object.keys(COLORS2).map((key,i) => {
+                let color = COLORS2[key];
+                let scolor = color.toString(16);
+                while(scolor.length < 6) scolor = "0"+scolor
+                scolor = '#' +scolor
+                let style = {
+                    backgroundColor:scolor,
+                    color:'red'
+                }
+                return <button key={key}
+                               style={style}
+                               onClick={this.chooseColor.bind(this, scolor)}
+                >&nbsp;</button>
+            })}
         </div>
     }
 }
@@ -66,7 +111,7 @@ class PropEditor extends Component {
         if (prop.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (prop.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
-        if (prop.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value} color</button>
+        if (prop.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>
         return <b>{prop.value}</b>
     }
 }
