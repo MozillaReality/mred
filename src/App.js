@@ -38,6 +38,8 @@ const data = {
                         h:50,
                         color:'yellow',
                         visible:true,
+                        stroke:'black',
+                        strokeWidth:2.0,
                     },
                     {
                         type:'rect',
@@ -48,6 +50,8 @@ const data = {
                         h:50,
                         color:'yellow',
                         visible:true,
+                        stroke:'black',
+                        strokeWidth:2.0,
                     },
 
                 ]
@@ -60,6 +64,8 @@ const data = {
                 r:40,
                 color:'blue',
                 visible:true,
+                stroke:'white',
+                strokeWidth:2.0,
             }
         ]
     },
@@ -122,13 +128,15 @@ class SceneTreeItemProvider extends TreeItemProvider {
         if(!item) return defs;
         Object.keys(item).forEach((key)=>{
             if(key === 'children') return;
-            let type = 'string';
-            let locked = false;
-            if(key === 'visible') type = 'boolean';
-            if(key === 'type') locked = true;
-            if(key === 'id') locked = true;
-            if(key === 'x') type = 'number';
+            let type = 'string'
+            let locked = false
+            if(key === 'visible') type = 'boolean'
+            if(key === 'type') locked = true
+            if(key === 'id') locked = true
+            if(key === 'x') type = 'number'
             if(key === 'color') type = 'color'
+            if(key === 'stroke') type = 'color'
+            if(key === 'strokeWidth') type = 'number'
             defs.push({
                 name:key,
                 key:key,
@@ -153,6 +161,8 @@ class SceneTreeItemProvider extends TreeItemProvider {
             w:40,
             h:40,
             color:'red',
+            stroke:'black',
+            strokeWidth:1.0,
             visible:true,
             children:[]
         }
@@ -215,11 +225,15 @@ class CanvasSVG extends Component {
     }
     drawRect(item,key) {
         const vis = item.visible?'visible':'hidden';
-        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}/>
+        const stroke = item.stroke?item.stroke:'black';
+        const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
     drawCircle(item,key) {
         const vis = item.visible?'visible':'hidden';
-        return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key} visibility={vis}/>
+        const stroke = item.stroke?item.stroke:'black';
+        const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
 
     drawGroup(item, key) {
