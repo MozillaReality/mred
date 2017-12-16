@@ -8,16 +8,18 @@ html, body {
     --bd: #909090;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: [left] 250px [center] auto [right] 400px;
-    grid-template-rows: [top] 2em [middle] auto [bottom] 2em;
-    padding:0;
+.fill {
     position: absolute;
     left:0;
     right:0;
     top:0;
     bottom:0;
+}
+.grid {
+    display: grid;
+    grid-template-columns: [left] 250px [center] auto [right] 400px;
+    grid-template-rows: [top] 2em [middle] auto [bottom] 2em;
+    padding:0;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
     background-color: var(--bd);

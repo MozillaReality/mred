@@ -172,7 +172,7 @@ class SceneTreeItemProvider extends TreeItemProvider {
 const SM = new SceneTreeItemProvider(data.root);
 
 const GridLayout = (props) => {
-    let clss = "grid";
+    let clss = "grid fill";
     if(!props.showLeft) clss += ' hide-left';
     if(!props.showRight) clss += ' hide-right';
     return <div className={clss}>{props.children}</div>
