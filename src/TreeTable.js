@@ -23,7 +23,6 @@ class TreeTableItem extends Component {
             cls += " selected"
         }
         let arrow = "";
-        const children = this.props.provider.getChildren(node);
         if(this.props.provider.hasChildren(node)) {
             const expanded = this.props.provider.isExpanded(node)
             if(expanded) {

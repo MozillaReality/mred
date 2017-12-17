@@ -93,10 +93,8 @@ class HypercardCanvas extends Component {
         const ctx = canvas.getContext('2d')
         ctx.fillStyle = 'white';
         ctx.fillRect(0,0,canvas.width,canvas.height)
-        if(!this.state.selection) {
-            return;
-        }
-        var sel = this.state.selection.getSelection();
+        if(!this.state.selection) return;
+        const sel = this.state.selection.getSelection()
         if(sel.type === 'card') {
             this.drawCard(ctx,sel,sel);
         }

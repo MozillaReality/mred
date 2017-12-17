@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable";
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider';
-import selMan from "./SelectionManager";
+import {TREE_ITEM_PROVIDER} from './TreeItemProvider';
 import {PopupContainer} from "appy-comps";
 // import {} from "./SVGEditor";
 import HypercardEditor from "./HypercardEditor";
@@ -68,6 +67,10 @@ class App extends Component {
         console.log("appending");
     }
 
+    previewStack = (e) => {
+        console.log("previewing")
+    }
+
     toggleLeftPane = (e) =>  this.setState({showLeft:!this.state.showLeft})
     toggleRightPane = (e) => this.setState({showRight:!this.state.showRight})
 
@@ -95,9 +98,7 @@ class App extends Component {
 
             <Toolbar center top>
                 <label>views</label>
-                {/*<button className="fa fa-camera"/>*/}
-                {/*<button className="fa fa-object-group"/>*/}
-                {/*<button className="fa fa-object-ungroup"/>*/}
+                <button className="fa fa-play" onClick={this.previewStack}/>
             </Toolbar>
 
             <Panel center middle scroll>{provider.getCanvas()}</Panel>
