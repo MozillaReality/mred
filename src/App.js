@@ -4,6 +4,8 @@ import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable";
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider';
 import {PopupContainer} from "appy-comps";
+import  SelectionManager from "./SelectionManager";
+
 // import {} from "./SVGEditor";
 import HypercardEditor from "./HypercardEditor";
 
@@ -38,6 +40,11 @@ const Spacer = (props) => {
     return <span className='spacer'/>
 };
 
+function genID(prefix) {
+    return `${prefix}_${Math.floor(Math.random()*10000)}`
+}
+
+
 class App extends Component {
     constructor(props) {
         super(props)
@@ -56,15 +63,58 @@ class App extends Component {
         }
     }*/
 
-    appendStack = (e) => {
-        console.log("appending");
+    appendCard = (e) => {
+        let node = SelectionManager.getSelection()
+        const root = provider.getSceneRoot();
+        const card = {
+            id:genID('card'),
+            type:'card',
+            title:'untitled card',
+            children:[]
+        }
+        provider.appendChild(root,card)
     }
 
     appendRect = (e) => {
-        console.log("appending");
+        let parent = SelectionManager.getSelection()
+        if(parent.type !== 'card') {
+            parent = provider.getParent(parent)
+        }
+        const rect = {
+            id: genID('rect'),
+            type:'rect',
+            x:30,
+            y:30,
+            w:100,
+            h:100,
+            title:'unnamed rect',
+            color:'red'
+        }
+        provider.appendChild(parent,rect)
     }
     appendText = (e) => {
-        console.log("appending");
+        let parent = SelectionManager.getSelection()
+        if(parent.type !== 'card') {
+            parent = provider.getParent(parent)
+        }
+        const text = {
+            id: genID('text'),
+            type:'text',
+            x:30,
+            y:30,
+            w:100,
+            h:100,
+            title:'unnamed text',
+            text:'some new text',
+            color:'black'
+        }
+        provider.appendChild(parent,text)
+    }
+
+    deleteSelection = (e) => {
+        let item = SelectionManager.getSelection()
+        let parent = provider.getParent(item)
+        provider.removeChild(parent,item)
     }
 
     previewStack = (e) => {
@@ -90,10 +140,10 @@ class App extends Component {
                 <TreeTable root={this.state.root} provider={provider}/>
             </Panel>
             <Toolbar left bottom>
-                <button className="fa fa-plus-circle" onClick={this.appendStack}/>
-                <button className="fa fa-plus-circle" onClick={this.appendRect}/>
-                <button className="fa fa-plus-circle" onClick={this.appendText}/>
-                <button className="fa fa-minus-circle"/>
+                <button className="fa fa-plus-circle" onClick={this.appendCard}>card</button>
+                <button className="fa fa-plus-circle" onClick={this.appendRect}>rect</button>
+                <button className="fa fa-plus-circle" onClick={this.appendText}>text</button>
+                <button className="fa fa-minus-circle" onClick={this.deleteSelection}>item</button>
             </Toolbar>
 
             <Toolbar center top>

@@ -55,10 +55,11 @@ const data = {
                         id:'text2',
                         type:'text',
                         title:'go back',
-                        x:0,
-                        y:0,
+                        x:30,
+                        y:30,
                         w:50,
                         h:50,
+                        text:'go back',
                         color:'black',
                         target: 'card1'
                     },
@@ -168,6 +169,14 @@ export default class HypercardEditor extends TreeItemProvider {
     }
     getRendererForItem(item) {
         return <HypercardItemRenderer item={item}/>
+    }
+    appendChild(parent,item) {
+        parent.children.push(item);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
+    }
+    removeChild(parent,item) {
+        parent.children = parent.children.filter((it)=>it.id !== item.id)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent)
     }
     getProperties(item) {
         var defs = [];
