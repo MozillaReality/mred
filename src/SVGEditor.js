@@ -5,9 +5,6 @@ import SM, {SELECTION_MANAGER} from "./SelectionManager";
 export class CanvasSVG extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            root:null
-        }
     }
     componentDidMount() {
         // this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
@@ -16,7 +13,7 @@ export class CanvasSVG extends Component {
     }
 
     render() {
-        return <div>{this.drawSVG(this.state.root, 0)}</div>
+        return <div>{this.drawSVG(this.props.root, 0)}</div>
     }
     drawSVG(item,key) {
         if(!item) return "";
@@ -202,7 +199,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
     getCanvas() {
-        return <CanvasSVG/>
+        return <CanvasSVG root={this.getSceneRoot()}/>
     }
     createRect() {
         return {
@@ -218,6 +215,22 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             visible:true,
             children:[]
         }
+    }
+
+
+    getTreeActions() {
+        return [
+            {
+                title:'add rect',
+                icon:'plus',
+                fun: () => {
+                    console.log("creating a rect")
+                    let rect = this.createRect();
+                    let node = SM.getSelection()
+                    if(this.hasChildren(node)) this.appendChild(node,rect)
+                }
+            }
+        ]
     }
 }
 

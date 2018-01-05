@@ -10,8 +10,6 @@ import SVGEditor from "./SVGEditor"
 import HypercardEditor from "./HypercardEditor"
 import Hypercard3DEditor from "./Hypercard3DEditor"
 
-// const provider = new SceneTreeItemProvider();
-
 
 const GridLayout = (props) => {
     let clss = "grid fill";
@@ -55,7 +53,7 @@ class App extends Component {
             svg: new SVGEditor()
         }
         this.state = {
-            provider: this.providers.hypercard2D,
+            provider: this.providers.svg,
             showLeft: true,
             showRight: true,
         }
@@ -160,6 +158,7 @@ class App extends Component {
 
 
     render() {
+        console.log("rendering with provider",this.state.provider,this.state.provider.getTitle())
         return (
             <VBox fill>
                 <HBox>
@@ -176,10 +175,13 @@ class App extends Component {
                             <TreeTable root={this.state.root} provider={this.state.provider}/>
                         </Panel>
                         <Toolbar left bottom>
-                            <button className="fa fa-plus-circle" onClick={this.appendCard}>card</button>
-                            <button className="fa fa-plus-circle" onClick={this.appendRect}>rect</button>
-                            <button className="fa fa-plus-circle" onClick={this.appendText}>text</button>
-                            <button className="fa fa-minus-circle" onClick={this.deleteSelection}>item</button>
+                            {this.state.provider.getTreeActions().map((action,i)=>{
+                                return <button key={i} className={"fa fa-"+action.icon} onClick={action.fun}>{action.title}</button>
+                            })}
+                            {/*<button className="fa fa-plus-circle" onClick={this.appendCard}>card</button>*/}
+                            {/*<button className="fa fa-plus-circle" onClick={this.appendRect}>rect</button>*/}
+                            {/*<button className="fa fa-plus-circle" onClick={this.appendText}>text</button>*/}
+                            {/*<button className="fa fa-minus-circle" onClick={this.deleteSelection}>item</button>*/}
                         </Toolbar>
 
                         <Toolbar center top>
