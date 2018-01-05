@@ -17,6 +17,7 @@ export class CanvasSVG extends Component {
         this.down = true
         this.item = item
         this.rect = rect
+        SM.setSelection(item)
         window.document.addEventListener('mousemove',this.mouseMove)
         window.document.addEventListener('mouseup',this.mouseUp)
     }
@@ -38,12 +39,6 @@ export class CanvasSVG extends Component {
         this.rect = null
         window.document.removeEventListener('mousemove',this.mouseMove)
         window.document.removeEventListener('mouseup',this.mouseUp)
-    }
-
-    componentDidMount() {
-        // this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
-        // this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
-        // this.setState({root:SM.getSceneRoot()})
     }
 
     render() {
@@ -80,7 +75,6 @@ export class CanvasSVG extends Component {
                      stroke={stroke} strokeWidth={strokeWidth}
                      strokeDasharray={strokeDashArray}
                      onMouseDown={(e)=>this.mouseDown(e,item)}
-                     onMouseMove={(e)=>this.mouseMove(e,item)}
         />
     }
     drawCircle(item,key) {
