@@ -65,7 +65,12 @@ export default class TreeTable extends Component {
         this.props.provider.off(TREE_ITEM_PROVIDER.EXPANDED_CHANGED, this.listener)
         selMan.off(SELECTION_MANAGER.CHANGED,this.other_listener)
     }
+    componentWillReceiveProps(newProps) {
+        if(newProps.root) this.setState({root:newProps.root})
+    }
+
     render() {
+        if(!this.state.root) return <ul>no root yet</ul>
         return <ul className='tree-table'>
             <TreeTableItem node={this.state.root} provider={this.props.provider} selection={this.state.selection}/>
         </ul>

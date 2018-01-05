@@ -151,6 +151,9 @@ export default class HypercardEditor extends TreeItemProvider {
         super()
         this.root = data.root;
     }
+    getTitle() {
+        return "Hypercard 3D"
+    }
     getSceneRoot() {
         return this.root;
     }

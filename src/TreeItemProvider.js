@@ -19,6 +19,9 @@ export default class TreeItemProvider {
         if(!this.listeners[type]) this.listeners[type] = [];
         this.listeners[type].forEach((cb) => cb(value));
     }
+    off(type,cb) {
+        if(this.listeners[type]) this.listeners[type] = this.listeners[type].filter(list => list !== cb)
+    }
     isExpanded(item) {
         if(!item.id) item.id = ""+Math.random();
         if(typeof this.expanded_map[item.id] === 'undefined') this.expanded_map[item.id] = true;

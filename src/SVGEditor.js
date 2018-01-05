@@ -1,3 +1,7 @@
+import React, { Component } from 'react';
+import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
+import SM, {SELECTION_MANAGER} from "./SelectionManager";
+
 export class CanvasSVG extends Component {
     constructor(props) {
         super(props);
@@ -6,9 +10,9 @@ export class CanvasSVG extends Component {
         }
     }
     componentDidMount() {
-        this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
-        this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
-        this.setState({root:SM.getSceneRoot()})
+        // this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        // this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
+        // this.setState({root:SM.getSceneRoot()})
     }
 
     render() {
@@ -122,12 +126,15 @@ export const data = {
     },
 };
 
-export class SceneTreeItemProvider extends TreeItemProvider {
-    constructor(root) {
+export default class SceneTreeItemProvider extends TreeItemProvider {
+    constructor() {
         super();
-        this.root = root;
+        this.root = data.root;
         this.expanded_map = {};
         this.listeners = {};
+    }
+    getTitle() {
+        return 'SVG'
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = [];
