@@ -148,3 +148,19 @@ html, body {
     grid-column-start: name;
     justify-self: right;
 }
+
+
+ul.popup-menu {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+ul.popup-menu li {
+    padding: 0.25em;
+    background-color: white;
+    color: black;
+}
+ul.popup-menu li:hover {
+    background-color: blue;
+    color: white;
+}

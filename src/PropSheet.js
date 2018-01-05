@@ -92,6 +92,11 @@ class PropEditor extends Component {
         const sel = selMan.getSelection();
         this.props.provider.setPropertyValue(sel,this.props.def,e.target.checked);
     }
+    enumChanged = (value) => {
+        this.setState({value:value})
+        const sel = selMan.getSelection();
+        this.props.provider.setPropertyValue(sel,this.props.def,value);
+    }
     colorChanged = (color) => {
         this.setState({value:color});
         const sel = selMan.getSelection();
@@ -106,13 +111,35 @@ class PropEditor extends Component {
         PopupManager.show(<PaletteColorPicker onSelect={this.colorChanged}/>, e.target)
     }
     render() {
-        const prop = this.props.def;
-        if (prop.locked === true) return <i>{prop.value}</i>
-        if (prop.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (prop.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (prop.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
-        if (prop.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>
-        return <b>{prop.value}</b>
+        const def = this.props.def;
+        if (def.locked === true) return <i>{def.value}</i>
+        if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (def.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
+        if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} provider={this.props.provider}/>
+        if (def.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>
+        return <b>{def.value}</b>
+    }
+}
+
+const EnumPicker = (props) => {
+    const items = props.values.map(val=> <li key={val} onClick={()=>props.onSelect(val)}>{val}</li> )
+    return <ul className="popup-menu">{items}</ul>
+}
+
+class EnumEditor extends Component {
+    open = (e) => {
+        PopupManager.show(<EnumPicker
+            values={this.props.provider.getValuesForEnum(this.props.def.key)}
+            onSelect={this.selectValue}
+        />,e.target)
+    }
+    selectValue = (value) => {
+        PopupManager.hide()
+        this.props.onChange(value)
+    }
+    render() {
+        return <button onClick={this.open}>{this.props.value}</button>
     }
 }
 

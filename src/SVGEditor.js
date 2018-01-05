@@ -64,7 +64,21 @@ export class CanvasSVG extends Component {
         const vis = item.visible?'visible':'hidden';
         const stroke = item.stroke?item.stroke:'black';
         const strokeWidth = item.strokeWidth?item.strokeWidth:0;
-        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}
+        let strokeDashArray = null;
+        if(item.strokeStyle) {
+            if(item.strokeStyle === 'solid') {
+                strokeDashArray = null
+            }
+            if(item.strokeStyle === 'dotted') {
+                strokeDashArray = `${strokeWidth},${strokeWidth}`
+            }
+            if(item.strokeStyle === 'dashed') {
+                strokeDashArray = `${strokeWidth*4},${strokeWidth*4}`
+            }
+        }
+        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}
+                     stroke={stroke} strokeWidth={strokeWidth}
+                     strokeDasharray={strokeDashArray}
                      onMouseDown={(e)=>this.mouseDown(e,item)}
                      onMouseMove={(e)=>this.mouseMove(e,item)}
         />
@@ -87,9 +101,7 @@ export class CanvasSVG extends Component {
 }
 
 function treeToSVGString(root) {
-    const elem = <CanvasSVG root={root}/>
-    const output = ReactDOMServer.renderToString(<CanvasSVG root={root}/>);
-    return output;
+    return ReactDOMServer.renderToString(<CanvasSVG root={root}/>);
 }
 
 export const SceneItemRenderer = (props) => {
@@ -100,6 +112,8 @@ export const SceneItemRenderer = (props) => {
     if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
     return <div>unknown item type</div>
 }
+
+const STROKE_STYLES = ['solid','dotted','dashed']
 
 export const data = {
     root: {
@@ -114,6 +128,8 @@ export const data = {
                 w:40,
                 h:40,
                 color:'red',
+                stroke:'black',
+                strokeWidth:2.0,
                 visible:true,
                 children:[]
             },
@@ -135,6 +151,7 @@ export const data = {
                         visible:true,
                         stroke:'black',
                         strokeWidth:2.0,
+                        strokeStyle:STROKE_STYLES[0]
                     },
                     {
                         type:'rect',
@@ -147,6 +164,20 @@ export const data = {
                         visible:true,
                         stroke:'black',
                         strokeWidth:2.0,
+                        strokeStyle:STROKE_STYLES[1]
+                    },
+                    {
+                        type:'rect',
+                        title:'rect2',
+                        x:40,
+                        y:40,
+                        w:50,
+                        h:50,
+                        color:'yellow',
+                        visible:true,
+                        stroke:'black',
+                        strokeWidth:2.0,
+                        strokeStyle:STROKE_STYLES[2]
                     },
 
                 ]
@@ -231,8 +262,12 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         if(key === 'y') def.type = 'number'
         return def
     }
+    getValuesForEnum(key) {
+        if(key === 'strokeStyle') return STROKE_STYLES
+        return []
+    }
     getProperties(item) {
-        var defs = [];
+        let defs = [];
         if(!item) return defs;
         Object.keys(item).forEach((key)=>{
             if(key === 'children') return;
@@ -245,6 +280,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
+            if(key === 'strokeStyle') type = 'enum'
             defs.push({
                 name:key,
                 key:key,
