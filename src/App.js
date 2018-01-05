@@ -3,7 +3,7 @@ import './App.css'
 import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable"
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
-import {PopupContainer, HBox, VBox} from "appy-comps"
+import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
 import SelectionManager from "./SelectionManager"
 
 import SVGEditor from "./SVGEditor"
@@ -56,6 +56,7 @@ class App extends Component {
             provider: this.providers.svg,
             showLeft: true,
             showRight: true,
+            selectedTool: this.providers.svg.getTools()[0]
         }
     }
 
@@ -158,7 +159,6 @@ class App extends Component {
 
 
     render() {
-        console.log("rendering with provider",this.state.provider,this.state.provider.getTitle())
         return (
             <VBox fill>
                 <HBox>
@@ -195,7 +195,13 @@ class App extends Component {
                             <button className={'fa' + (this.state.showLeft ? ' fa-caret-left' : ' fa-caret-right')}
                                     onClick={this.toggleLeftPane}/>
                             <Spacer/>
-                            <label>saved or not</label>
+                            <HToggleGroup list={this.state.provider.getTools()}
+                                          template={ToggleTemplate}
+                                          selected={this.state.selectedTool}
+                                          onChange={(tool)=> {
+                                              this.setState({selectedTool:tool})
+                                          }}
+                            />
                             <Spacer/>
                             <button className={'fa' + (this.state.showRight ? ' fa-caret-right' : ' fa-caret-left')}
                                     onClick={this.toggleRightPane}/>
@@ -220,3 +226,10 @@ class App extends Component {
 }
 
 export default App;
+
+const ToggleTemplate = (props) => {
+    let clss = "fa fa-"
+    if(props.item.icon) clss += props.item.icon
+    if(props.selected) clss += " selected"
+    return <button className={clss} onClick={props.onSelect}>{props.item.title}</button>
+}

@@ -1,11 +1,45 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import SM, {SELECTION_MANAGER} from "./SelectionManager";
+import ReactDOMServer from 'react-dom/server';
 
 export class CanvasSVG extends Component {
     constructor(props) {
         super(props);
+        this.down = false
     }
+
+    mouseDown = (e,item) => {
+        e.stopPropagation()
+        e.preventDefault()
+        const rect = e.target.getBoundingClientRect()
+        this.start = { x: item.x, y: item.y}
+        this.down = true
+        this.item = item
+        this.rect = rect
+        window.document.addEventListener('mousemove',this.mouseMove)
+        window.document.addEventListener('mouseup',this.mouseUp)
+    }
+    mouseMove = (e) => {
+        if(!this.down) return
+        e.stopPropagation()
+        e.preventDefault()
+        const newX = e.clientX - this.rect.x + this.start.x
+        const newY = e.clientY - this.rect.y + this.start.y
+        const defX = this.props.provider.getDefForProperty(this.item,'x')
+        this.props.provider.setPropertyValue(this.item,defX,newX)
+        const defY = this.props.provider.getDefForProperty(this.item,'y')
+        this.props.provider.setPropertyValue(this.item,defY,newY)
+    }
+    mouseUp = (e) => {
+        this.down = false
+        this.start = null
+        this.item = null
+        this.rect = null
+        window.document.removeEventListener('mousemove',this.mouseMove)
+        window.document.removeEventListener('mouseup',this.mouseUp)
+    }
+
     componentDidMount() {
         // this.listener = SM.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
         // this.listener = SM.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (prop) => this.setState({root:SM.getSceneRoot()}))
@@ -13,7 +47,7 @@ export class CanvasSVG extends Component {
     }
 
     render() {
-        return <div>{this.drawSVG(this.props.root, 0)}</div>
+        return this.drawSVG(this.props.root, 0)
     }
     drawSVG(item,key) {
         if(!item) return "";
@@ -30,7 +64,10 @@ export class CanvasSVG extends Component {
         const vis = item.visible?'visible':'hidden';
         const stroke = item.stroke?item.stroke:'black';
         const strokeWidth = item.strokeWidth?item.strokeWidth:0;
-        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
+        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}
+                     onMouseDown={(e)=>this.mouseDown(e,item)}
+                     onMouseMove={(e)=>this.mouseMove(e,item)}
+        />
     }
     drawCircle(item,key) {
         const vis = item.visible?'visible':'hidden';
@@ -45,8 +82,14 @@ export class CanvasSVG extends Component {
     }
 
     drawSVGRoot(item, key) {
-        return <svg key={key} viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
+        return <svg key={key} viewBox="0 0 548 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
     }
+}
+
+function treeToSVGString(root) {
+    const elem = <CanvasSVG root={root}/>
+    const output = ReactDOMServer.renderToString(<CanvasSVG root={root}/>);
+    return output;
 }
 
 export const SceneItemRenderer = (props) => {
@@ -129,6 +172,13 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.root = data.root;
         this.expanded_map = {};
         this.listeners = {};
+        this.tools = [
+            {
+                //move actions
+                icon:'location-arrow',
+                title:""
+            }
+        ]
     }
     getTitle() {
         return 'SVG'
@@ -169,6 +219,18 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.expanded_map[item.id] = !current;
         this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
     }
+    getDefForProperty(item,key) {
+        const def = {
+            name:key,
+            key:key,
+            value:item[key],
+            locked:false,
+            type:'string'
+        }
+        if(key === 'x') def.type = 'number'
+        if(key === 'y') def.type = 'number'
+        return def
+    }
     getProperties(item) {
         var defs = [];
         if(!item) return defs;
@@ -199,7 +261,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
     getCanvas() {
-        return <CanvasSVG root={this.getSceneRoot()}/>
+        return <CanvasSVG root={this.getSceneRoot()} provider={this}/>
     }
     createRect() {
         return {
@@ -221,7 +283,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     getTreeActions() {
         return [
             {
-                title:'add rect',
+                title:'rect',
                 icon:'plus',
                 fun: () => {
                     console.log("creating a rect")
@@ -229,10 +291,35 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                     let node = SM.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
                 }
+            },
+            {
+                title:'save',
+                icon:'save',
+                fun: () => {
+                    console.log("saving to SVG")
+                    const svg = treeToSVGString(this.getSceneRoot())
+                    console.log("rendered SVG = ",svg)
+                    /*
+                    //for a preview
+                    const win = window.open("","test SVG")
+                    win.document.body.innerHTML = svg
+                    */
+                    const link = document.createElement('a');
+                    link.href = 'data:image/svg+xml,'+encodeURIComponent(svg)
+                    link.download = 'test.svg'
+                    document.body.appendChild(link)
+                    link.click()
+                }
             }
         ]
     }
+
+    getTools() {
+        return this.tools
+    }
 }
+
+
 
 
 
