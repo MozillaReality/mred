@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import SM, {SELECTION_MANAGER} from "./SelectionManager";
+import Selection from "./SelectionManager";
 import ReactDOMServer from 'react-dom/server';
 
 export class CanvasSVG extends Component {
@@ -17,7 +17,7 @@ export class CanvasSVG extends Component {
         this.down = true
         this.item = item
         this.rect = rect
-        SM.setSelection(item)
+        Selection.setSelection(item)
         window.document.addEventListener('mousemove',this.mouseMove)
         window.document.addEventListener('mouseup',this.mouseUp)
     }
@@ -318,7 +318,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                 fun: () => {
                     console.log("creating a rect")
                     let rect = this.createRect();
-                    let node = SM.getSelection()
+                    let node = Selection.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
                 }
             },
