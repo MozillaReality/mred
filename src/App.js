@@ -176,12 +176,8 @@ class App extends Component {
                         </Panel>
                         <Toolbar left bottom>
                             {this.state.provider.getTreeActions().map((action,i)=>{
-                                return <button key={i} className={"fa fa-"+action.icon} onClick={action.fun}>{action.title}</button>
+                                return <button key={i} onClick={action.fun}><i  className={"fa fa-"+action.icon}></i> {action.title}</button>
                             })}
-                            {/*<button className="fa fa-plus-circle" onClick={this.appendCard}>card</button>*/}
-                            {/*<button className="fa fa-plus-circle" onClick={this.appendRect}>rect</button>*/}
-                            {/*<button className="fa fa-plus-circle" onClick={this.appendText}>text</button>*/}
-                            {/*<button className="fa fa-minus-circle" onClick={this.deleteSelection}>item</button>*/}
                         </Toolbar>
 
                         <Toolbar center top>
