@@ -92,7 +92,7 @@ export class CanvasSVG extends Component {
     }
     drawText(item,key) {
         const vis = item.visible?'visible':'hidden';
-        return <text key={key} x={item.x} y={item.y} fill={item.color} fontSize={40} visibility={vis}>{item.text}</text>
+        return <text key={key} x={item.x} y={item.y} fill={item.color} fontSize={item.fontSize} fontFamily={item.fontFamily} visibility={vis} textAnchor={item.textAnchor}>{item.text}</text>
     }
 
     drawGroup(item, key) {
@@ -120,6 +120,8 @@ export const SceneItemRenderer = (props) => {
 }
 
 const STROKE_STYLES = ['solid','dotted','dashed']
+const FONT_FAMILIES = ['serif','sans-serif','monospace']
+const TEXT_ANCHORS = ['start','middle','end']
 
 export const data = {
     root: {
@@ -206,7 +208,10 @@ export const data = {
                 y: 100,
                 color: 'black',
                 visible:true,
-                text:'the text'
+                text:'the text',
+                fontSize:24,
+                fontFamily:'serif',
+                textAnchor:'start'
             }
         ]
     },
@@ -279,6 +284,8 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
     getValuesForEnum(key) {
         if(key === 'strokeStyle') return STROKE_STYLES
+        if(key === 'fontFamily') return FONT_FAMILIES
+        if(key === 'textAnchor') return TEXT_ANCHORS
         return []
     }
     getProperties(item) {
@@ -296,6 +303,8 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
             if(key === 'strokeStyle') type = 'enum'
+            if(key === 'fontFamily') type = 'enum'
+            if(key === 'textAnchor') type = 'enum'
             defs.push({
                 name:key,
                 key:key,
@@ -351,7 +360,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             y: 100,
             color: 'black',
             visible:true,
-            text:'the text'
+            text:'the text',
+            fontSize:24,
+            fontFamily:'serif',
+            textAnchor:'start'
         }
     }
 
