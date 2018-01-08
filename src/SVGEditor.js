@@ -254,6 +254,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return this.expanded_map[item.id];
     }
     hasChildren(item) {
+        if(!item) return false;
         return (item.children && item.children.length>0)
     }
     getChildren(item) {
@@ -263,6 +264,28 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     appendChild(parent,child) {
         parent.children.push(child);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+    }
+
+    deleteNode(child) {
+        const parent = this.findParent(this.getSceneRoot(),child)
+        const index = parent.children.indexOf(child)
+        if(index<0) return console.log("not really the parent. invalid!")
+        parent.children.splice(index,1)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+        Selection.setSelection(parent)
+    }
+
+    findParent(root,target) {
+        if(root === target) return root
+        if(root.children) {
+            for(let i=0; i<root.children.length; i++) {
+                const ch = root.children[i]
+                if(ch === target) return root;
+                const res = this.findParent(ch,target)
+                if(res) return res
+            }
+        }
+        return null;
     }
 
     toggleItemCollapsed(item) {
@@ -395,6 +418,13 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                     let rect = this.createText();
                     let node = Selection.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
+                }
+            },
+            {
+                icon:'close',
+                fun: () => {
+                    let node = Selection.getSelection()
+                    this.deleteNode(node)
                 }
             },
             {
