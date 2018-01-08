@@ -14,6 +14,12 @@ export class CanvasSVG extends Component {
         e.preventDefault()
         const rect = e.target.getBoundingClientRect()
         this.start = { x: item.x, y: item.y}
+        const svgcanvas = document.getElementById('svg-canvas');
+        // console.log(svgcanvas)
+        // console.log("rect = ", rect);
+        console.log("other client bounds = ", svgcanvas.getBoundingClientRect().width)
+        // console.log("svg bounds = ", svgcanvas.getAttribute('viewBox'))
+        console.log("view box", svgcanvas.viewBox.baseVal.width)
         this.down = true
         this.item = item
         this.rect = rect
@@ -50,6 +56,7 @@ export class CanvasSVG extends Component {
         if (type === 'scene')  return this.drawSVGRoot(item,key);
         if (type === 'rect')   return this.drawRect(item,key)
         if (type === 'circle') return this.drawCircle(item,key)
+        if (type === 'text')   return this.drawText(item,key);
         if (type === 'group')  return this.drawGroup(item,key);
     }
     drawChildren(item) {
@@ -83,6 +90,10 @@ export class CanvasSVG extends Component {
         const strokeWidth = item.strokeWidth?item.strokeWidth:0;
         return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
+    drawText(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        return <text key={key} x={item.x} y={item.y} fill={item.color} fontSize={40} visibility={vis}>{item.text}</text>
+    }
 
     drawGroup(item, key) {
         const vis = item.visible?'visible':'hidden';
@@ -90,7 +101,7 @@ export class CanvasSVG extends Component {
     }
 
     drawSVGRoot(item, key) {
-        return <svg key={key} viewBox="0 0 548 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
+        return <svg key={key} id="svg-canvas" viewBox="0 0 2000 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
     }
 }
 
@@ -104,6 +115,7 @@ export const SceneItemRenderer = (props) => {
     if(type === 'circle') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if(type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
     if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
+    if(type === 'text')   return <div><i className="fa fa-text-width"/>{props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -186,6 +198,15 @@ export const data = {
                 visible:true,
                 stroke:'white',
                 strokeWidth:2.0,
+            },
+            {
+                type:'text',
+                title:'next text',
+                x: 300,
+                y: 100,
+                color: 'black',
+                visible:true,
+                text:'the text'
             }
         ]
     },
@@ -199,7 +220,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.listeners = {};
         this.tools = [
             {
-                //move actions
+                //select / move action
                 icon:'location-arrow',
                 title:""
             }
@@ -308,16 +329,58 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             children:[]
         }
     }
+    createCircle() {
+        return {
+            type:'circle',
+            title:'circle 1',
+            cx:100,
+            cy:200,
+            r: 50,
+            color:'red',
+            stroke:'black',
+            strokeWidth:1.0,
+            visible:true,
+            children:[]
+        }
+    }
+    createText() {
+        return {
+            type:'text',
+            title:'next text',
+            x: 300,
+            y: 100,
+            color: 'black',
+            visible:true,
+            text:'the text'
+        }
+    }
 
 
     getTreeActions() {
         return [
             {
-                title:'rect',
-                icon:'plus',
+                // title:'rect',
+                icon:'square',
                 fun: () => {
-                    console.log("creating a rect")
                     let rect = this.createRect();
+                    let node = Selection.getSelection()
+                    if(this.hasChildren(node)) this.appendChild(node,rect)
+                }
+            },
+            {
+                // title:'circle',
+                icon:'circle',
+                fun: () => {
+                    let rect = this.createCircle();
+                    let node = Selection.getSelection()
+                    if(this.hasChildren(node)) this.appendChild(node,rect)
+                }
+            },
+            {
+                // title:'text',
+                icon:'text-width',
+                fun: () => {
+                    let rect = this.createText();
                     let node = Selection.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
                 }
