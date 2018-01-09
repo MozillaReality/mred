@@ -237,7 +237,6 @@ export class Preview3D extends Component {
     }
     render() {
         if(!this.state.valid) return <div>invalid preview. please close and try again</div>
-        console.log("current is",this.state.current)
         return <div style={{ margin:0, padding:0, borderWidth: 0}}>
             <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} fillScreen={true} />
             <QRCanvas url={"http://192.168.7.25:3000/?mode=preview&provider=hypercard3D"}
@@ -252,15 +251,15 @@ class QRCanvas extends Component {
     componentDidMount() {
         if(this.canvas) this.redraw()
     }
+    componentWillReceiveProps(newProps) {
+        if(this.canvas) this.redraw()
+    }
     redraw() {
-        const ctx = this.canvas.getContext('2d')
-        // ctx.fillStyle = 'red'
-        // ctx.fillRect(0,0,300,300)
-        QRCode.toCanvas(this.canvas,this.props.url,{ width:300, height:300 });
+        QRCode.toCanvas(this.canvas,this.props.url,{ width:this.props.width, height:this.props.height });
     }
     render() {
         let style = {}
         if(this.props.style) Object.assign(style,this.props.style)
-        return <canvas width={300} height={300} ref={(canvas)=>this.canvas=canvas} style={style}/>
+        return <canvas width={this.props.width} height={this.props.height} ref={(canvas)=>this.canvas=canvas} style={style}/>
     }
 }
