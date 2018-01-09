@@ -54,7 +54,6 @@ class ThreeDeeViewer extends Component {
         this.redraw();
     }
     componentWillReceiveProps(newProps) {
-        console.log("getting props for the scene",newProps)
         this.rebuildScene(newProps.scene)
         this.redraw()
     }
@@ -94,8 +93,8 @@ class ThreeDeeViewer extends Component {
         let w = 500
         let h = 500
         if(this.props.fillScreen === true) {
-            w = "99%"
-            h = "99%"
+            w = "100%"
+            h = "100%"
         }
         return <canvas width={w} height={h} ref={(canvas)=>this.canvas = canvas}/>
     }
@@ -232,8 +231,6 @@ export class Preview3D extends Component {
     }
     navTo = (target) => {
         console.log("navigating")
-        // const card = this.state.doc.children.find((card) => card.id === target)
-        // this.setState({current:card})
     }
     render() {
         if(!this.state.valid) return <div>invalid preview. please close and try again</div>
