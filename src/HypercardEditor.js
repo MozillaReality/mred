@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
+import Selection from "./SelectionManager";
 
 const data = {
     root: {
@@ -139,9 +140,9 @@ class HypercardCanvas extends Component {
 export const HypercardItemRenderer = (props) => {
     const type = props.item.type;
     if(type === 'rect')   return <div><i className="fa fa-square"/> {props.item.title}</div>
-    if(type === 'text') return <div><i className="fa fa-circle"/> {props.item.title}</div>
-    if(type === 'stack')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
-    if(type === 'card')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
+    if(type === 'text') return <div><i className="fa fa-text-width"/> {props.item.title}</div>
+    if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
+    if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -152,7 +153,7 @@ export default class HypercardEditor extends TreeItemProvider {
         this.root = data.root;
     }
     getTitle() {
-        return "Hypercard 3D"
+        return "HyperCard 2D"
     }
     getSceneRoot() {
         return this.root;
@@ -196,6 +197,7 @@ export default class HypercardEditor extends TreeItemProvider {
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
+            if(key === 'target') type = 'enum'
             defs.push({
                 name:key,
                 key:key,
@@ -210,5 +212,78 @@ export default class HypercardEditor extends TreeItemProvider {
         if(def.type === 'number') value = parseFloat(value);
         item[def.key] = value;
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    }
+    getValuesForEnum(key) {
+        if(key === 'target') return this.getSceneRoot().children.map((ch)=>ch.id)
+    }
+
+    createCard() {
+        return {
+            id: this.genID('card'),
+            type: 'card',
+            title: 'untitled card',
+            children: []
+        }
+    }
+    createRect() {
+        return {
+            id:this.genID('rect'),
+            type:'rect',
+            title:'a rect',
+            x:30,
+            y:10,
+            w:50,
+            h:50,
+            color:'blue',
+        }
+    }
+    createText() {
+        return {
+            id:this.genID('text'),
+            type:'text',
+            title:'text',
+            x:130,
+            y:130,
+            w:50,
+            h:50,
+            text:'the text',
+            color:'black',
+            target: 'card1'
+        }
+    }
+    findSelectedCard() {
+        let sel = Selection.getSelection()
+        if(!sel) return this.getSceneRoot().children[0]
+        if(sel.type === 'card') return sel
+        if(sel === this.getSceneRoot()) return this.getSceneRoot().children[0]
+        return this.getParent(sel)
+    }
+
+    getTreeActions() {
+        return [
+            {
+                title:'card',
+                icon:'vcard',
+                fun: () => {
+                    let card = this.createCard();
+                    let root = this.getSceneRoot()
+                    this.appendChild(root,card)
+                }
+            },
+            {
+                title:'rect',
+                icon:'square',
+                fun: () => {
+                    let sel = this.findSelectedCard()
+                    let rect = this.createRect();
+                    this.appendChild(sel,rect)
+                }
+            },
+            {
+                title:'text',
+                icon:'text-width',
+                fun: () => this.appendChild(this.findSelectedCard(),this.createText())
+            },
+        ]
     }
 }

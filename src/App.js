@@ -53,31 +53,11 @@ class App extends Component {
             svg: new SVGEditor()
         }
         this.state = {
-            provider: this.providers.svg,
+            provider: this.providers.hypercard2D,
             showLeft: true,
             showRight: true,
-            selectedTool: this.providers.svg.getTools()[0]
+            selectedTool: null,//this.providers.svg.getTools()[0]
         }
-    }
-
-    /*    insertRect = (e) => {
-            let rect = provider.createRect();
-            let node = selMan.getSelection()
-            if(provider.hasChildren(node)) {
-                provider.appendChild(node,rect);
-            }
-        }*/
-
-    appendCard = (e) => {
-        // let node = SelectionManager.getSelection()
-        const root = this.state.provider.getSceneRoot();
-        const card = {
-            id: genID('card'),
-            type: 'card',
-            title: 'untitled card',
-            children: []
-        }
-        this.state.provider.appendChild(root, card)
     }
 
     appendRect = (e) => {
@@ -137,7 +117,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('svg')
+        this.switchProvider('hypercard2D')
     }
 
     switchProvider(name) {
