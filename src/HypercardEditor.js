@@ -258,11 +258,31 @@ export default class HypercardEditor extends TreeItemProvider {
         if(sel === this.getSceneRoot()) return this.getSceneRoot().children[0]
         return this.getParent(sel)
     }
+    deleteNode(child) {
+        const parent = this.findParent(this.getSceneRoot(),child)
+        const index = parent.children.indexOf(child)
+        if(index<0) return console.log("not really the parent. invalid!")
+        parent.children.splice(index,1)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+        Selection.setSelection(parent)
+    }
+    findParent(root,target) {
+        if(root === target) return root
+        if(root.children) {
+            for(let i=0; i<root.children.length; i++) {
+                const ch = root.children[i]
+                if(ch === target) return root;
+                const res = this.findParent(ch,target)
+                if(res) return res
+            }
+        }
+        return null;
+    }
 
     getTreeActions() {
         return [
             {
-                title:'card',
+                title:'',
                 icon:'vcard',
                 fun: () => {
                     let card = this.createCard();
@@ -271,7 +291,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                title:'rect',
+                title:'',
                 icon:'square',
                 fun: () => {
                     let sel = this.findSelectedCard()
@@ -280,9 +300,16 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                title:'text',
+                title:'',
                 icon:'text-width',
                 fun: () => this.appendChild(this.findSelectedCard(),this.createText())
+            },
+            {
+                icon:'close',
+                fun: () => {
+                    let node = Selection.getSelection()
+                    this.deleteNode(node)
+                }
             },
         ]
     }

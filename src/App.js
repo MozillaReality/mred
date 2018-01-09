@@ -53,53 +53,11 @@ class App extends Component {
             svg: new SVGEditor()
         }
         this.state = {
-            provider: this.providers.hypercard2D,
+            provider: this.providers.svg,
             showLeft: true,
             showRight: true,
-            selectedTool: null,//this.providers.svg.getTools()[0]
+            selectedTool: this.providers.svg.getTools()[0]
         }
-    }
-
-    appendRect = (e) => {
-        let parent = SelectionManager.getSelection()
-        if (parent.type !== 'card') {
-            parent = this.state.provider.getParent(parent)
-        }
-        const rect = {
-            id: genID('rect'),
-            type: 'rect',
-            x: 30,
-            y: 30,
-            w: 100,
-            h: 100,
-            title: 'unnamed rect',
-            color: 'red'
-        }
-        this.state.provider.appendChild(parent, rect)
-    }
-    appendText = (e) => {
-        let parent = SelectionManager.getSelection()
-        if (parent.type !== 'card') {
-            parent = this.state.provider.getParent(parent)
-        }
-        const text = {
-            id: genID('text'),
-            type: 'text',
-            x: 30,
-            y: 30,
-            w: 100,
-            h: 100,
-            title: 'unnamed text',
-            text: 'some new text',
-            color: 'black'
-        }
-        this.state.provider.appendChild(parent, text)
-    }
-
-    deleteSelection = (e) => {
-        let item = SelectionManager.getSelection()
-        let parent = this.state.provider.getParent(item)
-        this.state.provider.removeChild(parent, item)
     }
 
     previewStack = (e) => {
@@ -117,7 +75,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('hypercard2D')
+        this.switchProvider('svg')
     }
 
     switchProvider(name) {
