@@ -38,10 +38,17 @@ class ThreeDeeViewer extends Component {
         super(props)
     }
     componentDidMount() {
+        let w = 500
+        let h = 500
+        if(this.props.fillScreen === true) {
+            //TODO: figure out why I need this fudge. anything less and it scrolls
+            w = window.innerWidth-4
+            h = window.innerHeight-4
+        }
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas});
-        this.renderer.setSize(500, 500);
+        this.renderer.setSize(w,h);
         this.camera.position.z = 5;
         this.rebuildScene(this.props.scene)
         this.redraw();
@@ -84,7 +91,13 @@ class ThreeDeeViewer extends Component {
         this.renderer.render( this.scene, this.camera );
     }
     render() {
-        return <canvas width={500} height={500} ref={(canvas)=>this.canvas = canvas}/>
+        let w = 500
+        let h = 500
+        if(this.props.fillScreen === true) {
+            w = "99%"
+            h = "99%"
+        }
+        return <canvas width={w} height={h} ref={(canvas)=>this.canvas = canvas}/>
     }
 }
 
@@ -225,11 +238,11 @@ export class Preview3D extends Component {
     render() {
         if(!this.state.valid) return <div>invalid preview. please close and try again</div>
         console.log("current is",this.state.current)
-        return <div>
-            <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} />
-            <QRCanvas url={"https://mozilla.com/"}
+        return <div style={{ margin:0, padding:0, borderWidth: 0}}>
+            <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} fillScreen={true} />
+            <QRCanvas url={"http://192.168.7.25:3000/?mode=preview&provider=hypercard3D"}
                       width={300} height={300}
-                      style={{position:'absolute', right:0, bottom:0}}
+                      style={{position:'absolute', right:10, bottom:10}}
             />
         </div>
     }
@@ -241,13 +254,9 @@ class QRCanvas extends Component {
     }
     redraw() {
         const ctx = this.canvas.getContext('2d')
-        ctx.fillStyle = 'red'
-        ctx.fillRect(0,0,300,300)
-
-        QRCode.toCanvas(this.canvas,"https://vr.josh.earth/",{
-            width:300,
-            height:300
-        });
+        // ctx.fillStyle = 'red'
+        // ctx.fillRect(0,0,300,300)
+        QRCode.toCanvas(this.canvas,this.props.url,{ width:300, height:300 });
     }
     render() {
         let style = {}
