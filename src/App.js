@@ -54,6 +54,7 @@ class App extends Component {
         }
         this.state = {
             provider: this.providers.svg,
+            providerName: 'svg',
             showLeft: true,
             showRight: true,
             selectedTool: this.providers.svg.getTools()[0]
@@ -61,7 +62,7 @@ class App extends Component {
     }
 
     previewStack = (e) => {
-        const open = window.open('./?mode=preview')
+        const open = window.open(`./?mode=preview&provider=${this.state.providerName}`)
         window.preview_document = this.state.provider.getSceneRoot()
     }
 
@@ -91,7 +92,7 @@ class App extends Component {
             console.log('couldnt find the provider for ',name)
             return
         }
-        this.setState({provider: provider, root: provider.getSceneRoot()})
+        this.setState({provider: provider, root: provider.getSceneRoot(), providerName: name})
         provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
         provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
     }
