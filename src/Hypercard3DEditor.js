@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import * as THREE from "three";
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
+import QRCode from "qrcode"
 
 const data = {
     root: {
@@ -224,6 +225,33 @@ export class Preview3D extends Component {
     render() {
         if(!this.state.valid) return <div>invalid preview. please close and try again</div>
         console.log("current is",this.state.current)
-        return <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo}/>
+        return <div>
+            <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} />
+            <QRCanvas url={"https://mozilla.com/"}
+                      width={300} height={300}
+                      style={{position:'absolute', right:0, bottom:0}}
+            />
+        </div>
+    }
+}
+
+class QRCanvas extends Component {
+    componentDidMount() {
+        if(this.canvas) this.redraw()
+    }
+    redraw() {
+        const ctx = this.canvas.getContext('2d')
+        ctx.fillStyle = 'red'
+        ctx.fillRect(0,0,300,300)
+
+        QRCode.toCanvas(this.canvas,"https://vr.josh.earth/",{
+            width:300,
+            height:300
+        });
+    }
+    render() {
+        let style = {}
+        if(this.props.style) Object.assign(style,this.props.style)
+        return <canvas width={300} height={300} ref={(canvas)=>this.canvas=canvas} style={style}/>
     }
 }

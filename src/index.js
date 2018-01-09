@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import 'font-awesome/css/font-awesome.css'
 import App from './App';
-import Hypercard2DEditor, {Preview2D} from "./HypercardEditor"
-import Hypercard3DEditor, {Preview3D} from "./Hypercard3DEditor"
+import {Preview2D} from "./HypercardEditor"
+import {Preview3D} from "./Hypercard3DEditor"
 import {parseOptions} from "./utils"
 
 const default_options = {
