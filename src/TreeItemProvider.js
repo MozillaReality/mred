@@ -31,7 +31,7 @@ export default class TreeItemProvider {
     setPropertyValue(item,def,value) {
         throw new Error("subclass of TreeItemProvider must implement setPropertyValue")
     }
-    // getTreeActions() { return [] }
+    getTreeActions() { return [] }
     getTools = () => []
 
     genID = (prefix) => {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import selMan, {SELECTION_MANAGER} from "./SelectionManager";
+// import selMan, {SELECTION_MANAGER} from "./SelectionManager";
+// import Selection from "./SelectionManager";
 
 const data = {
     root: {
@@ -13,26 +14,14 @@ const data = {
                 title:'Opening Scene',
                 children:[
                     {
-                        id:'rect1',
-                        type:'rect',
-                        title:'first rect',
-                        x:10,
-                        y:10,
-                        w:50,
-                        h:50,
+                        id:'cube1',
+                        type:'cube',
+                        title:'first cube',
+                        x:0,
+                        y:0,
+                        z:-5,
+                        size:1,
                         color:'yellow',
-                    },
-                    {
-                        id:'text1',
-                        type:'text',
-                        title:'next card',
-                        text:'the next card',
-                        x:50,
-                        y:100,
-                        w:50,
-                        h:50,
-                        color:'black',
-                        target: 'card2'
                     },
                 ]
             },
@@ -45,6 +34,15 @@ class HypercardCanvas3D extends Component {
         return <div>I'm a canvas for 3d stuff</div>
     }
 }
+
+export const SceneItemRenderer = (props) => {
+    const type = props.item.type;
+    if(type === 'cube')   return <div><i className="fa fa-square"/> {props.item.title}</div>
+    if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
+    if(type === 'scene')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
+    return <div>unknown item type = {type}</div>
+}
+
 
 export default class HypercardEditor extends TreeItemProvider {
     constructor() {
@@ -60,13 +58,42 @@ export default class HypercardEditor extends TreeItemProvider {
     getCanvas() {
         return <HypercardCanvas3D provider={this}/>
     }
+    getChildren(item) {
+        if(item.children) item.children.forEach((ch)=> ch.parent = item)
+        return item.children;
+    }
     hasChildren(item) {
-        return false
+        return (item.children && item.children.length>0)
     }
     getRendererForItem(item) {
-        return <div>some item</div>
+        return <SceneItemRenderer item={item}/>
     }
     getProperties(item) {
-        return []
+        let defs = []
+        if(!item) return defs;
+        Object.keys(item).forEach((key)=>{
+            if(key === 'children') return;
+            if(key === 'parent') return;
+            let type = 'string'
+            let locked = false
+            if(key === 'visible') type = 'boolean'
+            if(key === 'type') locked = true
+            if(key === 'id') locked = true
+            if(key === 'x') type = 'number'
+            if(key === 'y') type = 'number'
+            if(key === 'z') type = 'number'
+            if(key === 'color') type = 'color'
+            if(key === 'stroke') type = 'color'
+            if(key === 'strokeWidth') type = 'number'
+            if(key === 'target') type = 'enum'
+            defs.push({
+                name:key,
+                key:key,
+                value:item[key],
+                type:type,
+                locked:locked,
+            })
+        })
+        return defs;
     }
 }

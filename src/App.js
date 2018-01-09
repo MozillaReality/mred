@@ -76,7 +76,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('hypercard2D')
+        this.switchProvider('hypercard3D')
     }
 
     switchProvider(name) {
