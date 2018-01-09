@@ -70,6 +70,61 @@ const data = {
     }
 }
 
+class CanvasComponent extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            mounted:false,
+        }
+    }
+    componentWillReceiveProps() {
+        this.redraw();
+    }
+    componentDidMount() {
+        this.setState({mounted: true})
+        setTimeout(() => this.redraw(), 100)
+    }
+    redraw() {
+        if (!this.state.mounted) return
+        if (!this.canvas) return
+        console.log('drawing it')
+        const ctx = this.canvas.getContext('2d');
+        this.drawCard(ctx,this.props.card,null)
+    }
+    drawCard(ctx,card,selected) {
+        ctx.font = '16pt sans-serif'
+        ctx.fillStyle = 'black';
+        ctx.fillText(card.title,200, 20);
+        card.children.forEach((item)=>{
+            ctx.fillStyle = item.color;
+            ctx.save();
+            ctx.translate(item.x,item.y);
+            if(item.type === 'rect') {
+                ctx.fillRect(0,0,item.w,item.h)
+                if(item === selected) {
+                    ctx.strokeStyle = 'green'
+                    ctx.strokeRect(-1,-1,item.w+2,item.h+2)
+                }
+            }
+            if(item.type === 'text') {
+                ctx.font = '20px sans-serif'
+                ctx.fillText(item.text,0,0)
+                if(item === selected) {
+                    ctx.strokeStyle = 'green'
+                    const ms = ctx.measureText(item.text)
+                    ctx.strokeRect(-1,-21,ms.width+2,23)
+                }
+            }
+            ctx.restore();
+        })
+    }
+    render() {
+        return <canvas ref={(ref)=>this.canvas = ref} width={400} height={400} style={{
+            border:'1px solid red'
+        }}></canvas>
+    }
+}
+
 class HypercardCanvas extends Component {
     constructor(props) {
         super(props)
@@ -312,5 +367,13 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
         ]
+    }
+}
+
+
+export class Preview extends Component {
+    render() {
+        if(!window.opener || !window.opener.preview_document) return <div>invalid preview. please close and try again</div>
+        return <div>this is a hypercard preview <br/> <CanvasComponent card={window.opener.preview_document.children[0]}/></div>
     }
 }

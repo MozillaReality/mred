@@ -61,7 +61,8 @@ class App extends Component {
     }
 
     previewStack = (e) => {
-        console.log("previewing")
+        const open = window.open('./?mode=preview')
+        window.preview_document = this.state.provider.getSceneRoot()
     }
 
     toggleLeftPane = (e) => this.setState({showLeft: !this.state.showLeft})
@@ -75,7 +76,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('svg')
+        this.switchProvider('hypercard2D')
     }
 
     switchProvider(name) {
