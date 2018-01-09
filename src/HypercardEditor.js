@@ -19,7 +19,7 @@ const data = {
                         title:'first rect',
                         x:10,
                         y:10,
-                        w:50,
+                        w:250,
                         h:50,
                         color:'yellow',
                     },
@@ -70,58 +70,46 @@ const data = {
     }
 }
 
-class CanvasComponent extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            mounted:false,
+class CardComponent extends Component {
+    clicked(item) {
+        if(this.props.live && item.target) {
+            console.log("going to the target",item.target)
+            this.props.navTo(item.target)
         }
     }
-    componentWillReceiveProps() {
-        this.redraw();
-    }
-    componentDidMount() {
-        this.setState({mounted: true})
-        setTimeout(() => this.redraw(), 100)
-    }
-    redraw() {
-        if (!this.state.mounted) return
-        if (!this.canvas) return
-        console.log('drawing it')
-        const ctx = this.canvas.getContext('2d');
-        this.drawCard(ctx,this.props.card,null)
-    }
-    drawCard(ctx,card,selected) {
-        ctx.font = '16pt sans-serif'
-        ctx.fillStyle = 'black';
-        ctx.fillText(card.title,200, 20);
-        card.children.forEach((item)=>{
-            ctx.fillStyle = item.color;
-            ctx.save();
-            ctx.translate(item.x,item.y);
-            if(item.type === 'rect') {
-                ctx.fillRect(0,0,item.w,item.h)
-                if(item === selected) {
-                    ctx.strokeStyle = 'green'
-                    ctx.strokeRect(-1,-1,item.w+2,item.h+2)
-                }
-            }
-            if(item.type === 'text') {
-                ctx.font = '20px sans-serif'
-                ctx.fillText(item.text,0,0)
-                if(item === selected) {
-                    ctx.strokeStyle = 'green'
-                    const ms = ctx.measureText(item.text)
-                    ctx.strokeRect(-1,-21,ms.width+2,23)
-                }
-            }
-            ctx.restore();
-        })
-    }
     render() {
-        return <canvas ref={(ref)=>this.canvas = ref} width={400} height={400} style={{
-            border:'1px solid red'
-        }}></canvas>
+        const card = this.props.card
+        return <div style={{position:'relative'}}>
+            {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
+        </div>
+    }
+    renderItem_text(item,key) {
+        return <div key={key}
+                    style={{
+                        position: 'absolute',
+                        left:item.x+'px',
+                        top:item.y+'px',
+                        width:item.w+'px',
+                        height:item.h+'px',
+                        border:'1px solid black'
+                    }}
+                    onClick={()=>this.clicked(item)}
+        >
+            {item.text}
+        </div>
+    }
+    renderItem_rect(item,key) {
+        return <div key={key}
+                    style={{
+                        position: 'absolute',
+                        left:item.x+'px',
+                        top:item.y+'px',
+                        width:item.w+'px',
+                        height:item.h+'px',
+                        backgroundColor: item.color,
+                        border:'1px solid black'
+                    }}>
+        </div>
     }
 }
 
@@ -129,66 +117,25 @@ class HypercardCanvas extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            mounted:false,
             selection:null
         }
     }
-    componentWillReceiveProps() {
-        this.redraw();
-    }
     componentDidMount() {
-        this.setState({mounted:true})
-        setTimeout(()=>this.redraw(),100)
         this.sel_listener = selMan.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
-            setTimeout(()=>this.redraw(),100)
-        })
-    }
-    redraw() {
-        if(!this.state.mounted) return;
-        const canvas = document.querySelector('#mycoolcanvas')
-        const ctx = canvas.getContext('2d')
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0,0,canvas.width,canvas.height)
-        if(!this.state.selection) return;
-        const sel = this.state.selection.getSelection()
-        if(sel.type === 'card') {
-            this.drawCard(ctx,sel,sel);
-        }
-        if(sel.type === 'text' || sel.type === 'rect') {
-            const card = this.props.provider.getParent(sel)
-            this.drawCard(ctx,card,sel)
-        }
-    }
-    drawCard(ctx,card,selected) {
-        ctx.font = '16pt sans-serif'
-        ctx.fillStyle = 'black';
-        ctx.fillText(card.title,200, 20);
-        card.children.forEach((item)=>{
-            ctx.fillStyle = item.color;
-            ctx.save();
-            ctx.translate(item.x,item.y);
-            if(item.type === 'rect') {
-                ctx.fillRect(0,0,item.w,item.h)
-                if(item === selected) {
-                    ctx.strokeStyle = 'green'
-                    ctx.strokeRect(-1,-1,item.w+2,item.h+2)
-                }
-            }
-            if(item.type === 'text') {
-                ctx.font = '20px sans-serif'
-                ctx.fillText(item.text,0,0)
-                if(item === selected) {
-                    ctx.strokeStyle = 'green'
-                    const ms = ctx.measureText(item.text)
-                    ctx.strokeRect(-1,-21,ms.width+2,23)
-                }
-            }
-            ctx.restore();
         })
     }
     render() {
-        return <canvas id='mycoolcanvas' width={400} height={400}></canvas>
+        if(!this.state.selection) return <div>nothing selected</div>
+        const sel = this.state.selection.getSelection()
+        if(sel.type === 'card') {
+            return <CardComponent card={sel} live={false}/>
+        }
+        if(sel.type === 'text' || sel.type === 'rect') {
+            const card = this.props.provider.getParent(sel)
+            return <CardComponent card={card} live={false}/>
+        }
+        return <div>invalid selection</div>
     }
 }
 
@@ -200,7 +147,6 @@ export const HypercardItemRenderer = (props) => {
     if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
-
 
 export default class HypercardEditor extends TreeItemProvider {
     constructor() {
@@ -370,10 +316,27 @@ export default class HypercardEditor extends TreeItemProvider {
     }
 }
 
-
 export class Preview extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            doc:null,
+            valid:false,
+            current:null
+        }
+    }
+    componentDidMount() {
+        if(window.opener && window.opener.preview_document) {
+            const doc = window.opener.preview_document
+            this.setState({doc:doc, current:doc.children[0], valid:true})
+        }
+    }
+    navTo = (target) => {
+        const card = this.state.doc.children.find((card) => card.id === target)
+        this.setState({current:card})
+    }
     render() {
-        if(!window.opener || !window.opener.preview_document) return <div>invalid preview. please close and try again</div>
-        return <div>this is a hypercard preview <br/> <CanvasComponent card={window.opener.preview_document.children[0]}/></div>
+        if(!this.state.valid) return <div>invalid preview. please close and try again</div>
+        return <CardComponent card={this.state.current} live={true} navTo={this.navTo}/>
     }
 }
