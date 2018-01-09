@@ -33,63 +33,23 @@ const data = {
 }
 
 class ThreeDeeViewer extends Component {
-
-}
-
-class HypercardCanvas3D extends Component {
     constructor(props) {
         super(props)
-        this.animatable = []
-        this.state = {
-            selection:null,
-            scene:null,
-            animate: false
-        }
     }
     componentDidMount() {
-        this.listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel)=> {
-            console.log("changing selection")
-
-            let scene = Selection.getSelection()
-            if(!scene) return
-            if(scene === this.props.provider.getSceneRoot()) return
-            if(scene.type !== 'scene') {
-                scene = this.props.provider.findParent(this.props.provider.getSceneRoot(),scene)
-            }
-            this.setState({selection:sel, animate:false, scene:scene})
-            this.rebuildScene(scene)
-            this.redraw()
-        })
-
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera( 75, 500 / 500, 0.1, 1000 );
-        this.renderer = new THREE.WebGLRenderer({canvas:this.canvas});
-        this.renderer.setSize( 500,500);//window.innerWidth, window.innerHeight );
+        this.camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer({canvas: this.canvas});
+        this.renderer.setSize(500, 500);
         this.camera.position.z = 5;
-
-        this.rebuildScene(null)
+        this.rebuildScene(this.props.scene)
         this.redraw();
     }
-    animate = () => {
-        if(this.state.animate) requestAnimationFrame( this.animate );
-        if(!this.state.scene) return
-        this.animatable.forEach((ch)=> {
-            ch.rotation.y += 0.01
-        })
-        // cube.rotation.y += 0.01;
-        // cube.rotation.z += 0.02;
+    componentWillReceiveProps(newProps) {
+        console.log("getting props for the scene",newProps)
+        this.rebuildScene(newProps.scene)
         this.redraw()
     }
-    render() {
-        if(this.state.animate) this.animate()
-        return <canvas width={500} height={500} ref={(canvas)=>this.canvas = canvas} onClick={()=>this.setState({animate:!this.state.animate})}/>
-    }
-    componentWillReceiveProps() {
-        console.log("got new props");
-        this.rebuildScene(this.state.scene)
-        this.redraw()
-    }
-
     rebuildScene(scene) {
         if(!this.scene) return
         if(!this.scene.children) return
@@ -118,11 +78,43 @@ class HypercardCanvas3D extends Component {
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
         directionalLight.position.x = -10
         this.scene.add( directionalLight );
-        console.log('added lights')
     }
-
     redraw() {
         this.renderer.render( this.scene, this.camera );
+    }
+    render() {
+        return <canvas width={500} height={500} ref={(canvas)=>this.canvas = canvas}/>
+    }
+}
+
+class HypercardCanvas3D extends Component {
+    constructor(props) {
+        super(props)
+        this.animatable = []
+        this.state = {
+            selection:null,
+            scene:null,
+            animate: false
+        }
+    }
+    componentDidMount() {
+        this.listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel)=> {
+            let scene = Selection.getSelection()
+            if(!scene) return
+            if(scene === this.props.provider.getSceneRoot()) return
+            if(scene.type !== 'scene') scene = this.props.provider.findParent(this.props.provider.getSceneRoot(),scene)
+            this.setState({selection:sel, animate:false, scene:scene})
+        })
+    }
+    animate = () => {
+        if(this.state.animate) requestAnimationFrame( this.animate );
+        if(!this.state.scene) return
+        this.animatable.forEach((ch)=> ch.rotation.y += 0.01)
+        this.redraw()
+    }
+    render() {
+        if(this.state.animate) this.animate()
+        return <ThreeDeeViewer scene={this.state.scene}/>
     }
 }
 
@@ -209,8 +201,7 @@ export default class HypercardEditor extends TreeItemProvider {
 
 }
 
-
-export class Preview extends Component {
+export class Preview3D extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -232,6 +223,7 @@ export class Preview extends Component {
     }
     render() {
         if(!this.state.valid) return <div>invalid preview. please close and try again</div>
+        console.log("current is",this.state.current)
         return <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo}/>
     }
 }

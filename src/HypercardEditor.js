@@ -316,7 +316,7 @@ export default class HypercardEditor extends TreeItemProvider {
     }
 }
 
-export class Preview extends Component {
+export class Preview2D extends Component {
     constructor(props) {
         super(props)
         this.state = {
