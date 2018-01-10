@@ -39,11 +39,6 @@ const Spacer = (props) => {
     return <span className='spacer'/>
 };
 
-function genID(prefix) {
-    return `${prefix}_${Math.floor(Math.random() * 10000)}`
-}
-
-
 class App extends Component {
     constructor(props) {
         super(props)

@@ -40,7 +40,6 @@ const COLORS2 = {
 
 class PaletteColorPicker extends Component {
     chooseColor(c) {
-        console.log('chose',c,this.props)
         this.props.onSelect(c);
     }
     render() {

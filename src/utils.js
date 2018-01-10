@@ -9,3 +9,8 @@ export function parseOptions(opts) {
     }
     return opts;
 }
+
+export function genID(prefix) {
+    return `${prefix}_${Math.floor(Math.random() * 10000)}`
+}
+
