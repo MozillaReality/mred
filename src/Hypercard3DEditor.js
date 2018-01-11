@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
-import {genID} from "./utils"
+import {genID, POST_JSON} from "./utils"
 import QRCode from 'qrcode'
 
 
@@ -369,6 +369,22 @@ export default class HypercardEditor extends TreeItemProvider {
                     this.deleteNode(node)
                 }
             },
+
+            {
+                icon:'save',
+                fun: () => {
+                    const ID = "cool_id";
+                    console.log("saving")
+                    const doc = JSON.stringify(this.getSceneRoot(),(key,value)=>{
+                        if(key === 'parent') return undefined
+                        return value
+                    })
+                    console.log("doc is",doc)
+                    POST_JSON("http://localhost:3088/doc/"+ID,doc).then((res)=>{
+                        console.log("Success result is",res)
+                    }).catch((e)=> console.log("error",e))
+                }
+            }
 
         ]
     }

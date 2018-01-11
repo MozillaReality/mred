@@ -6,11 +6,11 @@ some cool stuff
 
 server design.
 
-a document has a unique random URL
-server can save and load from the URL
-when saved, it issues a save event on a channel with the same name as the document ID
-a document is a json file in a docs dir with the filename the same as the docid, plus .json.
-file names are santized. only letters and numbers are allowed. no punctuation at all.
+//a document has a unique random URL
+//server can save and load from the URL
+//when saved, it issues a save event on a channel with the same name as the document ID
+//a document is a json file in a docs dir with the filename the same as the docid, plus .json.
+//file names are sanitized. only letters and numbers are allowed. no punctuation at all.
 
 editor loads particular document, also subscribes to the channel for that document
 when saving, expects to receive an update event

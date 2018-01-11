@@ -12,10 +12,11 @@ let port = null;
 startup();
 
 function startup() {
-    if (process.argv.slice(3).length <= 0) throw new Error("missing docs dir and port");
-    dir = process.argv.slice(2)[0];
+    const args = process.argv.slice(2)
+    if (args.length < 2) throw new Error("missing docs dir and port");
+    dir = args[0];
     if(!fs.existsSync(dir)) throw new Error(`doc dir doesn't exist: "${dir}"`)
-    portS = process.argv.slice(3)[0]
+    const portS = args[1]
     if(!parseInt(portS)) throw new Error(`invalid port number "${portS}"`)
     port = parseInt(portS)
 
@@ -31,37 +32,35 @@ function startPubNub() {
     })
 }
 
+function parseId(req) {
+    //strip out non-alphanumeric characters for safety
+    return req.params.id.replace(/\W/g, '_')
+}
+function docPath(id) {
+    return paths.join(process.cwd(), dir, id + '.json')
+}
 function startServer() {
     const app = express();
     app.use(cors());
     app.use(bodyParser.json({limit: '50mb'}));
     app.get("/doc/:id", (req, res) => {
-        const id = req.params.id.replace(/\W/g,'_');
-        console.log('getting the doc', id)
-        const path = paths.join(process.cwd(),dir,id+'.json')
-        console.log("using the path",path)
-        res.sendFile(path)
+        res.sendFile(docPath(parseId(req)))
         pubnub.publish({channel:id, message:{message:'updated'}}).then((t)=>console.log(t)).catch((e)=>console.log(e))
     })
     app.post("/doc/:id", (req, res) => {
-        const id = req.params.id.replace(/\W/g,'_');
-        console.log(`saving the doc${id}`)
         const data = JSON.stringify(req.body, null, '    ');
-        console.log("saving the data",data)
-        const fpath = paths.join(process.cwd(),dir,id,'json')
-        fs.writeFile(fpath,data).then(()=>{
+        fs.writeFile(docPath(parseId(req)),data,(err)=>{
+            if(err) {
+                console.log("failed",err)
+                res.json({success:false,message:"could not save"})
+            }
             console.log("wrote it")
             res.json({success:true,message:"saved it!"})
-        }).catch((e)=>{
-            console.log("failed",e)
-            res.json({success:false,message:"could not save"})
         })
     })
 
     const server = app.listen(port, function () {
-        const host = server.address().address;
-        const port = server.address().port;
-        console.log(`Example app listening at http://${host}:${port}`, host, port);
+        console.log(`Example app listening at http://${server.address().address}:${server.address().port}`);
     });
 
 }
