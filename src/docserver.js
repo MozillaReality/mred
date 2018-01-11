@@ -44,17 +44,20 @@ function startServer() {
     app.use(cors());
     app.use(bodyParser.json({limit: '50mb'}));
     app.get("/doc/:id", (req, res) => {
-        res.sendFile(docPath(parseId(req)))
-        pubnub.publish({channel:id, message:{message:'updated'}}).then((t)=>console.log(t)).catch((e)=>console.log(e))
+        const id = parseId(req)
+        res.sendFile(docPath(id))
     })
     app.post("/doc/:id", (req, res) => {
+        const id = parseId(req)
         const data = JSON.stringify(req.body, null, '    ');
-        fs.writeFile(docPath(parseId(req)),data,(err)=>{
+        fs.writeFile(docPath(id),data,(err)=>{
             if(err) {
                 console.log("failed",err)
                 res.json({success:false,message:"could not save"})
             }
             console.log("wrote it")
+            console.log("sending message to channel",id)
+            pubnub.publish({channel:id, message:{message:'updated'}}).then((t)=>console.log(t)).catch((e)=>console.log(e))
             res.json({success:true,message:"saved it!"})
         })
     })

@@ -13,6 +13,24 @@ export function parseOptions(opts) {
 export function genID(prefix) {
     return `${prefix}_${Math.floor(Math.random() * 10000)}`
 }
+export function GET_JSON(path, cb) {
+    return new Promise((res,rej) => {
+        console.log("fetching",path);
+        const req = new XMLHttpRequest()
+        req.onreadystatechange = function() {
+            // console.log("got",req.readyState, req.status)
+            if(req.readyState === 4) {
+                if(req.status === 200) return res(JSON.parse(req.responseText));
+                //if anything other than 200, reject it
+                rej(req)
+            }
+            if(req.status === 500) rej(req);
+            if(req.status === 404) rej(req);
+        };
+        req.open("GET",path,true);
+        req.send();
+    });
+}
 
 
 export function POST_JSON(path, payload) {

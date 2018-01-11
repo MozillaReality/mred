@@ -57,7 +57,7 @@ class App extends Component {
     }
 
     previewStack = (e) => {
-        const open = window.open(`./?mode=preview&provider=${this.state.providerName}`)
+        const open = window.open(`./?mode=preview&provider=${this.state.providerName}&doc=${this.state.provider.getDocId()}`)
         window.preview_document = this.state.provider.getSceneRoot()
     }
 
@@ -69,6 +69,7 @@ class App extends Component {
     }
 
     structureChanged = (prop) => {
+        console.log("the structure changed");
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
@@ -90,6 +91,7 @@ class App extends Component {
         this.setState({provider: provider, root: provider.getSceneRoot(), providerName: name})
         provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
         provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
+        provider.loadDoc(this.props.options.doc)
     }
 
 
