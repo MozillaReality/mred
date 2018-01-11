@@ -5,7 +5,9 @@
   "dependencies": {
     "appy-comps": "^0.1.14",
     "appy-style": "0.0.7",
+    "cors": "^2.8.4",
     "font-awesome": "^4.7.0",
+    "pubnub": "^4.20.0",
     "qrcode": "^1.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
