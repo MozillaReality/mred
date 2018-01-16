@@ -13,16 +13,12 @@ startup();
 
 function startup() {
     //handle env vars first
-    if(process.env.DIR) {
-        dir = process.env.DIR
-    }
-    if(process.env.PORT) {
-       port = parseInt(process.env.PORT)
-    }
+    if(process.env.DIR) dir = process.env.DIR
+    if(process.env.PORT) port = parseInt(process.env.PORT)
     if(dir && port) {
-	startPubNub();
-	startServer();
-	return 
+	    startPubNub();
+	    startServer();
+	    return
     }
 
 	//handle args next

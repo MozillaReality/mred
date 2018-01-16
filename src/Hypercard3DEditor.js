@@ -6,7 +6,8 @@ import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
 import QRCode from 'qrcode'
 import PubNub from "pubnub"
 
-const SERVER_URL = "http://localhost:30065/doc/"
+// const SERVER_URL = "http://localhost:30065/doc/"
+const SERVER_URL = "http://josh.earth:30068/doc/"
 function makeCube() {
     return {
         id: genID('cube'),
