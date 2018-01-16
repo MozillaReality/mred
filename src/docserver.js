@@ -12,6 +12,20 @@ let port = null;
 startup();
 
 function startup() {
+    //handle env vars first
+    if(process.env.DIR) {
+        dir = process.env.DIR
+    }
+    if(process.env.PORT) {
+       port = parseInt(process.env.PORT)
+    }
+    if(dir && port) {
+	startPubNub();
+	startServer();
+	return 
+    }
+
+	//handle args next
     const args = process.argv.slice(2)
     if (args.length < 2) throw new Error("missing docs dir and port");
     dir = args[0];
