@@ -192,6 +192,11 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         if(!item) return false;
         return (item.children && item.children.length>0)
     }
+    canHaveChild(parent,child) {
+        if(parent.type === 'group') return true
+        if(parent.type === 'scene') return true
+        return false
+    }
     getChildren(item) {
         return item.children;
     }
@@ -211,7 +216,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
 
     findParent(root,target) {
-        if(root === target) return root
+        if(root === target) return null
         if(root.children) {
             for(let i=0; i<root.children.length; i++) {
                 const ch = root.children[i]
@@ -285,8 +290,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return {
             type:'rect',
             title:'rect1',
-            x:20,
-            y:30,
+            tx:20,
+            ty:30,
+            x:0,
+            y:0,
             w:40,
             h:40,
             color:'red',
@@ -329,35 +336,35 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         }
     }
 
+    getNearestAllowedParentNode(parent,child) {
+        while(true) {
+            if(this.canHaveChild(parent,child)) return parent
+            parent = this.findParent(this.getSceneRoot(),parent)
+            if(!parent) return null
+        }
+    }
+
+    addToNearestSelectedParent(rect) {
+        let parent = this.getNearestAllowedParentNode(Selection.getSelection(),rect)
+        if(parent) this.appendChild(parent,rect)
+    }
 
     getTreeActions() {
         return [
             {
                 // title:'rect',
                 icon:'square',
-                fun: () => {
-                    let rect = this.createRect();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createRect())
             },
             {
                 // title:'circle',
                 icon:'circle',
-                fun: () => {
-                    let rect = this.createCircle();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createCircle())
             },
             {
                 // title:'text',
                 icon:'text-width',
-                fun: () => {
-                    let rect = this.createText();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createText())
             },
             {
                 icon:'close',
