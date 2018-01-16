@@ -72,7 +72,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('hypercard3D')
+        this.switchProvider('svg')
     }
 
     switchProvider(name) {

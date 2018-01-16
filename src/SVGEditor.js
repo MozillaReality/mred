@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import Selection from "./SelectionManager";
 import ReactDOMServer from 'react-dom/server';
+import {makePoint} from './utils'
 
 export class CanvasSVG extends Component {
     constructor(props) {
@@ -12,17 +13,12 @@ export class CanvasSVG extends Component {
     mouseDown = (e,item) => {
         e.stopPropagation()
         e.preventDefault()
-        const rect = e.target.getBoundingClientRect()
-        this.start = { x: item.x, y: item.y}
         const svgcanvas = document.getElementById('svg-canvas');
-        // console.log(svgcanvas)
-        // console.log("rect = ", rect);
-        console.log("other client bounds = ", svgcanvas.getBoundingClientRect().width)
-        // console.log("svg bounds = ", svgcanvas.getAttribute('viewBox'))
-        console.log("view box", svgcanvas.viewBox.baseVal.width)
+        const canvasBounds = svgcanvas.getBoundingClientRect()
+        this.start = makePoint(canvasBounds.x,canvasBounds.y)
+        this.scale = svgcanvas.viewBox.baseVal.width/canvasBounds.width
         this.down = true
         this.item = item
-        this.rect = rect
         Selection.setSelection(item)
         window.document.addEventListener('mousemove',this.mouseMove)
         window.document.addEventListener('mouseup',this.mouseUp)
@@ -31,18 +27,17 @@ export class CanvasSVG extends Component {
         if(!this.down) return
         e.stopPropagation()
         e.preventDefault()
-        const newX = e.clientX - this.rect.x + this.start.x
-        const newY = e.clientY - this.rect.y + this.start.y
-        const defX = this.props.provider.getDefForProperty(this.item,'x')
-        this.props.provider.setPropertyValue(this.item,defX,newX)
-        const defY = this.props.provider.getDefForProperty(this.item,'y')
-        this.props.provider.setPropertyValue(this.item,defY,newY)
+        const off = makePoint(e.clientX,e.clientY).minus(this.start).multiply(this.scale)
+        const defX = this.props.provider.getDefForProperty(this.item,'tx')
+        this.props.provider.setPropertyValue(this.item,defX,off.x)
+        const defY = this.props.provider.getDefForProperty(this.item,'ty')
+        this.props.provider.setPropertyValue(this.item,defY,off.y)
     }
     mouseUp = (e) => {
-        this.down = false
         this.start = null
+        this.scale = 1
+        this.down = false
         this.item = null
-        this.rect = null
         window.document.removeEventListener('mousemove',this.mouseMove)
         window.document.removeEventListener('mouseup',this.mouseUp)
     }
@@ -81,6 +76,7 @@ export class CanvasSVG extends Component {
         return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}
                      stroke={stroke} strokeWidth={strokeWidth}
                      strokeDasharray={strokeDashArray}
+                     transform={`translate(${item.tx},${item.ty})`}
                      onMouseDown={(e)=>this.mouseDown(e,item)}
         />
     }
@@ -88,11 +84,20 @@ export class CanvasSVG extends Component {
         const vis = item.visible?'visible':'hidden';
         const stroke = item.stroke?item.stroke:'black';
         const strokeWidth = item.strokeWidth?item.strokeWidth:0;
-        return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key} visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
+        return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}
+                       transform={`translate(${item.tx},${item.ty})`}
+                       onMouseDown={(e)=>this.mouseDown(e,item)}
+                       visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
     drawText(item,key) {
         const vis = item.visible?'visible':'hidden';
-        return <text key={key} x={item.x} y={item.y} fill={item.color} fontSize={item.fontSize} fontFamily={item.fontFamily} visibility={vis} textAnchor={item.textAnchor}>{item.text}</text>
+        return <text key={key} x={item.x} y={item.y}
+                     transform={`translate(${item.tx},${item.ty})`}
+                     onMouseDown={(e)=>this.mouseDown(e,item)}
+                     fill={item.color} fontSize={item.fontSize}
+                     fontFamily={item.fontFamily} visibility={vis} textAnchor={item.textAnchor}
+                     style={{cursor:'default'}}
+        >{item.text}</text>
     }
 
     drawGroup(item, key) {
@@ -101,7 +106,7 @@ export class CanvasSVG extends Component {
     }
 
     drawSVGRoot(item, key) {
-        return <svg key={key} id="svg-canvas" viewBox="0 0 2000 800" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
+        return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
     }
 }
 
@@ -131,8 +136,10 @@ export const data = {
             {
                 type:'rect',
                 title:'rect1',
-                x:20,
-                y:30,
+                x:0,
+                y:0,
+                tx:200,
+                ty:200,
                 w:40,
                 h:40,
                 color:'red',
@@ -140,78 +147,6 @@ export const data = {
                 strokeWidth:2.0,
                 visible:true,
                 children:[]
-            },
-            {
-                type:'group',
-                title:'some group',
-                tx:100,
-                ty:50,
-                visible:true,
-                children:[
-                    {
-                        type:'rect',
-                        title:'rect2',
-                        x:0,
-                        y:0,
-                        w:50,
-                        h:50,
-                        color:'yellow',
-                        visible:true,
-                        stroke:'black',
-                        strokeWidth:2.0,
-                        strokeStyle:STROKE_STYLES[0]
-                    },
-                    {
-                        type:'rect',
-                        title:'rect2',
-                        x:20,
-                        y:20,
-                        w:50,
-                        h:50,
-                        color:'yellow',
-                        visible:true,
-                        stroke:'black',
-                        strokeWidth:2.0,
-                        strokeStyle:STROKE_STYLES[1]
-                    },
-                    {
-                        type:'rect',
-                        title:'rect2',
-                        x:40,
-                        y:40,
-                        w:50,
-                        h:50,
-                        color:'yellow',
-                        visible:true,
-                        stroke:'black',
-                        strokeWidth:2.0,
-                        strokeStyle:STROKE_STYLES[2]
-                    },
-
-                ]
-            },
-            {
-                type:'circle',
-                title:'next circle',
-                cx:100,
-                cy:300,
-                r:40,
-                color:'blue',
-                visible:true,
-                stroke:'white',
-                strokeWidth:2.0,
-            },
-            {
-                type:'text',
-                title:'next text',
-                x: 300,
-                y: 100,
-                color: 'black',
-                visible:true,
-                text:'the text',
-                fontSize:24,
-                fontFamily:'serif',
-                textAnchor:'start'
             }
         ]
     },
@@ -365,8 +300,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return {
             type:'circle',
             title:'circle 1',
-            cx:100,
-            cy:200,
+            tx:100,
+            ty:200,
+            cx:0,
+            cy:0,
             r: 50,
             color:'red',
             stroke:'black',
@@ -379,8 +316,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return {
             type:'text',
             title:'next text',
-            x: 300,
-            y: 100,
+            tx:300,
+            ty:100,
+            x: 0,
+            y: 0,
             color: 'black',
             visible:true,
             text:'the text',
