@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import Selection from "./SelectionManager";
+import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import ReactDOMServer from 'react-dom/server';
 import {makePoint} from './utils'
 
@@ -8,6 +8,14 @@ export class CanvasSVG extends Component {
     constructor(props) {
         super(props);
         this.down = false
+        this.state = {
+            selection:null
+        }
+    }
+    componentDidMount() {
+        Selection.on(SELECTION_MANAGER.CHANGED,()=>{
+            this.setState({selection:Selection.getSelection()})
+        })
     }
 
     mouseDown = (e,item) => {
@@ -73,7 +81,10 @@ export class CanvasSVG extends Component {
                 strokeDashArray = `${strokeWidth*4},${strokeWidth*4}`
             }
         }
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
         return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}
+                     className={classname}
                      stroke={stroke} strokeWidth={strokeWidth}
                      strokeDasharray={strokeDashArray}
                      transform={`translate(${item.tx},${item.ty})`}
@@ -84,14 +95,20 @@ export class CanvasSVG extends Component {
         const vis = item.visible?'visible':'hidden';
         const stroke = item.stroke?item.stroke:'black';
         const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
         return <circle cx={item.cx} cy={item.cy} r={item.r} fill={item.color} key={key}
+                       className={classname}
                        transform={`translate(${item.tx},${item.ty})`}
                        onMouseDown={(e)=>this.mouseDown(e,item)}
                        visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
     drawText(item,key) {
         const vis = item.visible?'visible':'hidden';
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
         return <text key={key} x={item.x} y={item.y}
+                     className={classname}
                      transform={`translate(${item.tx},${item.ty})`}
                      onMouseDown={(e)=>this.mouseDown(e,item)}
                      fill={item.color} fontSize={item.fontSize}
@@ -99,14 +116,13 @@ export class CanvasSVG extends Component {
                      style={{cursor:'default'}}
         >{item.text}</text>
     }
-
     drawGroup(item, key) {
         const vis = item.visible?'visible':'hidden';
         return <g key={key} transform={`translate(${item.tx},${item.ty})`} visibility={vis}>{this.drawChildren(item)}</g>
     }
-
     drawSVGRoot(item, key) {
-        return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">{this.drawChildren(item)}</svg>
+        return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            {this.drawChildren(item)}</svg>
     }
 }
 
