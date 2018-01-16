@@ -4,7 +4,6 @@ import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable"
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
-import SelectionManager from "./SelectionManager"
 
 import SVGEditor from "./SVGEditor"
 import HypercardEditor from "./HypercardEditor"

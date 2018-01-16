@@ -214,9 +214,11 @@ export default class HypercardEditor extends TreeItemProvider {
     }
 
     reloadDocument() {
+        const spath = this.generateSelectionPath(Selection.getSelection());
         GET_JSON(SERVER_URL+this.docid).then((doc)=>{
-            // console.log("got the doc",doc)
             this.setDocument(doc,this.docid)
+            const newsel = this.findNodeFromSelectionPath(this.getSceneRoot(),spath)
+            Selection.setSelection(newsel)
         }).catch((e)=>{
             console.log("couldn't reload the doc",e)
             // this.docid = docid
@@ -230,6 +232,24 @@ export default class HypercardEditor extends TreeItemProvider {
 
     getSceneRoot() {
         return this.root
+    }
+
+    generateSelectionPath(node) {
+        if(!node || !node.id) return []
+        if(!node.parent) return [node.id]
+        return this.generateSelectionPath(node.parent).concat([node.id])
+    }
+    findNodeFromSelectionPath(node,path) {
+        const part = path.shift()
+        if(node.id === part) {
+            if(path.length <= 0) return node
+            for(let i=0; i<node.children.length; i++) {
+                const child = node.children[i]
+                const res = this.findNodeFromSelectionPath(child,path)
+                if(res) return res
+            }
+        }
+        return null
     }
 
     getDocId() {
