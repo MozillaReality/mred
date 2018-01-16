@@ -9,6 +9,7 @@ import {parseOptions} from "./utils"
 
 const default_options = {
     mode: 'edit',
+    doc:'rad_stuff'
 }
 const options = parseOptions(default_options)
 console.log("options is",options);
@@ -19,7 +20,7 @@ function init() {
         if(options.provider === 'hypercard3D')  return <Preview3D options={options}/>
         console.log("invalid provider")
     }
-    return <App/>;
+    return <App options={options}/>;
 }
 
 ReactDOM.render(init(), document.getElementById("root"));

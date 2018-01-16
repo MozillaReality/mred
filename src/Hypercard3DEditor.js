@@ -2,9 +2,9 @@ import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
-import {genID} from "./utils"
+import {genID, GET_JSON, parseOptions, POST_JSON} from "./utils"
 import QRCode from 'qrcode'
-// const GLTFLoader = require("three/examples/js/loaders/GLTFLoader")
+import PubNub from "pubnub"
 
 
 function makeCube() {
@@ -97,20 +97,6 @@ class ThreeDeeViewer extends Component {
             cube.scale.x = -1
         }
 
-        /*
-        if (node.type === 'gltf') {
-            const geometry = new THREE.SphereGeometry(1,32,32)
-            const color = parseInt(node.color.substring(1), 16)
-            const material = new THREE.MeshBasicMaterial({color:color})
-            cube = new THREE.Mesh(geometry, material)
-
-            const loader = new GLTFLoader();
-            // Load a glTF resource
-            loader.load('http://localhost/moz/aframe-gltf-example/imp_character/scene.gltf',( gltf ) =>{
-                console.log("got the model")
-            }, (xhr)=>console.log(xhr), (err)=>console.log(err))
-        }
-        */
         if(!cube) return console.log(`don't know how to handle node of type '${node.type}'`)
 
         cube.position.x = node.x
@@ -154,35 +140,27 @@ class ThreeDeeViewer extends Component {
 }
 
 class HypercardCanvas3D extends Component {
-    animate = () => {
-        if (this.state.animate) requestAnimationFrame(this.animate)
-        if (!this.state.scene) return
-        this.animatable.forEach((ch) => ch.rotation.y += 0.01)
-        this.redraw()
-    }
-
     constructor(props) {
         super(props)
-        this.animatable = []
         this.state = {
-            selection: null,
             scene: null,
-            animate: false,
         }
     }
 
+    setSceneFromSelection() {
+        let scene = Selection.getSelection()
+        if (!scene) return
+        if (scene === this.props.provider.getSceneRoot()) return
+        if (scene.type !== 'scene') scene = this.props.provider.findParent(this.props.provider.getSceneRoot(), scene)
+        if(!scene) scene = this.props.provider.getSceneRoot().children[0]
+        this.setState({scene: scene})
+    }
     componentDidMount() {
-        this.listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel) => {
-            let scene = Selection.getSelection()
-            if (!scene) return
-            if (scene === this.props.provider.getSceneRoot()) return
-            if (scene.type !== 'scene') scene = this.props.provider.findParent(this.props.provider.getSceneRoot(), scene)
-            this.setState({selection: sel, animate: false, scene: scene})
-        })
+        this.listener2 = this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (sel) => this.setSceneFromSelection())
+        this.listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel) => this.setSceneFromSelection())
     }
 
     render() {
-        if (this.state.animate) this.animate()
         return <ThreeDeeViewer scene={this.state.scene}/>
     }
 }
@@ -194,8 +172,7 @@ export const SceneItemRenderer = (props) => {
     if (type === 'scene')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     if (type === 'sphere') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if (type === 'plane')  return <div><i className="fa fa-square"/> {props.item.title}</div>
-    if (type === 'sky')    return <div><i className="fa fa-cloud"/> {props.item.title}</div>
-    // if (type === 'gltf')    return <div><i className="fa fa-black-tie"/> {props.item.title}</div>
+    if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -204,6 +181,46 @@ export default class HypercardEditor extends TreeItemProvider {
     constructor() {
         super()
         this.root = root
+        this.docid = null
+        this.pubnub = new PubNub({
+            // publishKey:"pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd",
+            subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
+        })
+        this.pubnub.addListener({
+            status: (status)=> console.log(status),
+            message: (msg) => {
+                console.log(msg)
+                if(msg.channel === this.docid) {
+                    console.log("got a message for my doc. reloading")
+                    this.reloadDocument()
+                }
+            }
+        })
+    }
+
+    setDocument(doc,docid) {
+        this.root = doc
+        this.root.children.forEach((scn)=>{
+            scn.children.forEach((obj)=>{
+                obj.parent = scn
+            })
+        })
+        this.docid = docid
+        console.log("subscribed to ",docid)
+        this.pubnub.subscribe({channels:[docid]})
+        console.log("set the new document to", doc)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
+
+    reloadDocument() {
+        GET_JSON("http://localhost:3088/doc/"+this.docid).then((doc)=>{
+            // console.log("got the doc",doc)
+            this.setDocument(doc,this.docid)
+        }).catch((e)=>{
+            console.log("couldn't reload the doc",e)
+            // this.docid = docid
+        })
+
     }
 
     getTitle() {
@@ -212,6 +229,10 @@ export default class HypercardEditor extends TreeItemProvider {
 
     getSceneRoot() {
         return this.root
+    }
+
+    getDocId() {
+        return this.docid
     }
 
     getCanvas() {
@@ -340,20 +361,6 @@ export default class HypercardEditor extends TreeItemProvider {
             color: '#aaddff',
         }
     }
-    createGLTF() {
-        return {
-            id: genID('gltf'),
-            type: 'gltf',
-            title: 'GLTF Model',
-            x: 0,
-            y: 0,
-            z: 0,
-            rx: 0,
-            ry: 0,
-            rz: 0,
-        }
-    }
-
     getTreeActions() {
         return [
             {
@@ -375,7 +382,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                title:'plane',
+                // title:'plane',
                 icon:'plane',
                 fun: () => {
                     let rect = this.createPlane();
@@ -384,19 +391,10 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                title:'sky',
+                // title:'sky',
                 icon:'cloud',
                 fun: () => {
                     let rect = this.createSky();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
-            },
-            {
-                title:'gltf',
-                icon:'object',
-                fun: () => {
-                    let rect = this.createGLTF();
                     let node = Selection.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
                 }
@@ -409,7 +407,34 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
 
+            {
+                icon:'save',
+                fun: () => {
+                    console.log("saving")
+                    const doc = JSON.stringify(this.getSceneRoot(),(key,value)=>{
+                        if(key === 'parent') return undefined
+                        return value
+                    })
+                    console.log("doc is",doc)
+                    POST_JSON("http://localhost:3088/doc/"+this.docid,doc).then((res)=>{
+                        console.log("Success result is",res)
+                    }).catch((e)=> console.log("error",e))
+                }
+            }
+
         ]
+    }
+
+
+    loadDoc(docid) {
+        console.log("need to load the doc",docid)
+        GET_JSON("http://localhost:3088/doc/"+docid).then((doc)=>{
+            // console.log("got the doc",doc)
+            this.setDocument(doc,docid)
+        }).catch((e)=>{
+            console.log("missing doc",e)
+            this.docid = docid
+        })
     }
 }
 
@@ -428,10 +453,15 @@ export class Preview3D extends Component {
     }
 
     componentDidMount() {
-        if (window.opener && window.opener.preview_document) {
-            const doc = window.opener.preview_document
-            this.setState({doc: doc, current: doc.children[0], valid: true})
-        }
+        const opts = parseOptions({})
+        console.log("preview starting with options",opts)
+        this.provider = new HypercardEditor()
+        this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
+        this.provider.loadDoc(opts.doc)
+    }
+    structureChanged = () => {
+        const doc = this.provider.getSceneRoot()
+        this.setState({doc: doc, current: doc.children[0], valid: true})
     }
 
     render() {
