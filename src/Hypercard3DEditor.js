@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import {genID} from "./utils"
 import QRCode from 'qrcode'
+// const GLTFLoader = require("three/examples/js/loaders/GLTFLoader")
 
 
 function makeCube() {
@@ -96,6 +97,20 @@ class ThreeDeeViewer extends Component {
             cube.scale.x = -1
         }
 
+        /*
+        if (node.type === 'gltf') {
+            const geometry = new THREE.SphereGeometry(1,32,32)
+            const color = parseInt(node.color.substring(1), 16)
+            const material = new THREE.MeshBasicMaterial({color:color})
+            cube = new THREE.Mesh(geometry, material)
+
+            const loader = new GLTFLoader();
+            // Load a glTF resource
+            loader.load('http://localhost/moz/aframe-gltf-example/imp_character/scene.gltf',( gltf ) =>{
+                console.log("got the model")
+            }, (xhr)=>console.log(xhr), (err)=>console.log(err))
+        }
+        */
         if(!cube) return console.log(`don't know how to handle node of type '${node.type}'`)
 
         cube.position.x = node.x
@@ -179,7 +194,8 @@ export const SceneItemRenderer = (props) => {
     if (type === 'scene')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     if (type === 'sphere') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if (type === 'plane')  return <div><i className="fa fa-square"/> {props.item.title}</div>
-    if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
+    if (type === 'sky')    return <div><i className="fa fa-cloud"/> {props.item.title}</div>
+    // if (type === 'gltf')    return <div><i className="fa fa-black-tie"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -324,6 +340,20 @@ export default class HypercardEditor extends TreeItemProvider {
             color: '#aaddff',
         }
     }
+    createGLTF() {
+        return {
+            id: genID('gltf'),
+            type: 'gltf',
+            title: 'GLTF Model',
+            x: 0,
+            y: 0,
+            z: 0,
+            rx: 0,
+            ry: 0,
+            rz: 0,
+        }
+    }
+
     getTreeActions() {
         return [
             {
@@ -345,7 +375,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                // title:'plane',
+                title:'plane',
                 icon:'plane',
                 fun: () => {
                     let rect = this.createPlane();
@@ -354,10 +384,19 @@ export default class HypercardEditor extends TreeItemProvider {
                 }
             },
             {
-                // title:'sky',
+                title:'sky',
                 icon:'cloud',
                 fun: () => {
                     let rect = this.createSky();
+                    let node = Selection.getSelection()
+                    if(this.hasChildren(node)) this.appendChild(node,rect)
+                }
+            },
+            {
+                title:'gltf',
+                icon:'object',
+                fun: () => {
+                    let rect = this.createGLTF();
                     let node = Selection.getSelection()
                     if(this.hasChildren(node)) this.appendChild(node,rect)
                 }
