@@ -98,3 +98,20 @@ export function makePoint(x,y) {
         }
     }
 }
+
+//use only capital letters, 65->90
+export function genAlphaID(count) {
+    let id = ""
+    for(let i=0; i<count; i++) {
+        id += String.fromCharCode(65 + Math.floor(Math.random() * (90 - 65)))
+    }
+    return id
+}
+
+export function setQuery(obj) {
+    const query = Object.keys(obj).map((key)=>`${key}=${obj[key]}`).join('&')
+    window.history.pushState(obj,'a title','?'+query)
+}
+export function toQueryString(obj) {
+    return Object.keys(obj).map((key)=>`${key}=${obj[key]}`).join('&')
+}

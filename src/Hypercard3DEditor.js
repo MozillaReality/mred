@@ -2,11 +2,11 @@ import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
-import {genID, GET_JSON, parseOptions, POST_JSON} from "./utils"
+import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
 import QRCode from 'qrcode'
 import PubNub from "pubnub"
 
-
+const SERVER_URL = "http://localhost:30065/doc/"
 function makeCube() {
     return {
         id: genID('cube'),
@@ -213,7 +213,7 @@ export default class HypercardEditor extends TreeItemProvider {
     }
 
     reloadDocument() {
-        GET_JSON("http://localhost:3088/doc/"+this.docid).then((doc)=>{
+        GET_JSON(SERVER_URL+this.docid).then((doc)=>{
             // console.log("got the doc",doc)
             this.setDocument(doc,this.docid)
         }).catch((e)=>{
@@ -410,25 +410,28 @@ export default class HypercardEditor extends TreeItemProvider {
             {
                 icon:'save',
                 fun: () => {
-                    console.log("saving")
-                    const doc = JSON.stringify(this.getSceneRoot(),(key,value)=>{
-                        if(key === 'parent') return undefined
-                        return value
-                    })
-                    console.log("doc is",doc)
-                    POST_JSON("http://localhost:3088/doc/"+this.docid,doc).then((res)=>{
-                        console.log("Success result is",res)
-                    }).catch((e)=> console.log("error",e))
+                    this.save()
                 }
             }
 
         ]
     }
 
-
+    save() {
+        console.log("saving")
+        const doc = JSON.stringify(this.getSceneRoot(),(key,value)=>{
+            if(key === 'parent') return undefined
+            return value
+        })
+        console.log("doc is",doc)
+        return POST_JSON(SERVER_URL+this.docid,doc).then((res)=>{
+            console.log("Success result is",res)
+            setQuery({mode:'edit',doc:this.docid})
+        }).catch((e)=> console.log("error",e))
+    }
     loadDoc(docid) {
         console.log("need to load the doc",docid)
-        GET_JSON("http://localhost:3088/doc/"+docid).then((doc)=>{
+        GET_JSON(SERVER_URL+docid).then((doc)=>{
             // console.log("got the doc",doc)
             this.setDocument(doc,docid)
         }).catch((e)=>{
@@ -468,7 +471,7 @@ export class Preview3D extends Component {
         if (!this.state.valid) return <div>invalid preview. please close and try again</div>
         return <div style={{margin: 0, padding: 0, borderWidth: 0}}>
             <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} fillScreen={true}/>
-            <QRCanvas url={'http://192.168.7.25:3000/?mode=preview&provider=hypercard3D'}
+            <QRCanvas url={window.location.href}
                       width={300} height={300}
                       style={{position: 'absolute', right: 10, bottom: 10}}
             />

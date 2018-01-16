@@ -9,6 +9,7 @@ import SelectionManager from "./SelectionManager"
 import SVGEditor from "./SVGEditor"
 import HypercardEditor from "./HypercardEditor"
 import Hypercard3DEditor from "./Hypercard3DEditor"
+import {toQueryString} from './utils'
 
 
 const GridLayout = (props) => {
@@ -57,8 +58,14 @@ class App extends Component {
     }
 
     previewStack = (e) => {
-        const open = window.open(`./?mode=preview&provider=${this.state.providerName}&doc=${this.state.provider.getDocId()}`)
-        window.preview_document = this.state.provider.getSceneRoot()
+        this.state.provider.save().then(()=>{
+            const query = toQueryString({
+                mode:'preview',
+                provider:this.state.providerName,
+                doc:this.state.provider.getDocId()
+            })
+            window.open('./?'+query)
+        })
     }
 
     toggleLeftPane = (e) => this.setState({showLeft: !this.state.showLeft})
@@ -73,7 +80,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('svg')
+        this.switchProvider('hypercard3D')
     }
 
     switchProvider(name) {

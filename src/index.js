@@ -5,11 +5,11 @@ import 'font-awesome/css/font-awesome.css'
 import App from './App';
 import {Preview2D} from "./HypercardEditor"
 import {Preview3D} from "./Hypercard3DEditor"
-import {parseOptions} from "./utils"
+import {genAlphaID, parseOptions} from './utils'
 
 const default_options = {
     mode: 'edit',
-    doc:'rad_stuff'
+    doc:genAlphaID(20)
 }
 const options = parseOptions(default_options)
 console.log("options is",options);

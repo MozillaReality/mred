@@ -13,6 +13,10 @@ class SelectionManager {
         if(!this.listeners[type]) this.listeners[type] = [];
         this.listeners[type].push(cb);
     }
+    off(type,cb) {
+        const index = this.listeners[type].indexOf(cb)
+        if(index>=0) this.listeners[type].splice(index,1)
+    }
     fire(type, value) {
         if(!this.listeners[type]) this.listeners[type] = [];
         this.listeners[type].forEach((cb) => cb(value));
