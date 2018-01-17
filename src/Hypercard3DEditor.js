@@ -5,6 +5,7 @@ import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
 import QRCode from 'qrcode'
 import PubNub from "pubnub"
+import OrbitalControls from './OrbitControls'
 
 // const SERVER_URL = "http://localhost:30065/doc/"
 const SERVER_URL = "http://josh.earth:30068/doc/"
@@ -46,7 +47,7 @@ class ThreeDeeViewer extends Component {
     }
 
     componentDidMount() {
-        let w = 500
+        let w = 800
         let h = 500
         if (this.props.fillScreen === true) {
             //TODO: figure out why I need this fudge. anything less and it scrolls
@@ -54,17 +55,27 @@ class ThreeDeeViewer extends Component {
             h = window.innerHeight - 4
         }
         this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000)
+        this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
         this.renderer.setSize(w, h)
-        this.camera.position.z = 5
+        this.camera.position.set(0, 1, -3)
+        this.camera.lookAt(new THREE.Vector3())
+        this.controls = new OrbitalControls(this.camera,this.canvas)
         this.rebuildScene(this.props.scene)
-        this.redraw()
+        this.startRepaint()
+    }
+
+    startRepaint() {
+        const repaint = ()=> {
+            requestAnimationFrame(repaint)
+            this.controls.update();
+            this.renderer.render(this.scene, this.camera)
+        }
+        repaint()
     }
 
     componentWillReceiveProps(newProps) {
         this.rebuildScene(newProps.scene)
-        this.redraw()
     }
 
     buildNode(node) {
@@ -92,10 +103,11 @@ class ThreeDeeViewer extends Component {
         if (node.type === 'sky') {
             const geometry = new THREE.SphereGeometry(100,32,32)
             const color = parseInt(node.color.substring(1), 16)
-            const tex = new THREE.TextureLoader().load('./equi.jpg');
-            const material = new THREE.MeshBasicMaterial({map: tex, side: THREE.DoubleSide})
+            const tex = new THREE.TextureLoader().load('./globe.jpg')
+            const material = new THREE.MeshLambertMaterial({color:color, map:tex})
             cube = new THREE.Mesh(geometry, material)
-            cube.scale.x = -1
+            cube.scale.set(-1,1,1)
+            cube.material.side = THREE.BackSide;
         }
 
         if(!cube) return console.log(`don't know how to handle node of type '${node.type}'`)
@@ -126,11 +138,10 @@ class ThreeDeeViewer extends Component {
     }
 
     redraw() {
-        this.renderer.render(this.scene, this.camera)
     }
 
     render() {
-        let w = 500
+        let w = 800
         let h = 500
         if (this.props.fillScreen === true) {
             w = '100%'
