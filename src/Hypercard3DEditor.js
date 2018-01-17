@@ -334,6 +334,24 @@ export default class HypercardEditor extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, item)
     }
 
+    canHaveChild(parent,child) {
+        if(parent.type === 'scene') return true
+        return false
+    }
+
+    getNearestAllowedParentNode(parent,child) {
+        while(true) {
+            if(this.canHaveChild(parent,child)) return parent
+            parent = this.findParent(this.getSceneRoot(),parent)
+            if(!parent) return null
+        }
+    }
+
+    addToNearestSelectedParent(rect) {
+        let parent = this.getNearestAllowedParentNode(Selection.getSelection(),rect)
+        if(parent) this.appendChild(parent,rect)
+    }
+
 
     createCube() {
         return makeCube()
@@ -387,38 +405,22 @@ export default class HypercardEditor extends TreeItemProvider {
             {
                 // title:'rect',
                 icon: 'cube',
-                fun: () => {
-                    let rect = this.createCube();
-                    let node = Selection.getSelection()
-                    if (this.hasChildren(node)) this.appendChild(node, rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createCube())
             },
             {
                 // title:'circle',
                 icon:'soccer-ball-o',
-                fun: () => {
-                    let rect = this.createSphere();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createSphere())
             },
             {
                 // title:'plane',
                 icon:'plane',
-                fun: () => {
-                    let rect = this.createPlane();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createPlane())
             },
             {
                 // title:'sky',
                 icon:'cloud',
-                fun: () => {
-                    let rect = this.createSky();
-                    let node = Selection.getSelection()
-                    if(this.hasChildren(node)) this.appendChild(node,rect)
-                }
+                fun: () => this.addToNearestSelectedParent(this.createSky())
             },
             {
                 icon:'close',
