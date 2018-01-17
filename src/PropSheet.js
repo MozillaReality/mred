@@ -80,7 +80,14 @@ class PropEditor extends Component {
     }
     changed = (e) => {
         if(this.props.def.type === 'string') this.setState({value:e.target.value})
-        if(this.props.def.type === 'number') this.setState({value:e.target.value})
+        if(this.props.def.type === 'number') {
+            const v = e.target.value
+            this.setState({value:v})
+            if(!isNaN(parseFloat(v))) {
+                const sel = selMan.getSelection();
+                this.props.provider.setPropertyValue(sel, this.props.def, v);
+            }
+        }
         if(this.props.def.type === 'boolean') this.setState({value:e.target.checked})
     }
     keypressed = (e) => {
@@ -113,7 +120,7 @@ class PropEditor extends Component {
         const def = this.props.def;
         if (def.locked === true) return <i>{def.value}</i>
         if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (def.type === 'number')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (def.type === 'number')  return <input type='number'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
         if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} provider={this.props.provider}/>
         if (def.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>

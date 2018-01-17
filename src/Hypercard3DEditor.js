@@ -58,7 +58,7 @@ class ThreeDeeViewer extends Component {
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
         this.renderer.setSize(w, h)
-        this.camera.position.set(0, 1, -3)
+        this.camera.position.set(0, 1, 3)
         this.camera.lookAt(new THREE.Vector3())
         this.controls = new OrbitalControls(this.camera,this.canvas)
         this.rebuildScene(this.props.scene)
