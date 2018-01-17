@@ -6,6 +6,7 @@ import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
 import QRCode from 'qrcode'
 import PubNub from "pubnub"
 import OrbitalControls from './OrbitControls'
+import GLTFLoader from "./GLTFLoader"
 
 // const SERVER_URL = "http://localhost:30065/doc/"
 const SERVER_URL = "http://josh.earth:30068/doc/"
@@ -110,6 +111,20 @@ class ThreeDeeViewer extends Component {
             cube.material.side = THREE.BackSide;
         }
 
+        if (node.type === 'gltf') {
+            new GLTFLoader().load('http://localhost:3000/imp/scene.gltf',(gltf)=>{
+                this.scene.add(gltf.scene)
+                let cube = gltf.scene
+                cube.position.x = node.x
+                cube.position.y = node.y
+                cube.position.z = node.z
+                cube.rotation.x = node.rx
+                cube.rotation.y = node.ry
+                cube.rotation.z = node.rz
+            })
+            return;
+        }
+
         if(!cube) return console.log(`don't know how to handle node of type '${node.type}'`)
 
         cube.position.x = node.x
@@ -185,6 +200,7 @@ export const SceneItemRenderer = (props) => {
     if (type === 'sphere') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if (type === 'plane')  return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
+    if (type === 'gltf')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -411,6 +427,21 @@ export default class HypercardEditor extends TreeItemProvider {
             color: '#aaddff',
         }
     }
+    createGLTF() {
+        return {
+            id: genID('gltf'),
+            type: 'gltf',
+            title: 'The GLTF object',
+            href:'',
+            x: 0,
+            y: 0,
+            z: 0,
+            rx: 0,
+            ry: 0,
+            rz: 0,
+            color: '#aaddff',
+        }
+    }
     getTreeActions() {
         return [
             {
@@ -432,6 +463,10 @@ export default class HypercardEditor extends TreeItemProvider {
                 // title:'sky',
                 icon:'cloud',
                 fun: () => this.addToNearestSelectedParent(this.createSky())
+            },
+            {
+                title:'gltf',
+                fun: () => this.addToNearestSelectedParent(this.createGLTF())
             },
             {
                 icon:'close',
