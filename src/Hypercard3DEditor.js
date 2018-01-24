@@ -21,6 +21,7 @@ function makeCube() {
         rz: 0,
         size: 1,
         color: '#ff00ff',
+        action:"",
     }
 }
 function makeScene(...children) {
@@ -76,6 +77,7 @@ export const SceneItemRenderer = (props) => {
     if (type === 'plane')  return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'gltf')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if (type === 'nav-action')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -196,6 +198,7 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             if (key === 'stroke') type = 'color'
             if (key === 'strokeWidth') type = 'number'
             if (key === 'target') type = 'enum'
+            if (key === 'action') type = 'enum'
             defs.push({
                 name: key,
                 key: key,
@@ -206,6 +209,18 @@ export default class Hypercard3DEditor extends TreeItemProvider {
         })
         return defs
     }
+
+    getValuesForEnum(key,obj) {
+        if(key === 'target') {
+            return this.getSceneRoot().children.map((scene)=> scene.id)
+        }
+        if(key === 'action') {
+            const scene = this.findParent(this.getSceneRoot(),obj)
+            return scene.children.filter((ch)=>ch.type === 'nav-action').map((act)=>act.id)
+        }
+        return []
+    }
+
 
     setPropertyValue(item, def, value) {
         if (def.type === 'number') value = parseFloat(value)
@@ -248,6 +263,7 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             rz: 0,
             size: 1,
             color: '#ff00ff',
+            action:''
         }
     }
     createPlane() {
@@ -291,6 +307,15 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             rx: 0,
             ry: 0,
             rz: 0,
+            action:''
+        }
+    }
+    createNavigationAction() {
+        return {
+            id: genID('nav'),
+            type:'nav-action',
+            title:'go to another screen',
+            target:'',
         }
     }
     createScene() {
@@ -299,33 +324,44 @@ export default class Hypercard3DEditor extends TreeItemProvider {
     getTreeActions() {
         return [
             {
-                // title:'rect',
-                icon: 'cube',
-                fun: () => this.addToNearestSelectedParent(this.createCube())
-            },
-            {
-                // title:'circle',
-                icon:'soccer-ball-o',
-                fun: () => this.addToNearestSelectedParent(this.createSphere())
-            },
-            {
-                // title:'plane',
-                icon:'plane',
-                fun: () => this.addToNearestSelectedParent(this.createPlane())
-            },
-            {
-                // title:'sky',
-                icon:'cloud',
-                fun: () => this.addToNearestSelectedParent(this.createSky())
-            },
-            {
-                title:'gltf',
-                fun: () => this.addToNearestSelectedParent(this.createGLTF())
-            },
-            {
                 // title:'scene',
                 icon:'vcard',
                 fun: () => this.appendChild(this.getSceneRoot(),this.createScene())
+            },
+            {
+                // title:'create',
+                icon:'plus',
+                type:'menu',
+                actions:[
+                    {
+                        // title:'rect',
+                        icon: 'cube',
+                        fun: () => this.addToNearestSelectedParent(this.createCube())
+                    },
+                    {
+                        // title:'circle',
+                        icon:'soccer-ball-o',
+                        fun: () => this.addToNearestSelectedParent(this.createSphere())
+                    },
+                    {
+                        // title:'plane',
+                        icon:'plane',
+                        fun: () => this.addToNearestSelectedParent(this.createPlane())
+                    },
+                    {
+                        // title:'sky',
+                        icon:'cloud',
+                        fun: () => this.addToNearestSelectedParent(this.createSky())
+                    },
+                    {
+                        title:'gltf',
+                        fun: () => this.addToNearestSelectedParent(this.createGLTF())
+                    },
+                ]
+            },
+            {
+                title:'nav action',
+                fun: () => this.addToNearestSelectedParent(this.createNavigationAction())
             },
             {
                 icon:'close',

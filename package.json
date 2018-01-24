@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "appy-comps": "^0.1.14",
+    "appy-comps": "^0.1.15",
     "appy-style": "0.0.7",
     "cors": "^2.8.4",
     "font-awesome": "^4.7.0",

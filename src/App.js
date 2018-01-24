@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import './App.css'
+import {PopupManager} from "appy-comps"
 import PropSheet from './PropSheet'
 import TreeTable from "./TreeTable"
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
@@ -119,9 +120,7 @@ class App extends Component {
                             <TreeTable root={this.state.root} provider={this.state.provider}/>
                         </Panel>
                         <Toolbar left bottom>
-                            {this.state.provider.getTreeActions().map((action,i)=>{
-                                return <button key={i} onClick={action.fun}><i  className={"fa fa-"+action.icon}></i> {action.title}</button>
-                            })}
+                            {this.state.provider.getTreeActions().map((action,i)=> this.makeTreeAction(action,i))}
                         </Toolbar>
 
                         <Toolbar center top>
@@ -164,6 +163,14 @@ class App extends Component {
             </VBox>
         );
     }
+
+    makeTreeAction(action, i) {
+        let onclick = action.fun
+        if(action.type === 'menu') {
+            onclick = (e)=>PopupManager.show(<MenuPopup actions={action.actions}/>,e.target)
+        }
+        return <button key={i} onClick={onclick}><i  className={'fa fa-' + action.icon}/> {action.title}</button>
+    }
 }
 
 export default App;
@@ -173,4 +180,17 @@ const ToggleTemplate = (props) => {
     if(props.item.icon) clss += props.item.icon
     if(props.selected) clss += " selected"
     return <button className={clss} onClick={props.onSelect}>{props.item.title}</button>
+}
+
+
+const MenuPopup = (props) => {
+    return <VBox>
+        {props.actions.map((act,i)=>{
+            return <button  key={i} onClick={()=>{
+                PopupManager.hide();
+                if(act.fun) act.fun()
+            }}><i className={'fa fa-' + act.icon}/> {act.title}</button>
+        })}
+    </VBox>
+
 }
