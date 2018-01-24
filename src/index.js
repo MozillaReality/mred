@@ -4,7 +4,7 @@ import './index.css';
 import 'font-awesome/css/font-awesome.css'
 import App from './App';
 import {Preview2D} from "./HypercardEditor"
-import {Preview3D} from "./Hypercard3DEditor"
+import Preview3D from "./h3d/Preview3D"
 import {genAlphaID, parseOptions} from './utils'
 
 const default_options = {
