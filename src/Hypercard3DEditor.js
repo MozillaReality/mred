@@ -3,10 +3,10 @@ import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
-import QRCode from 'qrcode'
 import PubNub from "pubnub"
 import OrbitalControls from './OrbitControls'
 import GLTFLoader from "./GLTFLoader"
+import QRCanvas from './h3d/QRCanvas'
 
 // const SERVER_URL = "http://localhost:30065/doc/"
 const SERVER_URL = "http://josh.earth:30068/doc/"
@@ -439,8 +439,10 @@ export default class HypercardEditor extends TreeItemProvider {
             rx: 0,
             ry: 0,
             rz: 0,
-            color: '#aaddff',
         }
+    }
+    createScene() {
+        return makeScene([])
     }
     getTreeActions() {
         return [
@@ -467,6 +469,11 @@ export default class HypercardEditor extends TreeItemProvider {
             {
                 title:'gltf',
                 fun: () => this.addToNearestSelectedParent(this.createGLTF())
+            },
+            {
+                title:'scene',
+                icon:'vcard',
+                fun: () => this.addToNearestSelectedParent(this.createScene())
             },
             {
                 icon:'close',
@@ -545,25 +552,5 @@ export class Preview3D extends Component {
                       style={{position: 'absolute', right: 10, bottom: 10}}
             />
         </div>
-    }
-}
-
-class QRCanvas extends Component {
-    componentDidMount() {
-        if (this.canvas) this.redraw()
-    }
-
-    componentWillReceiveProps(newProps) {
-        if (this.canvas) this.redraw()
-    }
-
-    redraw() {
-        QRCode.toCanvas(this.canvas, this.props.url, {width: this.props.width, height: this.props.height})
-    }
-
-    render() {
-        let style = {}
-        if (this.props.style) Object.assign(style, this.props.style)
-        return <canvas width={this.props.width} height={this.props.height} ref={(canvas) => this.canvas = canvas} style={style}/>
     }
 }
