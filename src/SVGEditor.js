@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import ReactDOMServer from 'react-dom/server';
-import {makePoint} from './utils'
+import {genID, makePoint} from './utils'
 
 export class CanvasSVG extends Component {
     constructor(props) {
@@ -144,27 +144,29 @@ const STROKE_STYLES = ['solid','dotted','dashed']
 const FONT_FAMILIES = ['serif','sans-serif','monospace']
 const TEXT_ANCHORS = ['start','middle','end']
 
+function makeRect() {
+    return {
+        id: genID('rect'),
+        type:'rect',
+        title:'rect1',
+        x:0,
+        y:0,
+        tx:200,
+        ty:200,
+        w:40,
+        h:40,
+        color:'red',
+        stroke:'black',
+        strokeWidth:2.0,
+        visible:true,
+        children:[]
+    }
+}
 export const data = {
     root: {
         title:'root',
         type:'scene',
-        children:[
-            {
-                type:'rect',
-                title:'rect1',
-                x:0,
-                y:0,
-                tx:200,
-                ty:200,
-                w:40,
-                h:40,
-                color:'red',
-                stroke:'black',
-                strokeWidth:2.0,
-                visible:true,
-                children:[]
-            }
-        ]
+        children:[makeRect()]
     },
 };
 
@@ -185,6 +187,9 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     getTitle() {
         return 'SVG'
     }
+    getDocType() {
+        return "svg"
+    }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = [];
         this.listeners[type].push(cb);
@@ -196,6 +201,16 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     getSceneRoot() {
         return this.root;
     }
+
+    makeEmptyRoot() {
+        return {
+            title:'root',
+            type:'scene',
+            id: genID('root'),
+            children: [makeRect()]
+        }
+    }
+
     getRendererForItem(item) {
         return <SceneItemRenderer item={item}/>
     }
@@ -304,6 +319,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
     createRect() {
         return {
+            id: genID('rect'),
             type:'rect',
             title:'rect1',
             tx:20,
@@ -321,6 +337,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
     createCircle() {
         return {
+            id: genID('circle'),
             type:'circle',
             title:'circle 1',
             tx:100,
@@ -337,6 +354,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
     createText() {
         return {
+            id: genID('text'),
             type:'text',
             title:'next text',
             tx:300,
@@ -365,6 +383,24 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         if(parent) this.appendChild(parent,rect)
     }
 
+    generateSelectionPath(node) {
+        if(!node || !node.id) return []
+        if(!node.parent) return [node.id]
+        return this.generateSelectionPath(node.parent).concat([node.id])
+    }
+    findNodeFromSelectionPath(node,path) {
+        const part = path[0]
+        if(node.id === part) {
+            if(path.length <= 1) return node
+            for(let i=0; i<node.children.length; i++) {
+                const child = node.children[i]
+                const res = this.findNodeFromSelectionPath(child,path.slice(1))
+                if(res) return res
+            }
+        }
+        return null
+    }
+
     getTreeActions() {
         return [
             {
@@ -390,7 +426,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                 }
             },
             {
-                title:'save',
+                title:'export',
                 icon:'save',
                 fun: () => {
                     console.log("saving to SVG")

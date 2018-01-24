@@ -1,15 +1,12 @@
 import React, {Component} from 'react'
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
+import TreeItemProvider, {SERVER_URL, TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import {genID, GET_JSON, parseOptions, POST_JSON, setQuery} from './utils'
-import PubNub from "pubnub"
 import OrbitalControls from './OrbitControls'
 import GLTFLoader from "./GLTFLoader"
 import QRCanvas from './h3d/QRCanvas'
 
-// const SERVER_URL = "http://localhost:30065/doc/"
-const SERVER_URL = "http://josh.earth:30068/doc/"
 function makeCube() {
     return {
         id: genID('cube'),
@@ -205,56 +202,37 @@ export const SceneItemRenderer = (props) => {
 }
 
 
-export default class HypercardEditor extends TreeItemProvider {
+export default class Hypercard3DEditor extends TreeItemProvider {
     constructor() {
         super()
         this.root = root
-        this.docid = null
-        this.pubnub = new PubNub({
-            // publishKey:"pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd",
-            subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
-        })
-        this.pubnub.addListener({
-            status: (status)=> console.log(status),
-            message: (msg) => {
-                console.log(msg)
-                if(msg.channel === this.docid) {
-                    console.log("got a message for my doc. reloading")
-                    this.reloadDocument()
-                }
-            }
-        })
     }
 
     setDocument(doc,docid) {
-        this.root = doc
-        this.root.children.forEach((scn)=>{
-            scn.children.forEach((obj)=>{
+        super.setDocument(doc,docid)
+        //re-attach children to their parents
+        this.root.children.forEach((scn) => {
+            scn.children.forEach((obj) => {
                 obj.parent = scn
             })
         })
-        this.docid = docid
-        console.log("subscribed to ",docid)
-        this.pubnub.subscribe({channels:[docid]})
-        console.log("set the new document to", doc)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
     }
 
-    reloadDocument() {
-        const spath = this.generateSelectionPath(Selection.getSelection());
-        GET_JSON(SERVER_URL+this.docid).then((doc)=>{
-            this.setDocument(doc,this.docid)
-            const newsel = this.findNodeFromSelectionPath(this.getSceneRoot(),spath)
-            Selection.setSelection(newsel)
-        }).catch((e)=>{
-            console.log("couldn't reload the doc",e)
-            // this.docid = docid
-        })
-
+    makeEmptyRoot() {
+        return {
+            title:'stack',
+            type:'stack',
+            children: [makeScene(makeCube())]
+        }
     }
+
 
     getTitle() {
         return 'Hypercard 3D'
+    }
+
+    getDocType() {
+        return "hypercard-3d"
     }
 
     getSceneRoot() {
@@ -267,20 +245,16 @@ export default class HypercardEditor extends TreeItemProvider {
         return this.generateSelectionPath(node.parent).concat([node.id])
     }
     findNodeFromSelectionPath(node,path) {
-        const part = path.shift()
+        const part = path[0]
         if(node.id === part) {
-            if(path.length <= 0) return node
+            if(path.length <= 1) return node
             for(let i=0; i<node.children.length; i++) {
                 const child = node.children[i]
-                const res = this.findNodeFromSelectionPath(child,path)
+                const res = this.findNodeFromSelectionPath(child,path.slice(1))
                 if(res) return res
             }
         }
         return null
-    }
-
-    getDocId() {
-        return this.docid
     }
 
     getCanvas() {
@@ -471,7 +445,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 fun: () => this.addToNearestSelectedParent(this.createGLTF())
             },
             {
-                title:'scene',
+                // title:'scene',
                 icon:'vcard',
                 fun: () => this.appendChild(this.getSceneRoot(),this.createScene())
             },
@@ -482,39 +456,9 @@ export default class HypercardEditor extends TreeItemProvider {
                     this.deleteNode(node)
                 }
             },
-
-            {
-                icon:'save',
-                fun: () => {
-                    this.save()
-                }
-            }
-
         ]
     }
 
-    save() {
-        console.log("saving")
-        const doc = JSON.stringify(this.getSceneRoot(),(key,value)=>{
-            if(key === 'parent') return undefined
-            return value
-        })
-        console.log("doc is",doc)
-        return POST_JSON(SERVER_URL+this.docid,doc).then((res)=>{
-            console.log("Success result is",res)
-            setQuery({mode:'edit',doc:this.docid})
-        }).catch((e)=> console.log("error",e))
-    }
-    loadDoc(docid) {
-        console.log("need to load the doc",docid)
-        GET_JSON(SERVER_URL+docid).then((doc)=>{
-            // console.log("got the doc",doc)
-            this.setDocument(doc,docid)
-        }).catch((e)=>{
-            console.log("missing doc",e)
-            this.docid = docid
-        })
-    }
 }
 
 export class Preview3D extends Component {
@@ -534,7 +478,7 @@ export class Preview3D extends Component {
     componentDidMount() {
         const opts = parseOptions({})
         console.log("preview starting with options",opts)
-        this.provider = new HypercardEditor()
+        this.provider = new Hypercard3DEditor()
         this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
         this.provider.loadDoc(opts.doc)
     }

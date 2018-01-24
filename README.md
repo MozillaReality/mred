@@ -13,8 +13,8 @@ explain the doc server
 
 what must work for the demo
 
-* make saving, loading, reloading, pubnub stuff part of the base class
-* 3d: button to add a new card, be able to switch cards
+* //make saving, loading, reloading, pubnub stuff part of the base class
+* //3d: button to add a new card, be able to switch cards
 * 3d:one object with an action to jump to another scene. make sphere. attach a click action. does a proper link the way aframe does
 * 3d: create a navigation action object. click event on sphere will attach to this object
 * 3d: Make an object spin for ever 
@@ -23,6 +23,7 @@ what must work for the demo
 * Move objects between scenes by dragging 
 
 
+* fix broken hypercard 2d preview
 * 3d: be able to select and update light and camera
 * 3d: make VR controls for preview mode. Really follow links with mouse click
 * use collapsing panels with new minmax code

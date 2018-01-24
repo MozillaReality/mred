@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 import Selection from "./SelectionManager";
+import {genID, parseOptions} from './utils'
 
 const data = {
     root: {
@@ -128,6 +129,7 @@ class HypercardCanvas extends Component {
     render() {
         if(!this.state.selection) return <div>nothing selected</div>
         const sel = this.state.selection.getSelection()
+        if(!sel) return <div>nothing selected</div>
         if(sel.type === 'card') {
             return <CardComponent card={sel} live={false}/>
         }
@@ -156,9 +158,21 @@ export default class HypercardEditor extends TreeItemProvider {
     getTitle() {
         return "HyperCard 2D"
     }
+    getDocType() {
+        return "hypercard-2d"
+    }
     getSceneRoot() {
         return this.root;
     }
+    makeEmptyRoot() {
+        return {
+            title:'stack',
+            type:'stack',
+            id: genID('stack'),
+            children: [this.createCard()]
+        }
+    }
+
     getCanvas() {
         return <HypercardCanvas provider={this}/>
     }
@@ -314,6 +328,25 @@ export default class HypercardEditor extends TreeItemProvider {
             },
         ]
     }
+
+    generateSelectionPath(node) {
+        if(!node || !node.id) return []
+        if(!node.parent) return [node.id]
+        return this.generateSelectionPath(node.parent).concat([node.id])
+    }
+    findNodeFromSelectionPath(node,path) {
+        const part = path[0]
+        if(node.id === part) {
+            if(path.length <= 1) return node
+            for(let i=0; i<node.children.length; i++) {
+                const child = node.children[i]
+                const res = this.findNodeFromSelectionPath(child,path.slice(1))
+                if(res) return res
+            }
+        }
+        return null
+    }
+
 }
 
 export class Preview2D extends Component {
@@ -326,10 +359,11 @@ export class Preview2D extends Component {
         }
     }
     componentDidMount() {
-        if(window.opener && window.opener.preview_document) {
-            const doc = window.opener.preview_document
-            this.setState({doc:doc, current:doc.children[0], valid:true})
-        }
+        const opts = parseOptions({})
+        console.log("preview starting with options",opts)
+        this.provider = new HypercardEditor()
+        this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
+        this.provider.loadDoc(opts.doc)
     }
     navTo = (target) => {
         const card = this.state.doc.children.find((card) => card.id === target)

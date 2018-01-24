@@ -66,6 +66,7 @@ class App extends Component {
             window.open('./?'+query)
         })
     }
+    saveDoc =(e) => this.state.provider.save()
 
     toggleLeftPane = (e) => this.setState({showLeft: !this.state.showLeft})
     toggleRightPane = (e) => this.setState({showRight: !this.state.showRight})
@@ -126,6 +127,7 @@ class App extends Component {
                         <Toolbar center top>
                             <label>views</label>
                             <button className="fa fa-play" onClick={this.previewStack}/>
+                            <button className="fa fa-save" onClick={this.saveDoc}/>
                         </Toolbar>
 
                         <Panel center middle scroll>{this.state.provider.getCanvas()}</Panel>
