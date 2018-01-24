@@ -442,7 +442,7 @@ export default class HypercardEditor extends TreeItemProvider {
         }
     }
     createScene() {
-        return makeScene([])
+        return makeScene()
     }
     getTreeActions() {
         return [
@@ -473,7 +473,7 @@ export default class HypercardEditor extends TreeItemProvider {
             {
                 title:'scene',
                 icon:'vcard',
-                fun: () => this.addToNearestSelectedParent(this.createScene())
+                fun: () => this.appendChild(this.getSceneRoot(),this.createScene())
             },
             {
                 icon:'close',
