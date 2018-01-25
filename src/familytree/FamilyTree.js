@@ -4,24 +4,6 @@ import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID} from '../utils'
 import SelectionManager from "../SelectionManager";
 
-const example = {
-    type:'root',
-    title:'my family tree',
-    children:[
-        {
-            type:'person',
-            id:genID('person'),
-            name:'Bob',
-            parents:['bobsr_id']
-        },
-        {
-            type:"person",
-            id:genID('person'),
-            name:'Bob Sr',
-            parents:[]
-        }
-    ]
-}
 export default class FamilyTree extends TreeItemProvider {
     constructor() {
         super()
@@ -43,9 +25,7 @@ export default class FamilyTree extends TreeItemProvider {
             ]
         }
     }
-    getSceneRoot() {
-        return this.root
-    }
+    getSceneRoot = () => this.root
     getDocType =() => "familytree"
     getTitle = () => "Family Tree Editor"
     getCanvas = () => <FamilyTreeCanvas provider={this}/>
@@ -144,22 +124,11 @@ export default class FamilyTree extends TreeItemProvider {
 
 const IdToNameRenderer = (props) => {
     let value = "---"
-    if(props.value && props.provider) {
-        const node = props.provider.findPersonById(props.value)
-        value = node.name
-    }
+    if(props.value && props.provider) value = props.provider.findPersonById(props.value).name
     return <b>{value}</b>
 }
 
 class FamilyTreeCanvas extends Component {
-    constructor(props) {
-        super(props)
-    }
-    componentDidMount() {
-    }
-    rebuild() {
-    }
-
     render() {
         const g = new dagre.graphlib.Graph()
         g.setGraph({})
@@ -188,8 +157,7 @@ class FamilyTreeCanvas extends Component {
             const edge = g.edge(key)
             let d = ""
             edge.points.forEach((pt,i)=>{
-                if(i===0) d+= "M "
-                    else d+= " L "
+                d += (i===0)? "M ":" L "
                 d += pt.x + " " + pt.y
             })
             return <path key={i} d={d} strokeWidth="3" stroke="black" fill="transparent" strokeLinecap="round" strokeLinejoin="round"/>
