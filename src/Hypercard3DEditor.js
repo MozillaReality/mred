@@ -88,13 +88,17 @@ export default class Hypercard3DEditor extends TreeItemProvider {
     constructor() {
         super()
         this.root = root
+        this.id_index = {}
     }
 
     setDocument(doc,docid) {
         super.setDocument(doc,docid)
+        this.id_index = {}
         //re-attach children to their parents
         this.root.children.forEach((scn) => {
+            this.id_index[scn.id] = scn
             scn.children.forEach((obj) => {
+                this.id_index[obj.id] = obj
                 obj.parent = scn
             })
         })
@@ -106,6 +110,10 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             type:'stack',
             children: [makeScene(makeCube())]
         }
+    }
+
+    findNodeById(id) {
+        return this.id_index[id]
     }
 
 
@@ -168,6 +176,7 @@ export default class Hypercard3DEditor extends TreeItemProvider {
     appendChild(parent,child) {
         parent.children.push(child)
         child.parent = parent
+        this.id_index[child.id] = child
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
     }
 
@@ -225,6 +234,10 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             return scene.children.filter((ch)=>ch.type === 'nav-action').map((act)=>act.id)
         }
         return []
+    }
+    getRendererForEnum(key,obj) {
+        if(key === 'target' || key === 'action') return IdToTitleRenderer;
+        return null
     }
 
 
@@ -405,3 +418,11 @@ export default class Hypercard3DEditor extends TreeItemProvider {
 
 }
 
+const IdToTitleRenderer = (props) => {
+    let value = "nothing selected"
+    if(props.value && props.provider) {
+        const node = props.provider.findNodeById(props.value)
+        value = node.title
+    }
+    return <b>{value}</b>
+}

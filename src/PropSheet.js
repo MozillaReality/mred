@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {PopupManager} from "appy-comps";
+import {HBox, PopupManager, VBox} from 'appy-comps'
 
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 
@@ -130,23 +130,57 @@ class PropEditor extends Component {
 }
 
 const EnumPicker = (props) => {
-    const items = props.values.map(val=> <li key={val} onClick={()=>props.onSelect(val)}>{val}</li> )
-    return <ul className="popup-menu">{items}</ul>
+    console.log("showing the picker",props.values);
+    const Rend = props.renderer
+    const items = props.values.map(val=>
+        <HBox
+            key={val}
+            onClick={(e)=>props.onSelect(val)}>
+            <Rend value={val} def={props.def} obj={props.obj} provider={props.provider}/>
+        </HBox>
+            )
+    return <VBox className="popup-menu">{items}</VBox>
 }
 
+const DefaultEnumRenderer = (props) => {
+    let value = ""
+    if(typeof props.value !== 'undefined') {
+        value = props.value.toString()
+    }
+    return <span>{value}</span>
+}
 class EnumEditor extends Component {
+    calculateRenderer() {
+        const def = this.props.def
+        const obj = this.props.obj
+        if(!this.props.provider.getRendererForEnum) return DefaultEnumRenderer
+        const renderer = this.props.provider.getRendererForEnum(def.key,obj)
+        if(!renderer) return DefaultEnumRenderer
+        return renderer
+    }
+    calculateValues() {
+        return this.props.provider.getValuesForEnum(this.props.def.key,this.props.obj)
+    }
     open = (e) => {
         PopupManager.show(<EnumPicker
-            values={this.props.provider.getValuesForEnum(this.props.def.key,this.props.obj)}
+            values={this.calculateValues()}
+            renderer={this.calculateRenderer()}
             onSelect={this.selectValue}
+            provider={this.props.provider}
         />,e.target)
     }
     selectValue = (value) => {
         PopupManager.hide()
         this.props.onChange(value)
     }
+    renderValue = (value) => {
+        const def = this.props.def
+        const obj = this.props.obj
+        const Rend = this.calculateRenderer()
+        return <Rend value={value} def={def} obj={obj} provider={this.props.provider}/>
+    }
     render() {
-        return <button onClick={this.open}>{this.props.value}</button>
+        return <button onClick={this.open}>{this.renderValue(this.props.value)}</button>
     }
 }
 

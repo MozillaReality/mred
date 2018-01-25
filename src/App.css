@@ -167,3 +167,15 @@ ul.popup-menu li:hover {
     background-color: blue;
     color: white;
 }
+
+.popup-menu {
+    border: 1px solid darkgrey;
+    padding: 0.25em;
+}
+.popup-menu > div {
+    background-color: white;
+    padding: 0.25em;
+}
+.popup-menu > div:hover {
+     background-color: lightblue;
+}
