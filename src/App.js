@@ -110,7 +110,7 @@ class App extends Component {
 
 
     renderProviderList() {
-        return <HBox>{Object.keys(this.providers).map((name)=>{
+        return <HBox className="toolbar">{Object.keys(this.providers).map((name)=>{
             return <button key={name} onClick={()=>this.switchProvider(name)}>{name}</button>
         })}</HBox>
     }
