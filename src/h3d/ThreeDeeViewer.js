@@ -16,6 +16,7 @@ export  default class ThreeDeeViewer extends Component {
             w = window.innerWidth - 4
             h = window.innerHeight - 4
         }
+        this.clock = new THREE.Clock()
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
@@ -31,6 +32,10 @@ export  default class ThreeDeeViewer extends Component {
         const repaint = ()=> {
             requestAnimationFrame(repaint)
             this.controls.update();
+            const delta = this.clock.getDelta(0)
+            if(this.mixer) {
+                this.mixer.update(delta)
+            }
             this.renderer.render(this.scene, this.camera)
         }
         repaint()
@@ -40,13 +45,37 @@ export  default class ThreeDeeViewer extends Component {
         this.rebuildScene(newProps.scene)
     }
 
+    buildAnimation(node,scene) {
+        if(node.type === 'rot-anim') {
+            const xAxis = new THREE.Vector3( 1, 0, 0 );
+            const qInitial = new THREE.Quaternion().setFromAxisAngle( xAxis, 0 );
+            const qFinal = new THREE.Quaternion().setFromAxisAngle( xAxis, Math.PI );
+            const qNext = new THREE.Quaternion().setFromAxisAngle(xAxis,Math.PI*2);
+            var quaternionKF = new THREE.QuaternionKeyframeTrack( '.quaternion', [0, 1, 2],
+                [ qInitial.x, qInitial.y, qInitial.z, qInitial.w,
+                    qFinal.x, qFinal.y, qFinal.z, qFinal.w,
+                    qNext.x, qNext.y, qNext.z, qNext.w
+                ] );
+            const clip =  new THREE.AnimationClip('action', 3, [ quaternionKF ] );
+            const obj = this.scene.children.find((obj)=>obj._ge_id === node.target)
+            this.mixer = new THREE.AnimationMixer(obj)
+            const action = this.mixer.clipAction(clip)
+            action.play()
+            return;
+        }
+        return;
+    }
     buildNode(node) {
+        if(node.type === 'rot-anim') {
+            return;
+        }
         let cube = null;
         if (node.type === 'cube') {
             const geometry = new THREE.BoxGeometry(node.size, node.size, node.size)
             const color = parseInt(node.color.substring(1), 16)
             const material = new THREE.MeshLambertMaterial({color: color})
             cube = new THREE.Mesh(geometry, material)
+            cube._ge_id = node.id
         }
         if (node.type === 'sphere') {
             const geometry = new THREE.SphereGeometry(node.size, 32, 32)
@@ -105,6 +134,7 @@ export  default class ThreeDeeViewer extends Component {
         while (this.scene.children.length) this.scene.remove(this.scene.children[0])
         this.animatable = []
         if (scene) scene.children.forEach((node) => this.buildNode(node))
+        if (scene) scene.children.forEach((node) => this.buildAnimation(node,scene))
 
         const ambient = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambient)

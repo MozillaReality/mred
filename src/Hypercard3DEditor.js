@@ -78,6 +78,7 @@ export const SceneItemRenderer = (props) => {
     if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'gltf')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if (type === 'nav-action')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if (type === 'rot-anim')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -212,6 +213,10 @@ export default class Hypercard3DEditor extends TreeItemProvider {
 
     getValuesForEnum(key,obj) {
         if(key === 'target') {
+            if(obj.type === 'rot-anim') {
+                const scene = this.findParent(this.getSceneRoot(),obj)
+                return scene.children.filter((ch)=>ch.type === 'cube').map((act)=>act.id)
+            }
             return this.getSceneRoot().children.map((scene)=> scene.id)
         }
         if(key === 'action') {
@@ -318,6 +323,18 @@ export default class Hypercard3DEditor extends TreeItemProvider {
             target:'',
         }
     }
+    createRotationAnimation() {
+        return {
+            id: genID('rot'),
+            type:'rot-anim',
+            title:'rotation anim',
+            target:'',
+            speed:100,
+            property:'rx',
+            from:0,
+            to:360
+        }
+    }
     createScene() {
         return makeScene()
     }
@@ -329,7 +346,7 @@ export default class Hypercard3DEditor extends TreeItemProvider {
                 fun: () => this.appendChild(this.getSceneRoot(),this.createScene())
             },
             {
-                // title:'create',
+                title:'object',
                 icon:'plus',
                 type:'menu',
                 actions:[
@@ -360,8 +377,19 @@ export default class Hypercard3DEditor extends TreeItemProvider {
                 ]
             },
             {
-                title:'nav action',
-                fun: () => this.addToNearestSelectedParent(this.createNavigationAction())
+                icon:'plus',
+                title:'action',
+                type:'menu',
+                actions: [
+                    {
+                        title:'nav action',
+                        fun: () => this.addToNearestSelectedParent(this.createNavigationAction())
+                    },
+                    {
+                        title:'rotation animation',
+                        fun: () => this.addToNearestSelectedParent(this.createRotationAnimation())
+                    },
+                ]
             },
             {
                 icon:'close',
