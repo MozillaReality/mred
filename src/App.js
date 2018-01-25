@@ -44,12 +44,11 @@ const Spacer = (props) => {
 class App extends Component {
     constructor(props) {
         super(props)
-        this.providers = {
-            hypercard2D: new HypercardEditor(),
-            hypercard3D: new Hypercard3DEditor(),
-            svg: new SVGEditor(),
-            familytree: new FamilyTree()
-        }
+        this.providers = {}
+        this.addProvider(new Hypercard3DEditor())
+        this.addProvider(new HypercardEditor())
+        this.addProvider(new SVGEditor())
+        this.addProvider(new FamilyTree())
         this.state = {
             provider: this.providers.svg,
             providerName: 'svg',
@@ -57,6 +56,9 @@ class App extends Component {
             showRight: true,
             selectedTool: this.providers.svg.getTools()[0]
         }
+    }
+    addProvider(prov) {
+        this.providers[prov.getDocType()] = prov
     }
 
     previewStack = (e) => {
@@ -83,7 +85,9 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        this.switchProvider('hypercard3D')
+        let prov = 'hypercard3D'
+        if(this.props.options.doctype) prov = this.props.options.doctype
+        this.switchProvider(prov)
     }
 
     switchProvider(name) {
@@ -105,15 +109,15 @@ class App extends Component {
     }
 
 
+    renderProviderList() {
+        return <HBox>{Object.keys(this.providers).map((name)=>{
+            return <button key={name} onClick={()=>this.switchProvider(name)}>{name}</button>
+        })}</HBox>
+    }
     render() {
         return (
             <VBox fill>
-                <HBox>
-                    <button onClick={()=>this.switchProvider('familytree')}>Family Tree</button>
-                    <button onClick={()=>this.switchProvider('svg')}>SVG editor</button>
-                    <button onClick={()=>this.switchProvider('hypercard2D')}>2D hypercard editor</button>
-                    <button onClick={()=>this.switchProvider('hypercard3D')}>3D hypercard editor</button>
-                </HBox>
+                {this.renderProviderList()}
                 <div style={{position: 'relative', flex: '1'}}>
                     <GridLayout showLeft={this.state.showLeft} showRight={this.state.showRight}>
                         <Toolbar left top>

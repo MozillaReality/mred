@@ -95,7 +95,7 @@ export default class TreeItemProvider {
         console.log("doc is",payload_string)
         return POST_JSON(SERVER_URL+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
-            setQuery({mode:'edit',doc:this.docid})
+            setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
         }).catch((e)=> console.log("error",e))
     }
     loadDoc(docid) {
@@ -107,7 +107,7 @@ export default class TreeItemProvider {
         }).catch((e)=>{
             console.log("missing doc",e)
             this.setDocument(this.makeEmptyRoot(),this.genID('doc'))
-            setQuery({mode:'edit',doc:this.docid})
+            setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
         })
     }
     reloadDocument() {
