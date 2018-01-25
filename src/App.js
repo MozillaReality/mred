@@ -9,6 +9,7 @@ import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
 import SVGEditor from "./SVGEditor"
 import HypercardEditor from "./HypercardEditor"
 import Hypercard3DEditor from "./Hypercard3DEditor"
+import FamilyTree from "./familytree/FamilyTree"
 import {toQueryString} from './utils'
 
 
@@ -46,7 +47,8 @@ class App extends Component {
         this.providers = {
             hypercard2D: new HypercardEditor(),
             hypercard3D: new Hypercard3DEditor(),
-            svg: new SVGEditor()
+            svg: new SVGEditor(),
+            familytree: new FamilyTree()
         }
         this.state = {
             provider: this.providers.svg,
@@ -107,6 +109,7 @@ class App extends Component {
         return (
             <VBox fill>
                 <HBox>
+                    <button onClick={()=>this.switchProvider('familytree')}>Family Tree</button>
                     <button onClick={()=>this.switchProvider('svg')}>SVG editor</button>
                     <button onClick={()=>this.switchProvider('hypercard2D')}>2D hypercard editor</button>
                     <button onClick={()=>this.switchProvider('hypercard3D')}>3D hypercard editor</button>
