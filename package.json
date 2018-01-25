@@ -6,7 +6,7 @@
     "appy-comps": "^0.1.15",
     "appy-style": "0.0.7",
     "cors": "^2.8.4",
-    "dagre-d3": "^0.6.1",
+    "dagre": "^0.8.1",
     "font-awesome": "^4.7.0",
     "pubnub": "^4.20.0",
     "qrcode": "^1.2.0",

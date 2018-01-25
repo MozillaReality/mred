@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {} from 'dagre-d3'
+import dagre from 'dagre'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID} from '../utils'
 import SelectionManager from "../SelectionManager";
@@ -48,7 +48,7 @@ export default class FamilyTree extends TreeItemProvider {
     }
     getDocType =() => "familytree"
     getTitle = () => "Family Tree Editor"
-    getCanvas = () => <div>empty family tree canvas</div>
+    getCanvas = () => <FamilyTreeCanvas provider={this}/>
     hasChildren = (nd) => nd.children?true:false
     getChildren = (nd) => nd.children
     getRendererForItem = (nd) => {
@@ -149,4 +149,52 @@ const IdToNameRenderer = (props) => {
         value = node.name
     }
     return <b>{value}</b>
+}
+
+class FamilyTreeCanvas extends Component {
+    constructor(props) {
+        super(props)
+    }
+    componentDidMount() {
+    }
+    rebuild() {
+    }
+
+    render() {
+        const g = new dagre.graphlib.Graph()
+        g.setGraph({})
+        g.setDefaultEdgeLabel(function() { return {}})
+
+        const people = this.props.provider.getSceneRoot().children
+        people.forEach((per)=>{
+            g.setNode(per.id, {label:per.name, width:100, height:50})
+        })
+
+        people.forEach((person)=>{
+            person.parents.forEach((parentId)=>{
+                g.setEdge(person.id,parentId)
+            })
+        })
+        dagre.layout(g)
+        const rects = g.nodes().map((key,i)=>{
+            const n = g.node(key)
+            return <g key={i} transform={`translate(${n.x},${n.y})`}>
+                <rect x={-n.width/2} y={-n.height/2} width={n.width} height={n.height} fill="white" strokeWidth="1" stroke="black"/>
+                <text textAnchor="middle">{n.label}</text>
+            </g>
+        })
+
+        const lines = g.edges().map((key,i)=> {
+            const edge = g.edge(key)
+            let d = ""
+            edge.points.forEach((pt,i)=>{
+                if(i===0) d+= "M "
+                    else d+= " L "
+                d += pt.x + " " + pt.y
+            })
+            return <path key={i} d={d} strokeWidth="3" stroke="black" fill="transparent" strokeLinecap="round" strokeLinejoin="round"/>
+        })
+
+        return <svg viewBox="0 0 1024 768" xmlns="http://www.w3.org/2000/svg">{lines}{rects}</svg>
+    }
 }

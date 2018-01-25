@@ -108,7 +108,6 @@ class PropEditor extends Component {
 }
 
 const EnumPicker = (props) => {
-    console.log("showing the picker",props.values);
     const Rend = props.renderer
     const items = props.values.map(val=>
         <HBox
@@ -180,11 +179,9 @@ class ArrayEditor extends Component {
         return renderer
     }
     addValue = ()=>{
-        console.log('adding a value')
         this.setState({showEditor:true})
     }
     enumChanged = (value) => {
-        console.log("setting to the new value",value,'vs',this.props.value)
         const arr = this.props.value.slice();
         arr.push(value)
         this.props.onChange(arr)
@@ -195,12 +192,25 @@ class ArrayEditor extends Component {
         const obj = this.props.obj
         let value = this.props.value
         if(!value) value = []
-        const Renderer = this.calculateRenderer()
         return <div>
-            {value.map((val,i)=><div key={i}><Renderer value={val} provider={this.props.provider}/></div>)}
+            {this.renderValues()}
             <button onClick={this.addValue} className="fa fa-plus"/>
             {this.renderEditor()}
         </div>
+    }
+    deleteItem(val) {
+        let arr = this.props.value.slice()
+        arr = arr.filter((v)=>v!==val)
+        this.props.onChange(arr)
+    }
+    renderValues() {
+        const Renderer = this.calculateRenderer()
+        return <VBox>{this.props.value.map((val,i)=>{
+            return <div key={i}>
+                <button className="fa fa-minus" onClick={()=>this.deleteItem(val)}/>
+                <Renderer value={val} provider={this.props.provider}/>
+            </div>
+        })}</VBox>
     }
     renderEditor() {
         if(!this.state.showEditor) return ""
