@@ -77,8 +77,8 @@ export const SceneItemRenderer = (props) => {
     if (type === 'plane')  return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'sky')    return <div><i className="fa fa-square"/> {props.item.title}</div>
     if (type === 'gltf')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
-    if (type === 'nav-action')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
-    if (type === 'rot-anim')    return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if (type === 'nav-action')    return <div><i className="fa fa-superpowers"/> {props.item.title}</div>
+    if (type === 'rot-anim')    return <div><i className="fa fa-superpowers"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
