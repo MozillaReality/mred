@@ -1,11 +1,7 @@
 import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from './TreeItemProvider'
-import * as THREE from 'three'
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
-import {genID, parseOptions, POST_JSON, setQuery} from './utils'
-import OrbitalControls from './OrbitControls'
-import GLTFLoader from "./GLTFLoader"
-import QRCanvas from './h3d/QRCanvas'
+import {genID} from './utils'
 import ThreeDeeViewer from './h3d/ThreeDeeViewer'
 
 function makeCube() {
@@ -58,13 +54,18 @@ class HypercardCanvas3D extends Component {
         if(!scene) scene = this.props.provider.getSceneRoot().children[0]
         this.setState({scene: scene})
     }
+    switchScene = (id) => {
+        const root = this.props.provider.getSceneRoot()
+        const scene = root.children.find((sc)=>sc.id === id)
+        this.setState({scene:scene})
+    }
     componentDidMount() {
         this.listener2 = this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, (sel) => this.setSceneFromSelection())
         this.listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel) => this.setSceneFromSelection())
     }
 
     render() {
-        return <ThreeDeeViewer scene={this.state.scene}/>
+        return <ThreeDeeViewer scene={this.state.scene} live={true} navToScene={this.switchScene}/>
     }
 }
 

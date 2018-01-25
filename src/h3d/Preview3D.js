@@ -7,7 +7,9 @@ import ThreeDeeViewer from './ThreeDeeViewer'
 
 export default class Preview3D extends Component {
     navTo = (target) => {
-        console.log('navigating')
+        const root = this.provider.getSceneRoot()
+        const scene = root.children.find((sc)=>sc.id === target)
+        this.setState({current:scene})
     }
 
     constructor(props) {
@@ -34,7 +36,11 @@ export default class Preview3D extends Component {
     render() {
         if (!this.state.valid) return <div>invalid preview. please close and try again</div>
         return <div style={{margin: 0, padding: 0, borderWidth: 0}}>
-            <ThreeDeeViewer scene={this.state.current} live={true} navTo={this.navTo} fillScreen={true}/>
+            <ThreeDeeViewer scene={this.state.current}
+                            live={true}
+                            navToScene={this.navTo}
+                            fillScreen={true}
+            />
             <QRCanvas url={window.location.href}
                       width={300} height={300}
                       style={{position: 'absolute', right: 10, bottom: 10}}

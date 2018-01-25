@@ -21,9 +21,11 @@ export  default class ThreeDeeViewer extends Component {
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
         this.renderer.setSize(w, h)
+        this.raycaster = new THREE.Raycaster()
         this.camera.position.set(0, 1, 3)
         this.camera.lookAt(new THREE.Vector3())
         this.controls = new OrbitalControls(this.camera,this.canvas)
+        this.canvas.addEventListener('click',this.clicked)
         this.rebuildScene(this.props.scene)
         this.startRepaint()
     }
@@ -44,6 +46,36 @@ export  default class ThreeDeeViewer extends Component {
     componentWillReceiveProps(newProps) {
         this.rebuildScene(newProps.scene)
     }
+
+    clicked = (e) => {
+        const mouse = new THREE.Vector2();
+        const bounds = this.canvas.getBoundingClientRect()
+        mouse.x =   ((e.clientX-bounds.left) /this.canvas.width  ) * 2 - 1;
+        mouse.y = - ((e.clientY-bounds.top)  /this.canvas.height ) * 2 + 1;
+        this.raycaster.setFromCamera( mouse, this.camera );
+        const intersects = this.raycaster.intersectObjects( this.scene.children );
+        intersects.forEach((it)=>{
+            const node = this.getNodeForObject3D(it.object)
+            if(node && node.action) {
+                const action = this.findNodeById(node.action);
+                this.processAction(action)
+            }
+        })
+    }
+
+    getNodeForObject3D(obj) {
+        return this.props.scene.children.find((node)=>node.id === obj._ge_id)
+    }
+    findNodeById(id) {
+        return this.props.scene.children.find((node)=>node.id === id)
+    }
+    processAction(action) {
+        if(action.type === 'nav-action') {
+            this.props.navToScene(action.target)
+        }
+    }
+
+
 
     buildAnimation(node,scene) {
         if(node.type === 'rot-anim') {
@@ -69,13 +101,15 @@ export  default class ThreeDeeViewer extends Component {
         if(node.type === 'rot-anim') {
             return;
         }
+        if(node.type === 'nav-action') {
+            return;
+        }
         let cube = null;
         if (node.type === 'cube') {
             const geometry = new THREE.BoxGeometry(node.size, node.size, node.size)
             const color = parseInt(node.color.substring(1), 16)
             const material = new THREE.MeshLambertMaterial({color: color})
             cube = new THREE.Mesh(geometry, material)
-            cube._ge_id = node.id
         }
         if (node.type === 'sphere') {
             const geometry = new THREE.SphereGeometry(node.size, 32, 32)
@@ -123,6 +157,7 @@ export  default class ThreeDeeViewer extends Component {
         cube.rotation.x = node.rx
         cube.rotation.y = node.ry
         cube.rotation.z = node.rz
+        cube._ge_id = node.id
 
         this.scene.add(cube)
         this.animatable.push(cube)

@@ -16,16 +16,15 @@ what must work for the demo
 * //make saving, loading, reloading, pubnub stuff part of the base class
 * //3d: button to add a new card, be able to switch cards
 * //3d: Make an object spin for ever by attaching an animation object
-* 3d:one object with an action to jump to another scene. make sphere. attach a click action. does a proper link the way aframe does
+* //3d: make nav action work in the preview mode
 * //3d: create a navigation action object. click event on sphere will attach to this object
-* 3d: Make an object spin when I click on it
-* remove color from GLTF object 
+* 3d: Make an object spin when I click on it. click action, triggers target animation.
 * Move objects between scenes by dragging 
 
 
 * fix broken hypercard 2d preview
 * 3d: be able to select and update light and camera
-* 3d: make VR controls for preview mode. Really follow links with mouse click
+* 3d: make VR controls for preview mode
 * use collapsing panels with new minmax code
 * 3d: popup for adding objects: cube, sphere, obj, light, camera
 * put the icon in the GUI somewhere
@@ -35,6 +34,7 @@ what must work for the demo
 * Drag in 360 image 
 * Drag in gltf model
 * 2D: image import, make clickable
+* remove color from GLTF object 
 
 
 attach an action
