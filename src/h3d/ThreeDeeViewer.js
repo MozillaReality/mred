@@ -20,6 +20,7 @@ export  default class ThreeDeeViewer extends Component {
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
+        this.renderer.setClearColor(0xffffff,1)
         this.renderer.setSize(w, h)
         this.raycaster = new THREE.Raycaster()
         this.camera.position.set(0, 1, 3)
@@ -117,14 +118,12 @@ export  default class ThreeDeeViewer extends Component {
             const material = new THREE.MeshLambertMaterial({color: color})
             cube = new THREE.Mesh(geometry, material)
         }
-
         if (node.type === 'plane') {
             const geometry = new THREE.PlaneGeometry(node.size, node.size)
             const color = parseInt(node.color.substring(1), 16)
             const material = new THREE.MeshLambertMaterial({color: color, side: THREE.DoubleSide})
             cube = new THREE.Mesh(geometry, material)
         }
-
         if (node.type === 'sky') {
             const geometry = new THREE.SphereGeometry(100,32,32)
             const color = parseInt(node.color.substring(1), 16)
@@ -136,7 +135,8 @@ export  default class ThreeDeeViewer extends Component {
         }
 
         if (node.type === 'gltf') {
-            new GLTFLoader().load('http://localhost:3000/imp/scene.gltf',(gltf)=>{
+            new GLTFLoader().load('http://localhost:3000/busterDrone/busterDrone.gltf',(gltf)=>{
+                console.log("gltf was loaded",gltf)
                 this.scene.add(gltf.scene)
                 let cube = gltf.scene
                 cube.position.x = node.x
@@ -145,6 +145,12 @@ export  default class ThreeDeeViewer extends Component {
                 cube.rotation.x = node.rx
                 cube.rotation.y = node.ry
                 cube.rotation.z = node.rz
+
+                gltf.animations.forEach((anim)=>{
+                    console.log("gltf has animation",anim)
+                    this.mixer = new THREE.AnimationMixer(gltf.scene)
+                    this.mixer.clipAction(anim).play()
+                })
             })
             return;
         }
@@ -171,7 +177,7 @@ export  default class ThreeDeeViewer extends Component {
         if (scene) scene.children.forEach((node) => this.buildNode(node))
         if (scene) scene.children.forEach((node) => this.buildAnimation(node,scene))
 
-        const ambient = new THREE.AmbientLight(0xffffff, 0.5)
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7)
         this.scene.add(ambient)
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
         directionalLight.position.x = -10

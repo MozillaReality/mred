@@ -372,6 +372,7 @@ export default class Hypercard3DEditor extends TreeItemProvider {
                         fun: () => this.addToNearestSelectedParent(this.createSky())
                     },
                     {
+                        icon:'cube',
                         title:'gltf',
                         fun: () => this.addToNearestSelectedParent(this.createGLTF())
                     },
