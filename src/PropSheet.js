@@ -38,34 +38,6 @@ const COLORS2 = {
     "stinger": 0x8a6f30,
 }
 
-class PaletteColorPicker extends Component {
-    chooseColor(c) {
-        this.props.onSelect(c);
-    }
-    render() {
-        const style = {
-            display:'flex',
-            flexDirection:'row',
-            flexWrap:'wrap'
-        }
-        return <div style={style}>
-            {Object.keys(COLORS2).map((key,i) => {
-                let color = COLORS2[key];
-                let scolor = color.toString(16);
-                while(scolor.length < 6) scolor = "0"+scolor
-                scolor = '#' +scolor
-                let style = {
-                    backgroundColor:scolor,
-                    color:'red'
-                }
-                return <button key={key}
-                               style={style}
-                               onClick={this.chooseColor.bind(this, scolor)}
-                >&nbsp;</button>
-            })}
-        </div>
-    }
-}
 class PropEditor extends Component {
     constructor(props) {
         super(props);
@@ -103,6 +75,11 @@ class PropEditor extends Component {
         const sel = selMan.getSelection();
         this.props.provider.setPropertyValue(sel,this.props.def,value);
     }
+    arrayChanged = (value) => {
+        this.setState({value:value})
+        const sel = selMan.getSelection();
+        this.props.provider.setPropertyValue(sel,this.props.def,value);
+    }
     colorChanged = (color) => {
         this.setState({value:color});
         const sel = selMan.getSelection();
@@ -125,6 +102,7 @@ class PropEditor extends Component {
         if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
         if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} obj={obj} provider={this.props.provider}/>
         if (def.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>
+        if (def.type === 'array') return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={def} obj={obj} provider={this.props.provider}/>
         return <b>{def.value}</b>
     }
 }
@@ -181,6 +159,88 @@ class EnumEditor extends Component {
     }
     render() {
         return <button onClick={this.open}>{this.renderValue(this.props.value)}</button>
+    }
+}
+
+class ArrayEditor extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            showEditor:false,
+            value:""
+        }
+
+    }
+    calculateRenderer() {
+        const def = this.props.def
+        const obj = this.props.obj
+        if(!this.props.provider.getRendererForEnum) return DefaultEnumRenderer
+        const renderer = this.props.provider.getRendererForEnum(def.key,obj)
+        if(!renderer) return DefaultEnumRenderer
+        return renderer
+    }
+    addValue = ()=>{
+        console.log('adding a value')
+        this.setState({showEditor:true})
+    }
+    enumChanged = (value) => {
+        console.log("setting to the new value",value,'vs',this.props.value)
+        const arr = this.props.value.slice();
+        arr.push(value)
+        this.props.onChange(arr)
+    }
+
+    render() {
+        const def = this.props.def
+        const obj = this.props.obj
+        let value = this.props.value
+        if(!value) value = []
+        const Renderer = this.calculateRenderer()
+        return <div>
+            {value.map((val,i)=><div key={i}><Renderer value={val} provider={this.props.provider}/></div>)}
+            <button onClick={this.addValue} className="fa fa-plus"/>
+            {this.renderEditor()}
+        </div>
+    }
+    renderEditor() {
+        if(!this.state.showEditor) return ""
+        const def = this.props.def
+        const obj = this.props.obj
+        return <EnumEditor value={this.state.value}
+                           onChange={this.enumChanged}
+                           def={def}
+                           obj={obj}
+                           provider={this.props.provider}/>
+
+    }
+}
+
+class PaletteColorPicker extends Component {
+    chooseColor(c) {
+        this.props.onSelect(c);
+    }
+    render() {
+        const style = {
+            display:'flex',
+            flexDirection:'row',
+            flexWrap:'wrap'
+        }
+        return <div style={style}>
+            {Object.keys(COLORS2).map((key,i) => {
+                let color = COLORS2[key];
+                let scolor = color.toString(16);
+                while(scolor.length < 6) scolor = "0"+scolor
+                scolor = '#' +scolor
+                let style = {
+                    backgroundColor:scolor,
+                    color:'red'
+                }
+                return <button key={key}
+                               style={style}
+                               onClick={this.chooseColor.bind(this, scolor)}
+                >&nbsp;</button>
+            })}
+        </div>
     }
 }
 

@@ -75,11 +75,28 @@ export default class FamilyTree extends TreeItemProvider {
                     type:'string',
                     value: nd.name,
                     locked:false,
+                },
+                {
+                    name:'Parents',
+                    key:'parents',
+                    type:'array',
+                    value: nd.parents,
+                    locked:false,
+                    valueDef: {
+                        type:'enum',
+                    }
                 }
             ]
         }
         console.log("getting properties for node",nd);
         return []
+    }
+
+    getValuesForEnum(key,obj) {
+        if(key === 'parents') return this.root.children.map((ch)=>ch.id)
+    }
+    getRendererForEnum(key,obj) {
+        if(key === 'parents') return IdToNameRenderer;
     }
 
     generateSelectionPath(node) {
@@ -103,6 +120,8 @@ export default class FamilyTree extends TreeItemProvider {
         SelectionManager.setSelection(per)
     }
 
+    findPersonById = (id) => this.root.children.find((per)=>per.id === id)
+
     makePerson(name) {
         return {
             type:'person',
@@ -121,4 +140,13 @@ export default class FamilyTree extends TreeItemProvider {
             }
         ]
     }
+}
+
+const IdToNameRenderer = (props) => {
+    let value = "---"
+    if(props.value && props.provider) {
+        const node = props.provider.findPersonById(props.value)
+        value = node.name
+    }
+    return <b>{value}</b>
 }
