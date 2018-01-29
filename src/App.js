@@ -110,7 +110,11 @@ class App extends Component {
 
 
     renderProviderList() {
-        return <HBox className="toolbar" style={{border:'1px solid #909090', borderWidth:"0 0 1px 0"}}>{Object.keys(this.providers).map((name)=>{
+        return <HBox className="toolbar" style={{border:'1px solid #909090', borderWidth:"0 0 1px 0"}}>
+            <img src="icon.png" height="20" style={{padding:'0.25em'}}/>
+            <label>General Ed</label>
+
+            {Object.keys(this.providers).map((name)=>{
             return <button key={name} onClick={()=>this.switchProvider(name)}>{name}</button>
         })}</HBox>
     }
