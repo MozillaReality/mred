@@ -154,6 +154,7 @@ export default class HypercardEditor extends TreeItemProvider {
     constructor() {
         super()
         this.root = data.root;
+        this.id_index = {}
     }
     getTitle() {
         return "HyperCard 2D"
@@ -189,7 +190,22 @@ export default class HypercardEditor extends TreeItemProvider {
     getRendererForItem(item) {
         return <HypercardItemRenderer item={item}/>
     }
+    setDocument(doc,docid) {
+        super.setDocument(doc, docid)
+        this.id_index = {}
+        this.root.children.forEach((card) => {
+            this.id_index[card.id] = card
+            card.children.forEach((item)=>{
+                this.id_index[item.id] = item
+            })
+        })
+    }
+    findNodeById(id) {
+        return this.id_index[id]
+    }
+
     appendChild(parent,item) {
+        this.id_index[item.id] = item
         parent.children.push(item);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
     }
@@ -209,6 +225,9 @@ export default class HypercardEditor extends TreeItemProvider {
             if(key === 'type') locked = true
             if(key === 'id') locked = true
             if(key === 'x') type = 'number'
+            if(key === 'y') type = 'number'
+            if(key === 'w') type = 'number'
+            if(key === 'h') type = 'number'
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
@@ -230,6 +249,10 @@ export default class HypercardEditor extends TreeItemProvider {
     }
     getValuesForEnum(key) {
         if(key === 'target') return this.getSceneRoot().children.map((ch)=>ch.id)
+    }
+    getRendererForEnum(key,obj) {
+        if(key === 'target' || key === 'action') return IdToTitleRenderer;
+        return null
     }
 
     createCard() {
@@ -349,6 +372,15 @@ export default class HypercardEditor extends TreeItemProvider {
 
 }
 
+const IdToTitleRenderer = (props) => {
+    let value = "nothing selected"
+    if(props.value && props.provider) {
+        const node = props.provider.findNodeById(props.value)
+        if(node) value = node.title
+    }
+    return <b>{value}</b>
+}
+
 export class Preview2D extends Component {
     constructor(props) {
         super(props)
@@ -364,6 +396,10 @@ export class Preview2D extends Component {
         this.provider = new HypercardEditor()
         this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
         this.provider.loadDoc(opts.doc)
+    }
+    structureChanged = () => {
+        const doc = this.provider.getSceneRoot()
+        this.setState({doc: doc, current: doc.children[0], valid: true})
     }
     navTo = (target) => {
         const card = this.state.doc.children.find((card) => card.id === target)

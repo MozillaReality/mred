@@ -85,7 +85,7 @@ class App extends Component {
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
-        let prov = 'hypercard3D'
+        let prov = 'hypercard-3d'
         if(this.props.options.doctype) prov = this.props.options.doctype
         this.switchProvider(prov)
     }
@@ -110,7 +110,7 @@ class App extends Component {
 
 
     renderProviderList() {
-        return <HBox className="toolbar">{Object.keys(this.providers).map((name)=>{
+        return <HBox className="toolbar" style={{border:'1px solid #909090', borderWidth:"0 0 1px 0"}}>{Object.keys(this.providers).map((name)=>{
             return <button key={name} onClick={()=>this.switchProvider(name)}>{name}</button>
         })}</HBox>
     }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        html, body {
+            padding:0;
+            margin:0;
+        }
+        div { }
+        #grid {
+            display: grid;
+            box-sizing: border-box;
+            padding:0;
+            margin:0;
+            width: 100vw;
+            height: 100vh;
+
+            grid-template-columns: [left] minmax(auto, min-content) [center]1fr [right] minmax(auto,min-content);
+            grid-template-rows: [header]2em [content]1fr [footer]2em;
+
+            grid-gap: 1px;
+            background-color: black;
+        }
+
+        .left {
+            grid-column: left;
+        }
+        .center {
+            grid-column: center;
+        }
+        .right {
+            grid-column: right;
+        }
+
+
+        header {
+            grid-row: header;
+        }
+        header {
+            background-color: #ccc;
+            display: flex;
+            flex-direction: row;
+        }
+        .spacer {
+            flex: 1;
+        }
+        footer {
+            grid-row: footer;
+            background-color: #ccc;
+        }
+        .sidebar {
+        }
+        .center.content {
+            background-color: aliceblue;
+        }
+        .sidebar {
+            overflow: auto;
+            background-color: white;
+            min-width: 200px;
+        }
+
+        .closed {
+            display: none;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div id="grid">
+    <header class="left">headerwit
+        hsomereally
+        widestufft
+        oread</header>
+    <header class="center">
+        <button id="toggle-left">toggle left</button>
+        <button>open</button>
+        <button>save</button>
+        <span class="spacer"></span>
+        <span>filename.txt</span>
+        <span class="spacer"></span>
+        <button>delete</button>
+        <button id="toggle-right">toggle right</button>
+    </header>
+    <header class="right">header</header>
+
+    <div class="left sidebar">sidebarw
+        ithsomereally
+        widestufftoread</div>
+    <div class="center content">the center content</div>
+    <div class="right sidebar">
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+        sidebar<br/>
+    </div>
+
+    <footer class="left">left footer</footer>
+    <footer class="center">center footer</footer>
+    <footer class="right">right footer</footer>
+</div>
+
+<script>
+    const $ = (selector) => document.querySelector(selector)
+    const $$ = (selector) => document.querySelectorAll(selector)
+    const on = (elem, type, listener) => elem.addEventListener(type,listener)
+
+    on($('#toggle-left'),'click',()=>{
+        $$(".left").forEach((elem) => elem.classList.toggle('closed'))
+    })
+    on($('#toggle-right'),'click',()=>{
+        $$(".right").forEach((elem) => elem.classList.toggle('closed'))
+    })
+</script>
+
+</body>
+</html>
