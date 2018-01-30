@@ -132,7 +132,7 @@ export default class TreeItemProvider {
         throw new Error("findNodeFromSelectionPath not implemented")
     }
     getSceneRoot() {
-        throw new Error("get scene root not implemented")
+        return this.root;
     }
     getDocType() {
         throw new Error("getDocType() not implemented")

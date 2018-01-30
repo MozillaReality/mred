@@ -10,6 +10,7 @@ import SVGEditor from "./SVGEditor"
 import HypercardEditor from "./HypercardEditor"
 import Hypercard3DEditor from "./Hypercard3DEditor"
 import FamilyTree from "./familytree/FamilyTree"
+import TextureEditor from "./texture/TextureEditor"
 import {toQueryString} from './utils'
 
 
@@ -49,6 +50,7 @@ class App extends Component {
         this.addProvider(new HypercardEditor())
         this.addProvider(new SVGEditor())
         this.addProvider(new FamilyTree())
+        this.addProvider(new TextureEditor())
         this.state = {
             provider: this.providers.svg,
             providerName: 'svg',
