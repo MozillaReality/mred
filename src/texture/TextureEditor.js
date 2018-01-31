@@ -527,13 +527,16 @@ class TextureEditorCanvas extends Component {
             })
             const w = 170
             const r = 10
-            return <g key={i} transform={`translate(${ch.x},${ch.y})`}>
+            let clss = ""
+            if(ch === SelectionManager.getSelection()) clss += " selected"
+            return <g key={i} transform={`translate(${ch.x},${ch.y})`} className={clss}>
                 <rect className="bg" x={0} y={0} width={w} height={100} rx={r} ry={r}
                       onMouseDown={(e)=>this.startMovingBG(e,ch)}/>
                 <rect className="header-bg" x={0} y={0} width={w} height={20}/>
                 <text className="header" x={5} y={15} content="foo">{temp.title}</text>
                 <g transform="translate(10,40)">{ins}</g>
                 <g transform={`translate(${w-10},${40})`}>{outs}</g>
+                <rect className="selection" x={0} y={0} width={w} height={100} rx={r} ry={r}/>
             </g>
         })}</g>
     }

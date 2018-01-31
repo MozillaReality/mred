@@ -221,3 +221,14 @@ svg path.connection-line {
     padding:0;
     margin:0;
 }
+
+rect.selection {
+    stroke: #888;
+    stroke-width: 3px;
+    fill: none;
+    pointer-events: none;
+}
+g.selected > rect.selection {
+    stroke: red;
+
+}
