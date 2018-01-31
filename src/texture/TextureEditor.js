@@ -224,6 +224,19 @@ export default class TextureEditor extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
         SelectionManager.setSelection(this.root)
     }
+    deleteConnection(id,key) {
+        const conn1 = this.root.connections.find((conn)=>{
+            return (conn.from === id && conn.fromProp === key)
+        })
+        if(conn1) this.root.connections.splice(this.root.connections.indexOf(conn1),1)
+        // console.log("found conn",conn1)
+        const conn2 = this.root.connections.find((conn)=>{
+            return (conn.to === id && conn.toProp === key)
+        })
+        // console.log("found conn",conn2)
+        if(conn2) this.root.connections.splice(this.root.connections.indexOf(conn2),1)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
 
     getTreeActions() {
         return [
@@ -331,11 +344,8 @@ class TextureEditorCanvas extends Component {
     }
 
     pressCircle = (e, ch, key)=>{
-        e.stopPropagation()
-        e.preventDefault()
-        console.log('checking if already connected',ch.id,key)
         if(this.props.provider.isConnected(ch.id,key)) {
-            console.log("already connected")
+            this.props.provider.deleteConnection(ch.id,key)
             return
         }
 
@@ -351,16 +361,27 @@ class TextureEditorCanvas extends Component {
             this.setState({end:pt})
         }
         const l2 = (e) => {
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
             this.setState({connecting:false})
+            if(this.state.end.distance(this.state.start) < 10) {
+                console.log('same node, just delete it')
+                return;
+            }
             const toKey = e.target.getAttribute('data-propname')
             const toId   = e.target.getAttribute('data-nodeid')
             this.props.provider.addConnection(ch.id,key,toId,toKey)
-            window.removeEventListener('mousemove',l1)
-            window.removeEventListener('mouseup',l2)
         }
         window.addEventListener('mousemove',l1)
         window.addEventListener('mouseup',l2)
     }
+
+    clickCircle = (e, ch, key) =>{
+        if(this.props.provider.isConnected(ch.id,key)) {
+            this.props.provider.deleteConnection(ch.id,key)
+        }
+    }
+
     startMovingBG = (e,node) => {
         e.stopPropagation()
         e.preventDefault()
@@ -391,6 +412,7 @@ class TextureEditorCanvas extends Component {
                     <circle className={clss}
                             cx="0" cy="-5" r="5"
                             onMouseDown={(e)=>this.pressCircle(e,ch,key)}
+                            onClick={(e)=>this.clickCircle(e,ch,key)}
                             data-propname={key}
                             data-nodeid={ch.id}
                     />
