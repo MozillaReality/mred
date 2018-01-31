@@ -185,6 +185,7 @@ svg rect.bg {
  }
 svg rect.header-bg {
     fill: #aaddff;
+    pointer-events: none;
 }
 svg circle {
     fill:white;
@@ -197,8 +198,13 @@ circle.handle:hover {
 circle.handle.connected {
     fill:orange;
 }
+circle.handle.connected:hover {
+    fill:red;
+}
 
 svg path.connection-line {
     stroke: orange;
     stroke-width: 5px;
+    pointer-events: none;
+    stroke-linecap: round;
 }

@@ -343,7 +343,9 @@ class TextureEditorCanvas extends Component {
         </div>
     }
 
-    pressCircle = (e, ch, key)=>{
+    pressCircle = (e, ch, key, dir)=>{
+        e.stopPropagation()
+        e.preventDefault()
         if(this.props.provider.isConnected(ch.id,key)) {
             this.props.provider.deleteConnection(ch.id,key)
             return
@@ -368,18 +370,26 @@ class TextureEditorCanvas extends Component {
                 console.log('same node, just delete it')
                 return;
             }
+            if(!e.target.hasAttribute("data-propname")) {
+                // console.log("not a valid target. abort!")
+                return
+            }
+            const toDir = e.target.getAttribute("data-direction")
             const toKey = e.target.getAttribute('data-propname')
             const toId   = e.target.getAttribute('data-nodeid')
+            if(toDir === dir) {
+                // console.log("can't join same directions",toDir,dir)
+                return
+            }
             this.props.provider.addConnection(ch.id,key,toId,toKey)
         }
         window.addEventListener('mousemove',l1)
         window.addEventListener('mouseup',l2)
     }
 
-    clickCircle = (e, ch, key) =>{
-        if(this.props.provider.isConnected(ch.id,key)) {
-            this.props.provider.deleteConnection(ch.id,key)
-        }
+    clickCircle = (e, ch, key, dir) =>{
+        const prov = this.props.provider
+        if(prov.isConnected(ch.id,key)) prov.deleteConnection(ch.id,key)
     }
 
     startMovingBG = (e,node) => {
@@ -412,10 +422,11 @@ class TextureEditorCanvas extends Component {
                 return <g key={key} transform={`translate(0,${i*25})`}>
                     <circle className={clss}
                             cx="0" cy="-5" r="5"
-                            onMouseDown={(e)=>this.pressCircle(e,ch,key)}
-                            onClick={(e)=>this.clickCircle(e,ch,key)}
+                            onMouseDown={(e)=>this.pressCircle(e,ch,key,"input")}
+                            onClick={(e)=>this.clickCircle(e,ch,key,"input")}
                             data-propname={key}
                             data-nodeid={ch.id}
+                            data-direction="input"
                     />
                     <text x={10} y={0} textAnchor="start">{key}</text>
                 </g>
@@ -430,7 +441,9 @@ class TextureEditorCanvas extends Component {
                             cx="0" cy="-5" r="5"
                             data-propname={key}
                             data-nodeid={ch.id}
-                            onMouseDown={(e)=>this.pressCircle(e,ch,key)}
+                            data-direction="output"
+                            onClick={(e)=>this.clickCircle(e,ch,key,"output")}
+                            onMouseDown={(e)=>this.pressCircle(e,ch,key,"output")}
                     />
                     <text x={-10} y={0} textAnchor="end">{key}</text>
                 </g>
@@ -456,16 +469,14 @@ class TextureEditorCanvas extends Component {
             if(!to) return ""
             const w = 170
             const path = `M ${from.x+w-10} ${from.y+40-5} ${to.x+10} ${to.y+40-5}`
-            return <path key={i} style={{pointerEvents:'none'}} d={path}
-                         className="connection-line"
-            ></path>
+            return <path key={i} d={path} className="connection-line"/>
         })
         return <g>{conns}</g>
     }
     renderOverlay() {
         if(!this.state.connecting) return ""
         const path = `M ${this.state.start.x} ${this.state.start.y} L ${this.state.end.x} ${this.state.end.y}`;
-        return <path style={{pointerEvents:'none'}}d={path} stroke="green" strokeWidth="5"></path>
+        return <path d={path} className="connection-line"/>
     }
     renderNode(node,i) {
         const template = this.props.provider.getTemplate(node)
