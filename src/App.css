@@ -208,3 +208,16 @@ svg path.connection-line {
     pointer-events: none;
     stroke-linecap: round;
 }
+
+.node-canvas {
+    position: relative;
+}
+.node-canvas .graph-output-canvas {
+    border: 1px solid black;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-color: white;
+    padding:0;
+    margin:0;
+}

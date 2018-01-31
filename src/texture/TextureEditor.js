@@ -48,6 +48,17 @@ const templates = {
             value: {
                 type:'number'
             }
+        },
+        generateValue: (node,th)=>{
+            let amp = 1
+            let freq = 1
+            if(typeof node.inputs.frequency !== 'undefined') {
+                freq = node.inputs.frequency
+            }
+            if(typeof node.inputs.amplitude !== 'undefined') {
+                amp = node.inputs.amplitude
+            }
+            return Math.sin(th*freq)*amp
         }
     },
     graph: {
@@ -157,11 +168,14 @@ export default class TextureEditor extends TreeItemProvider {
             }
             Object.keys(template.inputs).forEach((key) => {
                 const t = template.inputs[key]
+                let v = t.default
+                if(node.inputs[key]) v = node.inputs[key]
                 defs.push({
                     name: key,
                     key: key,
-                    value: t.default,
-                    type: t.type
+                    value: v,
+                    type: t.type,
+                    dir:'input'
                 })
             });
             Object.keys(template.outputs).forEach((key) => {
@@ -170,7 +184,9 @@ export default class TextureEditor extends TreeItemProvider {
                     name: key,
                     key: key,
                     value: 0,
-                    type: t.type
+                    type: t.type,
+                    dir:'output',
+                    locked:true
                 })
             });
         }
@@ -186,14 +202,27 @@ export default class TextureEditor extends TreeItemProvider {
     findNodeById(id) {
         return this.id_index[id]
     }
+    findNodeByTemplate(temp) {
+        return this.root.children.find((ch)=>ch.template === temp)
+    }
     getRendererForItem(node) {
         if(node.type === 'root') return <div>root</div>
         return <div>node: {this.getTemplate(node).title}</div>
     }
     setPropertyValue(item,def,value) {
         if(def.type === 'number') value = parseFloat(value);
-        item[def.key] = value
+        if(def.dir === 'input') item.inputs[def.key] = value
+        if(def.dir === 'output') item.outputs[def.key] = value
+        if(!def.dir) item[def.key] = value
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    }
+    getPropertyValue(node,key) {
+        let val = node[key]
+        if (typeof val === 'undefined') {
+            const temp = this.getTemplate(node)
+            val = temp.inputs[key].default
+        }
+        return val
     }
     getChildren(node) {
         return node.children
@@ -248,10 +277,10 @@ export default class TextureEditor extends TreeItemProvider {
                 }
             },
             {
-                title:'conn',
+                title:'graph',
                 icon:'plus',
                 fun: () => {
-                    this.makeConnectionNode()
+                    this.appendChild(this.getSceneRoot(),this.makeGraphNode())
                 }
             },
             {
@@ -275,6 +304,18 @@ export default class TextureEditor extends TreeItemProvider {
             }
         }
     }
+    makeGraphNode() {
+        return {
+            type:'node',
+            id: this.genID('node'),
+            template: 'graph',
+            x: 50,
+            y: 100,
+            inputs: {
+                value: 0
+            }
+        }
+    }
     makeConnectionNode() {
         const scene = this.root
         if(!scene.connections) scene.connections = []
@@ -293,6 +334,13 @@ export default class TextureEditor extends TreeItemProvider {
     isConnected(id, key) {
         if(!this.root || !this.root.connections) return false
         return this.root.connections.some((conn) => {
+            if(conn.from === id && conn.fromProp === key) return true
+            if(conn.to   === id && conn.toProp   === key) return true
+            return false
+        })
+    }
+    findConnection(id, key) {
+        return this.root.connections.find((conn)=>{
             if(conn.from === id && conn.fromProp === key) return true
             if(conn.to   === id && conn.toProp   === key) return true
             return false
@@ -326,7 +374,35 @@ class TextureEditorCanvas extends Component {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
         })
+        setInterval(this.drawGraph,100)
     }
+    drawGraph = () => {
+        if(!this.canvas) return
+        const c = this.canvas.getContext('2d')
+        c.fillStyle = 'red'
+        c.fillRect(0,0,100,100)
+        const graph = this.props.provider.findNodeByTemplate('graph')
+        const prov = this.props.provider
+        if(!graph) {
+            console.log("no graph yet")
+        } else {
+            if(prov.isConnected(graph.id,'value')) {
+                const conn = prov.findConnection(graph.id,'value')
+                if(conn.to === graph.id) {
+                    const source = prov.findNodeById(conn.from)
+                    const template = prov.getTemplate(source)
+                    c.beginPath()
+                    for(let t=0; t<Math.PI*2; t+=0.1) {
+                        const v = template.generateValue(source,t)
+                        c.lineTo(t*(100/(Math.PI*2)),v*50+50)
+                    }
+                    c.strokeStyle = 'black'
+                    c.stroke()
+                }
+            }
+        }
+    }
+
     render() {
         const scene = this.props.provider.getSceneRoot()
         if(!scene) return <div>empty</div>
@@ -340,6 +416,7 @@ class TextureEditorCanvas extends Component {
                 {this.renderChildren(scene)}
                 {this.renderOverlay()}
             </svg>
+            <canvas width="100" height="100" ref={(can)=>this.canvas = can} className="graph-output-canvas"/>
         </div>
     }
 
