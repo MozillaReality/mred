@@ -49,15 +49,9 @@ const templates = {
                 type:'number'
             }
         },
-        generateValue: (node,th)=>{
-            let amp = 1
-            let freq = 1
-            if(typeof node.inputs.frequency !== 'undefined') {
-                freq = node.inputs.frequency
-            }
-            if(typeof node.inputs.amplitude !== 'undefined') {
-                amp = node.inputs.amplitude
-            }
+        generateValue: (prov, node, th)=>{
+            let freq = prov.computePropertyValueAtT(node.id,'frequency',th)
+            let amp = prov.computePropertyValueAtT(node.id,'amplitude',th)
             return Math.sin(th*freq)*amp
         }
     },
@@ -224,6 +218,26 @@ export default class TextureEditor extends TreeItemProvider {
         }
         return val
     }
+
+    computePropertyValueAtT(nid,key,t) {
+        if(this.isConnected(nid,key)) {
+            const conn = this.findConnection(nid,key)
+            if(conn.to === nid) {
+                const source = this.findNodeById(conn.from)
+                const template = this.getTemplate(source)
+                return template.generateValue(this,source,t)
+            }
+        }
+        const node = this.findNodeById(nid)
+        if(!node) return 0
+        if(!node.inputs) return 0
+        if(typeof node.inputs[key] !== 'undefined') {
+            return node.inputs[key]
+        }
+        const template = this.getTemplate(node)
+        return template.inputs[key].default
+    }
+
     getChildren(node) {
         return node.children
     }
@@ -386,20 +400,13 @@ class TextureEditorCanvas extends Component {
         if(!graph) {
             console.log("no graph yet")
         } else {
-            if(prov.isConnected(graph.id,'value')) {
-                const conn = prov.findConnection(graph.id,'value')
-                if(conn.to === graph.id) {
-                    const source = prov.findNodeById(conn.from)
-                    const template = prov.getTemplate(source)
-                    c.beginPath()
-                    for(let t=0; t<Math.PI*2; t+=0.1) {
-                        const v = template.generateValue(source,t)
-                        c.lineTo(t*(100/(Math.PI*2)),v*50+50)
-                    }
-                    c.strokeStyle = 'black'
-                    c.stroke()
-                }
+            c.beginPath()
+            for(let t=0; t<Math.PI*2; t+=0.2) {
+                const v = prov.computePropertyValueAtT(graph.id,'value',t)
+                c.lineTo(t*(100/(Math.PI*2)),v*50+50)
             }
+            c.strokeStyle = 'black'
+            c.stroke()
         }
     }
 
