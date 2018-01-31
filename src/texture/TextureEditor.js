@@ -385,6 +385,7 @@ class TextureEditorCanvas extends Component {
     startMovingBG = (e,node) => {
         e.stopPropagation()
         e.preventDefault()
+        SelectionManager.setSelection(node)
         const l = (e) => {
             const defs = this.props.provider.getProperties(node)
             const xdef = defs.find((def)=>def.key === 'x')
@@ -499,48 +500,4 @@ class TextureEditorCanvas extends Component {
 
         </div>
     }
-    /*
-    isConnected(node,key,def) {
-        if(!node.connections) return false
-        if(node.connections.length <= 0) return false;
-        console.log("checking",node.connections,'to',key)
-        if(node.connections.some(conn=>conn.srcProp===key)) {
-            console.log("real connection")
-            return true
-        }
-        // node.connections.includes((c)=>c.tgtProp == oup)
-        return false
-    }
-    */
-
-    /*
-    renderConnections(scene) {
-        const outs = []
-        scene.children.forEach((ch)=>{
-            if(!ch.connections) return
-            ch.connections.forEach((conn,i)=>{
-                const src = ch;
-                const tgt = this.props.provider.findNodeById(conn.target)
-                if(!tgt) {
-                    return console.log("coulnt find hte target for connection",conn)
-                }
-                const w = 200
-                const style = {
-                    left:(src.x+w-15)+"px",
-                    top: (src.y+25)+"px",
-                    position:'absolute',
-                    width:(Math.abs(tgt.x-src.x)+w-20)+'px',
-                    height:Math.abs(tgt.y-src.y)+50+'px',
-                    border:'1px solid red'
-                }
-                const dx = -200+(tgt.x-src.x+15+15)
-                const dy = 0+(tgt.y-src.y-25+25+10)
-                outs.push(<svg key={i} id="svg-foo"  xmlns="http://www.w3.org/2000/svg" style={style}>
-                    <path d={`M 5 5 L ${dx} ${dy}`} stroke="black" strokeWidth="5"></path>
-                </svg>)
-            })
-        })
-        return outs
-    }
-    */
 }
