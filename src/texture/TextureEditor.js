@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
+import {makePoint} from '../utils'
 
 /*
 
@@ -216,6 +217,10 @@ export default class TextureEditor extends TreeItemProvider {
         const index = this.root.children.indexOf(child)
         if(index<0) return console.log("not really the parent. invalid!")
         this.root.children.splice(index,1)
+        this.root.connections = this.root.connections.filter((conn)=>{
+            return (conn.from !== child.id && conn.to !== child.id)
+        })
+        console.log("connects now", this.root.connections)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
         SelectionManager.setSelection(this.root)
     }
@@ -272,8 +277,27 @@ export default class TextureEditor extends TreeItemProvider {
         scene.connections.push(conn)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
     }
-    isConnected() {
-        return false
+    isConnected(id, key) {
+        if(!this.root || !this.root.connections) return false
+        return this.root.connections.some((conn) => {
+            if(conn.from === id && conn.fromProp === key) return true
+            if(conn.to   === id && conn.toProp   === key) return true
+            return false
+        })
+    }
+    addConnection(fromId, fromKey, toId, toKey) {
+        if(!this.root.connections) this.root.connections = []
+        if(!fromId) return
+        if(!toId) return
+        const conn = {
+            from: fromId,
+            to: toId,
+            fromProp: fromKey,
+            toProp: toKey
+        }
+        console.log('adding connection',fromId, fromKey, toId, toKey,conn)
+        this.root.connections.push(conn)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
     }
 }
 
@@ -281,7 +305,8 @@ class TextureEditorCanvas extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            selection:null
+            selection:null,
+            connecting:false
         }
     }
     componentDidMount() {
@@ -297,17 +322,44 @@ class TextureEditorCanvas extends Component {
             height:'900px'
         }
         return <div className="node-canvas">
-            {/*{this.renderConnections(scene)}*/}
-            {/*{scene.children.map((ch,i)=> this.renderNode(ch,i))}*/}
-            <svg style={style}>
+            <svg style={style} ref={(svg)=>this.svg = svg}>
+                {this.renderConnections(scene)}
                 {this.renderChildren(scene)}
-                {this.renderConnections()}
+                {this.renderOverlay()}
             </svg>
         </div>
     }
 
-    clickCircle = (e)=>{
-        console.log("clicked on",e.target)
+    pressCircle = (e, ch, key)=>{
+        e.stopPropagation()
+        e.preventDefault()
+        console.log('checking if already connected',ch.id,key)
+        if(this.props.provider.isConnected(ch.id,key)) {
+            console.log("already connected")
+            return
+        }
+
+
+        const rect = e.target.getBoundingClientRect()
+        const rect2 = this.svg.getBoundingClientRect()
+        const pt = makePoint(rect.x-rect2.x, rect.y-rect2.y)
+        this.setState({connecting:true,start:pt,end:pt})
+        const l1 = (e) => {
+            // const rect = e.target.getBoundingClientRect()
+            const rect2 = this.svg.getBoundingClientRect()
+            const pt = makePoint(e.clientX-rect2.x, e.clientY-rect2.y)
+            this.setState({end:pt})
+        }
+        const l2 = (e) => {
+            this.setState({connecting:false})
+            const toKey = e.target.getAttribute('data-propname')
+            const toId   = e.target.getAttribute('data-nodeid')
+            this.props.provider.addConnection(ch.id,key,toId,toKey)
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
+        }
+        window.addEventListener('mousemove',l1)
+        window.addEventListener('mouseup',l2)
     }
     startMovingBG = (e,node) => {
         e.stopPropagation()
@@ -329,32 +381,68 @@ class TextureEditorCanvas extends Component {
 
     renderChildren(scene) {
         return <g>{scene.children.map((ch,i)=>{
-            // console.log('drawing child',ch)
             const temp = this.props.provider.getTemplate(ch)
-            // console.log("inputs",temp.inputs)
             const ins = Object.keys(temp.inputs).map((key,i)=>{
+                let clss = "handle"
+                if(this.props.provider.isConnected(ch.id,key)) {
+                    clss += " connected"
+                }
                 return <g key={key} transform={`translate(0,${i*25})`}>
-                    <circle cx="0" cy="-5" r="5" fill="white" stroke="black" strokeWidth="2" onClick={this.clickCircle}/>
-                    <text x={10} y={0} textAnchor="start">input</text>
+                    <circle className={clss}
+                            cx="0" cy="-5" r="5"
+                            onMouseDown={(e)=>this.pressCircle(e,ch,key)}
+                            data-propname={key}
+                            data-nodeid={ch.id}
+                    />
+                    <text x={10} y={0} textAnchor="start">{key}</text>
                 </g>
             })
             const outs = Object.keys(temp.outputs).map((key,i)=>{
+                let clss = "handle"
+                if(this.props.provider.isConnected(ch.id,key)) {
+                    clss += " connected"
+                }
                 return <g key={key} transform={`translate(0,${i*25})`}>
-                    <circle cx="0" cy="-5" r="5" fill="white" stroke="black" strokeWidth="2" onClick={this.clickCircle}/>
-                    <text x={-10} y={0} textAnchor="end">output</text>
+                    <circle className={clss}
+                            cx="0" cy="-5" r="5"
+                            data-propname={key}
+                            data-nodeid={ch.id}
+                            onMouseDown={(e)=>this.pressCircle(e,ch,key)}
+                    />
+                    <text x={-10} y={0} textAnchor="end">{key}</text>
                 </g>
             })
+            const w = 170
+            const r = 10
             return <g key={i} transform={`translate(${ch.x},${ch.y})`}>
-                <rect x={0} y={0} width={150} height={100} fill="red" onMouseDown={(e)=>this.startMovingBG(e,ch)}/>
-                <rect x={0} y={0} width={150} height={20} fill="blue"/>
-                <text x={5} y={15} content="foo" fill="white">some title</text>
+                <rect className="bg" x={0} y={0} width={w} height={100} rx={r} ry={r}
+                      onMouseDown={(e)=>this.startMovingBG(e,ch)}/>
+                <rect className="header-bg" x={0} y={0} width={w} height={20}/>
+                <text className="header" x={5} y={15} content="foo">{temp.title}</text>
                 <g transform="translate(10,40)">{ins}</g>
-                <g transform="translate(140,40)">{outs}</g>
+                <g transform={`translate(${w-10},${40})`}>{outs}</g>
             </g>
         })}</g>
     }
-    renderConnections() {
-        return ""
+    renderConnections(scene) {
+        if(!scene.connections) return
+        const conns = scene.connections.map((conn,i) => {
+            const from = this.props.provider.findNodeById(conn.from)
+            const to = this.props.provider.findNodeById(conn.to)
+            if(!from) return ""
+            if(!to) return ""
+            const w = 170
+            const path = `M ${from.x+w-10} ${from.y+40-5} ${to.x+10} ${to.y+40-5}`
+            return <path key={i} style={{pointerEvents:'none'}} d={path}
+                         className="connection-line"
+            ></path>
+        })
+        return <g>{conns}</g>
+    }
+    renderOverlay() {
+        if(!this.state.connecting) return ""
+        const path = `M ${this.state.start.x} ${this.state.start.y} L ${this.state.end.x} ${this.state.end.y}`;
+        return <path style={{pointerEvents:'none'}}d={path} stroke="green" strokeWidth="5"></path>
     }
     renderNode(node,i) {
         const template = this.props.provider.getTemplate(node)

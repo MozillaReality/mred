@@ -179,3 +179,26 @@ ul.popup-menu li:hover {
 .popup-menu > div:hover {
      background-color: lightblue;
 }
+
+svg rect.bg {
+    fill: #aaccff;
+ }
+svg rect.header-bg {
+    fill: #aaddff;
+}
+svg circle {
+    fill:white;
+    stroke: black;
+    stroke-width: 1px;
+}
+circle.handle:hover {
+    stroke: yellow;
+}
+circle.handle.connected {
+    fill:orange;
+}
+
+svg path.connection-line {
+    stroke: orange;
+    stroke-width: 5px;
+}
