@@ -119,8 +119,6 @@ export default class TextureEditorCanvas extends Component {
         window.addEventListener('mousemove',l1)
         window.addEventListener('mouseup',l2)
     }
-
-
     pressOutputCircle = (e, ch, key)=>{
         e.stopPropagation()
         e.preventDefault()
@@ -243,37 +241,5 @@ export default class TextureEditorCanvas extends Component {
         const path = `M ${this.state.start.x} ${this.state.start.y} L ${this.state.end.x} ${this.state.end.y}`;
         return <path d={path} className="connection-line"/>
     }
-    renderNode(node,i) {
-        const template = this.props.provider.getTemplate(node)
-        // console.log(node,template)
-        const style = {
-            left:`${node.x}px`,
-            top:`${node.y}px`,
-            width:'200px'
-        }
-        return <div key={i} className="node-wrapper"
-                    style={style}
-        >
-            <div className="title">{template.title}</div>
 
-            <ul className="inputs">
-                {Object.keys(template.inputs).map((key)=>{
-                    const inp = template.inputs[key]
-                    return <li key={key}><i className="fa fa-circle-o"></i> {key}</li>
-                })}
-            </ul>
-            <ul className="outputs">
-                {Object.keys(template.outputs).map((key)=>{
-                    const oup = template.outputs[key]
-                    let icon = <i className="fa fa-circle-o"></i>
-                    if(this.props.provider.isConnected(node,key,oup)) {
-                        console.log("output",key,'is connected')
-                        icon = <i className="fa fa-circle connected"></i>
-                    }
-                    return <li key={key}>{key} {icon}</li>
-                })}
-            </ul>
-
-        </div>
-    }
 }
