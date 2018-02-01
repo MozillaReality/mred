@@ -7,13 +7,14 @@
 * // add canMakeOutputConnection(input.nodeid,input.prop)
 * // add canMakeInputConnection(output.nodeid,output.prop)
 
-* if a node input property comes from a connection, then it is locked
-* if there is no editor for the type (like xyfill) then just print the type
+//* if a node input property comes from a connection, then it is locked
+//* if there is no editor for the type (like xyfill) then just print the type
 * do allow multiple connections on a single output
 * do not allow multiple connections on a single input
-* add click event to the canvas to make it refresh
-* canvas always shows the current output graph. how to search for them?
-* draw the current target node
+//* add click event to the canvas to make it refresh
+//* canvas always shows the current output graph. how to search for them?
+//* draw the current target node
+//* show color in the bg of the color button
 
 --------------
 

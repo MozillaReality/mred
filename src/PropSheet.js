@@ -96,14 +96,16 @@ class PropEditor extends Component {
     render() {
         const def = this.props.def;
         const obj = selMan.getSelection();
-        if (def.locked === true) return <i>{def.value}</i>
+        if (def.locked === true) return <i>{def.type}:{def.value}</i>
         if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (def.type === 'number')  return <input type='number'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
         if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} obj={obj} provider={this.props.provider}/>
-        if (def.type === 'color') return <button onClick={this.openColorEditor}>{this.state.value}</button>
+        if (def.type === 'color') return <button style={{
+            backgroundColor:this.state.value
+        }} onClick={this.openColorEditor}>{this.state.value}</button>
         if (def.type === 'array') return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={def} obj={obj} provider={this.props.provider}/>
-        return <b>{def.value}</b>
+        return <b>{def.type}:{def.value}</b>
     }
 }
 
