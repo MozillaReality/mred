@@ -1,3 +1,90 @@
+make the svg area zoom in and out
+show root.nodes and root.connections in the tree view
+
+node should be like this:
+
+{
+    type,id,x,y,
+    template:'templatename',
+    inputs: {
+        name: {
+            type:'value',
+            value:somevalue
+            
+            or
+            
+            type:'connection'
+            id:someid
+            
+            }
+    }
+    outputs:{
+        outputs don't have values. they are just the source for a connection, possibly multiple connections.
+    }
+}
+
+template looks similar
+when created, copy default values from the template to the block, always use block values from then on
+
+connection:
+{
+    output: {  the source node
+        node:nodeid
+        prop:propname
+    }
+    input: {  the target node
+        node:nodeid
+        prop:propname
+    }
+}
+
+there may be multiple connections with the same output node & prop
+
+
+to draw the screen we need
+
+getNodes()
+getInputConnectionsForNode(node)
+getNodeForId(id)
+getConnectionForId(id)
+getPropertyPosition(node,propname)
+getProperties(node) returns full set of property defs.  
+    if a node input property comes from a connection, then it is locked
+    do not show output properties, only inputs (or should we make them viewable but always locked?)
+    if there is no editor for the type (like xyfill) then just print the type
+
+canMakeOutputConnection(input.nodeid,input.prop)
+canMakeInputConnection(output.nodeid,output.prop)
+    only allow connections from compatible types
+    disallow a block connecting to itself
+    do allow multiple connections on a single output
+    do not allow multiple connections on a single input
+    
+    
+add click event to the canvas to make it refresh
+canvas always shows the current output graph. how to search for them?
+draw the current target node
+
+getZoomScale()
+make viewer resize itself to fit the contents plus some margin. drag to the edges to make more room
+draging blocks breaks when you go over to another pane
+
+always pass the document to the viewer, even if we access things through the provider
+
+make sure to unregister anything when the component is unmounted
+
+position the inputs and outputs using a stable sort order for the inputs
+position the connection line based on the position of the propname in the node. this can be optimized.
+getInputsForNode(node) instead of directly accessing them
+computeValueForProperty(node,property)  evaluates local values, and follows connections if needed 
+
+
+
+make items draggable in the hypercard 2d
+add images to hypercard 2d. create node, set src, it loads automatically, resize with handles
+
+-------------------
+
 
 General Ed is not a visual authoring tool for general use. It's a platform for us to build
 some of our own tools. It is a structured document editor. It should not leave Mozilla because
