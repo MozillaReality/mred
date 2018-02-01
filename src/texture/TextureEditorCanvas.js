@@ -15,29 +15,6 @@ export default class TextureEditorCanvas extends Component {
             console.log("new selection is", SelectionManager.getSelection())
             this.setState({selection:sel})
         })
-        // setTimeout(this.drawGraph,1000)
-    }
-    drawGraph = () => {
-        if(!this.canvas) return
-        const c = this.canvas.getContext('2d')
-        c.fillStyle = 'red'
-        c.fillRect(0,0,100,100)
-        const graph = this.props.provider.findNodeByTemplate('graph')
-        const prov = this.props.provider
-        if(graph) {
-            c.beginPath()
-            for(let t=0; t<Math.PI*2; t+=0.2) {
-                const v = prov.computeInputPropertyValueAt(graph.id,'value',t)
-                c.lineTo(t*(100/(Math.PI*2)),v*50+50)
-            }
-            c.strokeStyle = 'black'
-            c.stroke()
-        }
-        const fillout = prov.findNodeByTemplate('fillout')
-        if(fillout) {
-            // const pt = makePoint(0,0)
-            // const v = prov.computeInputPropertyValueAt(fillout.id,'a',pt)
-        }
     }
 
     clickedCanvas = () => {

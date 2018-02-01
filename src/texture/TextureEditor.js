@@ -297,14 +297,6 @@ export default class TextureEditor extends TreeItemProvider {
         if(def.key==='x' || def.key==='y') item[def.key] = value
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
-    getPropetyValue(node,key) {
-        let val = node[key]
-        if (typeof val === 'undefined') {
-            const temp = this.getTemplate(node)
-            val = temp.inputs[key].default
-        }
-        return val
-    }
 
 
     getTemplate(node) {
@@ -361,12 +353,7 @@ export default class TextureEditor extends TreeItemProvider {
                     {
                         title: 'sin',
                         icon: 'plus',
-                        fun: () => this.appendNode(this.makeSinNode())
-                    },
-                    {
-                        title: 'graph',
-                        icon: 'plus',
-                        fun: () => this.appendNode(this.makeGraphNode())
+                        fun: () => this.appendNode(this.makeNodeFromTemplate('sin'))
                     },
                     {
                         title: 'check',
@@ -387,18 +374,12 @@ export default class TextureEditor extends TreeItemProvider {
             },
             {
                 icon:'close',
-                fun: () => {
-                    this.deleteChild(SelectionManager.getSelection())
-                }
+                fun: () => this.deleteChild(SelectionManager.getSelection())
             },
         ]
     }
-    makeSinNode() {
-        return this.makeNodeFromTemplate('sin')
-    }
-    makeGraphNode() {
-        return this.makeNodeFromTemplate('graph')
-    }
+
+
     isInputConnected(id,key) {
         return this.getConnections().find((conn)=>conn.input.node === id && conn.input.prop === key)
     }
@@ -443,7 +424,6 @@ export default class TextureEditor extends TreeItemProvider {
                 prop:inputKey
             }
         }
-        // console.log('adding connection',outputId, outputKey, inputId, inputKey,conn)
         this.root.connections.push(conn)
         outputNode.outputs[outputKey].connections.push(conn.id)
         inputNode.inputs[inputKey].connections.push(conn.id)
