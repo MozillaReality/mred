@@ -2,10 +2,18 @@
 * // update node structure
 * // update connection structure
 * // implement getPropertyPosition
-* split pressCircle into two functions for each direction
-* block adding to same node
-* add canMakeOutputConnection(input.nodeid,input.prop)
-* add canMakeInputConnection(output.nodeid,output.prop)
+* // split pressCircle into two functions for each direction
+* // block adding to same node
+* // add canMakeOutputConnection(input.nodeid,input.prop)
+* // add canMakeInputConnection(output.nodeid,output.prop)
+
+* if a node input property comes from a connection, then it is locked
+* if there is no editor for the type (like xyfill) then just print the type
+* do allow multiple connections on a single output
+* do not allow multiple connections on a single input
+* add click event to the canvas to make it refresh
+* canvas always shows the current output graph. how to search for them?
+* draw the current target node
 
 --------------
 
@@ -58,12 +66,12 @@ to draw the screen we need
 
 //getNodes()
 //getConnections()
-getInputConnectionsForNode(node)
+//getInputConnectionsForNode(node)
 //findNodeById(id)
-findInputConnectionById(id,key)
-findOutputConnectionById(id,key)
-getPropertyPosition(node,propname)
-getProperties(node) returns full set of property defs.  
+//findInputConnectionById(id,key)
+//findOutputConnectionById(id,key)
+//getPropertyPosition(node,propname)
+//getProperties(node) returns full set of property defs.  
     if a node input property comes from a connection, then it is locked
     do not show output properties, only inputs (or should we make them viewable but always locked?)
     if there is no editor for the type (like xyfill) then just print the type
