@@ -175,12 +175,24 @@ export default class TextureEditorCanvas extends Component {
         e.stopPropagation()
         e.preventDefault()
         SelectionManager.setSelection(node)
+        const svgppoint = this.svg.createSVGPoint()
+        svgppoint.x = e.clientX
+        svgppoint.y = e.clientY
+        const cursor = svgppoint.matrixTransform(this.svg.getScreenCTM().inverse())
+        cursor.x -= node.x
+        cursor.y -= node.y
+        this.startpt = cursor
+
         const l = (e) => {
+            const svgppoint = this.svg.createSVGPoint()
+            svgppoint.x = e.clientX
+            svgppoint.y = e.clientY
+            const cursor = svgppoint.matrixTransform(this.svg.getScreenCTM().inverse())
             const defs = this.props.provider.getProperties(node)
             const xdef = defs.find((def)=>def.key === 'x')
             const ydef = defs.find((def)=>def.key === 'y')
-            this.props.provider.setPropertyValue(node,xdef,e.layerX)
-            this.props.provider.setPropertyValue(node,ydef,e.layerY)
+            this.props.provider.setPropertyValue(node,xdef,cursor.x-this.startpt.x)
+            this.props.provider.setPropertyValue(node,ydef,cursor.y-this.startpt.y)
         }
         let l2 = () => {
             window.removeEventListener('mousemove',l)
