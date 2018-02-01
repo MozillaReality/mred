@@ -65,46 +65,74 @@ const templates = {
         },
         outputs: {},
         view:'graphoutput'
-    }
-
-}
-
-const example = {
-    id:'root1',
-    type:'root',
-    children:[
-        {
-            type:'node',
-            id:'node1',
-            template:'sin',
-            x:50,
-            y:50,
-            inputs: {
-                frequency:8
+    },
+    fillcolor: {
+        title:'fill color',
+        inputs: {
+            color: {
+                type:'color',
+                default:'red'
             }
         },
-        {
-            type:'node',
-            id:'node2',
-            template:'graph',
-            x:300,
-            y:50,
-            // connections:[
-            //     {
-            //         source:'node1',
-            //         sourceProperty:'value',
-            //         targetProperty:'value'
-            //     }
-            // ]
+        outputs: {
+            value: {
+                type:'xyfill'
+            }
+        },
+        generateValue: (prov, node, pt) => {
+            console.log("prove is", prov.getDocType())
+            return prov.computePropertyAtValueT(node.id, 'color', pt)
         }
-    ]
+    },
+    checkerboard: {
+        title:'checkerboard',
+        inputs: {
+            size: {
+                type: 'number',
+                default: 10
+            },
+            a: {
+                type: 'xyfill',
+                default: null
+            },
+            b: {
+                type: 'xyfill',
+                default: null
+            },
+        },
+        outputs: {
+            value: {
+                type:'xyfill'
+            }
+        },
+        generateValue: (prov, node, pt) => {
+            console.log("doing size",prov.computePropertyAtValueT)
+            console.log("this ",this)
+            const size = prov.computePropertyAtValueT(node.id,'size',pt)
+            if((pt.x % size) < size/2) {
+                return prov.computePropertyAtValueT(node.id, 'a', pt)
+            } else {
+                return prov.computePropertyAtValueT(node.id, 'b', pt)
+            }
+        }
+    },
+    fillout: {
+        title:'fill output',
+        inputs: {
+            a: {
+                type:'xyfill',
+                default:null
+            }
+        },
+        outputs:{},
+    }
+
 }
 
 export default class TextureEditor extends TreeItemProvider {
     constructor() {
         super()
         this.id_index = {}
-        this.setDocument(example,'foo')
     }
     makeEmptyRoot() {
         return {
@@ -131,6 +159,16 @@ export default class TextureEditor extends TreeItemProvider {
         const defs = []
         if(!node) return defs
 
+        if(node.type === 'root') {
+            defs.push({
+                name:'ID',
+                key:'id',
+                value:node['id'],
+                type:'string',
+                locked:true,
+            })
+            return defs
+        }
         // ID
         defs.push({
             name:'ID',
@@ -284,18 +322,47 @@ export default class TextureEditor extends TreeItemProvider {
     getTreeActions() {
         return [
             {
-                title:'sin',
-                icon:'plus',
-                fun: () => {
-                    this.appendChild(this.getSceneRoot(),this.makeSinNode())
-                }
-            },
-            {
-                title:'graph',
-                icon:'plus',
-                fun: () => {
-                    this.appendChild(this.getSceneRoot(),this.makeGraphNode())
-                }
+                title: 'object',
+                icon: 'plus',
+                type: 'menu',
+                actions: [
+
+                    {
+                        title: 'sin',
+                        icon: 'plus',
+                        fun: () => {
+                            this.appendChild(this.getSceneRoot(), this.makeSinNode())
+                        }
+                    },
+                    {
+                        title: 'graph',
+                        icon: 'plus',
+                        fun: () => {
+                            this.appendChild(this.getSceneRoot(), this.makeGraphNode())
+                        }
+                    },
+                    {
+                        title: 'check',
+                        icon: 'plus',
+                        fun: () => {
+                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('checkerboard'))
+                        }
+                    },
+                    {
+                        title: 'fill',
+                        icon: 'plus',
+                        fun: () => {
+                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('fillcolor'))
+                        }
+                    },
+                    {
+                        title: 'fillout',
+                        icon: 'plus',
+                        fun: () => {
+                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('fillout'))
+                        }
+                    },
+                ]
             },
             {
                 icon:'close',
@@ -328,6 +395,16 @@ export default class TextureEditor extends TreeItemProvider {
             inputs: {
                 value: 0
             }
+        }
+    }
+    makeNodeFromTemplate(tmplname) {
+        return {
+            type:'node',
+            id: this.genID('node'),
+            template:tmplname,
+            x: 50,
+            y: 100,
+            inputs: {}
         }
     }
     makeConnectionNode() {
@@ -388,7 +465,7 @@ class TextureEditorCanvas extends Component {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
         })
-        setInterval(this.drawGraph,100)
+        setTimeout(this.drawGraph,10000)
     }
     drawGraph = () => {
         if(!this.canvas) return
@@ -397,9 +474,7 @@ class TextureEditorCanvas extends Component {
         c.fillRect(0,0,100,100)
         const graph = this.props.provider.findNodeByTemplate('graph')
         const prov = this.props.provider
-        if(!graph) {
-            console.log("no graph yet")
-        } else {
+        if(graph) {
             c.beginPath()
             for(let t=0; t<Math.PI*2; t+=0.2) {
                 const v = prov.computePropertyValueAtT(graph.id,'value',t)
@@ -407,6 +482,11 @@ class TextureEditorCanvas extends Component {
             }
             c.strokeStyle = 'black'
             c.stroke()
+        }
+        const fillout = prov.findNodeByTemplate('fillout')
+        if(fillout) {
+            // const pt = makePoint(0,0)
+            // const v = prov.computePropertyValueAtT(fillout.id,'a',pt)
         }
     }
 
