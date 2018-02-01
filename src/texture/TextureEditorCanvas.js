@@ -7,7 +7,8 @@ export default class TextureEditorCanvas extends Component {
         super(props)
         this.state = {
             selection:null,
-            connecting:false
+            connecting:false,
+            scale:1
         }
     }
     componentDidMount() {
@@ -35,15 +36,34 @@ export default class TextureEditorCanvas extends Component {
         }
     }
 
+    zoomIn = () => this.setState({scale:this.state.scale-1})
+    zoomOut = () => this.setState({scale:this.state.scale+1})
     render() {
         const scene = this.props.provider.getSceneRoot()
         if(!scene) return <div>empty</div>
+        const size = 600;
+        const scale = Math.pow(2,this.state.scale/2)
         const style = {
-            width:'800px',
-            height:'900px'
+            width:`${size}px`,
+            height:`${size}px`,
+            position:'absolute',
+            top:'2em',
+            left:100,
+            border:'1px solid black'
         }
         return <div className="node-canvas">
-            <svg style={style} ref={(svg)=>this.svg = svg}>
+            <div style={{
+                position:'absolute',
+                left:100,
+                top:'0em'
+            }}
+                 className="toolbar"
+            >
+                <button className="fa fa-plus-circle" onClick={this.zoomIn}/>
+                <button className="fa fa-minus-circle" onClick={this.zoomOut}/>
+            </div>
+            <svg style={style} ref={(svg)=>this.svg = svg}
+            viewBox={`0 0 ${size*scale} ${size*scale}`}>
                 {this.renderConnections(scene)}
                 {this.renderChildren(scene)}
                 {this.renderOverlay()}
