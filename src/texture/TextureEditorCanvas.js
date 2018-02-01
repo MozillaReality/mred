@@ -27,7 +27,7 @@ export default class TextureEditorCanvas extends Component {
         if(graph) {
             c.beginPath()
             for(let t=0; t<Math.PI*2; t+=0.2) {
-                const v = prov.computePropertyValueAtT(graph.id,'value',t)
+                const v = prov.computeInputPropertyValueAt(graph.id,'value',t)
                 c.lineTo(t*(100/(Math.PI*2)),v*50+50)
             }
             c.strokeStyle = 'black'
@@ -36,7 +36,25 @@ export default class TextureEditorCanvas extends Component {
         const fillout = prov.findNodeByTemplate('fillout')
         if(fillout) {
             // const pt = makePoint(0,0)
-            // const v = prov.computePropertyValueAtT(fillout.id,'a',pt)
+            // const v = prov.computeInputPropertyValueAt(fillout.id,'a',pt)
+        }
+    }
+
+    clickedCanvas = () => {
+        if(!this.canvas) return
+        const c = this.canvas.getContext('2d')
+        c.fillStyle = 'red'
+        c.fillRect(0,0,100,100)
+        const prov = this.props.provider
+        const fillout = prov.findNodeByTemplate('fillout')
+        if(fillout) {
+            for(let x = 0; x<5; x++) {
+                for(let y=0; y<5; y++) {
+                    const v = prov.computeInputPropertyValueAt(fillout.id,'a',makePoint(x,y))
+                    c.fillStyle = v
+                    c.fillRect(x*10,y*10,10,10)
+                }
+            }
         }
     }
 
@@ -53,7 +71,7 @@ export default class TextureEditorCanvas extends Component {
                 {this.renderChildren(scene)}
                 {this.renderOverlay()}
             </svg>
-            <canvas width="100" height="100" ref={(can)=>this.canvas = can} className="graph-output-canvas"/>
+            <canvas width="100" height="100" ref={(can)=>this.canvas = can} className="graph-output-canvas" onClick={this.clickedCanvas}/>
         </div>
     }
 

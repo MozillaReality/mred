@@ -51,8 +51,8 @@ const templates = {
             }
         },
         generateValue: (prov, node, th)=>{
-            let freq = prov.computePropertyValueAtT(node.id,'frequency',th)
-            let amp = prov.computePropertyValueAtT(node.id,'amplitude',th)
+            let freq = prov.computeInputPropertyValueAt(node.id,'frequency',th)
+            let amp = prov.computeInputPropertyValueAt(node.id,'amplitude',th)
             return Math.sin(th*freq)*amp
         }
     },
@@ -81,8 +81,7 @@ const templates = {
             }
         },
         generateValue: (prov, node, pt) => {
-            console.log("prove is", prov.getDocType())
-            return prov.computePropertyAtValueT(node.id, 'color', pt)
+            return prov.computeInputPropertyValueAt(node.id, 'color', pt)
         }
     },
     checkerboard: {
@@ -107,13 +106,11 @@ const templates = {
             }
         },
         generateValue: (prov, node, pt) => {
-            console.log("doing size",prov.computePropertyAtValueT)
-            console.log("this ",this)
-            const size = prov.computePropertyAtValueT(node.id,'size',pt)
-            if((pt.x % size) < size/2) {
-                return prov.computePropertyAtValueT(node.id, 'a', pt)
+            const size = prov.computeInputPropertyValueAt(node.id,'size',pt)
+            if((pt.x+pt.y) % 2 == 0) {
+                return prov.computeInputPropertyValueAt(node.id, 'a', pt)
             } else {
-                return prov.computePropertyAtValueT(node.id, 'b', pt)
+                return prov.computeInputPropertyValueAt(node.id, 'b', pt)
             }
         }
     },
@@ -324,20 +321,18 @@ export default class TextureEditor extends TreeItemProvider {
         return <div>error. unknown type</div>
     }
 
-    computePropertyValueAtT(nid,key,t) {
-        if(this.isConnected(nid,key)) {
-            const conn = this.findConnection(nid,key)
-            if(conn.to === nid) {
-                const source = this.findNodeById(conn.from)
-                const template = this.getTemplate(source)
-                return template.generateValue(this,source,t)
-            }
+    computeInputPropertyValueAt = (nid, key, t) => {
+        if(this.isInputConnected(nid,key)) {
+            const conn = this.findInputConnectionById(nid,key)
+            const node = this.findNodeById(conn.output.node)
+            const template = this.getTemplate(node)
+            return template.generateValue(this,node,t)
         }
         const node = this.findNodeById(nid)
         if(!node) return 0
         if(!node.inputs) return 0
         if(typeof node.inputs[key] !== 'undefined') {
-            return node.inputs[key]
+            return node.inputs[key].value
         }
         const template = this.getTemplate(node)
         return template.inputs[key].default
@@ -404,21 +399,6 @@ export default class TextureEditor extends TreeItemProvider {
     makeGraphNode() {
         return this.makeNodeFromTemplate('graph')
     }
-    makeConnectionNode() {
-        const scene = this.root
-        if(!scene.connections) scene.connections = []
-        const ch = scene.children[0]
-        const tg = scene.children[1]
-        const conn = {
-            from: ch.id,
-            to: tg.id,
-            fromProp: 'value',
-            toProp: 'value',
-        }
-        console.log('connection',conn)
-        scene.connections.push(conn)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
-    }
     isInputConnected(id,key) {
         return this.getConnections().find((conn)=>conn.input.node === id && conn.input.prop === key)
     }
@@ -427,21 +407,6 @@ export default class TextureEditor extends TreeItemProvider {
 
     isOutputConnected(id,key) {
         return this.getConnections().find((conn)=>conn.output.node === id && conn.output.prop === key)
-    }
-    isConnected(id, key) {
-        if(!this.root || !this.root.connections) return false
-        return this.root.connections.some((conn) => {
-            if(conn.from === id && conn.fromProp === key) return true
-            if(conn.to   === id && conn.toProp   === key) return true
-            return false
-        })
-    }
-    findConnection(id, key) {
-        return this.root.connections.find((conn)=>{
-            if(conn.from === id && conn.fromProp === key) return true
-            if(conn.to   === id && conn.toProp   === key) return true
-            return false
-        })
     }
     isValidInputConnection(conn, dir) {
         if(dir !== 'input') return false
@@ -459,6 +424,13 @@ export default class TextureEditor extends TreeItemProvider {
         if(!this.root.connections) this.root.connections = []
         if(!outputId) return
         if(!inputId) return
+        const outputNode = this.findNodeById(outputId)
+        if(!outputNode) return
+        if(!outputNode.outputs[outputKey]) return
+        const inputNode = this.findNodeById(inputId)
+        if(!inputNode) return
+        if(!inputNode.inputs[inputKey]) return
+
         const conn = {
             type:'connection',
             id: this.genID('connection'),
@@ -473,6 +445,8 @@ export default class TextureEditor extends TreeItemProvider {
         }
         // console.log('adding connection',outputId, outputKey, inputId, inputKey,conn)
         this.root.connections.push(conn)
+        outputNode.outputs[outputKey].connections.push(conn.id)
+        inputNode.inputs[inputKey].connections.push(conn.id)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
     }
 }
