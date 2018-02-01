@@ -1,5 +1,16 @@
+* // show root.nodes and root.connections in the tree view
+* // update node structure
+* // update connection structure
+* // implement getPropertyPosition
+* split pressCircle into two functions for each direction
+* block adding to same node
+* add canMakeOutputConnection(input.nodeid,input.prop)
+* add canMakeInputConnection(output.nodeid,output.prop)
+
+--------------
+
+
 make the svg area zoom in and out
-show root.nodes and root.connections in the tree view
 
 node should be like this:
 
@@ -9,7 +20,8 @@ node should be like this:
     inputs: {
         name: {
             type:'value',
-            value:somevalue
+            value:somevalue,
+            connections:
             
             or
             
@@ -20,6 +32,7 @@ node should be like this:
     }
     outputs:{
         outputs don't have values. they are just the source for a connection, possibly multiple connections.
+        they need only a type because the represent the output of this function block
     }
 }
 
@@ -43,10 +56,12 @@ there may be multiple connections with the same output node & prop
 
 to draw the screen we need
 
-getNodes()
+//getNodes()
+//getConnections()
 getInputConnectionsForNode(node)
-getNodeForId(id)
-getConnectionForId(id)
+//findNodeById(id)
+findInputConnectionById(id,key)
+findOutputConnectionById(id,key)
 getPropertyPosition(node,propname)
 getProperties(node) returns full set of property defs.  
     if a node input property comes from a connection, then it is locked
@@ -67,7 +82,7 @@ draw the current target node
 
 getZoomScale()
 make viewer resize itself to fit the contents plus some margin. drag to the edges to make more room
-draging blocks breaks when you go over to another pane
+dragging blocks breaks when you go over to another pane
 
 always pass the document to the viewer, even if we access things through the provider
 

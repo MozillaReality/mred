@@ -138,7 +138,8 @@ export default class TextureEditor extends TreeItemProvider {
         return {
             id:this.genID('root'),
             type:'root',
-            children:[]
+            nodes:[],
+            connections:[]
         }
     }
     getDocType = () => "texture"
@@ -148,113 +149,178 @@ export default class TextureEditor extends TreeItemProvider {
     setDocument(doc,docid) {
         super.setDocument(doc, docid)
         this.id_index = {}
-        this.root.children.forEach((ch) => {
-            this.id_index[ch.id] = ch
-        })
-        console.log("doc changed");
+        this.root.nodes.forEach((ch) => this.id_index[ch.id] = ch)
+        this.root.connections.forEach((ch) => this.id_index[ch.id] = ch)
     }
 
+    /* handle the structure */
+    hasChildren = (node) => (node.type === 'root' || node.type === 'nodes' || node.type === 'connections')
+    getChildren = (node) => {
+        if(node.type === 'root') return [ { type:'nodes'}, {type:'connections'}]
+        if(node.type === 'nodes') return this.getNodes()
+        if(node.type === 'connections') return this.getConnections()
+        return []
+    }
+    getNodes = () => this.root.nodes
+    getConnections = () => this.root.connections
+    appendNode(ch) {
+        this.root.nodes.push(ch)
+        this.id_index[ch.id] = ch
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
+    deleteChild(child) {
+        if(child.type === 'node') return this.deleteNode(child)
+        if(child.type === 'connection') return this.deleteConnection(child)
+        console.error("cannot delete child", child)
+    }
+    deleteNode(child) {
+        if(child.type === 'root') return;
+        const index = this.root.nodes.indexOf(child)
+        if(index<0) return console.error("can't find index of child",child)
+        this.root.nodes.splice(index,1)
+        this.root.connections = this.root.connections.filter((conn)=>{
+            return (conn.from !== child.id && conn.to !== child.id)
+        })
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+        SelectionManager.setSelection(this.root)
+    }
+    deleteConnection(child) {
+        this.root.connections = this.root.connections.filter((conn)=>conn.id !== child.id)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
+
+
+
+
+    findNodeById(id) {
+        return this.id_index[id]
+    }
+    findNodeByTemplate(temp) {
+        return this.root.nodes.find((ch)=>ch.template === temp)
+    }
+    getTemplateByName = (name) => templates[name]
+
+
+    //deal with properties
+
+    makeNodeFromTemplate(name) {
+        const tmpl = this.getTemplateByName(name)
+        const inputs = {}
+        Object.keys(tmpl.inputs).forEach((key)=>{
+            inputs[key] = {
+                type:tmpl.inputs[key].type, // the datatype
+                value:tmpl.inputs[key].default, // the stored value
+                connections:[] //list of connections
+            }
+        })
+        const outputs = {}
+        Object.keys(tmpl.outputs).forEach((key)=>{
+            outputs[key] = {
+                type:tmpl.outputs[key].type,
+                connections:[] //list of connections
+            }
+        })
+        return {
+            type: 'node',
+            id: this.genID('node'),
+            template: name,
+            x: 50,
+            y: 100,
+            inputs: inputs,
+            outputs: outputs
+        }
+    }
+
+    getInputPropertyPosition  = (node, prop) => Object.keys(node.inputs).indexOf(prop)
+    getOutputPropertyPosition = (node, prop) => Object.keys(node.outputs).indexOf(prop)
+
     getProperties(node) {
-        // console.log("getting properties for node",node)
-        const defs = []
-        if(!node) return defs
+        if(!node) return []
 
         if(node.type === 'root') {
-            defs.push({
+            return [{
                 name:'ID',
                 key:'id',
                 value:node['id'],
                 type:'string',
                 locked:true,
-            })
-            return defs
+            }]
         }
-        // ID
-        defs.push({
-            name:'ID',
-            key:'id',
-            value:node['id'],
-            type:'string',
-            locked:true,
-        })
-        defs.push({
-            name:'x',
-            key:'x',
-            value:node.x,
-            type:'number',
-            locked:false
-        })
-        defs.push({
-            name:'y',
-            key:'y',
-            value:node.y,
-            type:'number',
-            locked:false
-        })
+        if(node.type === 'connections') return []
+        if(node.type === 'connection') return [{
+                name:'Type',
+                key:'type',
+                value:node.type,
+                type:'string',
+                locked:true
+        }]
+        if(node.type === 'nodes') return []
 
-        //INPUTS
         if(node.type === 'node') {
-            const template = this.getTemplate(node)
-            if (!template) {
-                console.log("coult not find template for node", node)
-            }
-            Object.keys(template.inputs).forEach((key) => {
-                const t = template.inputs[key]
-                let v = t.default
-                if(node.inputs[key]) v = node.inputs[key]
+
+            const defs = []
+            // ID
+            defs.push({ name:'ID', key:'id', value:node['id'], type:'string', locked:true  })
+            defs.push({ name:'x',  key:'x',  value:node.x,     type:'number', locked:false })
+            defs.push({ name:'y',  key:'y',  value:node.y,     type:'number', locked:false })
+
+            //INPUTS
+            const template = this.getTemplateByName(node.template)
+            if (!template) console.error("couldn't find template for node", node)
+
+            Object.keys(node.inputs).forEach((key) => {
                 defs.push({
                     name: key,
                     key: key,
-                    value: v,
-                    type: t.type,
-                    dir:'input'
+                    value: node.inputs[key].value,
+                    type: node.inputs[key].type,
+                    dir:'input',
+                    locked: (node.inputs[key].connections.length > 0) //lock if connected
                 })
             });
-            Object.keys(template.outputs).forEach((key) => {
-                const t = template.outputs[key]
+            Object.keys(node.outputs).forEach((key) => {
                 defs.push({
                     name: key,
                     key: key,
                     value: 0,
-                    type: t.type,
+                    type: node.outputs[key].type,
                     dir:'output',
                     locked:true
                 })
             });
+            return defs
         }
 
-        return defs
-    }
-    hasChildren(node) {
-        return (node.children)
-    }
-    getTemplate(node) {
-        return templates[node.template]
-    }
-    findNodeById(id) {
-        return this.id_index[id]
-    }
-    findNodeByTemplate(temp) {
-        return this.root.children.find((ch)=>ch.template === temp)
-    }
-    getRendererForItem(node) {
-        if(node.type === 'root') return <div>root</div>
-        return <div>node: {this.getTemplate(node).title}</div>
+        return []
     }
     setPropertyValue(item,def,value) {
         if(def.type === 'number') value = parseFloat(value);
-        if(def.dir === 'input') item.inputs[def.key] = value
-        if(def.dir === 'output') item.outputs[def.key] = value
-        if(!def.dir) item[def.key] = value
+        if(def.dir === 'input') item.inputs[def.key].value = value
+        if(def.key==='x' || def.key==='y') item[def.key] = value
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
-    getPropertyValue(node,key) {
+    getPropetyValue(node,key) {
         let val = node[key]
         if (typeof val === 'undefined') {
             const temp = this.getTemplate(node)
             val = temp.inputs[key].default
         }
         return val
+    }
+
+
+    getTemplate(node) {
+        return templates[node.template]
+    }
+    getRendererForItem(node) {
+        if(!node) return <div>error</div>
+        if(node.type === 'root') return <div>root</div>
+        if(node.type === 'connections') return <div>connections</div>
+        if(node.type === 'nodes') return <div>nodes</div>
+        if(node.type === 'node') return <div>node {node.template}</div>
+        if(node.type === 'connection') return <div>connection from {node.output.node}</div>
+        console.log("what time of node",node.type)
+        return <div>error. unknown type</div>
     }
 
     computePropertyValueAtT(nid,key,t) {
@@ -276,9 +342,6 @@ export default class TextureEditor extends TreeItemProvider {
         return template.inputs[key].default
     }
 
-    getChildren(node) {
-        return node.children
-    }
     generateSelectionPath(node) {
         if(!node) return []
         if(node.type === 'root') return [this.root.id]
@@ -286,37 +349,9 @@ export default class TextureEditor extends TreeItemProvider {
     }
     findNodeFromSelectionPath(node,path) {
         if(path.length === 1) return node
-        return node.children.find((ch)=>ch.id === path[1])
-    }
-    appendChild(parent,ch) {
-        parent.children.push(ch)
-        this.id_index[ch.id] = ch
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
-    }
-    deleteNode(child) {
-        if(child.type === 'root') return;
-        const index = this.root.children.indexOf(child)
-        if(index<0) return console.log("not really the parent. invalid!")
-        this.root.children.splice(index,1)
-        this.root.connections = this.root.connections.filter((conn)=>{
-            return (conn.from !== child.id && conn.to !== child.id)
-        })
-        console.log("connects now", this.root.connections)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
-        SelectionManager.setSelection(this.root)
-    }
-    deleteConnection(id,key) {
-        const conn1 = this.root.connections.find((conn)=>{
-            return (conn.from === id && conn.fromProp === key)
-        })
-        if(conn1) this.root.connections.splice(this.root.connections.indexOf(conn1),1)
-        // console.log("found conn",conn1)
-        const conn2 = this.root.connections.find((conn)=>{
-            return (conn.to === id && conn.toProp === key)
-        })
-        // console.log("found conn",conn2)
-        if(conn2) this.root.connections.splice(this.root.connections.indexOf(conn2),1)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+        let found = node.nodes.find((ch)=>ch.id === path[1])
+        if(found) return found
+        return node.connections.find((ch)=>ch.id === path[1])
     }
 
     getTreeActions() {
@@ -330,82 +365,43 @@ export default class TextureEditor extends TreeItemProvider {
                     {
                         title: 'sin',
                         icon: 'plus',
-                        fun: () => {
-                            this.appendChild(this.getSceneRoot(), this.makeSinNode())
-                        }
+                        fun: () => this.appendNode(this.makeSinNode())
                     },
                     {
                         title: 'graph',
                         icon: 'plus',
-                        fun: () => {
-                            this.appendChild(this.getSceneRoot(), this.makeGraphNode())
-                        }
+                        fun: () => this.appendNode(this.makeGraphNode())
                     },
                     {
                         title: 'check',
                         icon: 'plus',
-                        fun: () => {
-                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('checkerboard'))
-                        }
+                        fun: () => this.appendNode(this.makeNodeFromTemplate('checkerboard'))
                     },
                     {
                         title: 'fill',
                         icon: 'plus',
-                        fun: () => {
-                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('fillcolor'))
-                        }
+                        fun: () => this.appendNode(this.makeNodeFromTemplate('fillcolor'))
                     },
                     {
                         title: 'fillout',
                         icon: 'plus',
-                        fun: () => {
-                            this.appendChild(this.getSceneRoot(), this.makeNodeFromTemplate('fillout'))
-                        }
+                        fun: () => this.appendNode(this.makeNodeFromTemplate('fillout'))
                     },
                 ]
             },
             {
                 icon:'close',
                 fun: () => {
-                    this.deleteNode(SelectionManager.getSelection())
+                    this.deleteChild(SelectionManager.getSelection())
                 }
             },
         ]
     }
     makeSinNode() {
-        return {
-            type: 'node',
-            id: this.genID('node'),
-            template: 'sin',
-            x: 50,
-            y: 50,
-            inputs: {
-                frequency: 8,
-                amplitude:3,
-            }
-        }
+        return this.makeNodeFromTemplate('sin')
     }
     makeGraphNode() {
-        return {
-            type:'node',
-            id: this.genID('node'),
-            template: 'graph',
-            x: 50,
-            y: 100,
-            inputs: {
-                value: 0
-            }
-        }
-    }
-    makeNodeFromTemplate(tmplname) {
-        return {
-            type:'node',
-            id: this.genID('node'),
-            template:tmplname,
-            x: 50,
-            y: 100,
-            inputs: {}
-        }
+        return this.makeNodeFromTemplate('graph')
     }
     makeConnectionNode() {
         const scene = this.root
@@ -421,6 +417,15 @@ export default class TextureEditor extends TreeItemProvider {
         console.log('connection',conn)
         scene.connections.push(conn)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
+    isInputConnected(id,key) {
+        return this.getConnections().find((conn)=>conn.input.node === id && conn.input.prop === key)
+    }
+    findOutputConnectionById = (id, key) => this.getConnections().find((conn) => conn.output.node === id && conn.output.prop === key)
+    findInputConnectionById  = (id, key) => this.getConnections().find((conn) => conn.input.node === id && conn.input.prop === key)
+
+    isOutputConnected(id,key) {
+        return this.getConnections().find((conn)=>conn.output.node === id && conn.output.prop === key)
     }
     isConnected(id, key) {
         if(!this.root || !this.root.connections) return false
@@ -442,10 +447,16 @@ export default class TextureEditor extends TreeItemProvider {
         if(!fromId) return
         if(!toId) return
         const conn = {
-            from: fromId,
-            to: toId,
-            fromProp: fromKey,
-            toProp: toKey
+            type:'connection',
+            id: this.genID('connection'),
+            output: {
+                node:fromId,
+                prop:fromKey
+            },
+            input: {
+                node:toId,
+                prop:toKey
+            }
         }
         console.log('adding connection',fromId, fromKey, toId, toKey,conn)
         this.root.connections.push(conn)
@@ -463,9 +474,10 @@ class TextureEditorCanvas extends Component {
     }
     componentDidMount() {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
+            console.log("new selection is", SelectionManager.getSelection())
             this.setState({selection:sel})
         })
-        setTimeout(this.drawGraph,1000)
+        // setTimeout(this.drawGraph,1000)
     }
     drawGraph = () => {
         if(!this.canvas) return
@@ -511,7 +523,7 @@ class TextureEditorCanvas extends Component {
         e.stopPropagation()
         e.preventDefault()
         if(this.props.provider.isConnected(ch.id,key)) {
-            this.props.provider.deleteConnection(ch.id,key)
+            // this.props.provider.deleteConnection(ch.id,key)
             return
         }
 
@@ -531,30 +543,35 @@ class TextureEditorCanvas extends Component {
             window.removeEventListener('mouseup',l2)
             this.setState({connecting:false})
             if(this.state.end.distance(this.state.start) < 10) {
-                console.log('same node, just delete it')
+                // console.error('same node, just delete it')
+                if(dir === 'output') {
+                    const conn = this.props.provider.findOutputConnectionById(ch.id, key)
+                    this.props.provider.deleteConnection(conn)
+                }
+                if(dir === 'input') {
+                    const conn = this.props.provider.findInputConnectionById(ch.id, key)
+                    this.props.provider.deleteConnection(conn)
+                }
                 return;
             }
             if(!e.target.hasAttribute("data-propname")) {
-                // console.log("not a valid target. abort!")
+                console.error("not a valid target. abort!")
                 return
             }
             const toDir = e.target.getAttribute("data-direction")
             const toKey = e.target.getAttribute('data-propname')
             const toId   = e.target.getAttribute('data-nodeid')
             if(toDir === dir) {
-                // console.log("can't join same directions",toDir,dir)
+                console.error("can't join same directions",toDir,dir)
                 return
             }
+            console.log("adding a connection")
             this.props.provider.addConnection(ch.id,key,toId,toKey)
         }
         window.addEventListener('mousemove',l1)
         window.addEventListener('mouseup',l2)
     }
 
-    clickCircle = (e, ch, key, dir) =>{
-        const prov = this.props.provider
-        if(prov.isConnected(ch.id,key)) prov.deleteConnection(ch.id,key)
-    }
 
     startMovingBG = (e,node) => {
         e.stopPropagation()
@@ -576,51 +593,46 @@ class TextureEditorCanvas extends Component {
     }
 
     renderChildren(scene) {
-        return <g>{scene.children.map((ch,i)=>{
-            const temp = this.props.provider.getTemplate(ch)
-            const ins = Object.keys(temp.inputs).map((key,i)=>{
+        const prov = this.props.provider;
+        return <g>{scene.nodes.map((node,i)=>{
+            const ins = Object.keys(node.inputs).map((prop,i)=>{
                 let clss = "handle"
-                if(this.props.provider.isConnected(ch.id,key)) {
-                    clss += " connected"
-                }
-                return <g key={key} transform={`translate(0,${i*25})`}>
+                if(prov.isInputConnected(node.id,prop)) clss += " connected"
+                return <g key={prop} transform={`translate(0,${i*25})`}>
                     <circle className={clss}
                             cx="0" cy="-5" r="5"
-                            onMouseDown={(e)=>this.pressCircle(e,ch,key,"input")}
-                            onClick={(e)=>this.clickCircle(e,ch,key,"input")}
-                            data-propname={key}
-                            data-nodeid={ch.id}
+                            onMouseDown={(e)=>this.pressCircle(e,node,prop,"input")}
+                            data-propname={prop}
+                            data-nodeid={node.id}
                             data-direction="input"
                     />
-                    <text x={10} y={0} textAnchor="start">{key}</text>
+                    <text x={10} y={0} textAnchor="start">{prop}</text>
                 </g>
             })
-            const outs = Object.keys(temp.outputs).map((key,i)=>{
+            const outs = Object.keys(node.outputs).map((prop,i)=>{
                 let clss = "handle"
-                if(this.props.provider.isConnected(ch.id,key)) {
-                    clss += " connected"
-                }
-                return <g key={key} transform={`translate(0,${i*25})`}>
+                if(this.props.provider.isOutputConnected(node.id,prop)) clss += " connected"
+                return <g key={prop} transform={`translate(0,${i*25})`}>
                     <circle className={clss}
                             cx="0" cy="-5" r="5"
-                            data-propname={key}
-                            data-nodeid={ch.id}
+                            data-propname={prop}
+                            data-nodeid={node.id}
                             data-direction="output"
-                            onClick={(e)=>this.clickCircle(e,ch,key,"output")}
-                            onMouseDown={(e)=>this.pressCircle(e,ch,key,"output")}
+                            onMouseDown={(e)=>this.pressCircle(e,node,prop,"output")}
                     />
-                    <text x={-10} y={0} textAnchor="end">{key}</text>
+                    <text x={-10} y={0} textAnchor="end">{prop}</text>
                 </g>
             })
             const w = 170
             const r = 10
             let clss = ""
-            if(ch === SelectionManager.getSelection()) clss += " selected"
-            return <g key={i} transform={`translate(${ch.x},${ch.y})`} className={clss}>
+            if(node === SelectionManager.getSelection()) clss += " selected"
+            const template = prov.getTemplate(node)
+            return <g key={i} transform={`translate(${node.x},${node.y})`} className={clss}>
                 <rect className="bg" x={0} y={0} width={w} height={100} rx={r} ry={r}
-                      onMouseDown={(e)=>this.startMovingBG(e,ch)}/>
+                      onMouseDown={(e)=>this.startMovingBG(e,node)}/>
                 <rect className="header-bg" x={0} y={0} width={w} height={20}/>
-                <text className="header" x={5} y={15} content="foo">{temp.title}</text>
+                <text className="header" x={5} y={15} content="foo">{template.title}</text>
                 <g transform="translate(10,40)">{ins}</g>
                 <g transform={`translate(${w-10},${40})`}>{outs}</g>
                 <rect className="selection" x={0} y={0} width={w} height={100} rx={r} ry={r}/>
@@ -628,14 +640,15 @@ class TextureEditorCanvas extends Component {
         })}</g>
     }
     renderConnections(scene) {
-        if(!scene.connections) return
-        const conns = scene.connections.map((conn,i) => {
-            const from = this.props.provider.findNodeById(conn.from)
-            const to = this.props.provider.findNodeById(conn.to)
-            if(!from) return ""
-            if(!to) return ""
+        const conns = this.props.provider.getConnections().map((conn,i) => {
+            const output = this.props.provider.findNodeById(conn.output.node)
+            const input = this.props.provider.findNodeById(conn.input.node)
+            const oy = 0;
+            if(!output) return ""
+            if(!input) return ""
+            const iy = this.props.provider.getInputPropertyPosition(input,conn.input.prop);
             const w = 170
-            const path = `M ${from.x+w-10} ${from.y+40-5} ${to.x+10} ${to.y+40-5}`
+            const path = `M ${output.x+w-10} ${output.y+40-5+oy*25} ${input.x+10} ${input.y+40-5+iy*25}`
             return <path key={i} d={path} className="connection-line"/>
         })
         return <g>{conns}</g>
