@@ -465,7 +465,7 @@ class TextureEditorCanvas extends Component {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
         })
-        setTimeout(this.drawGraph,10000)
+        setTimeout(this.drawGraph,1000)
     }
     drawGraph = () => {
         if(!this.canvas) return
