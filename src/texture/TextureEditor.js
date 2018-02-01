@@ -443,23 +443,35 @@ export default class TextureEditor extends TreeItemProvider {
             return false
         })
     }
-    addConnection(fromId, fromKey, toId, toKey) {
+    isValidInputConnection(conn, dir) {
+        if(dir !== 'input') return false
+        if(!conn.input.prop) return false
+        if(conn.output.node === conn.input.node) return false
+        return true
+    }
+    isValidOutputConnection(conn, dir) {
+        if(dir !== 'output') return false
+        if(!conn.input.prop) return false
+        if(conn.output.node === conn.input.node) return false
+        return true
+    }
+    addConnection(outputId, outputKey, inputId, inputKey) {
         if(!this.root.connections) this.root.connections = []
-        if(!fromId) return
-        if(!toId) return
+        if(!outputId) return
+        if(!inputId) return
         const conn = {
             type:'connection',
             id: this.genID('connection'),
             output: {
-                node:fromId,
-                prop:fromKey
+                node:outputId,
+                prop:outputKey
             },
             input: {
-                node:toId,
-                prop:toKey
+                node:inputId,
+                prop:inputKey
             }
         }
-        console.log('adding connection',fromId, fromKey, toId, toKey,conn)
+        // console.log('adding connection',outputId, outputKey, inputId, inputKey,conn)
         this.root.connections.push(conn)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
     }

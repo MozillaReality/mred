@@ -88,8 +88,8 @@ always pass the document to the viewer, even if we access things through the pro
 
 make sure to unregister anything when the component is unmounted
 
-position the inputs and outputs using a stable sort order for the inputs
-position the connection line based on the position of the propname in the node. this can be optimized.
+//position the inputs and outputs using a stable sort order for the inputs
+//position the connection line based on the position of the propname in the node. this can be optimized.
 getInputsForNode(node) instead of directly accessing them
 computeValueForProperty(node,property)  evaluates local values, and follows connections if needed 
 

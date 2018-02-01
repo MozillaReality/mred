@@ -57,54 +57,101 @@ export default class TextureEditorCanvas extends Component {
         </div>
     }
 
-    pressCircle = (e, ch, key, dir)=>{
+    getPoint(e) {
+        const rect2 = this.svg.getBoundingClientRect()
+        return makePoint(e.clientX - rect2.x, e.clientY - rect2.y);
+    }
+    makePossibleInputConnection(e, outId, outProp) {
+        return {
+            output: {
+                node:outId,
+                prop:outProp
+            },
+            input: {
+                prop:e.target.getAttribute('data-propname'),
+                node:e.target.getAttribute('data-nodeid'),
+            }
+        }
+    }
+    makePossibleOutputConnection(e, inId, inProp) {
+        return {
+            output: {
+                prop:e.target.getAttribute('data-propname'),
+                node:e.target.getAttribute('data-nodeid'),
+            },
+            input: {
+                node:inId,
+                prop:inProp
+            },
+        }
+    }
+
+    pressInputCircle = (e, ch, key)=>{
         e.stopPropagation()
         e.preventDefault()
-        if(this.props.provider.isConnected(ch.id,key)) {
-            // this.props.provider.deleteConnection(ch.id,key)
-            return
-        }
+        const prov = this.props.provider;
 
-
-        const rect = e.target.getBoundingClientRect()
-        const rect2 = this.svg.getBoundingClientRect()
-        const pt = makePoint(rect.x-rect2.x, rect.y-rect2.y)
+        const pt = this.getPoint(e)
         this.setState({connecting:true,start:pt,end:pt})
         const l1 = (e) => {
-            // const rect = e.target.getBoundingClientRect()
-            const rect2 = this.svg.getBoundingClientRect()
-            const pt = makePoint(e.clientX-rect2.x, e.clientY-rect2.y)
-            this.setState({end:pt})
+            this.setState({end: this.getPoint(e)})
+            const inputDir   = e.target.getAttribute('data-direction')
+            const conn = this.makePossibleOutputConnection(e,ch.id,key);
+            if(prov.isValidOutputConnection(conn,inputDir)) {
+                // console.log("can make the connection")
+            }
         }
         const l2 = (e) => {
             window.removeEventListener('mousemove',l1)
             window.removeEventListener('mouseup',l2)
             this.setState({connecting:false})
-            if(this.state.end.distance(this.state.start) < 10) {
-                // console.error('same node, just delete it')
-                if(dir === 'output') {
-                    const conn = this.props.provider.findOutputConnectionById(ch.id, key)
-                    this.props.provider.deleteConnection(conn)
-                }
-                if(dir === 'input') {
-                    const conn = this.props.provider.findInputConnectionById(ch.id, key)
-                    this.props.provider.deleteConnection(conn)
-                }
+            if(this.getPoint(e).distance(this.state.start) < 10) {
+                const conn = this.props.provider.findInputConnectionById(ch.id, key)
+                this.props.provider.deleteConnection(conn)
                 return;
             }
-            if(!e.target.hasAttribute("data-propname")) {
-                console.error("not a valid target. abort!")
-                return
+            const conn = this.makePossibleOutputConnection(e,ch.id,key);
+            const outputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidOutputConnection(conn,outputDir)) {
+                this.props.provider.addConnection(conn.output.node, conn.output.prop, ch.id, key)
             }
-            const toDir = e.target.getAttribute("data-direction")
-            const toKey = e.target.getAttribute('data-propname')
-            const toId   = e.target.getAttribute('data-nodeid')
-            if(toDir === dir) {
-                console.error("can't join same directions",toDir,dir)
-                return
+        }
+        window.addEventListener('mousemove',l1)
+        window.addEventListener('mouseup',l2)
+    }
+
+
+    pressOutputCircle = (e, ch, key)=>{
+        e.stopPropagation()
+        e.preventDefault()
+
+        const pt = this.getPoint(e)
+        this.setState({connecting:true,start:pt,end:pt})
+        const prov = this.props.provider;
+        const l1 = (e) => {
+            this.setState({end: this.getPoint(e)})
+            const conn = this.makePossibleInputConnection(e,ch.id,key);
+            const inputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidInputConnection(conn,inputDir)) {
+                // console.log("can make the connection")
             }
-            console.log("adding a connection")
-            this.props.provider.addConnection(ch.id,key,toId,toKey)
+        }
+        const l2 = (e) => {
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
+
+            this.setState({connecting:false})
+            if(this.getPoint(e).distance(this.state.start) < 10) {
+                const conn = this.props.provider.findOutputConnectionById(ch.id, key)
+                this.props.provider.deleteConnection(conn)
+                return;
+            }
+
+            const conn = this.makePossibleInputConnection(e,ch.id,key);
+            const inputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidInputConnection(conn,inputDir)) {
+                this.props.provider.addConnection(ch.id,key,conn.input.node, conn.input.prop)
+            }
         }
         window.addEventListener('mousemove',l1)
         window.addEventListener('mouseup',l2)
@@ -139,7 +186,7 @@ export default class TextureEditorCanvas extends Component {
                 return <g key={prop} transform={`translate(0,${i*25})`}>
                     <circle className={clss}
                             cx="0" cy="-5" r="5"
-                            onMouseDown={(e)=>this.pressCircle(e,node,prop,"input")}
+                            onMouseDown={(e)=>this.pressInputCircle(e,node,prop,"input")}
                             data-propname={prop}
                             data-nodeid={node.id}
                             data-direction="input"
@@ -156,7 +203,7 @@ export default class TextureEditorCanvas extends Component {
                             data-propname={prop}
                             data-nodeid={node.id}
                             data-direction="output"
-                            onMouseDown={(e)=>this.pressCircle(e,node,prop,"output")}
+                            onMouseDown={(e)=>this.pressOutputCircle(e,node,prop,"output")}
                     />
                     <text x={-10} y={0} textAnchor="end">{prop}</text>
                 </g>
