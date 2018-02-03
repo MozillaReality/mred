@@ -115,3 +115,10 @@ export function setQuery(obj) {
 export function toQueryString(obj) {
     return Object.keys(obj).map((key)=>`${key}=${obj[key]}`).join('&')
 }
+
+
+export function shallowCopy(obj) {
+    const out = {};
+    Object.keys(obj).forEach((key) => out[key] = obj[key])
+    return out;
+}

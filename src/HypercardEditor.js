@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import selMan, {SELECTION_MANAGER} from "./SelectionManager";
+import SelectionManager, {SELECTION_MANAGER} from "./SelectionManager";
 import Selection from "./SelectionManager";
-import {genID, makePoint, parseOptions} from './utils'
+import {genID, makePoint, parseOptions, shallowCopy} from './utils'
 
 
 const PROP_DEFS = {
-
+    fontSize: {
+        name:'Font Size',
+        key:'fontSize',
+        type:'number',
+        locked:false
+    }
 }
 
 
@@ -95,6 +100,7 @@ class CardComponent extends Component {
     startDrag = (e, obj) => {
         e.stopPropagation()
         e.preventDefault()
+        SelectionManager.setSelection(obj)
 
         this.setState({
             dragging:true,
@@ -121,13 +127,16 @@ class CardComponent extends Component {
     }
     renderItem_text(item,key) {
         return <div key={key}
+                    onMouseDown={(e)=>this.startDrag(e,item)}
                     style={{
                         position: 'absolute',
                         left:item.x+'px',
                         top:item.y+'px',
                         width:item.w+'px',
                         height:item.h+'px',
-                        border:'1px solid black'
+                        border:'1px solid black',
+                        color:item.color,
+                        fontSize:item.fontSize+'pt',
                     }}
                     onClick={()=>this.clicked(item)}
         >
@@ -158,7 +167,7 @@ class HypercardCanvas extends Component {
         }
     }
     componentDidMount() {
-        this.sel_listener = selMan.on(SELECTION_MANAGER.CHANGED, (sel)=> {
+        this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
         })
     }
@@ -255,6 +264,13 @@ export default class HypercardEditor extends TreeItemProvider {
         Object.keys(item).forEach((key)=>{
             if(key === 'children') return;
             if(key === 'parent') return;
+
+            if(PROP_DEFS[key]) {
+                const def = shallowCopy(PROP_DEFS[key])
+                def.value = item[key]
+                defs.push(def)
+                return
+            }
             let type = 'string'
             let locked = false
             if(key === 'visible') type = 'boolean'
@@ -326,7 +342,8 @@ export default class HypercardEditor extends TreeItemProvider {
             h:50,
             text:'the text',
             color:'black',
-            target: 'card1'
+            target: 'card1',
+            fontSize:24
         }
     }
     findSelectedCard() {
