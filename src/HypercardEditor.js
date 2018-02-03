@@ -157,6 +157,21 @@ class CardComponent extends Component {
                     }}>
         </div>
     }
+    renderItem_image(item,key) {
+        return <div key={key}
+                    onMouseDown={(e)=>this.startDrag(e,item)}
+                    style={{
+                        position: 'absolute',
+                        left: item.x + 'px',
+                        top: item.y + 'px',
+                        width: item.w + 'px',
+                        height: item.h + 'px',
+                        border: '1px solid black',
+                        padding:0,
+                        margin:0,
+                    }}
+        ><img src={item.src} width={item.w}/></div>
+    }
 }
 
 class HypercardCanvas extends Component {
@@ -178,7 +193,7 @@ class HypercardCanvas extends Component {
         if(sel.type === 'card') {
             return <CardComponent card={sel} live={false} provider={this.props.provider}/>
         }
-        if(sel.type === 'text' || sel.type === 'rect') {
+        if(sel.type === 'text' || sel.type === 'rect' || sel.type === 'image') {
             const card = this.props.provider.getParent(sel)
             return <CardComponent card={card} live={false} provider={this.props.provider}/>
         }
@@ -192,6 +207,7 @@ export const HypercardItemRenderer = (props) => {
     if(type === 'text') return <div><i className="fa fa-text-width"/> {props.item.title}</div>
     if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
     if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
+    if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -346,6 +362,18 @@ export default class HypercardEditor extends TreeItemProvider {
             fontSize:24
         }
     }
+    createImage() {
+        return {
+            id:this.genID('image'),
+            type:'image',
+            title:'image',
+            x: 100,
+            y: 100,
+            w: 50,
+            h: 50,
+            src:""
+        }
+    }
     findSelectedCard() {
         let sel = Selection.getSelection()
         if(!sel) return this.getSceneRoot().children[0]
@@ -398,6 +426,11 @@ export default class HypercardEditor extends TreeItemProvider {
                 title:'',
                 icon:'text-width',
                 fun: () => this.appendChild(this.findSelectedCard(),this.createText())
+            },
+            {
+                title:'',
+                icon:'image',
+                fun:() => this.appendChild(this.findSelectedCard(),this.createImage())
             },
             {
                 icon:'close',
