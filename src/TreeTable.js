@@ -1,11 +1,31 @@
 import React, { Component } from 'react';
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider';
+import {PopupManager} from "appy-comps";
 
 
+const ContextMenu = (props) => {
+    return <ul className="popup-menu">
+        {props.menu.map((item,i)=>{
+            return <li key={i} onClick={()=>{
+                PopupManager.hide()
+                item.fun()
+            }}
+            >{item.title}</li>
+        })}
+    </ul>
+}
 
 class TreeTableItem extends Component {
     onSelect = (e)=>  selMan.setSelection(this.props.node)
+    onContextMenu = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if(this.props.provider.calculateContextMenu) {
+            const menu = this.props.provider.calculateContextMenu()
+            PopupManager.show(<ContextMenu menu={menu}/>,e.target)
+        }
+    }
     toggleItemCollapsed = (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -33,7 +53,9 @@ class TreeTableItem extends Component {
         } else {
             arrow = <span className=""/>
         }
-        return <div className={cls} onClick={this.onSelect}>
+        return <div className={cls} onClick={this.onSelect}
+                    onContextMenu={this.onContextMenu}
+        >
             {arrow}
             {this.props.provider.getRendererForItem(node)}
         </div>

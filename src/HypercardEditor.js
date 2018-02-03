@@ -409,6 +409,19 @@ export default class HypercardEditor extends TreeItemProvider {
         ]
     }
 
+    calculateContextMenu() {
+        return [
+            {
+                title:'delete',
+                icon:'close',
+                fun: () => {
+                    let node = Selection.getSelection()
+                    this.deleteNode(node)
+                }
+            },
+        ]
+    }
+
     generateSelectionPath(node) {
         if(!node || !node.id) return []
         if(!node.parent) return [node.id]
