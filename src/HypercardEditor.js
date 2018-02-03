@@ -2,7 +2,13 @@ import React, { Component } from 'react';
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 import Selection from "./SelectionManager";
-import {genID, parseOptions} from './utils'
+import {genID, makePoint, parseOptions} from './utils'
+
+
+const PROP_DEFS = {
+
+}
+
 
 const data = {
     root: {
@@ -78,9 +84,38 @@ class CardComponent extends Component {
             this.props.navTo(item.target)
         }
     }
+    localToContainer = (e) => {
+        const bounds = e.target.getBoundingClientRect()
+        return makePoint(e.clientX - bounds.x, e.clientY - bounds.y)
+    }
+    windowToContainer = (e) => {
+        const bds = this.container.getBoundingClientRect()
+        return makePoint(e.clientX - bds.x, e.clientY - bds.y)
+    }
+    startDrag = (e, obj) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        this.setState({
+            dragging:true,
+            start:this.localToContainer(e),
+        })
+        const l1 = (e) => {
+            let pt = this.windowToContainer(e).minus(this.state.start)
+            this.props.provider.setPropertyValueByName(obj,'x',pt.x)
+            this.props.provider.setPropertyValueByName(obj,'y',pt.y)
+        }
+        const l2 = (e) => {
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
+            this.setState({dragging:false})
+        }
+        window.addEventListener('mousemove',l1)
+        window.addEventListener('mouseup',l2)
+    }
     render() {
         const card = this.props.card
-        return <div style={{position:'relative'}}>
+        return <div style={{position:'relative'}} ref={(ref)=>this.container = ref}>
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
         </div>
     }
@@ -101,6 +136,7 @@ class CardComponent extends Component {
     }
     renderItem_rect(item,key) {
         return <div key={key}
+                    onMouseDown={(e)=>this.startDrag(e,item)}
                     style={{
                         position: 'absolute',
                         left:item.x+'px',
@@ -131,11 +167,11 @@ class HypercardCanvas extends Component {
         const sel = this.state.selection.getSelection()
         if(!sel) return <div>nothing selected</div>
         if(sel.type === 'card') {
-            return <CardComponent card={sel} live={false}/>
+            return <CardComponent card={sel} live={false} provider={this.props.provider}/>
         }
         if(sel.type === 'text' || sel.type === 'rect') {
             const card = this.props.provider.getParent(sel)
-            return <CardComponent card={card} live={false}/>
+            return <CardComponent card={card} live={false} provider={this.props.provider}/>
         }
         return <div>invalid selection</div>
     }
@@ -245,6 +281,10 @@ export default class HypercardEditor extends TreeItemProvider {
     setPropertyValue(item,def,value) {
         if(def.type === 'number') value = parseFloat(value);
         item[def.key] = value;
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    }
+    setPropertyValueByName(item,name,value) {
+        item[name] = value
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
     getValuesForEnum(key) {
