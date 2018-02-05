@@ -50,6 +50,43 @@ export class CanvasSVG extends Component {
         window.document.removeEventListener('mouseup',this.mouseUp)
     }
 
+    handleMouseDown = (e, item, prop) => {
+        e.stopPropagation()
+        e.preventDefault()
+        const svgcanvas = document.getElementById('svg-canvas');
+        const canvasBounds = svgcanvas.getBoundingClientRect()
+        this.start = makePoint(canvasBounds.x,canvasBounds.y)
+        this.scale = svgcanvas.viewBox.baseVal.width/canvasBounds.width
+        const l1 = (e)=>{
+            const off = makePoint(e.clientX,e.clientY).minus(this.start).multiply(this.scale)
+            let defX = null;
+            let defY = null;
+            if(prop === 'c1') {
+                defX = this.props.provider.getDefForProperty(item, 'cx1')
+                defY = this.props.provider.getDefForProperty(item, 'cy1')
+            }
+            if(prop === 'c2') {
+                defX = this.props.provider.getDefForProperty(item, 'cx2')
+                defY = this.props.provider.getDefForProperty(item, 'cy2')
+            }
+            if(prop === 'wh') {
+                defX = this.props.provider.getDefForProperty(item, 'w')
+                defY = this.props.provider.getDefForProperty(item, 'h')
+            }
+            if(prop === 'r') {
+                defX = this.props.provider.getDefForProperty(item, 'r')
+            }
+
+            if(defX) this.props.provider.setPropertyValue(item,defX,off.x-item.tx)
+            if(defY) this.props.provider.setPropertyValue(item,defY,off.y-item.ty)
+        }
+        const l2 = (e)=>{
+            window.document.removeEventListener('mousemove',l1)
+            window.document.removeEventListener('mouseup',l2)
+        }
+        window.document.addEventListener('mousemove',l1)
+        window.document.addEventListener('mouseup',l2)
+    }
     render() {
         return this.drawSVG(this.props.root, 0)
     }
@@ -171,7 +208,53 @@ export class CanvasSVG extends Component {
                     <path d="M0,0 L0,5 L5,2.5 z" />
                 </marker>
             </defs>
-            {this.drawChildren(item)}</svg>
+            {this.drawChildren(item)}
+            {this.drawSelectionHandles(Selection.getSelection())}
+            </svg>
+    }
+    drawSelectionHandles(item) {
+        if(!item) return
+        if(item.type === 'arrow') {
+            return <g>
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.cx1-15} y={item.cy1-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'c1')}
+                />
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.cx2-15} y={item.cy2-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'c2')}
+                />
+            </g>
+        }
+        if(item.type === 'rect') {
+            return <g>
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.w-15} y={item.h-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'wh')}
+                />
+            </g>
+        }
+        if(item.type === 'ellipse') {
+            return <g>
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.w-15} y={item.h-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'wh')}
+                />
+            </g>
+        }
+        if(item.type === 'circle') {
+            return <g>
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.r-15} y={item.cy-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'r')}
+                />
+            </g>
+        }
     }
 }
 

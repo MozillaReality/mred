@@ -95,6 +95,9 @@ export function makePoint(x,y) {
         },
         equals(pt) {
             return pt.x === this.x && pt.y === this.y
+        },
+        toString() {
+            return `(${x},${y})`
         }
     }
 }
