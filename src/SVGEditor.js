@@ -85,7 +85,10 @@ export class CanvasSVG extends Component {
         }
         let classname = ""
         if(Selection.getSelection()===item) classname += " selected"
-        return <rect key={key} x={item.x} y={item.y} width={item.w} height={item.h} fill={item.color} visibility={vis}
+        return <rect key={key}
+                     x={item.x} y={item.y} width={item.w} height={item.h}
+                     rx={item.rx} ry={item.ry}
+                     fill={item.color} visibility={vis}
                      className={classname}
                      stroke={stroke} strokeWidth={strokeWidth}
                      strokeDasharray={strokeDashArray}
@@ -320,10 +323,14 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'id') locked = true
             if(key === 'x') type = 'number'
             if(key === 'y') type = 'number'
+            if(key === 'w') type = 'number'
+            if(key === 'h') type = 'number'
             if(key === 'tx') type = 'number'
             if(key === 'ty') type = 'number'
             if(key === 'cx') type = 'number'
             if(key === 'cy') type = 'number'
+            if(key === 'rx') type = 'number'
+            if(key === 'ry') type = 'number'
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
@@ -360,9 +367,12 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             y:0,
             w:40,
             h:40,
+            rx:0,
+            ry:0,
             color:'white',
             stroke:'black',
             strokeWidth:1.0,
+            strokeStyle:'solid',
             visible:true,
         }
     }
