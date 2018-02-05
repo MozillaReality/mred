@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {HBox, PopupManager, VBox} from 'appy-comps'
 
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
+import RGBColorPicker from "./RGBColorPicker";
+import HSLUVColorPicker from "./HSLUVColorPicker";
 
 const COLORS2 = {
     "black": 0x000000,
@@ -91,7 +93,7 @@ class PropEditor extends Component {
         this.props.provider.setPropertyValue(sel,this.props.def,this.state.value);
     }
     openColorEditor = (e) => {
-        PopupManager.show(<PaletteColorPicker onSelect={this.colorChanged}/>, e.target)
+        PopupManager.show(<HSLUVColorPicker onSelect={this.colorChanged}/>, e.target)
     }
     render() {
         const def = this.props.def;
