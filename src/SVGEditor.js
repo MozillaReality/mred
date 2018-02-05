@@ -61,6 +61,8 @@ export class CanvasSVG extends Component {
         if (type === 'circle') return this.drawCircle(item,key)
         if (type === 'text')   return this.drawText(item,key);
         if (type === 'group')  return this.drawGroup(item,key);
+        if (type === 'ellipse') return this.drawEllipse(item,key)
+        if (type === 'arrow') return this.drawArrow(item,key)
     }
     drawChildren(item) {
         return item.children.map((it, i) => this.drawSVG(it, i));
@@ -103,6 +105,41 @@ export class CanvasSVG extends Component {
                        onMouseDown={(e)=>this.mouseDown(e,item)}
                        visibility={vis} stroke={stroke} strokeWidth={strokeWidth}/>
     }
+    drawEllipse(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        const stroke = item.stroke?item.stroke:'black';
+        const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
+        return <ellipse
+            cx={item.cx}
+            cy={item.cy}
+            rx={item.w}
+            ry={item.h}
+            fill={item.color}
+            key={key}
+                       className={classname}
+                       transform={`translate(${item.tx},${item.ty})`}
+                       onMouseDown={(e)=>this.mouseDown(e,item)}
+                       visibility={vis} stroke={stroke} strokeWidth={strokeWidth}
+        />
+    }
+    drawArrow(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        const stroke = item.stroke?item.stroke:'black';
+        const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
+        return  <line
+            key={key}
+            transform={`translate(${item.tx},${item.ty})`}
+            onMouseDown={(e)=>this.mouseDown(e,item)}
+            x1={item.cx1}
+            y1={item.cy1}
+            x2={item.cx2}
+            y2={item.cy2}
+            stroke={stroke} strokeWidth={strokeWidth} markerEnd="url(#arrow-head)" />
+    }
     drawText(item,key) {
         const vis = item.visible?'visible':'hidden';
         let classname = ""
@@ -122,6 +159,14 @@ export class CanvasSVG extends Component {
     }
     drawSVGRoot(item, key) {
         return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="arrow-head" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth"
+                        stroke="red"
+                        fill="inherit"
+                >
+                    <path d="M0,0 L0,5 L5,2.5 z" />
+                </marker>
+            </defs>
             {this.drawChildren(item)}</svg>
     }
 }
@@ -137,6 +182,8 @@ export const SceneItemRenderer = (props) => {
     if(type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
     if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
     if(type === 'text')   return <div><i className="fa fa-text-width"/>{props.item.title}</div>
+    if(type === 'arrow')  return <div><i className="fa fa-object"/>{props.item.title}</div>
+    if(type === 'ellipse')return <div><i className="fa fa-ellipse"/>{props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -144,36 +191,14 @@ const STROKE_STYLES = ['solid','dotted','dashed']
 const FONT_FAMILIES = ['serif','sans-serif','monospace']
 const TEXT_ANCHORS = ['start','middle','end']
 
-function makeRect() {
-    return {
-        id: genID('rect'),
-        type:'rect',
-        title:'rect1',
-        x:0,
-        y:0,
-        tx:200,
-        ty:200,
-        w:40,
-        h:40,
-        color:'red',
-        stroke:'black',
-        strokeWidth:2.0,
-        visible:true,
-        children:[]
-    }
-}
-export const data = {
-    root: {
-        title:'root',
-        type:'scene',
-        children:[makeRect()]
-    },
-};
-
 export default class SceneTreeItemProvider extends TreeItemProvider {
     constructor() {
         super();
-        this.root = data.root;
+        this.root = {
+            title:'root',
+            type:'scene',
+            children:[]
+        }
         this.expanded_map = {};
         this.listeners = {};
         this.tools = [
@@ -207,7 +232,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             title:'root',
             type:'scene',
             id: genID('root'),
-            children: [makeRect()]
+            children: []
         }
     }
 
@@ -293,11 +318,17 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'type') locked = true
             if(key === 'id') locked = true
             if(key === 'x') type = 'number'
+            if(key === 'y') type = 'number'
+            if(key === 'tx') type = 'number'
+            if(key === 'ty') type = 'number'
+            if(key === 'cx') type = 'number'
+            if(key === 'cy') type = 'number'
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
             if(key === 'strokeStyle') type = 'enum'
             if(key === 'fontFamily') type = 'enum'
+            if(key === 'fontSize') type = 'number'
             if(key === 'textAnchor') type = 'enum'
             defs.push({
                 name:key,
@@ -332,7 +363,6 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             stroke:'black',
             strokeWidth:1.0,
             visible:true,
-            children:[]
         }
     }
     createCircle() {
@@ -349,7 +379,6 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             stroke:'black',
             strokeWidth:1.0,
             visible:true,
-            children:[]
         }
     }
     createText() {
@@ -367,6 +396,38 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             fontSize:24,
             fontFamily:'serif',
             textAnchor:'start'
+        }
+    }
+    createArrow() {
+        return {
+            id:this.genID('arrow'),
+            type:'arrow',
+            title:'next arrow',
+            tx:300,
+            ty:100,
+            color: 'black',
+            visible:true,
+            cx1:0,
+            cy1:0,
+            cx2:100,
+            cy2:100,
+            stroke:'black',
+            strokeWidth:10.0,
+        }
+    }
+    createEllipse() {
+        return {
+            id:this.genID('ellipse'),
+            type:'ellipse',
+            title:'next ellipse',
+            tx:300,
+            ty:100,
+            color: 'black',
+            visible:true,
+            w:100,
+            h:50,
+            stroke:'black',
+            strokeWidth:1.0,
         }
     }
 
@@ -404,19 +465,37 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     getTreeActions() {
         return [
             {
-                // title:'rect',
-                icon:'square',
-                fun: () => this.addToNearestSelectedParent(this.createRect())
-            },
-            {
-                // title:'circle',
-                icon:'circle',
-                fun: () => this.addToNearestSelectedParent(this.createCircle())
-            },
-            {
-                // title:'text',
-                icon:'text-width',
-                fun: () => this.addToNearestSelectedParent(this.createText())
+                title: 'object',
+                icon: 'plus',
+                type: 'menu',
+                actions: [
+
+                    {
+                        title: 'rect',
+                        icon: 'square',
+                        fun: () => this.addToNearestSelectedParent(this.createRect())
+                    },
+                    {
+                        title: 'circle',
+                        icon: 'circle',
+                        fun: () => this.addToNearestSelectedParent(this.createCircle())
+                    },
+                    {
+                        title: 'ellipse',
+                        icon: 'ellipse',
+                        fun: () => this.addToNearestSelectedParent(this.createEllipse())
+                    },
+                    {
+                        title: 'arrow',
+                        icon: 'arrow',
+                        fun: () => this.addToNearestSelectedParent(this.createArrow())
+                    },
+                    {
+                        title: 'text',
+                        icon: 'text-width',
+                        fun: () => this.addToNearestSelectedParent(this.createText())
+                    },
+                ]
             },
             {
                 icon:'close',
