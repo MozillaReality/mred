@@ -140,6 +140,7 @@ class App extends Component {
                             <label>views</label>
                             <button className="fa fa-play" onClick={this.previewStack}/>
                             <button className="fa fa-save" onClick={this.saveDoc}/>
+                            {this.renderViewButtons()}
                         </Toolbar>
 
                         <Panel center middle scroll>{this.state.provider.getCanvas()}</Panel>
@@ -183,6 +184,12 @@ class App extends Component {
             onclick = (e)=>PopupManager.show(<MenuPopup actions={action.actions}/>,e.target)
         }
         return <button key={i} onClick={onclick}><i  className={'fa fa-' + action.icon}/> {action.title}</button>
+    }
+    renderViewButtons() {
+        if(this.state.provider.getViewActions) return <div>{this.state.provider.getViewActions().map((action,i)=>{
+            return this.makeTreeAction(action,i)
+        })}</div>
+        return <label>no options</label>
     }
 }
 

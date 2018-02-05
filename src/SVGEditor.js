@@ -287,7 +287,7 @@ export class CanvasSVG extends Component {
 }
 
 function treeToSVGString(root) {
-    return ReactDOMServer.renderToString(<CanvasSVG root={root}/>);
+    return ReactDOMServer.renderToString(<CanvasSVG root={root} scale={1}/>);
 }
 
 export const SceneItemRenderer = (props) => {
@@ -466,7 +466,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
     getCanvas() {
-        return <CanvasSVG root={this.getSceneRoot()} provider={this}/>
+        return <CanvasSVG root={this.getSceneRoot()} provider={this} scale={1}/>
     }
     createRect() {
         return {
@@ -602,6 +602,21 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             }
         }
         return null
+    }
+
+    getViewActions() {
+        return [
+            {
+                title: 'zoom in',
+                icon: '',
+                fun: () => this.setState({scale: this.state.scale - 1})
+            },
+            {
+                title: 'zoom out',
+                icon: '',
+                fun: () => this.setState({scale: this.state.scale + 1})
+            }
+        ]
     }
 
     getTreeActions() {
