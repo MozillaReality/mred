@@ -25,6 +25,8 @@ export class CanvasSVG extends Component {
         const canvasBounds = svgcanvas.getBoundingClientRect()
         this.start = makePoint(canvasBounds.x,canvasBounds.y)
         this.scale = svgcanvas.viewBox.baseVal.width/canvasBounds.width
+        const translate = makePoint(item.tx, item.ty)
+        this.inset = makePoint(e.clientX, e.clientY).minus(this.start).multiply(this.scale).minus(translate)
         this.down = true
         this.item = item
         Selection.setSelection(item)
@@ -35,7 +37,7 @@ export class CanvasSVG extends Component {
         if(!this.down) return
         e.stopPropagation()
         e.preventDefault()
-        const off = makePoint(e.clientX,e.clientY).minus(this.start).multiply(this.scale)
+        const off = makePoint(e.clientX,e.clientY).minus(this.start).multiply(this.scale).minus(this.inset)
         const defX = this.props.provider.getDefForProperty(this.item,'tx')
         this.props.provider.setPropertyValue(this.item,defX,off.x)
         const defY = this.props.provider.getDefForProperty(this.item,'ty')
