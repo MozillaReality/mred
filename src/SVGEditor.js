@@ -100,6 +100,7 @@ export class CanvasSVG extends Component {
         if (type === 'group')  return this.drawGroup(item,key);
         if (type === 'ellipse') return this.drawEllipse(item,key)
         if (type === 'arrow') return this.drawArrow(item,key)
+        if (type === 'image') return this.drawImage(item,key)
     }
     drawChildren(item) {
         return item.children.map((it, i) => this.drawSVG(it, i));
@@ -180,6 +181,22 @@ export class CanvasSVG extends Component {
             y2={item.cy2}
             stroke={stroke} strokeWidth={strokeWidth} markerEnd="url(#arrow-head)" />
     }
+    drawImage(item,key) {
+        const vis = item.visible?'visible':'hidden';
+        const stroke = item.stroke?item.stroke:'black';
+        const strokeWidth = item.strokeWidth?item.strokeWidth:0;
+        let classname = ""
+        if(Selection.getSelection()===item) classname += " selected"
+        return <image key={key}
+                      href={item.src}
+                      width={item.w} height={item.h}
+                      className={classname}
+                      // preserveAspectRatio="none"
+                      stroke={stroke} strokeWidth={strokeWidth}
+                      transform={`translate(${item.tx},${item.ty})`}
+                      onMouseDown={(e)=>this.mouseDown(e,item)}
+                      />
+    }
     drawText(item,key) {
         const vis = item.visible?'visible':'hidden';
         let classname = ""
@@ -237,6 +254,15 @@ export class CanvasSVG extends Component {
                 />
             </g>
         }
+        if(item.type === 'image') {
+            return <g>
+                <rect transform={`translate(${item.tx},${item.ty})`} x={item.w-15} y={item.h-15}
+                      width="30" height="30"
+                      fill="green" stroke="white" strokeWidth="3.0"
+                      onMouseDown={(e)=>this.handleMouseDown(e,item,'wh')}
+                />
+            </g>
+        }
         if(item.type === 'ellipse') {
             return <g>
                 <rect transform={`translate(${item.tx},${item.ty})`} x={item.w-15} y={item.h-15}
@@ -271,6 +297,7 @@ export const SceneItemRenderer = (props) => {
     if(type === 'text')   return <div><i className="fa fa-text-width"/> {props.item.title}</div>
     if(type === 'arrow')  return <div><i className="fa fa-long-arrow-right"/> {props.item.title}</div>
     if(type === 'ellipse')return <div><i className="fa fa-circle"/> {props.item.title}</div>
+    if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -524,6 +551,21 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             strokeWidth:1.0,
         }
     }
+    createImage() {
+        return {
+            id:this.genID('image'),
+            type:'image',
+            title:'an image',
+            src:"",
+            tx:300,
+            ty:100,
+            visible:true,
+            w:100,
+            h:100,
+            stroke:'black',
+            strokeWidth:1.0,
+        }
+    }
 
     getNearestAllowedParentNode(parent,child) {
         if(parent === null) return this.root
@@ -592,6 +634,11 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                         title: 'text',
                         icon: 'text-width',
                         fun: () => this.addToNearestSelectedParent(this.createText())
+                    },
+                    {
+                        title: 'image',
+                        icon: 'image',
+                        fun: () => this.addToNearestSelectedParent(this.createImage())
                     },
                 ]
             },
