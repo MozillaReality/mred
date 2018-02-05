@@ -160,8 +160,9 @@ export class CanvasSVG extends Component {
     drawSVGRoot(item, key) {
         return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <marker id="arrow-head" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth"
-                        stroke="red"
+                <marker id="arrow-head" markerWidth="5" markerHeight="5"
+                        refX="0" refY="2.5"
+                        orient="auto" markerUnits="strokeWidth"
                         fill="inherit"
                 >
                     <path d="M0,0 L0,5 L5,2.5 z" />
@@ -181,9 +182,9 @@ export const SceneItemRenderer = (props) => {
     if(type === 'circle') return <div><i className="fa fa-circle"/> {props.item.title}</div>
     if(type === 'scene')  return <div><i className="fa fa-diamond"/> {props.item.title}</div>
     if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
-    if(type === 'text')   return <div><i className="fa fa-text-width"/>{props.item.title}</div>
-    if(type === 'arrow')  return <div><i className="fa fa-object"/>{props.item.title}</div>
-    if(type === 'ellipse')return <div><i className="fa fa-ellipse"/>{props.item.title}</div>
+    if(type === 'text')   return <div><i className="fa fa-text-width"/> {props.item.title}</div>
+    if(type === 'arrow')  return <div><i className="fa fa-long-arrow-right"/> {props.item.title}</div>
+    if(type === 'ellipse')return <div><i className="fa fa-ellipse"/> {props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -432,6 +433,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     }
 
     getNearestAllowedParentNode(parent,child) {
+        if(parent === null) return this.root
         while(true) {
             if(this.canHaveChild(parent,child)) return parent
             parent = this.findParent(this.getSceneRoot(),parent)
@@ -441,7 +443,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
 
     addToNearestSelectedParent(rect) {
         let parent = this.getNearestAllowedParentNode(Selection.getSelection(),rect)
-        if(parent) this.appendChild(parent,rect)
+        if(parent) {
+            this.appendChild(parent,rect)
+            Selection.setSelection(rect)
+        }
     }
 
     generateSelectionPath(node) {
