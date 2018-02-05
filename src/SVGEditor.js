@@ -184,7 +184,7 @@ export const SceneItemRenderer = (props) => {
     if(type === 'group')  return <div><i className="fa fa-object-group"/> {props.item.title}</div>
     if(type === 'text')   return <div><i className="fa fa-text-width"/> {props.item.title}</div>
     if(type === 'arrow')  return <div><i className="fa fa-long-arrow-right"/> {props.item.title}</div>
-    if(type === 'ellipse')return <div><i className="fa fa-ellipse"/> {props.item.title}</div>
+    if(type === 'ellipse')return <div><i className="fa fa-circle"/> {props.item.title}</div>
     return <div>unknown item type</div>
 }
 
@@ -360,7 +360,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             y:0,
             w:40,
             h:40,
-            color:'red',
+            color:'white',
             stroke:'black',
             strokeWidth:1.0,
             visible:true,
@@ -423,7 +423,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             title:'next ellipse',
             tx:300,
             ty:100,
-            color: 'black',
+            color: 'white',
             visible:true,
             w:100,
             h:50,
@@ -487,12 +487,12 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                     },
                     {
                         title: 'ellipse',
-                        icon: 'ellipse',
+                        icon: 'circle',
                         fun: () => this.addToNearestSelectedParent(this.createEllipse())
                     },
                     {
                         title: 'arrow',
-                        icon: 'arrow',
+                        icon: 'long-arrow-right',
                         fun: () => this.addToNearestSelectedParent(this.createArrow())
                     },
                     {
