@@ -328,6 +328,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'strokeWidth') type = 'number'
             if(key === 'strokeStyle') type = 'enum'
             if(key === 'fontFamily') type = 'enum'
+            if(key === 'fontSize') type = 'number'
             if(key === 'textAnchor') type = 'enum'
             defs.push({
                 name:key,
