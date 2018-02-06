@@ -98,6 +98,8 @@ class PropEditor extends Component {
     render() {
         const def = this.props.def;
         const obj = selMan.getSelection();
+        const provider = this.props.provider
+        if (def.custom === true) return this.props.provider.createCustomEditor(this.props.item, def, provider)
         if (def.locked === true) return <i>{def.type}:{def.value}</i>
         if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
         if (def.type === 'number')  return <input type='number'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
@@ -273,8 +275,9 @@ export default class PropSheet extends Component {
     }
     render() {
         const props = this.calculateProps();
+        const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
-            return <li key={i}><label>{prop.name}</label> <PropEditor def={prop} provider={this.props.provider}/></li>
+            return <li key={i}><label>{prop.name}</label> <PropEditor def={prop} provider={this.props.provider} item={item}/></li>
         })}</ul>
     }
     calculateProps() {

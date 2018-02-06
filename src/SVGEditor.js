@@ -171,6 +171,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'children') return;
             let type = 'string'
             let locked = false
+            let custom = false
             if(key === 'visible') type = 'boolean'
             if(key === 'type') locked = true
             if(key === 'id') locked = true
@@ -191,12 +192,17 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             if(key === 'fontFamily') type = 'enum'
             if(key === 'fontSize') type = 'number'
             if(key === 'textAnchor') type = 'enum'
+            if(key === 'src') {
+                type = 'string'
+                custom = true
+            }
             defs.push({
                 name:key,
                 key:key,
                 value:item[key],
                 type:type,
                 locked:locked,
+                custom: custom
             })
         })
         return defs;
@@ -205,6 +211,10 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         if(def.type === 'number') value = parseFloat(value);
         item[def.key] = value;
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    }
+    createCustomEditor(item,def,provider) {
+        if(def.key === 'src') return <URLFileEditor def={def} item={item} provider={provider}/>
+        return <i>no custom editor for {def.key}</i>
     }
     getCanvas() {
         return <CanvasSVG root={this.getSceneRoot()} provider={this} scale={1}/>
@@ -436,5 +446,34 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
 
 
 
-
+class URLFileEditor extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            text:""
+        }
+        if(props.def.value) {
+            this.state.text = props.def.value
+        }
+    }
+    editText = (e) => {
+        this.setState({text:e.target.value})
+    }
+    choseFile = (e) => {
+        console.log("chose a file",e.target.files)
+        this.setState({text:e.target.files[0].name})
+        const fr = new FileReader()
+        fr.onload = (e)=>{
+            console.log("loaded file",e.target.result)
+            this.props.provider.setPropertyValue(this.props.item,this.props.def,e.target.result)
+        }
+        fr.readAsDataURL(e.target.files[0])
+    }
+    render() {
+        return <div>
+            <input type="text" onChange={this.editText} value={this.state.text}/>
+            <input type="file" onChange={this.choseFile}/>
+        </div>
+    }
+}
 
