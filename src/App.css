@@ -128,7 +128,7 @@ button {
 .tree-node {
     padding: 0.25em;
     display: grid;
-    grid-template-columns: 2em auto;
+    grid-template-columns: 2em auto 2em;
 }
 .tree-node.selected {
     background-color: aqua;
@@ -231,4 +231,17 @@ rect.selection {
 g.selected > rect.selection {
     stroke: red;
 
+}
+
+.tree-node .drag-handle {
+    background-color: transparent;
+    border: 0px solid black;
+}
+.tree-node .drag-handle:hover {
+     border: 1px solid black;
+}
+
+.tree-node.drop-target {
+    border: 5px solid red;
+    border-width: 3px 0 0px 0;
 }

@@ -1,13 +1,15 @@
 
 
 export const SELECTION_MANAGER = {
-    CHANGED:'CHANGED'
+    CHANGED:'CHANGED',
+    DROP_TARGET_CHANGED:'DROP_TARGET'
 }
 
 class SelectionManager {
     constructor(props) {
         this.listeners = {};
         this.selected = [];
+        this.dropTarget = null;
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = [];
@@ -31,6 +33,13 @@ class SelectionManager {
     getSelection() {
         if(this.selected.length === 0) return null;
         return this.selected[0];
+    }
+    setDropTarget(node) {
+        this.dropTarget = node;
+        this.fire(SELECTION_MANAGER.DROP_TARGET_CHANGED,this.dropTarget)
+    }
+    getDropTarget() {
+        return this.dropTarget
     }
 }
 

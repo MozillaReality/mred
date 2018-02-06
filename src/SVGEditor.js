@@ -324,6 +324,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
                 title:""
             }
         ]
+        this.id_index = {}
     }
     getTitle() {
         return 'SVG'
@@ -331,6 +332,15 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     getDocType() {
         return "svg"
     }
+    setDocument(doc,docid) {
+        super.setDocument(doc,docid)
+        this.id_index = {}
+        //re-attach children to their parents
+        this.root.children.forEach((scn) => {
+            this.id_index[scn.id] = scn
+        })
+    }
+
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = [];
         this.listeners[type].push(cb);
@@ -375,6 +385,7 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
 
     appendChild(parent,child) {
         parent.children.push(child);
+        this.id_index[child.id] = child
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
     }
 
@@ -385,6 +396,16 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         parent.children.splice(index,1)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
         Selection.setSelection(parent)
+    }
+    insertNodeBefore(parent,target,node) {
+        const index = parent.children.indexOf(target)
+        if(index<0)  {
+            parent.children.push(node)
+        } else {
+            parent.children.splice(index, 0, node)
+        }
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,node);
+        Selection.setSelection(node)
     }
 
     findParent(root,target) {
@@ -590,6 +611,9 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         if(!node || !node.id) return []
         if(!node.parent) return [node.id]
         return this.generateSelectionPath(node.parent).concat([node.id])
+    }
+    findNodeById(id) {
+        return this.id_index[id]
     }
     findNodeFromSelectionPath(node,path) {
         const part = path[0]
