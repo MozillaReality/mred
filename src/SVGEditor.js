@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
+import TreeItemProvider, {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from "./TreeItemProvider";
 import Selection, {SELECTION_MANAGER} from './SelectionManager'
 import ReactDOMServer from 'react-dom/server';
 import {genID, makePoint} from './utils'
@@ -468,6 +468,12 @@ class URLFileEditor extends Component {
             this.props.provider.setPropertyValue(this.props.item,this.props.def,e.target.result)
         }
         fr.readAsDataURL(e.target.files[0])
+        this.props.provider.uploadFile(e.target.files[0]).then((ans)=>{
+            console.log("got back the asnwer",ans)
+            const url = SERVER_URL_ASSETS+ans.id
+            this.props.provider.setPropertyValue(this.props.item,this.props.def,url)
+            this.setState({text:url})
+        })
     }
     render() {
         return <div>

@@ -7,6 +7,7 @@ const PubNub = require("pubnub")
 
 let pubnub = null;
 let dir = null;
+let assets_dir = null;
 let port = null;
 
 startup();
@@ -31,6 +32,8 @@ function startup() {
     port = parseInt(portS)
 
     console.log(`starting server with docs dir ${dir} and port ${port}`)
+    assets_dir = paths.join(dir,'assets')
+    if(!fs.existsSync(assets_dir)) fs.mkdir(assets_dir)
     startPubNub();
     startServer();
 }
@@ -46,8 +49,17 @@ function parseId(req) {
     //strip out non-alphanumeric characters for safety
     return req.params.id.replace(/\W/g, '_')
 }
+function parseAssetId(req) {
+    const parts = req.params.id.split('.').map((part)=>part.replace(/\W/g,'_'))
+    if(parts.length === 1) return parts[0]
+    const end = parts.pop()
+    return parts.join("")+'.'+end
+}
 function docPath(id) {
     return paths.join(process.cwd(), dir, id + '.json')
+}
+function assetPath(id) {
+    return paths.join(process.cwd(), assets_dir,id)
 }
 function startServer() {
     const app = express();
@@ -69,6 +81,24 @@ function startServer() {
             console.log("sending message to channel",id)
             pubnub.publish({channel:id, message:{message:'updated'}}).then((t)=>console.log(t)).catch((e)=>console.log(e))
             res.json({success:true,message:"saved it!"})
+        })
+    })
+    app.get('/asset/:id', (req,res) => {
+        const id = parseAssetId(req)
+        console.log('sending the file',assetPath(id))
+        res.sendFile(assetPath(id))
+    })
+    app.post('/asset/:id', (req,res) => {
+        const id = parseAssetId(req)
+        console.log("got request to upload a file with id",req.params.id, '=>',id)
+        const path = paths.join(process.cwd(),dir,'assets',id)
+        console.log('writing to',path)
+        const file = fs.createWriteStream(path,{encoding:'binary'})
+        //stream it directly to disk
+        req.on('data',(chunk) => file.write(chunk))
+        req.on('end', () => {
+            file.end()
+            res.json({success:true,message:'uploaded it', id:id})
         })
     })
 

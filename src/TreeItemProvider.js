@@ -8,8 +8,10 @@ export const TREE_ITEM_PROVIDER = {
     PROPERTY_CHANGED:'PROPERTY_CHANGED'
 }
 
-// const SERVER_URL = "http://localhost:30065/doc/"
+// export const SERVER_URL = "http://localhost:30065/doc/"
+// export const SERVER_URL_ASSETS = "http://localhost:30065/asset/"
 export const SERVER_URL = "http://josh.earth:30068/doc/"
+export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
 
 
 export default class TreeItemProvider {
@@ -139,6 +141,25 @@ export default class TreeItemProvider {
     }
     makeEmptyRoot() {
         throw new Error("makeEmptyRoot() not implemented")
+    }
+
+    uploadFile(file) {
+        return new Promise((res,rej)=>{
+            const fd = new FormData()
+            fd.append('file',file)
+            console.log("filesize is",file.size);
+            const xml = new XMLHttpRequest()
+            xml.onreadystatechange = () => console.log(`ready state = ${xml.readyState} status ${xml.status}`)
+            xml.addEventListener('progress',(e)=>console.log(`progress`))
+            xml.addEventListener('load',(e)=>res(xml.response))
+            xml.addEventListener('error',(e)=>console.log(`error`))
+            xml.addEventListener('abort',(e)=>console.log(`abort`))
+            const url = SERVER_URL_ASSETS+file.name;
+            console.log("uploading to ", url)
+            xml.responseType = 'json'
+            xml.open('POST',url)
+            xml.send(file)
+        })
     }
 
 
