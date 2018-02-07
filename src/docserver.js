@@ -32,8 +32,6 @@ function startup() {
     port = parseInt(portS)
 
     console.log(`starting server with docs dir ${dir} and port ${port}`)
-    assets_dir = paths.join(dir,'assets')
-    if(!fs.existsSync(assets_dir)) fs.mkdir(assets_dir)
     startPubNub();
     startServer();
 }
@@ -50,7 +48,9 @@ function parseId(req) {
     return req.params.id.replace(/\W/g, '_')
 }
 function parseAssetId(req) {
+   console.log("start = ", req.params.id)
     const parts = req.params.id.split('.').map((part)=>part.replace(/\W/g,'_'))
+console.log("parts",parts.length,parts)
     if(parts.length === 1) return parts[0]
     const end = parts.pop()
     return parts.join("")+'.'+end
@@ -62,6 +62,10 @@ function assetPath(id) {
     return paths.join(process.cwd(), assets_dir,id)
 }
 function startServer() {
+    assets_dir = paths.join(dir,'assets')
+    if(!fs.existsSync(assets_dir)) fs.mkdir(assets_dir)
+    console.log("using assets dir",assets_dir);
+
     const app = express();
     app.use(cors());
     app.use(bodyParser.json({limit: '50mb'}));
@@ -85,6 +89,7 @@ function startServer() {
     })
     app.get('/asset/:id', (req,res) => {
         const id = parseAssetId(req)
+        console.log("id = ",id)
         console.log('sending the file',assetPath(id))
         res.sendFile(assetPath(id))
     })
@@ -103,7 +108,7 @@ function startServer() {
     })
 
     const server = app.listen(port, function () {
-        console.log(`Example app listening at http://${server.address().address}:${server.address().port}`);
+        console.log(`docserver listening at http://${server.address().address}:${server.address().port}`);
     });
 
 }
