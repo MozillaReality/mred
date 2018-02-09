@@ -6,43 +6,15 @@ import TreeTable from "./TreeTable"
 import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
 
-import SVGEditor from "./SVGEditor"
+import SVGEditor from "./svg/SVGEditor"
 import HypercardEditor from "./HypercardEditor"
 import Hypercard3DEditor from "./Hypercard3DEditor"
 import FamilyTree from "./familytree/FamilyTree"
 import TextureEditor from "./texture/TextureEditor"
 import {toQueryString} from './utils'
+import {MenuPopup} from './GridEditorApp'
 
-
-const GridLayout = (props) => {
-    let clss = "grid fill";
-    if (!props.showLeft) clss += ' hide-left';
-    if (!props.showRight) clss += ' hide-right';
-    return <div className={clss}>{props.children}</div>
-};
-const Toolbar = (props) => {
-    let cls = "toolbar";
-    if (props.left) cls += " left";
-    if (props.right) cls += " right";
-    if (props.bottom) cls += " bottom";
-    if (props.top) cls += " top";
-    if (props.scroll) cls += " scroll";
-    return <div className={cls}>{props.children}</div>
-};
-const Panel = (props) => {
-    let cls = 'panel';
-    if (props.left) cls += " left";
-    if (props.right) cls += " right";
-    if (props.bottom) cls += " bottom";
-    if (props.top) cls += " top";
-    if (props.scroll) cls += " scroll";
-    return <div className={cls}>{props.children}</div>
-};
-const Spacer = (props) => {
-    return <span className='spacer'/>
-};
-
-class App extends Component {
+export default class App extends Component {
     constructor(props) {
         super(props)
         this.providers = {}
@@ -52,17 +24,14 @@ class App extends Component {
         this.addProvider(new FamilyTree())
         this.addProvider(new TextureEditor())
         this.state = {
-            provider: this.providers.svg,
-            providerName: 'svg',
-            showLeft: true,
-            showRight: true,
-            selectedTool: this.providers.svg.getTools()[0]
+            provider: this.providers.familytree,
+            providerName: 'familytree',
+            // selectedTool: this.providers.svg.getTools()[0]
         }
     }
     addProvider(prov) {
         this.providers[prov.getDocType()] = prov
     }
-
     previewStack = (e) => {
         this.state.provider.save().then(()=>{
             const query = toQueryString({
@@ -74,9 +43,6 @@ class App extends Component {
         })
     }
     saveDoc =(e) => this.state.provider.save()
-
-    toggleLeftPane = (e) => this.setState({showLeft: !this.state.showLeft})
-    toggleRightPane = (e) => this.setState({showRight: !this.state.showRight})
 
     propertyChanged = (prop) => {
         this.setState({root: this.state.provider.getSceneRoot()})
@@ -121,59 +87,15 @@ class App extends Component {
         })}</HBox>
     }
     render() {
+        console.log("using the provider",this.state.provider.getDocType())
+        const content = this.state.provider.getApp()
         return (
             <VBox fill>
                 {this.renderProviderList()}
                 <div style={{position: 'relative', flex: '1'}}>
-                    <GridLayout showLeft={this.state.showLeft} showRight={this.state.showRight}>
-                        <Toolbar left top>
-                            <label>{this.state.provider.getTitle()}</label>
-                        </Toolbar>
-                        <Panel scroll left>
-                            <TreeTable root={this.state.root} provider={this.state.provider}/>
-                        </Panel>
-                        <Toolbar left bottom>
-                            {this.state.provider.getTreeActions().map((action,i)=> this.makeTreeAction(action,i))}
-                        </Toolbar>
-
-                        <Toolbar center top>
-                            <label>views</label>
-                            <button className="fa fa-play" onClick={this.previewStack}/>
-                            <button className="fa fa-save" onClick={this.saveDoc}/>
-                            {this.renderViewButtons()}
-                        </Toolbar>
-
-                        <Panel center middle scroll>{this.state.provider.getCanvas()}</Panel>
-
-                        <Toolbar center bottom>
-                            <button className={'fa' + (this.state.showLeft ? ' fa-caret-left' : ' fa-caret-right')}
-                                    onClick={this.toggleLeftPane}/>
-                            <Spacer/>
-                            <HToggleGroup list={this.state.provider.getTools()}
-                                          template={ToggleTemplate}
-                                          selected={this.state.selectedTool}
-                                          onChange={(tool)=> {
-                                              this.setState({selectedTool:tool})
-                                          }}
-                            />
-                            <Spacer/>
-                            <button className={'fa' + (this.state.showRight ? ' fa-caret-right' : ' fa-caret-left')}
-                                    onClick={this.toggleRightPane}/>
-                        </Toolbar>
-
-                        <Toolbar right top>
-                            <label>item</label>
-                            <label>name</label>
-                        </Toolbar>
-                        <Panel scroll right>
-                            <PropSheet provider={this.state.provider}/>
-                        </Panel>
-                        <Toolbar right bottom>
-                            <label>some random extra stuff here</label>
-                        </Toolbar>
-                        <PopupContainer/>
-                    </GridLayout>
+                    {content}
                 </div>
+                <PopupContainer/>
             </VBox>
         );
     }
@@ -193,8 +115,6 @@ class App extends Component {
     }
 }
 
-export default App;
-
 const ToggleTemplate = (props) => {
     let clss = "fa fa-"
     if(props.item.icon) clss += props.item.icon
@@ -203,14 +123,3 @@ const ToggleTemplate = (props) => {
 }
 
 
-const MenuPopup = (props) => {
-    return <VBox>
-        {props.actions.map((act,i)=>{
-            return <button  key={i} onClick={()=>{
-                PopupManager.hide();
-                if(act.fun) act.fun()
-            }}><i className={'fa fa-' + act.icon}/> {act.title}</button>
-        })}
-    </VBox>
-
-}

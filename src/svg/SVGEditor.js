@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import TreeItemProvider, {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import Selection, {SELECTION_MANAGER} from './SelectionManager'
+import TreeItemProvider, {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from "../TreeItemProvider";
+import Selection, {SELECTION_MANAGER} from '../SelectionManager'
 import ReactDOMServer from 'react-dom/server';
-import {genID, makePoint} from './utils'
-import CanvasSVG from './svg/CanvasSVG'
+import {genID, makePoint} from '../utils'
+import CanvasSVG from './CanvasSVG'
+import SVGApp from './SVGApp'
 
 
 export const SceneItemRenderer = (props) => {
@@ -41,6 +42,9 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
             }
         ]
         this.id_index = {}
+    }
+    getApp() {
+        return <SVGApp provider={this}/>
     }
     getTitle() {
         return 'SVG'
@@ -215,9 +219,6 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
     createCustomEditor(item,def,provider) {
         if(def.key === 'src') return <URLFileEditor def={def} item={item} provider={provider}/>
         return <i>no custom editor for {def.key}</i>
-    }
-    getCanvas() {
-        return <CanvasSVG root={this.getSceneRoot()} provider={this} scale={1}/>
     }
     createRect() {
         return {

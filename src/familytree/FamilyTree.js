@@ -3,6 +3,8 @@ import dagre from 'dagre'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID} from '../utils'
 import SelectionManager from "../SelectionManager";
+import GridEditorApp from '../GridEditorApp'
+import FamilyTreeApp from './FamilyTreeApp'
 
 export default class FamilyTree extends TreeItemProvider {
     constructor() {
@@ -14,6 +16,9 @@ export default class FamilyTree extends TreeItemProvider {
                 this.makePerson('bob')
             ]
         }
+    }
+    getApp() {
+        return <FamilyTreeApp provider={this}/>
     }
     makeEmptyRoot() {
         return {
