@@ -7,8 +7,8 @@ import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
 
 import SVGEditor from "./svg/SVGEditor"
-import HypercardEditor from "./HypercardEditor"
-import Hypercard3DEditor from "./Hypercard3DEditor"
+import HypercardEditor from "./h2d/HypercardEditor"
+import Hypercard3DEditor from "./h3d/Hypercard3DEditor"
 import FamilyTree from "./familytree/FamilyTree"
 import TextureEditor from "./texture/TextureEditor"
 import {toQueryString} from './utils'

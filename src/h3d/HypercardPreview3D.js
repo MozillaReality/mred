@@ -1,11 +1,11 @@
 import React, {Component} from 'react'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import Hypercard3DEditor from '../Hypercard3DEditor'
+import Hypercard3DEditor from './Hypercard3DEditor'
 import QRCanvas from "./QRCanvas"
 import {parseOptions} from '../utils'
 import ThreeDeeViewer from './ThreeDeeViewer'
 
-export default class Preview3D extends Component {
+export default class HypercardPreview3D extends Component {
     navTo = (target) => {
         const root = this.provider.getSceneRoot()
         const scene = root.children.find((sc)=>sc.id === target)

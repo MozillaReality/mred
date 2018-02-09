@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import 'font-awesome/css/font-awesome.css'
 import App from './App';
-import {Preview2D} from "./HypercardEditor"
-import Preview3D from "./h3d/Preview3D"
+import HypercardPreview3D from "./h3d/HypercardPreview3D"
 import {genAlphaID, parseOptions} from './utils'
+import HypercardPreview2D from './h2d/HypercardPreview2D'
 
 const default_options = {
     mode: 'edit',
@@ -16,8 +16,8 @@ console.log("options is",options);
 
 function init() {
     if(options.mode === 'preview') {
-        if(options.provider === 'hypercard-2d')  return <Preview2D options={options}/>
-        if(options.provider === 'hypercard-3d')  return <Preview3D options={options}/>
+        if(options.provider === 'hypercard-2d')  return <HypercardPreview2D options={options}/>
+        if(options.provider === 'hypercard-3d')  return <HypercardPreview3D options={options}/>
         console.log("invalid provider")
     }
     return <App options={options}/>;

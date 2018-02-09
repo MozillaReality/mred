@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from "./TreeItemProvider";
-import SelectionManager, {SELECTION_MANAGER} from "./SelectionManager";
-import Selection from "./SelectionManager";
-import {genID, makePoint, parseOptions, shallowCopy} from './utils'
+import TreeItemProvider, {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
+import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
+import Selection from "../SelectionManager";
+import {genID, makePoint, parseOptions, shallowCopy} from '../utils'
+import HypercardApp from './HypercardApp'
 
 
 const PROP_DEFS = {
@@ -82,124 +83,7 @@ const data = {
     }
 }
 
-class CardComponent extends Component {
-    clicked(item) {
-        if(this.props.live && item.target) {
-            console.log("going to the target",item.target)
-            this.props.navTo(item.target)
-        }
-    }
-    localToContainer = (e) => {
-        const bounds = e.target.getBoundingClientRect()
-        return makePoint(e.clientX - bounds.x, e.clientY - bounds.y)
-    }
-    windowToContainer = (e) => {
-        const bds = this.container.getBoundingClientRect()
-        return makePoint(e.clientX - bds.x, e.clientY - bds.y)
-    }
-    startDrag = (e, obj) => {
-        e.stopPropagation()
-        e.preventDefault()
-        SelectionManager.setSelection(obj)
 
-        this.setState({
-            dragging:true,
-            start:this.localToContainer(e),
-        })
-        const l1 = (e) => {
-            let pt = this.windowToContainer(e).minus(this.state.start)
-            this.props.provider.setPropertyValueByName(obj,'x',pt.x)
-            this.props.provider.setPropertyValueByName(obj,'y',pt.y)
-        }
-        const l2 = (e) => {
-            window.removeEventListener('mousemove',l1)
-            window.removeEventListener('mouseup',l2)
-            this.setState({dragging:false})
-        }
-        window.addEventListener('mousemove',l1)
-        window.addEventListener('mouseup',l2)
-    }
-    render() {
-        const card = this.props.card
-        return <div style={{position:'relative'}} ref={(ref)=>this.container = ref}>
-            {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
-        </div>
-    }
-    renderItem_text(item,key) {
-        return <div key={key}
-                    onMouseDown={(e)=>this.startDrag(e,item)}
-                    style={{
-                        position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
-                        border:'1px solid black',
-                        color:item.color,
-                        fontSize:item.fontSize+'pt',
-                    }}
-                    onClick={()=>this.clicked(item)}
-        >
-            {item.text}
-        </div>
-    }
-    renderItem_rect(item,key) {
-        return <div key={key}
-                    onMouseDown={(e)=>this.startDrag(e,item)}
-                    style={{
-                        position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
-                        backgroundColor: item.color,
-                        border:'1px solid black'
-                    }}>
-        </div>
-    }
-    renderItem_image(item,key) {
-        return <div key={key}
-                    onMouseDown={(e)=>this.startDrag(e,item)}
-                    style={{
-                        position: 'absolute',
-                        left: item.x + 'px',
-                        top: item.y + 'px',
-                        width: item.w + 'px',
-                        height: item.h + 'px',
-                        border: '1px solid black',
-                        padding:0,
-                        margin:0,
-                    }}
-        ><img src={item.src} width={item.w}/></div>
-    }
-}
-
-class HypercardCanvas extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            selection:null
-        }
-    }
-    componentDidMount() {
-        this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
-            this.setState({selection:sel})
-        })
-    }
-    render() {
-        if(!this.state.selection) return <div>nothing selected</div>
-        const sel = this.state.selection.getSelection()
-        if(!sel) return <div>nothing selected</div>
-        if(sel.type === 'card') {
-            return <CardComponent card={sel} live={false} provider={this.props.provider}/>
-        }
-        if(sel.type === 'text' || sel.type === 'rect' || sel.type === 'image') {
-            const card = this.props.provider.getParent(sel)
-            return <CardComponent card={card} live={false} provider={this.props.provider}/>
-        }
-        return <div>invalid selection</div>
-    }
-}
 
 export const HypercardItemRenderer = (props) => {
     const type = props.item.type;
@@ -216,6 +100,9 @@ export default class HypercardEditor extends TreeItemProvider {
         super()
         this.root = data.root;
         this.id_index = {}
+    }
+    getApp() {
+        return <HypercardApp provider={this}/>
     }
     getTitle() {
         return "HyperCard 2D"
@@ -235,9 +122,6 @@ export default class HypercardEditor extends TreeItemProvider {
         }
     }
 
-    getCanvas() {
-        return <HypercardCanvas provider={this}/>
-    }
     getChildren(item) {
         if(item.children) item.children.forEach((ch)=> ch.parent = item)
         return item.children;
@@ -482,34 +366,4 @@ const IdToTitleRenderer = (props) => {
         if(node) value = node.title
     }
     return <b>{value}</b>
-}
-
-export class Preview2D extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            doc:null,
-            valid:false,
-            current:null
-        }
-    }
-    componentDidMount() {
-        const opts = parseOptions({})
-        console.log("preview starting with options",opts)
-        this.provider = new HypercardEditor()
-        this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
-        this.provider.loadDoc(opts.doc)
-    }
-    structureChanged = () => {
-        const doc = this.provider.getSceneRoot()
-        this.setState({doc: doc, current: doc.children[0], valid: true})
-    }
-    navTo = (target) => {
-        const card = this.state.doc.children.find((card) => card.id === target)
-        this.setState({current:card})
-    }
-    render() {
-        if(!this.state.valid) return <div>invalid preview. please close and try again</div>
-        return <CardComponent card={this.state.current} live={true} navTo={this.navTo}/>
-    }
 }
