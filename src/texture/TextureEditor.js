@@ -3,6 +3,7 @@ import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {makePoint} from '../utils'
 import TextureEditorCanvas from "./TextureEditorCanvas";
+import TextureApp from './TextureApp'
 
 /*
 
@@ -142,6 +143,9 @@ export default class TextureEditor extends TreeItemProvider {
     }
     getDocType = () => "texture"
     getTitle = () => "Texture Editor"
+    getApp() {
+        return <TextureApp provider={this}/>
+    }
     getCanvas = () => <TextureEditorCanvas provider={this}/>
 
     setDocument(doc,docid) {
