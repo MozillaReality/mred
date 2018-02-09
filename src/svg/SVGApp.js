@@ -75,9 +75,7 @@ export default class SVGApp extends Component {
             </Toolbar>
 
             <Panel scroll right>{this.renderSidePanel()}</Panel>
-            <Toolbar right bottom>
-                <label>cool stuff here</label>
-            </Toolbar>
+            <Toolbar right bottom></Toolbar>
 
         </GridEditorApp>
     }

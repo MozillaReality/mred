@@ -286,46 +286,6 @@ export default class HypercardEditor extends TreeItemProvider {
         return null;
     }
 
-    getTreeActions() {
-        return [
-            {
-                title:'',
-                icon:'vcard',
-                fun: () => {
-                    let card = this.createCard();
-                    let root = this.getSceneRoot()
-                    this.appendChild(root,card)
-                }
-            },
-            {
-                title:'',
-                icon:'square',
-                fun: () => {
-                    let sel = this.findSelectedCard()
-                    let rect = this.createRect();
-                    this.appendChild(sel,rect)
-                }
-            },
-            {
-                title:'',
-                icon:'text-width',
-                fun: () => this.appendChild(this.findSelectedCard(),this.createText())
-            },
-            {
-                title:'',
-                icon:'image',
-                fun:() => this.appendChild(this.findSelectedCard(),this.createImage())
-            },
-            {
-                icon:'close',
-                fun: () => {
-                    let node = Selection.getSelection()
-                    this.deleteNode(node)
-                }
-            },
-        ]
-    }
-
     calculateContextMenu() {
         return [
             {
