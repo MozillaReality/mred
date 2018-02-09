@@ -356,73 +356,21 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return null
     }
 
-    getTreeActions() {
-        return [
-            {
-                title: 'object',
-                icon: 'plus',
-                type: 'menu',
-                actions: [
 
-                    {
-                        title: 'rect',
-                        icon: 'square',
-                        fun: () => this.addToNearestSelectedParent(this.createRect())
-                    },
-                    {
-                        title: 'circle',
-                        icon: 'circle',
-                        fun: () => this.addToNearestSelectedParent(this.createCircle())
-                    },
-                    {
-                        title: 'ellipse',
-                        icon: 'circle',
-                        fun: () => this.addToNearestSelectedParent(this.createEllipse())
-                    },
-                    {
-                        title: 'arrow',
-                        icon: 'long-arrow-right',
-                        fun: () => this.addToNearestSelectedParent(this.createArrow())
-                    },
-                    {
-                        title: 'text',
-                        icon: 'text-width',
-                        fun: () => this.addToNearestSelectedParent(this.createText())
-                    },
-                    {
-                        title: 'image',
-                        icon: 'image',
-                        fun: () => this.addToNearestSelectedParent(this.createImage())
-                    },
-                ]
-            },
-            {
-                icon:'close',
-                fun: () => {
-                    let node = Selection.getSelection()
-                    this.deleteNode(node)
-                }
-            },
-            {
-                title:'export',
-                icon:'save',
-                fun: () => {
-                    console.log("saving to SVG")
-                    const svg = ReactDOMServer.renderToString(<CanvasSVG root={this.getSceneRoot()} scale={1}/>);
-                    console.log("rendered SVG = ",svg)
-                    /*
-                    //for a preview
-                    const win = window.open("","test SVG")
-                    win.document.body.innerHTML = svg
-                    */
-                    const link = document.createElement('a');
-                    link.href = 'data:image/svg+xml,'+encodeURIComponent(svg)
-                    link.download = 'test.svg'
-                    document.body.appendChild(link)
-                    link.click()
-                }
-            }
-        ]
+    exportToSVG = () => {
+        console.log("saving to SVG")
+        const svg = ReactDOMServer.renderToString(<CanvasSVG root={this.getSceneRoot()} scale={1}/>);
+        console.log("rendered SVG = ",svg)
+        /*
+        //for a preview
+        const win = window.open("","test SVG")
+        win.document.body.innerHTML = svg
+        */
+        const link = document.createElement('a');
+        link.href = 'data:image/svg+xml,'+encodeURIComponent(svg)
+        link.download = 'test.svg'
+        document.body.appendChild(link)
+        link.click()
     }
 
     getTools() {
