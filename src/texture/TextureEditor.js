@@ -146,7 +146,6 @@ export default class TextureEditor extends TreeItemProvider {
     getApp() {
         return <TextureApp provider={this}/>
     }
-    getCanvas = () => <TextureEditorCanvas provider={this}/>
 
     setDocument(doc,docid) {
         super.setDocument(doc, docid)

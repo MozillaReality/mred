@@ -19,7 +19,9 @@ export default class FamilyTreeApp extends Component {
             <Panel scroll right><PropSheet provider={prov}/></Panel>
 
 
-            <Toolbar center top/>
+            <Toolbar center top>
+                <button className="fa fa-save" onClick={prov.save}/>
+            </Toolbar>
             <Toolbar right top/>
             <Toolbar right bottom/>
 

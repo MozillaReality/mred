@@ -16,6 +16,8 @@ export const Toolbar = (props) => {
     if (props.right) cls += " right";
     if (props.bottom) cls += " bottom";
     if (props.top) cls += " top";
+    if (props.center) cls += " center";
+    if (props.middle) cls += " middle";
     if (props.scroll) cls += " scroll";
     return <div className={cls}>{props.children}</div>
 };
@@ -25,6 +27,8 @@ export const Panel = (props) => {
     if (props.right) cls += " right";
     if (props.bottom) cls += " bottom";
     if (props.top) cls += " top";
+    if (props.center) cls += " center";
+    if (props.middle) cls += " middle";
     if (props.scroll) cls += " scroll";
     return <div className={cls}>{props.children}</div>
 };
