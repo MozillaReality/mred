@@ -43,7 +43,6 @@ export default class Hypercard3DApp extends Component {
     }
     render() {
         const prov = this.props.provider
-        const treeActions = prov.getTreeActions()
         return <GridEditorApp provider={prov}>
 
             <Toolbar left top><label>{prov.getTitle()}</label></Toolbar>

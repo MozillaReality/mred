@@ -4,6 +4,7 @@ import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import Selection from "../SelectionManager";
 import {genID, makePoint, parseOptions, shallowCopy} from '../utils'
 import HypercardApp from './HypercardApp'
+import URLFileEditor from '../common/URLFileEditor'
 
 
 const PROP_DEFS = {
@@ -173,6 +174,7 @@ export default class HypercardEditor extends TreeItemProvider {
             }
             let type = 'string'
             let locked = false
+            let custom = false
             if(key === 'visible') type = 'boolean'
             if(key === 'type') locked = true
             if(key === 'id') locked = true
@@ -184,12 +186,17 @@ export default class HypercardEditor extends TreeItemProvider {
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
             if(key === 'target') type = 'enum'
+            if(key === 'src') {
+                type = 'string'
+                custom = true
+            }
             defs.push({
                 name:key,
                 key:key,
                 value:item[key],
                 type:type,
                 locked:locked,
+                custom:custom
             })
         })
         return defs;
@@ -203,6 +210,11 @@ export default class HypercardEditor extends TreeItemProvider {
         item[name] = value
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
     }
+    createCustomEditor(item,def,provider) {
+        if(def.key === 'src') return <URLFileEditor def={def} item={item} provider={provider}/>
+        return <i>no custom editor for {def.key}</i>
+    }
+
     getValuesForEnum(key) {
         if(key === 'target') return this.getSceneRoot().children.map((ch)=>ch.id)
     }
