@@ -356,21 +356,6 @@ export default class SceneTreeItemProvider extends TreeItemProvider {
         return null
     }
 
-    getViewActions() {
-        return [
-            {
-                title: 'zoom in',
-                icon: '',
-                fun: () => this.setState({scale: this.state.scale - 1})
-            },
-            {
-                title: 'zoom out',
-                icon: '',
-                fun: () => this.setState({scale: this.state.scale + 1})
-            }
-        ]
-    }
-
     getTreeActions() {
         return [
             {

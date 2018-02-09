@@ -32,17 +32,6 @@ export default class App extends Component {
     addProvider(prov) {
         this.providers[prov.getDocType()] = prov
     }
-    previewStack = (e) => {
-        this.state.provider.save().then(()=>{
-            const query = toQueryString({
-                mode:'preview',
-                provider:this.state.providerName,
-                doc:this.state.provider.getDocId()
-            })
-            window.open('./?'+query)
-        })
-    }
-    saveDoc =(e) => this.state.provider.save()
 
     propertyChanged = (prop) => {
         this.setState({root: this.state.provider.getSceneRoot()})
@@ -99,27 +88,7 @@ export default class App extends Component {
             </VBox>
         );
     }
-
-    makeTreeAction(action, i) {
-        let onclick = action.fun
-        if(action.type === 'menu') {
-            onclick = (e)=>PopupManager.show(<MenuPopup actions={action.actions}/>,e.target)
-        }
-        return <button key={i} onClick={onclick}><i  className={'fa fa-' + action.icon}/> {action.title}</button>
-    }
-    renderViewButtons() {
-        if(this.state.provider.getViewActions) return <div>{this.state.provider.getViewActions().map((action,i)=>{
-            return this.makeTreeAction(action,i)
-        })}</div>
-        return <label>no options</label>
-    }
 }
 
-const ToggleTemplate = (props) => {
-    let clss = "fa fa-"
-    if(props.item.icon) clss += props.item.icon
-    if(props.selected) clss += " selected"
-    return <button className={clss} onClick={props.onSelect}>{props.item.title}</button>
-}
 
 

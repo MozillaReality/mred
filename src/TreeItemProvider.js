@@ -83,7 +83,7 @@ export default class TreeItemProvider {
         return this.docid
     }
 
-    save() {
+    save = () => {
         console.log("saving")
         const payload_obj = {
             doc:this.getSceneRoot(),
