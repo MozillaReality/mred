@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {makePoint} from '../utils'
+import DragHandler from './DragHandler'
 
 export default class TextureEditorCanvas extends Component {
     constructor(props) {
@@ -172,34 +173,19 @@ export default class TextureEditorCanvas extends Component {
 
 
     startMovingBG = (e,node) => {
-        e.stopPropagation()
-        e.preventDefault()
-        SelectionManager.setSelection(node)
-        const svgppoint = this.svg.createSVGPoint()
-        svgppoint.x = e.clientX
-        svgppoint.y = e.clientY
-        const cursor = svgppoint.matrixTransform(this.svg.getScreenCTM().inverse())
-        cursor.x -= node.x
-        cursor.y -= node.y
-        this.startpt = cursor
-
-        const l = (e) => {
-            const svgppoint = this.svg.createSVGPoint()
-            svgppoint.x = e.clientX
-            svgppoint.y = e.clientY
-            const cursor = svgppoint.matrixTransform(this.svg.getScreenCTM().inverse())
-            const defs = this.props.provider.getProperties(node)
-            const xdef = defs.find((def)=>def.key === 'x')
-            const ydef = defs.find((def)=>def.key === 'y')
-            this.props.provider.setPropertyValue(node,xdef,cursor.x-this.startpt.x)
-            this.props.provider.setPropertyValue(node,ydef,cursor.y-this.startpt.y)
-        }
-        let l2 = () => {
-            window.removeEventListener('mousemove',l)
-            window.removeEventListener('mouseup',l2)
-        }
-        window.addEventListener('mousemove',l)
-        window.addEventListener('mouseup',l2)
+        new DragHandler(e, {
+            target: node,
+            provider: this.props.provider,
+            toLocal: (pt) => {
+                const svgppoint = this.svg.createSVGPoint()
+                svgppoint.x = pt.x
+                svgppoint.y = pt.y
+                const cursor = svgppoint.matrixTransform(this.svg.getScreenCTM().inverse())
+                return makePoint(cursor.x,cursor.y)
+            },
+            xpropname: 'x',
+            ypropname: 'y'
+        })
     }
 
     renderChildren(scene) {

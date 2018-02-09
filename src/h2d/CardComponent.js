@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import SelectionManager from '../SelectionManager'
 import {makePoint} from '../utils'
+import DragHandler from '../texture/DragHandler'
 
 export default class CardComponent extends Component {
     clicked(item) {
@@ -9,35 +10,18 @@ export default class CardComponent extends Component {
             this.props.navTo(item.target)
         }
     }
-    localToContainer = (e) => {
-        const bounds = e.target.getBoundingClientRect()
-        return makePoint(e.clientX - bounds.x, e.clientY - bounds.y)
-    }
-    windowToContainer = (e) => {
-        const bds = this.container.getBoundingClientRect()
-        return makePoint(e.clientX - bds.x, e.clientY - bds.y)
-    }
-    startDrag = (e, obj) => {
-        e.stopPropagation()
-        e.preventDefault()
-        SelectionManager.setSelection(obj)
 
-        this.setState({
-            dragging:true,
-            start:this.localToContainer(e),
+    startDrag = (e, obj) => {
+        new DragHandler(e, {
+            target: obj,
+            provider: this.props.provider,
+            toLocal: (pt) => {
+                const bds = this.container.getBoundingClientRect()
+                return pt.minus(makePoint(bds.x,bds.y))
+            },
+            xpropname: 'x',
+            ypropname: 'y'
         })
-        const l1 = (e) => {
-            let pt = this.windowToContainer(e).minus(this.state.start)
-            this.props.provider.setPropertyValueByName(obj,'x',pt.x)
-            this.props.provider.setPropertyValueByName(obj,'y',pt.y)
-        }
-        const l2 = (e) => {
-            window.removeEventListener('mousemove',l1)
-            window.removeEventListener('mouseup',l2)
-            this.setState({dragging:false})
-        }
-        window.addEventListener('mousemove',l1)
-        window.addEventListener('mouseup',l2)
     }
     render() {
         const card = this.props.card

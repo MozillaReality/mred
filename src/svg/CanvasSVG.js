@@ -2,6 +2,7 @@ import React, {Component} from "react"
 import {SELECTION_MANAGER} from '../SelectionManager'
 import Selection from '../SelectionManager'
 import {makePoint} from '../utils'
+import DragHandler from '../texture/DragHandler'
 
 
 export default class CanvasSVG extends Component {
@@ -19,37 +20,20 @@ export default class CanvasSVG extends Component {
     }
 
     mouseDown = (e,item) => {
-        e.stopPropagation()
-        e.preventDefault()
-        const svgcanvas = document.getElementById('svg-canvas');
-        const canvasBounds = svgcanvas.getBoundingClientRect()
-        this.start = makePoint(canvasBounds.x,canvasBounds.y)
-        this.scale = svgcanvas.viewBox.baseVal.width/canvasBounds.width
-        const translate = makePoint(item.tx, item.ty)
-        this.inset = makePoint(e.clientX, e.clientY).minus(this.start).multiply(this.scale).minus(translate)
-        this.down = true
-        this.item = item
-        Selection.setSelection(item)
-        window.document.addEventListener('mousemove',this.mouseMove)
-        window.document.addEventListener('mouseup',this.mouseUp)
-    }
-    mouseMove = (e) => {
-        if(!this.down) return
-        e.stopPropagation()
-        e.preventDefault()
-        const off = makePoint(e.clientX,e.clientY).minus(this.start).multiply(this.scale).minus(this.inset)
-        const defX = this.props.provider.getDefForProperty(this.item,'tx')
-        this.props.provider.setPropertyValue(this.item,defX,off.x)
-        const defY = this.props.provider.getDefForProperty(this.item,'ty')
-        this.props.provider.setPropertyValue(this.item,defY,off.y)
-    }
-    mouseUp = (e) => {
-        this.start = null
-        this.scale = 1
-        this.down = false
-        this.item = null
-        window.document.removeEventListener('mousemove',this.mouseMove)
-        window.document.removeEventListener('mouseup',this.mouseUp)
+        new DragHandler(e, {
+            target: item,
+            provider: this.props.provider,
+            toLocal: (pt) => {
+                const svg = document.getElementById('svg-canvas')
+                const svgpoint = svg.createSVGPoint()
+                svgpoint.x = pt.x
+                svgpoint.y = pt.y
+                const cursor = svgpoint.matrixTransform(svg.getScreenCTM().inverse())
+                return makePoint(cursor.x,cursor.y)
+            },
+            xpropname: 'tx',
+            ypropname: 'ty'
+        })
     }
 
     handleMouseDown = (e, item, prop) => {

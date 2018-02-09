@@ -53,7 +53,6 @@ export default class App extends Component {
             provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
             provider.off(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
         }
-        console.log("switching to provider",name)
         provider = this.providers[name]
         if(!provider) {
             console.log('couldnt find the provider for ',name)
@@ -76,7 +75,6 @@ export default class App extends Component {
         })}</HBox>
     }
     render() {
-        console.log("using the provider",this.state.provider.getDocType())
         const content = this.state.provider.getApp()
         return (
             <VBox fill>
