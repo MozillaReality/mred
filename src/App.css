@@ -212,15 +212,6 @@ svg path.connection-line {
 .node-canvas {
     position: relative;
 }
-.node-canvas .graph-output-canvas {
-    border: 1px solid black;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    background-color: white;
-    padding:0;
-    margin:0;
-}
 
 rect.selection {
     stroke: #888;
@@ -244,4 +235,33 @@ g.selected > rect.selection {
 .tree-node.drop-target {
     border: 5px solid red;
     border-width: 3px 0 0px 0;
+}
+
+
+.node-box {
+    background-color: white;
+    border: 1px solid red;
+    border-width: 0.25em;
+    padding: 0;
+    margin:0;
+    padding-top: 0em;
+}
+
+.node-box h3 {
+    background-color: lightblue;
+    font-size: 1.5em;
+    margin:0;
+    padding: 0.25em;
+}
+
+.node-box canvas {
+    border: 0.25em solid black;
+    padding:0;
+    margin:0;
+    width: 10em;
+}
+.node-box ul {
+    list-style: none;
+    padding:0;
+    margin:0;
 }

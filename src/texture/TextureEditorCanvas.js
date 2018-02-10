@@ -9,47 +9,39 @@ export default class TextureEditorCanvas extends Component {
         this.state = {
             selection:null,
             connecting:false,
-            scale:1
         }
     }
     componentDidMount() {
-        this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
-            this.setState({selection:sel})
-        })
+        this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> this.setState({selection:sel}))
     }
 
-    zoomIn = () => this.setState({scale:this.state.scale-1})
-    zoomOut = () => this.setState({scale:this.state.scale+1})
     render() {
         const scene = this.props.provider.getSceneRoot()
         if(!scene) return <div>empty</div>
-        const size = 600;
-        const scale = Math.pow(2,this.state.scale/2)
+        const size = 700;
+        const scale = this.calcScale()
         const style = {
             width:`${size}px`,
             height:`${size}px`,
             position:'absolute',
-            top:'2em',
-            left:100,
-            border:'1px solid black'
+            top:0,
+            left:0,
+            border:'1px solid black',
+            pointerEvents:'none'
         }
         return <div className="node-canvas">
-            <div style={{
-                position:'absolute',
-                left:100,
-                top:'0em'
-            }}
-                 className="toolbar"
-            >
-                <button className="fa fa-plus-circle" onClick={this.zoomIn}/>
-                <button className="fa fa-minus-circle" onClick={this.zoomOut}/>
-            </div>
-            <svg style={style} ref={(svg)=>this.svg = svg}
-            viewBox={`0 0 ${size*scale} ${size*scale}`}>
+            <svg style={style} ref={(svg)=>this.svg = svg} viewBox={`0 0 ${size*scale} ${size*scale}`}>
                 {this.renderConnections(scene)}
-                {this.renderChildren(scene)}
+            </svg>
+
+            <div style={{border:"1px solid red"}}>
+            {this.renderChildren(scene)}
+            </div>
+
+            <svg style={style} viewBox={`0 0 ${size*scale} ${size*scale}`}>
                 {this.renderOverlay()}
             </svg>
+
         </div>
     }
 
@@ -83,12 +75,28 @@ export default class TextureEditorCanvas extends Component {
     }
 
 
+    domInputToContainer(e) {
+        const rect = this.container.getBoundingClientRect()
+        return makePoint(e.clientX-rect.x,e.clientY-rect.y).multiply(1/this.calcScale())
+    }
+
+    containerToSVGContainer(pt) {
+        const rect = this.container.getBoundingClientRect()
+        const screenPt = makePoint(pt.x+rect.x,pt.y+rect.y)
+        const svgpoint = this.svg.createSVGPoint()
+        svgpoint.x = screenPt.x
+        svgpoint.y = screenPt.y
+        const pt2 = svgpoint.matrixTransform(this.svg.getScreenCTM().inverse())
+        return makePoint(pt2.x,pt2.y)
+    }
+
     pressInputCircle = (e, ch, key)=>{
         e.stopPropagation()
         e.preventDefault()
+        const pt = this.domInputToContainer(e)
         const prov = this.props.provider;
 
-        const pt = this.getPoint(e)
+        // const pt = this.getPoint(e)
         this.setState({connecting:true,start:pt,end:pt})
         const l1 = (e) => {
             this.setState({end: this.getPoint(e)})
@@ -152,27 +160,35 @@ export default class TextureEditorCanvas extends Component {
         window.addEventListener('mouseup',l2)
     }
 
+    calcScale() {
+        return Math.pow(2,this.props.scale/2)
+    }
     renderChildren(scene) {
-        return <g>{scene.nodes.map((node,i)=> <GenericNode key={i} provider={this.props.provider} node={node} owner={this}/>)}</g>
+        const scale = this.calcScale()
+        return <div ref={(c)=>this.container = c}>{scene.nodes.map((node,i)=> <GenericNode key={i} provider={this.props.provider} node={node} owner={this} scale={scale}/>)}</div>
     }
     renderConnections(scene) {
         const conns = this.props.provider.getConnections().map((conn,i) => {
             const output = this.props.provider.findNodeById(conn.output.node)
             const input = this.props.provider.findNodeById(conn.input.node)
-            const oy = 0;
             if(!output) return ""
             if(!input) return ""
-            const iy = this.props.provider.getInputPropertyPosition(input,conn.input.prop);
-            const w = 170
-            const path = `M ${output.x+w-10} ${output.y+40-5+oy*25} ${input.x+10} ${input.y+40-5+iy*25}`
-            return <path key={i} d={path} className="connection-line"/>
+            // const iy = this.props.provider.getInputPropertyPosition(input,conn.input.prop);
+            const svgOutput = this.containerToSVGContainer(output).multiply(this.calcScale())
+            const svgInput = this.containerToSVGContainer(input).multiply(this.calcScale())
+            //calculate the dom position of the matching input circle
+
+            const path = `M ${svgOutput.x} ${svgOutput.y} ${svgInput.x} ${svgInput.y}`
+            return <path key={i} d={path} className="connection-line" strokeWidth={5*this.calcScale()}/>
         })
         return <g>{conns}</g>
     }
     renderOverlay() {
         if(!this.state.connecting) return ""
-        const path = `M ${this.state.start.x} ${this.state.start.y} L ${this.state.end.x} ${this.state.end.y}`;
-        return <path d={path} className="connection-line"/>
+        const spt = this.containerToSVGContainer(this.state.start)
+        const ept = this.containerToSVGContainer(this.state.end)
+        const path = `M ${spt.x} ${spt.y} L ${ept.x} ${ept.y}`;
+        return <path d={path} className="connection-line" strokeWidth={5/this.calcScale()}/>
     }
 
 }
@@ -228,7 +244,6 @@ class GenericNode extends Component {
             }
             c.putImageData(cdata,0,0)
         }
-        console.log("redrew")
     }
 
     render() {
@@ -239,74 +254,57 @@ class GenericNode extends Component {
         const ins = Object.keys(node.inputs).map((prop,i)=>{
             let clss = "handle"
             if(prov.isInputConnected(node.id,prop)) clss += " connected"
-            return <g key={prop} transform={`translate(0,${i*25})`}>
-                <circle className={clss}
-                        cx="0" cy="-5" r="5"
-                        onMouseDown={(e)=>this.props.owner.pressInputCircle(e,node,prop,"input")}
-                        data-propname={prop}
-                        data-nodeid={node.id}
-                        data-direction="input"
+            return <li key={prop}>
+                <i className={"fa fa-circle-o "+clss}
+                   onMouseDown={(e)=>this.props.owner.pressInputCircle(e,node,prop,"input")}
+                   data-propname={prop}
+                   data-nodeid={node.id}
+                   data-direction="input"
                 />
-                <text x={10} y={0} textAnchor="start">{prop}</text>
-            </g>
+                <b>{prop}</b>
+            </li>
         })
         const outs = Object.keys(node.outputs).map((prop,i)=>{
             let clss = "handle"
             if(this.props.provider.isOutputConnected(node.id,prop)) clss += " connected"
-            return <g key={prop} transform={`translate(0,${i*25})`}>
-                <circle className={clss}
-                        cx="0" cy="-5" r="5"
+            return <li key={prop}>
+                <b x={-10} y={0} textAnchor="end">{prop}</b>
+                <i className={clss+" fa fa-circle-o"}
                         data-propname={prop}
                         data-nodeid={node.id}
                         data-direction="output"
                         onMouseDown={(e)=>this.props.owner.pressOutputCircle(e,node,prop,"output")}
                 />
-                <text x={-10} y={0} textAnchor="end">{prop}</text>
-            </g>
+            </li>
         })
-        const w = 170
-        const r = 10
-        let clss = ""
-        if(node === SelectionManager.getSelection()) clss += " selected"
+        const selected = (SelectionManager.getSelection()===node)
         const template = prov.getTemplate(node)
-        return <g transform={`translate(${node.x},${node.y})`} className={clss}>
-            <rect className="bg" x={0} y={0} width={w} height={100} rx={r} ry={r}
-                  onMouseDown={(e)=>this.startMovingBG(e,node)}/>
-            <rect className="header-bg" x={0} y={0} width={w} height={20}/>
-            <text className="header" x={5} y={15} content="foo">{template.title}</text>
-            <g transform="translate(10,40)">{ins}</g>
-            <g transform={`translate(${w-10},${40})`}>{outs}</g>
 
-            <foreignObject x="0" y="100" width="102" height="102">
-                <body>
-                <canvas width="100" height="100" id="canvas"
-                        ref={(c)=>this.canvas=c}
-                        style={{
-                            border:'1px solid black'
-                        }}/>
-                </body>
-            </foreignObject>
-
-
-            <rect className="selection" x={0} y={0} width={w} height={100} rx={r} ry={r}/>
-        </g>
+        return <div style={{
+            position:'absolute',
+            left:node.x*this.props.scale,
+            top:node.y*this.props.scale,
+            borderColor: selected?'red':'green',
+            fontSize:(12*this.props.scale)+'pt'
+        }}
+                    onMouseDown={(e)=>this.startMovingBG(e,node)}
+                    className="node-box"
+        >
+            <h3>{template.title}</h3>
+            <ul>{ins}</ul>
+            <ul>{outs}</ul>
+            <canvas width="100" height="100" id="canvas" ref={(c)=>this.canvas=c}/>
+        </div>
     }
-    getPoint(e) {
-        const svg = this.props.owner.svg
-        const rect2 = svg.getBoundingClientRect()
-        return makePoint(e.clientX - rect2.x, e.clientY - rect2.y);
-    }
+
     startMovingBG = (e,node) => {
-        const svg = this.props.owner.svg
+        const container = this.props.owner.container
         new DragHandler(e, {
             target: node,
             provider: this.props.provider,
             toLocal: (pt) => {
-                const svgppoint = svg.createSVGPoint()
-                svgppoint.x = pt.x
-                svgppoint.y = pt.y
-                const cursor = svgppoint.matrixTransform(svg.getScreenCTM().inverse())
-                return makePoint(cursor.x,cursor.y)
+                const bds = container.getBoundingClientRect()
+                return pt.minus(makePoint(bds.x,bds.y)).multiply(1/this.props.scale)
             },
             xpropname: 'x',
             ypropname: 'y'
