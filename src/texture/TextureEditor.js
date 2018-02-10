@@ -168,7 +168,6 @@ const templates = {
             return x*y
         }
     }
-
 }
 
 function toHex2(val) {
