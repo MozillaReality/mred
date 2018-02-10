@@ -83,6 +83,74 @@ export default class TextureEditorCanvas extends Component {
     }
 
 
+    pressInputCircle = (e, ch, key)=>{
+        e.stopPropagation()
+        e.preventDefault()
+        const prov = this.props.provider;
+
+        const pt = this.getPoint(e)
+        this.setState({connecting:true,start:pt,end:pt})
+        const l1 = (e) => {
+            this.setState({end: this.getPoint(e)})
+            const inputDir   = e.target.getAttribute('data-direction')
+            const conn = this.makePossibleOutputConnection(e,ch.id,key);
+            if(prov.isValidOutputConnection(conn,inputDir)) {
+                // console.log("can make the connection")
+            }
+        }
+        const l2 = (e) => {
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
+            this.setState({connecting:false})
+            if(this.getPoint(e).distance(this.state.start) < 10) {
+                const conn = this.props.provider.findInputConnectionById(ch.id, key)
+                this.props.provider.deleteConnection(conn)
+                return;
+            }
+            const conn = this.makePossibleOutputConnection(e,ch.id,key);
+            const outputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidOutputConnection(conn,outputDir)) {
+                this.props.provider.addConnection(conn.output.node, conn.output.prop, ch.id, key)
+            }
+        }
+        window.addEventListener('mousemove',l1)
+        window.addEventListener('mouseup',l2)
+    }
+    pressOutputCircle = (e, ch, key)=>{
+        e.stopPropagation()
+        e.preventDefault()
+
+        const pt = this.getPoint(e)
+        this.setState({connecting:true,start:pt,end:pt})
+        const prov = this.props.provider;
+        const l1 = (e) => {
+            this.setState({end: this.getPoint(e)})
+            const conn = this.makePossibleInputConnection(e,ch.id,key);
+            const inputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidInputConnection(conn,inputDir)) {
+                // console.log("can make the connection")
+            }
+        }
+        const l2 = (e) => {
+            window.removeEventListener('mousemove',l1)
+            window.removeEventListener('mouseup',l2)
+
+            this.setState({connecting:false})
+            if(this.getPoint(e).distance(this.state.start) < 10) {
+                const conn = this.props.provider.findOutputConnectionById(ch.id, key)
+                this.props.provider.deleteConnection(conn)
+                return;
+            }
+
+            const conn = this.makePossibleInputConnection(e,ch.id,key);
+            const inputDir   = e.target.getAttribute('data-direction')
+            if(prov.isValidInputConnection(conn,inputDir)) {
+                this.props.provider.addConnection(ch.id,key,conn.input.node, conn.input.prop)
+            }
+        }
+        window.addEventListener('mousemove',l1)
+        window.addEventListener('mouseup',l2)
+    }
 
     renderChildren(scene) {
         return <g>{scene.nodes.map((node,i)=> <GenericNode key={i} provider={this.props.provider} node={node} owner={this}/>)}</g>
@@ -150,7 +218,6 @@ class GenericNode extends Component {
                     rect.x = x/w
                     rect.y = y/h
                     const v = templ.generateValue(prov, node, rect)
-                    // const v = prov.computeInputPropertyValueAt(node.id,'a',rect)
                     const i = (y*w+x)*4
                     const v255 = Math.floor(v*255)
                     cdata.data[i+0] = v255
@@ -175,7 +242,7 @@ class GenericNode extends Component {
             return <g key={prop} transform={`translate(0,${i*25})`}>
                 <circle className={clss}
                         cx="0" cy="-5" r="5"
-                        onMouseDown={(e)=>this.pressInputCircle(e,node,prop,"input")}
+                        onMouseDown={(e)=>this.props.owner.pressInputCircle(e,node,prop,"input")}
                         data-propname={prop}
                         data-nodeid={node.id}
                         data-direction="input"
@@ -192,7 +259,7 @@ class GenericNode extends Component {
                         data-propname={prop}
                         data-nodeid={node.id}
                         data-direction="output"
-                        onMouseDown={(e)=>this.pressOutputCircle(e,node,prop,"output")}
+                        onMouseDown={(e)=>this.props.owner.pressOutputCircle(e,node,prop,"output")}
                 />
                 <text x={-10} y={0} textAnchor="end">{prop}</text>
             </g>
@@ -228,74 +295,6 @@ class GenericNode extends Component {
         const svg = this.props.owner.svg
         const rect2 = svg.getBoundingClientRect()
         return makePoint(e.clientX - rect2.x, e.clientY - rect2.y);
-    }
-    pressInputCircle = (e, ch, key)=>{
-        e.stopPropagation()
-        e.preventDefault()
-        const prov = this.props.provider;
-
-        const pt = this.getPoint(e)
-        this.setState({connecting:true,start:pt,end:pt})
-        const l1 = (e) => {
-            this.setState({end: this.getPoint(e)})
-            const inputDir   = e.target.getAttribute('data-direction')
-            const conn = this.makePossibleOutputConnection(e,ch.id,key);
-            if(prov.isValidOutputConnection(conn,inputDir)) {
-                // console.log("can make the connection")
-            }
-        }
-        const l2 = (e) => {
-            window.removeEventListener('mousemove',l1)
-            window.removeEventListener('mouseup',l2)
-            this.setState({connecting:false})
-            if(this.getPoint(e).distance(this.state.start) < 10) {
-                const conn = this.props.provider.findInputConnectionById(ch.id, key)
-                this.props.provider.deleteConnection(conn)
-                return;
-            }
-            const conn = this.makePossibleOutputConnection(e,ch.id,key);
-            const outputDir   = e.target.getAttribute('data-direction')
-            if(prov.isValidOutputConnection(conn,outputDir)) {
-                this.props.provider.addConnection(conn.output.node, conn.output.prop, ch.id, key)
-            }
-        }
-        window.addEventListener('mousemove',l1)
-        window.addEventListener('mouseup',l2)
-    }
-    pressOutputCircle = (e, ch, key)=>{
-        e.stopPropagation()
-        e.preventDefault()
-
-        const pt = this.getPoint(e)
-        this.setState({connecting:true,start:pt,end:pt})
-        const prov = this.props.provider;
-        const l1 = (e) => {
-            this.setState({end: this.getPoint(e)})
-            const conn = this.props.owner.makePossibleInputConnection(e,ch.id,key);
-            const inputDir   = e.target.getAttribute('data-direction')
-            if(prov.isValidInputConnection(conn,inputDir)) {
-                // console.log("can make the connection")
-            }
-        }
-        const l2 = (e) => {
-            window.removeEventListener('mousemove',l1)
-            window.removeEventListener('mouseup',l2)
-
-            this.setState({connecting:false})
-            if(this.getPoint(e).distance(this.state.start) < 10) {
-                const conn = this.props.provider.findOutputConnectionById(ch.id, key)
-                this.props.provider.deleteConnection(conn)
-                return;
-            }
-
-            const conn = this.props.owner.makePossibleInputConnection(e,ch.id,key);
-            const inputDir   = e.target.getAttribute('data-direction')
-            if(prov.isValidInputConnection(conn,inputDir)) {
-                this.props.provider.addConnection(ch.id,key,conn.input.node, conn.input.prop)
-            }
-        }
-        window.addEventListener('mousemove',l1)
-        window.addEventListener('mouseup',l2)
     }
     startMovingBG = (e,node) => {
         const svg = this.props.owner.svg
