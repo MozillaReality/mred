@@ -28,19 +28,29 @@ export default class TextureEditorCanvas extends Component {
         const fillout = prov.findNodeByTemplate('fillout')
         const s = 2
         if(fillout) {
-            for(let x = 0; x<40; x++) {
-                for(let y=0; y<40; y++) {
-                    const rect = {
-                        x:x,
-                        y:y,
-                        w:40,
-                        h:40
-                    }
+            const w = 100
+            const h = 100
+            const cdata = c.getImageData(0,0,w,h)
+            const rect = {
+                x:0,
+                y:0,
+                w:w,
+                h:h
+            }
+            for(let x = 0; x<w; x++) {
+                for(let y=0; y<h; y++) {
+                    rect.x = x/w
+                    rect.y = y/h
                     const v = prov.computeInputPropertyValueAt(fillout.id,'a',rect)
-                    c.fillStyle = v
-                    c.fillRect(x*s,y*s,s,s)
+                    const i = (y*w+x)*4
+                    const v255 = Math.floor(v*255)
+                    cdata.data[i+0] = v255
+                    cdata.data[i+1] = v255
+                    cdata.data[i+2] = v255
+                    cdata.data[i+3] = 255
                 }
             }
+            c.putImageData(cdata,0,0)
         }
     }
 

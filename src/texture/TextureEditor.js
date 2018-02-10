@@ -163,15 +163,9 @@ const templates = {
             }
         },
         generateValue: (prov, node, pt) => {
-            const thx = (pt.x/pt.w)*Math.PI*2
-            const thy = (pt.y/pt.h)*Math.PI*2
-            const x = (1+prov.computeInputPropertyValueAt(node.id,'xin',thx))/2
-            const y = (1+prov.computeInputPropertyValueAt(node.id,'yin',thy))/2
-            const val = Math.floor((x*y)*255)
-            const a = hexToRgb(prov.computeInputPropertyValueAt(node.id,'a',pt))
-            const b = hexToRgb(prov.computeInputPropertyValueAt(node.id,'b',pt))
-            const out = '#'+ toHex2(val) + toHex2(val) + toHex2(val)
-            return out
+            const x = (1+prov.computeInputPropertyValueAt(node.id,'xin',pt.x))/2
+            const y = (1+prov.computeInputPropertyValueAt(node.id,'yin',pt.y))/2
+            return x*y
         }
     }
 
