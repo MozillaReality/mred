@@ -13,6 +13,7 @@ export default class TextureApp extends Component {
             <button className="fa fa-plus" onClick={()=>prov.appendNode(prov.makeNodeFromTemplate('checkerboard'))}>Checkerboard</button>
             <button className="fa fa-plus" onClick={()=>prov.appendNode(prov.makeNodeFromTemplate('fillcolor'))}>Fill Color</button>
             <button className="fa fa-plus" onClick={()=>prov.appendNode(prov.makeNodeFromTemplate('fillout'))}>Fill Out</button>
+            <button className="fa fa-plus" onClick={()=>prov.appendNode(prov.makeNodeFromTemplate('valueToColor'))}>Value to Color</button>
         </div>,e.target)
     }
     render() {

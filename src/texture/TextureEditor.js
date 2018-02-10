@@ -7,6 +7,20 @@ import TextureApp from './TextureApp'
 
 /*
 
+
+TODO: switch to a more efficient data structure for RGB and value and real output colors
+
+sin out: value from -1 to 1 across time. adjust using phase and add constant to scale to 0->1
+value to color: turns value into a lerp across two colors. does not care about time, but passes it on
+checkerboard: produces one of two input colors at a given xy, does not care about time
+
+value to fill: produces an xyfill, color at a given xy using two input value functions for xt goes 0 to 1 and yt goes 0 to 1
+interpolates between input colors A and B
+
+
+valueToFill(sin(),sin(), color A, color B)
+
+
 sin produces sin wave based on frequency and time
     inputs
         frequency: 1/sec
@@ -27,8 +41,6 @@ const, produces a constant value
     outputs: value
 
 graph: graphs the input value over t from 0 to 2Pi
-
-
 
  */
 
@@ -124,8 +136,68 @@ const templates = {
             }
         },
         outputs:{},
+    },
+    valueToColor: {
+        title:'Make Color',
+        inputs: {
+            xin: {
+                type:'number',
+                default:0
+            },
+            yin: {
+                type:'number',
+                default:0
+            },
+            a: {
+                type:'color',
+                default:'#ff0000'
+            },
+            b: {
+                type:'color',
+                default:'#0000ff'
+            }
+        },
+        outputs: {
+            fill: {
+                type:'xyfill'
+            }
+        },
+        generateValue: (prov, node, pt) => {
+            const thx = (pt.x/pt.w)*Math.PI*2
+            const thy = (pt.y/pt.h)*Math.PI*2
+            const x = (1+prov.computeInputPropertyValueAt(node.id,'xin',thx))/2
+            const y = (1+prov.computeInputPropertyValueAt(node.id,'yin',thy))/2
+            const val = Math.floor((x*y)*255)
+            const a = hexToRgb(prov.computeInputPropertyValueAt(node.id,'a',pt))
+            const b = hexToRgb(prov.computeInputPropertyValueAt(node.id,'b',pt))
+            const out = '#'+ toHex2(val) + toHex2(val) + toHex2(val)
+            return out
+        }
     }
 
+}
+
+function toHex2(val) {
+    const str = val.toString(16)
+    if(str.length < 2) return "0"+str
+    return str
+}
+
+function lerp(a,b,t) {
+    return a + (b-a)*t
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
 }
 
 export default class TextureEditor extends TreeItemProvider {
@@ -344,44 +416,6 @@ export default class TextureEditor extends TreeItemProvider {
         if(found) return found
         return node.connections.find((ch)=>ch.id === path[1])
     }
-
-    getTreeActions() {
-        return [
-            {
-                title: 'object',
-                icon: 'plus',
-                type: 'menu',
-                actions: [
-
-                    {
-                        title: 'sin',
-                        icon: 'plus',
-                        fun: () => this.appendNode(this.makeNodeFromTemplate('sin'))
-                    },
-                    {
-                        title: 'check',
-                        icon: 'plus',
-                        fun: () => this.appendNode(this.makeNodeFromTemplate('checkerboard'))
-                    },
-                    {
-                        title: 'fill',
-                        icon: 'plus',
-                        fun: () => this.appendNode(this.makeNodeFromTemplate('fillcolor'))
-                    },
-                    {
-                        title: 'fillout',
-                        icon: 'plus',
-                        fun: () => this.appendNode(this.makeNodeFromTemplate('fillout'))
-                    },
-                ]
-            },
-            {
-                icon:'close',
-                fun: () => this.deleteChild(SelectionManager.getSelection())
-            },
-        ]
-    }
-
 
     isInputConnected(id,key) {
         return this.getConnections().find((conn)=>conn.input.node === id && conn.input.prop === key)
