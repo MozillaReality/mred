@@ -143,6 +143,7 @@ export default class HypercardEditor extends TreeItemProvider {
             this.id_index[card.id] = card
             card.children.forEach((item)=>{
                 this.id_index[item.id] = item
+                if(!card.backgroundColor) card.backgroundColor = 'white'
             })
         })
     }
@@ -172,6 +173,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 defs.push(def)
                 return
             }
+            let name = key
             let type = 'string'
             let locked = false
             let custom = false
@@ -186,6 +188,10 @@ export default class HypercardEditor extends TreeItemProvider {
                 hints.min = 1
             }
             if(key === 'color') type = 'color'
+            if(key === 'backgroundColor') {
+                type = 'color'
+                name = 'BG Color'
+            }
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
             if(key === 'target') type = 'enum'
@@ -194,7 +200,7 @@ export default class HypercardEditor extends TreeItemProvider {
                 custom = true
             }
             defs.push({
-                name:key,
+                name:name,
                 key:key,
                 value:item[key],
                 type:type,
@@ -232,7 +238,8 @@ export default class HypercardEditor extends TreeItemProvider {
             id: this.genID('card'),
             type: 'card',
             title: 'untitled card',
-            children: []
+            children: [],
+            backgroundColor: 'white'
         }
     }
     createRect() {

@@ -25,7 +25,13 @@ export default class CardComponent extends Component {
     }
     render() {
         const card = this.props.card
-        return <div style={{position:'relative'}} ref={(ref)=>this.container = ref} className={"hypercard-card"}>
+        const style = {
+            position: 'relative',
+            backgroundColor: card.backgroundColor?card.backgroundColor:"white",
+            width: '800px',
+            height: '800px'
+        }
+        return <div style={style} ref={(ref)=>this.container = ref} className={"hypercard-card"}>
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
         </div>
     }
