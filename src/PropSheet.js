@@ -54,18 +54,28 @@ class PropEditor extends Component {
     }
     changed = (e) => {
         if(this.props.def.type === 'string') this.setState({value:e.target.value})
-        if(this.props.def.type === 'number') {
-            const v = e.target.value
-            this.setState({value:v})
-            if(!isNaN(parseFloat(v))) {
-                const sel = selMan.getSelection();
-                this.props.provider.setPropertyValue(sel, this.props.def, v);
-            }
-        }
+        if(this.props.def.type === 'number') this.updateNum(e.target.value)
         if(this.props.def.type === 'boolean') this.setState({value:e.target.checked})
     }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
+    }
+    updateNum = (v) => {
+        this.setState({value:v})
+        if(!isNaN(parseFloat(v))) {
+            const sel = selMan.getSelection();
+            this.props.provider.setPropertyValue(sel, this.props.def, v);
+        }
+    }
+    numberKeyDown = (e) => {
+        if(e.key === 'ArrowUp' && e.shiftKey) {
+            e.preventDefault()
+            this.updateNum(this.state.value+10)
+        }
+        if(e.key === 'ArrowDown' && e.shiftKey) {
+            e.preventDefault()
+            this.updateNum(this.state.value-10)
+        }
     }
     booleanChanged = (e) => {
         this.setState({value:e.target.checked});
@@ -102,7 +112,12 @@ class PropEditor extends Component {
         if (def.custom === true) return this.props.provider.createCustomEditor(this.props.item, def, provider)
         if (def.locked === true) return <i>{def.type}:{def.value}</i>
         if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
-        if (def.type === 'number')  return <input type='number'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (def.type === 'number')  return <input type='number'
+                                                  value={this.state.value}
+                                                  onChange={this.changed}
+                                                  onKeyPress={this.keypressed}
+                                                  onKeyDown={this.numberKeyDown}
+                                                  onBlur={this.commit}/>
         if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
         if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} obj={obj} provider={this.props.provider}/>
         if (def.type === 'color') return <button style={{
