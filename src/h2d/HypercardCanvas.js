@@ -24,7 +24,7 @@ export default class HypercardCanvas extends Component {
         }
         if(sel.type === 'text' || sel.type === 'rect' || sel.type === 'image') {
             const card = this.props.provider.getParent(sel)
-            return <CardComponent card={card} live={false} provider={this.props.provider}/>
+            return <CardComponent card={card} live={false} provider={this.props.provider} showBounds={this.props.showBounds}/>
         }
         return <div>invalid selection</div>
     }

@@ -10,7 +10,8 @@ export default class HypercardApp extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            dirty:false
+            dirty:false,
+            showBounds:false
         }
     }
 
@@ -67,6 +68,10 @@ export default class HypercardApp extends Component {
         prov.deleteNode(node)
     }
 
+    toggleBounds = () => {
+        this.setState({showBounds:!this.state.showBounds})
+    }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp provider={prov}>
@@ -81,7 +86,7 @@ export default class HypercardApp extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <HypercardCanvas provider={prov}/>
+                <HypercardCanvas provider={prov} showBounds={this.state.showBounds}/>
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
@@ -90,6 +95,7 @@ export default class HypercardApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
                 <label>{this.state.dirty?"dirty":""}</label>
+                <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
             </Toolbar>
 
             <Toolbar right top/>

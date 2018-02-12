@@ -283,5 +283,9 @@ g.selected > rect.selection {
 
 
 .hypercard-card .selected {
-    outline: 3px dashed darkorange;
+    outline: 3px dashed darkorange !important;
+}
+
+.hypercard-card.show-bounds > div {
+    outline: 1px solid orangered;
 }

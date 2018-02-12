@@ -31,7 +31,9 @@ export default class CardComponent extends Component {
             width: '800px',
             height: '800px'
         }
-        return <div style={style} ref={(ref)=>this.container = ref} className={"hypercard-card"}>
+        let clss = "hypercard-card"
+        if(this.props.showBounds === true) clss += " show-bounds"
+        return <div style={style} ref={(ref)=>this.container = ref} className={clss}>
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
         </div>
     }
@@ -48,7 +50,6 @@ export default class CardComponent extends Component {
                         top:item.y+'px',
                         width:item.w+'px',
                         height:item.h+'px',
-                        border:'1px solid black',
                         color:item.color,
                         fontSize:item.fontSize+'pt',
                     }}
@@ -71,7 +72,6 @@ export default class CardComponent extends Component {
                         width:item.w+'px',
                         height:item.h+'px',
                         backgroundColor: item.color,
-                        border:'1px solid black'
                     }}>
         </div>
     }
@@ -88,7 +88,6 @@ export default class CardComponent extends Component {
                         top: item.y + 'px',
                         width: item.w + 'px',
                         height: item.h + 'px',
-                        border: '1px solid black',
                         padding:0,
                         margin:0,
                     }}
