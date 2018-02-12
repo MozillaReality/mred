@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import SelectionManager from '../SelectionManager'
 import {makePoint} from '../utils'
 import DragHandler from '../texture/DragHandler'
+import { PopupManager, VBox}  from "appy-comps";
 
 export default class CardComponent extends Component {
     clicked(item) {
@@ -26,6 +27,13 @@ export default class CardComponent extends Component {
     clearSelection = () => {
         SelectionManager.setSelection(this.props.card)
     }
+    showContextMenu = (e,item) => {
+        e.preventDefault()
+        PopupManager.show(<VBox>
+            <button onClick={()=>this.moveNodeToBack(item)}>move to back</button>
+        </VBox>, e.target)
+    }
+    moveNodeToBack = (item) => this.props.provider.moveChildToBack(item)
     render() {
         const card = this.props.card
         const style = {
@@ -89,6 +97,7 @@ export default class CardComponent extends Component {
         if(selected) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',

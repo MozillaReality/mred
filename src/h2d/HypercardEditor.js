@@ -160,6 +160,13 @@ export default class HypercardEditor extends TreeItemProvider {
         parent.children = parent.children.filter((it)=>it.id !== item.id)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent)
     }
+    moveChildToBack(item) {
+        const parent = this.getParent(item)
+        const n = parent.children.indexOf(item)
+        parent.children.splice(n,1)
+        parent.children.splice(0,0,item)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent)
+    }
     getProperties(item) {
         var defs = [];
         if(!item) return defs;
