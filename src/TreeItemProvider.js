@@ -73,9 +73,7 @@ export default class TreeItemProvider {
     setDocument(doc, docid) {
         this.root = doc
         this.docid = docid
-        console.log("subscribed to ", docid)
         this.pubnub.subscribe({channels: [docid]})
-        console.log("set the new document to", doc)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.root);
     }
 
@@ -127,6 +125,8 @@ export default class TreeItemProvider {
 
     }
 
+    /* required functions for subclasses */
+
     generateSelectionPath() {
         throw new Error("generateSelectionPath not implemented")
     }
@@ -142,6 +142,10 @@ export default class TreeItemProvider {
     makeEmptyRoot() {
         throw new Error("makeEmptyRoot() not implemented")
     }
+    getApp() { throw new Error("getApp() not implemented") }
+    getTitle() { throw new Error("getTitle() not implemented") }
+    getDocType() { throw new Error("getDocType() not implemented") }
+    getSceneRoot() { throw new Error("getSceneRoot() not implemented") }
 
     uploadFile(file) {
         return new Promise((res,rej)=>{

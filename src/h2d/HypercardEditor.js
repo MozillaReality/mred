@@ -175,13 +175,16 @@ export default class HypercardEditor extends TreeItemProvider {
             let type = 'string'
             let locked = false
             let custom = false
+            let hints = {}
             if(key === 'visible') type = 'boolean'
             if(key === 'type') locked = true
             if(key === 'id') locked = true
             if(key === 'x') type = 'number'
             if(key === 'y') type = 'number'
-            if(key === 'w') type = 'number'
-            if(key === 'h') type = 'number'
+            if(key === 'w' || key === 'h') {
+                type = 'number'
+                hints.min = 1
+            }
             if(key === 'color') type = 'color'
             if(key === 'stroke') type = 'color'
             if(key === 'strokeWidth') type = 'number'
@@ -196,7 +199,8 @@ export default class HypercardEditor extends TreeItemProvider {
                 value:item[key],
                 type:type,
                 locked:locked,
-                custom:custom
+                custom:custom,
+                hints:hints
             })
         })
         return defs;

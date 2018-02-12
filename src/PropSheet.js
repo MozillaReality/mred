@@ -61,6 +61,14 @@ class PropEditor extends Component {
         if(e.charCode === 13) this.commit();
     }
     updateNum = (v) => {
+        const def = this.props.def;
+        if(def.hints) {
+            if(def.hints.hasOwnProperty('min')) {
+                if(v < def.hints.min) {
+                    v = def.hints.min
+                }
+            }
+        }
         this.setState({value:v})
         if(!isNaN(parseFloat(v))) {
             const sel = selMan.getSelection();
