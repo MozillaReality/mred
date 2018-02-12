@@ -5,7 +5,9 @@ import Selection from './SelectionManager'
 export const TREE_ITEM_PROVIDER = {
     EXPANDED_CHANGED:'EXPANDED_CHANGED',
     STRUCTURE_CHANGED:'STRUCTURE_CHANGED',
-    PROPERTY_CHANGED:'PROPERTY_CHANGED'
+    PROPERTY_CHANGED:'PROPERTY_CHANGED',
+    CLEAR_DIRTY:'CLEAR_DIRTY',
+    SAVED:'SAVED'
 }
 
 // export const SERVER_URL = "http://localhost:30065/doc/"
@@ -96,6 +98,7 @@ export default class TreeItemProvider {
         return POST_JSON(SERVER_URL+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
+            this.fire(TREE_ITEM_PROVIDER.SAVED,true)
         }).catch((e)=> console.log("error",e))
     }
     loadDoc(docid) {
@@ -116,6 +119,7 @@ export default class TreeItemProvider {
         GET_JSON(SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
+            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
             const newsel = this.findNodeFromSelectionPath(this.getSceneRoot(),spath)
             console.log("set new selection to ", newsel)
             Selection.setSelection(newsel)

@@ -4,20 +4,27 @@ import HypercardCanvas from './HypercardCanvas'
 import {toQueryString} from '../utils'
 import Selection from '../SelectionManager'
 import PropSheet from '../PropSheet'
+import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 
 export default class HypercardApp extends Component {
     constructor(props) {
         super(props)
+        this.state = {
+            dirty:false
+        }
     }
-    preview = () => {
-        this.props.provider.save().then(()=>{
-            const query = toQueryString({
-                mode:'preview',
-                provider:this.state.providerName,
-                doc:this.state.provider.getDocId()
-            })
-            window.open('./?'+query)
-        })
+
+    componentDidMount() {
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, ()=> this.setDirty())
+        this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, ()=> this.setDirty())
+        this.props.provider.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.clearDirty())
+        this.props.provider.on(TREE_ITEM_PROVIDER.CLEAR_DIRTY, ()=> this.clearDirty())
+    }
+    setDirty = () => {
+        if(this.state.dirty === false) this.setState({dirty:true})
+    }
+    clearDirty = () => {
+        if(this.state.dirty === true) this.setState({dirty:false})
     }
 
     addCard = () => {
@@ -71,7 +78,7 @@ export default class HypercardApp extends Component {
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
-                <button className="fa fa-play-circle" onClick={this.preview}/>
+                <label>{this.state.dirty?"dirty":""}</label>
             </Toolbar>
 
             <Toolbar right top/>
