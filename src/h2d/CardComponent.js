@@ -23,6 +23,9 @@ export default class CardComponent extends Component {
             ypropname: 'y'
         })
     }
+    clearSelection = () => {
+        SelectionManager.setSelection(this.props.card)
+    }
     render() {
         const card = this.props.card
         const style = {
@@ -33,7 +36,12 @@ export default class CardComponent extends Component {
         }
         let clss = "hypercard-card"
         if(this.props.showBounds === true) clss += " show-bounds"
-        return <div style={style} ref={(ref)=>this.container = ref} className={clss}>
+        return <div
+            style={style}
+            ref={(ref)=>this.container = ref}
+            className={clss}
+            onMouseDown={this.clearSelection}
+        >
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
         </div>
     }

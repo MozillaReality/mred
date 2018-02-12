@@ -27,6 +27,10 @@ class SelectionManager {
         this.selected = [node]
         this.fire(SELECTION_MANAGER.CHANGED,this)
     }
+    clearSelection() {
+        this.selected = []
+        this.fire(SELECTION_MANAGER.CHANGED,this)
+    }
     isSelected(node) {
         return (this.selected.indexOf(node) >= 0)
     }
