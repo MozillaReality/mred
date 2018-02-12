@@ -22,6 +22,17 @@ export default class HypercardApp extends Component {
     }
     setDirty = () => {
         if(this.state.dirty === false) this.setState({dirty:true})
+        if(this.dirtyTimeout) clearTimeout(this.dirtyTimeout)
+        this.dirtyTimeout = setTimeout(this.checkDirty,60*1000)
+    }
+    checkDirty = () => {
+        if(this.state.dirty === true) {
+            console.log("must save. it's time")
+            this.props.provider.save().then(()=>{
+                console.log("successfully saved")
+            })
+        }
+
     }
     clearDirty = () => {
         if(this.state.dirty === true) this.setState({dirty:false})
