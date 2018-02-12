@@ -51,6 +51,7 @@ export default class CardComponent extends Component {
             onMouseDown={this.clearSelection}
         >
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
+            {this.drawSelectionHandles(SelectionManager.getSelection())}
         </div>
     }
     renderItem_text(item,key) {
@@ -109,5 +110,34 @@ export default class CardComponent extends Component {
                         margin:0,
                     }}
         ><img src={item.src} width={item.w}/></div>
+    }
+    mouseDownOnHandle(e,item) {
+        new DragHandler(e,{
+            target:item,
+            provider:this.props.provider,
+            toLocal: (pt) => {
+                const bds = this.container.getBoundingClientRect()
+                return pt.minus(makePoint(bds.x,bds.y))
+            },
+            xpropname: 'w',
+            ypropname: 'h'
+        })
+    }
+    drawSelectionHandles(item) {
+        if(!item) return
+        if(item.type === 'card') return
+        return <div>
+            <div className="resize handle" style={{
+                width:'20px',
+                height:'20px',
+                backgroundColor:'red',
+                position:'absolute',
+                left:(item.x+item.w)+'px',
+                top:(item.y+item.h)+'px'
+            }}
+                 onMouseDown={(e)=>this.mouseDownOnHandle(e,item)}
+            ></div>
+        </div>
+
     }
 }
