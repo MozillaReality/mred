@@ -25,13 +25,17 @@ export default class CardComponent extends Component {
     }
     render() {
         const card = this.props.card
-        return <div style={{position:'relative'}} ref={(ref)=>this.container = ref}>
+        return <div style={{position:'relative'}} ref={(ref)=>this.container = ref} className={"hypercard-card"}>
             {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
         </div>
     }
     renderItem_text(item,key) {
+        const selected = SelectionManager.getSelection() === item
+        let clss = "rect "
+        if(selected) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    className={clss}
                     style={{
                         position: 'absolute',
                         left:item.x+'px',
@@ -48,8 +52,12 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_rect(item,key) {
+        const selected = SelectionManager.getSelection() === item
+        let clss = "rect "
+        if(selected) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    className={clss}
                     style={{
                         position: 'absolute',
                         left:item.x+'px',
@@ -62,8 +70,12 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_image(item,key) {
+        const selected = SelectionManager.getSelection() === item
+        let clss = "image "
+        if(selected) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    className={clss}
                     style={{
                         position: 'absolute',
                         left: item.x + 'px',

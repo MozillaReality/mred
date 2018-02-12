@@ -280,3 +280,8 @@ g.selected > rect.selection {
     padding-left: 1em;
     justify-self: end;
 }
+
+
+.hypercard-card .selected {
+    outline: 3px dashed darkorange;
+}
