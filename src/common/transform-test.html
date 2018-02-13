@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        .box {
+            box-sizing: border-box;
+            border: 5px solid red;
+            margin:0;
+            width: 20vw;
+            height: 20vh;
+        }
+        #obox {
+            position: fixed;
+            left: calc(100vw - 20vw);
+            top: 20vh;
+        }
+        #box {
+            position: fixed;
+            top:0;
+            left:0;
+            transform: scale(1,1);
+            transform-origin: 100% 25%;
+            transition: all 1s linear;
+            width: 100vw;
+            height: 100vh;
+        }
+        #box.big {
+            position: fixed;
+            transform: scale(0.2,0.2);
+            transition: all 1s linear;
+        }
+    </style>
+    <script>
+        $ = (sel)=>document.querySelector(sel)
+        on = (elem, type, cb) => elem.addEventListener(type,cb)
+
+
+    </script>
+</head>
+<body>
+
+<div id="box" class="box">
+    I am the box
+</div>
+
+
+<div id="obox" class="box">
+    I am the real box
+</div>
+
+
+<script>
+    on($('#box'),'click',() => {
+        $('#box').classList.toggle('big')
+    })
+    on($('#obox'),'click',() => {
+        $('#box').classList.toggle('big')
+    })
+</script>
+</body>
+</html>

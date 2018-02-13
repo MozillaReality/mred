@@ -27,8 +27,7 @@ export default class HypercardApp extends Component {
         this.dirtyTimeout = setTimeout(this.checkDirty,60*1000)
     }
     checkDirty = () => {
-        if(this.state.dirty === true) {
-            console.log("must save. it's time")
+        if(this.state.dirty) {
             this.props.provider.save().then(()=>{
                 console.log("successfully saved")
             })
@@ -40,16 +39,13 @@ export default class HypercardApp extends Component {
     }
 
     addCard = () => {
-        let card = this.props.provider.createCard();
-        let root = this.props.provider.getSceneRoot()
-        this.props.provider.appendChild(root,card)
+        const prov = this.props.provider;
+        prov.appendChild(prov.getSceneRoot(),prov.createCard())
     }
 
     addSquare = () => {
         const prov = this.props.provider
-        let sel = prov.findSelectedCard()
-        let rect = prov.createRect();
-        prov.appendChild(sel,rect)
+        prov.appendChild(prov.findSelectedCard(),prov.createRect())
     }
 
     addText = () => {
@@ -63,14 +59,12 @@ export default class HypercardApp extends Component {
     }
 
     deleteItem = () => {
-        let node = Selection.getSelection()
+        let nodes = Selection.getFullSelection()
         const prov = this.props.provider
-        prov.deleteNode(node)
+        nodes.forEach((node)=>prov.deleteNode(node))
     }
 
-    toggleBounds = () => {
-        this.setState({showBounds:!this.state.showBounds})
-    }
+    toggleBounds = () => this.setState({showBounds:!this.state.showBounds})
 
     render() {
         const prov = this.props.provider

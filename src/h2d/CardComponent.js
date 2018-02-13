@@ -36,9 +36,10 @@ export default class CardComponent extends Component {
     moveNodeToBack = (item) => this.props.provider.moveChildToBack(item)
     render() {
         const card = this.props.card
+        const prov = this.props.provider
         const style = {
             position: 'relative',
-            backgroundColor: card.backgroundColor?card.backgroundColor:"white",
+            backgroundColor: prov.getPropertyValue(card,'backgroundColor'),
             width: '800px',
             height: '800px'
         }
@@ -55,20 +56,20 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_text(item,key) {
-        const selected = SelectionManager.getSelection() === item
         let clss = "rect "
-        if(selected) clss += " selected"
+        if(SelectionManager.isSelected(item)) clss += " selected"
+        const prov = this.props.provider
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
-                        color:item.color,
-                        fontSize:item.fontSize+'pt',
+                        left:prov.getPropertyValue(item,'x')+'px',
+                        top:prov.getPropertyValue(item,'y')+'px',
+                        width:prov.getPropertyValue(item,'w')+'px',
+                        height:prov.getPropertyValue(item,'h')+'px',
+                        color:prov.getPropertyValue(item,'color'),
+                        fontSize:prov.getPropertyValue(item,'fontSize')+'pt',
                     }}
                     onClick={()=>this.clicked(item)}
         >
@@ -76,40 +77,41 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_rect(item,key) {
-        const selected = SelectionManager.getSelection() === item
+        const prov = this.props.provider
         let clss = "rect "
-        if(selected) clss += " selected"
+        if(SelectionManager.isSelected(item)) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
-                        backgroundColor: item.color,
+                        left:prov.getPropertyValue(item,'x')+'px',
+                        top:prov.getPropertyValue(item,'y')+'px',
+                        width:prov.getPropertyValue(item,'w')+'px',
+                        height:prov.getPropertyValue(item,'h')+'px',
+                        backgroundColor: prov.getPropertyValue(item,'color'),
                     }}>
         </div>
     }
     renderItem_image(item,key) {
-        const selected = SelectionManager.getSelection() === item
+        const prov = this.props.provider
         let clss = "image "
-        if(selected) clss += " selected"
+        if(SelectionManager.isSelected(item)) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left: item.x + 'px',
-                        top: item.y + 'px',
-                        width: item.w + 'px',
-                        height: item.h + 'px',
+                        left:prov.getPropertyValue(item,'x')+'px',
+                        top:prov.getPropertyValue(item,'y')+'px',
+                        width:prov.getPropertyValue(item,'w')+'px',
+                        height:prov.getPropertyValue(item,'h')+'px',
                         padding:0,
                         margin:0,
                     }}
-        ><img src={item.src} width={item.w}/></div>
+        ><img src={prov.getPropertyValue(item,'src')}
+              width={prov.getPropertyValue(item,'w')}/></div>
     }
     mouseDownOnHandle(e,item) {
         new DragHandler(e,{
@@ -126,14 +128,16 @@ export default class CardComponent extends Component {
     drawSelectionHandles(item) {
         if(!item) return
         if(item.type === 'card') return
+        const size = 8
         return <div>
             <div className="resize handle" style={{
-                width:'20px',
-                height:'20px',
+                width:size*2+'px',
+                height:size*2+'px',
                 backgroundColor:'red',
                 position:'absolute',
-                left:(item.x+item.w)+'px',
-                top:(item.y+item.h)+'px'
+                left:(item.x+item.w-size)+'px',
+                top:(item.y+item.h-size)+'px',
+                borderRadius:'3px'
             }}
                  onMouseDown={(e)=>this.mouseDownOnHandle(e,item)}
             ></div>
