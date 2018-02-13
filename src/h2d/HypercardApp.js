@@ -61,7 +61,7 @@ export default class HypercardApp extends Component {
     deleteItem = () => {
         let nodes = Selection.getFullSelection()
         const prov = this.props.provider
-        nodes.forEach((node)=>prov.deleteNode(node))
+        nodes.forEach((node)=>prov.deleteChild(node))
     }
 
     toggleBounds = () => this.setState({showBounds:!this.state.showBounds})

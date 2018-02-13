@@ -15,7 +15,7 @@ export default class SVGApp extends Component {
     }
     zoomIn = ()=> this.setState({scale:this.state.scale+1})
     zoomOut = ()=> this.setState({scale:this.state.scale-1})
-    deleteSelectedItem = () => this.props.provider.deleteNode(Selection.getSelection())
+    deleteSelectedItem = () => this.props.provider.deleteChild(Selection.getSelection())
     showCreateObjectMenu = (e) => {
         const acts = [
             {

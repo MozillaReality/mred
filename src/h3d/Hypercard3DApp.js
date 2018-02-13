@@ -50,7 +50,7 @@ export default class Hypercard3DApp extends Component {
             <Toolbar left bottom>
                 <button className="fa fa-vcard" onClick={()=>prov.appendChild(prov.getSceneRoot(),prov.createScene())}/>
                 <button className="fa fa-plus" onClick={this.showAddPopup}>object</button>
-                <button className="fa fa-close" onClick={()=>prov.deleteNode(SelectionManager.getSelection())}/>
+                <button className="fa fa-close" onClick={()=>prov.deleteChild(SelectionManager.getSelection())}/>
             </Toolbar>
 
 

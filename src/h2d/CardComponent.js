@@ -31,9 +31,17 @@ export default class CardComponent extends Component {
         e.preventDefault()
         PopupManager.show(<VBox>
             <button onClick={()=>this.moveNodeToBack(item)}>move to back</button>
+            <button onClick={()=>this.deleteNode(item)}>delete</button>
         </VBox>, e.target)
     }
-    moveNodeToBack = (item) => this.props.provider.moveChildToBack(item)
+    moveNodeToBack = (item) => {
+        PopupManager.hide()
+        this.props.provider.moveChildToBack(item)
+    }
+    deleteNode = (item) => {
+        PopupManager.hide()
+        this.props.provider.deleteChild(item)
+    }
     render() {
         const card = this.props.card
         const prov = this.props.provider
@@ -61,6 +69,7 @@ export default class CardComponent extends Component {
         const prov = this.props.provider
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
@@ -82,6 +91,7 @@ export default class CardComponent extends Component {
         if(SelectionManager.isSelected(item)) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',

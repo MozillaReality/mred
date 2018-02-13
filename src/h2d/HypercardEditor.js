@@ -73,10 +73,6 @@ export default class HypercardEditor extends TreeItemProvider {
         parent.children.push(item);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
     }
-    removeChild(parent,item) {
-        parent.children = parent.children.filter((it)=>it.id !== item.id)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent)
-    }
     moveChildToBack(item) {
         const parent = this.getParent(item)
         const n = parent.children.indexOf(item)
@@ -221,14 +217,15 @@ export default class HypercardEditor extends TreeItemProvider {
         if(sel === this.getSceneRoot()) return this.getSceneRoot().children[0]
         return this.getParent(sel)
     }
-    deleteNode(child) {
+    deleteChild(child) {
         const parent = this.findParent(this.getSceneRoot(),child)
         const index = parent.children.indexOf(child)
         if(index<0) return console.log("not really the parent. invalid!")
         parent.children.splice(index,1)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
         Selection.setSelection(parent)
     }
+
     findParent(root,target) {
         if(root === target) return root
         if(root.children) {
@@ -249,9 +246,16 @@ export default class HypercardEditor extends TreeItemProvider {
                 icon:'close',
                 fun: () => {
                     let node = Selection.getSelection()
-                    this.deleteNode(node)
+                    this.deleteChild(node)
                 }
             },
+            {
+                title:'move to back',
+                fun: () => {
+                    let node = Selection.getSelection()
+                    this.moveChildToBack(node)
+                }
+            }
         ]
     }
 

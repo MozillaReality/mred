@@ -56,7 +56,7 @@ class TreeTableItem extends Component {
             const sparent = prov.findParent(prov.getSceneRoot(),item)
             const tnode =   selMan.getDropTarget()
             const tparent = prov.findParent(prov.getSceneRoot(),tnode)
-            prov.deleteNode(snode)
+            prov.deleteChild(snode)
             prov.insertNodeBefore(tparent,tnode,snode)
             selMan.setDropTarget(null)
         }
