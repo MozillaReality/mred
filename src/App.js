@@ -64,24 +64,33 @@ export default class App extends Component {
         provider.loadDoc(this.props.options.doc)
     }
 
+    openNewProvider(name){
+        PopupManager.hide()
+        window.open(`./?mode=edit&doctype=${name}`)
+    }
 
-    renderProviderList() {
-        return <HBox className="toolbar" style={{border:'1px solid #909090', borderWidth:"0 0 1px 0"}}>
-            <img src="icon.png" height="20" style={{padding:'0.25em'}}/>
-            <label>General Ed</label>
 
-            {Object.keys(this.providers).map((name)=>{
-            return <button key={name} onClick={()=>this.switchProvider(name)}>{name}</button>
-        })}</HBox>
+    showProviderList = (e) => {
+        PopupManager.show(
+            <VBox>
+                {Object.keys(this.providers).map((name)=>{
+                    return <button key={name} onClick={()=>this.openNewProvider(name)}>{name}</button>
+                })}
+            </VBox>,
+            e.target
+        )
     }
     render() {
         const content = this.state.provider.getApp()
         return (
             <VBox fill>
-                {this.renderProviderList()}
-                <div style={{position: 'relative', flex: '1'}}>
-                    {content}
-                </div>
+                <button
+                    style={{position:'absolute',zIndex: 10,}}
+                    onClick={this.showProviderList}
+                    >
+                    <img src="icon.png" height="20" style={{padding:'0em'}}/>
+                </button>
+                <div style={{position: 'relative', flex: '1'}}>{content}</div>
                 <PopupContainer/>
             </VBox>
         );
