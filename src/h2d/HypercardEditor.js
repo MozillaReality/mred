@@ -225,6 +225,16 @@ export default class HypercardEditor extends TreeItemProvider {
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
         Selection.setSelection(parent)
     }
+    insertNodeBefore(parent, target, node) {
+        const index = parent.children.indexOf(target)
+        if(index<0)  {
+            parent.children.push(node)
+        } else {
+            parent.children.splice(index, 0, node)
+        }
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,node);
+        Selection.setSelection(node)
+    }
 
     findParent(root,target) {
         if(root === target) return root

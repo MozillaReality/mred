@@ -53,7 +53,6 @@ class TreeTableItem extends Component {
             if(!selMan.getDropTarget()) return console.log("no drop target")
             const prov = this.props.provider
             const snode =   item
-            const sparent = prov.findParent(prov.getSceneRoot(),item)
             const tnode =   selMan.getDropTarget()
             const tparent = prov.findParent(prov.getSceneRoot(),tnode)
             prov.deleteChild(snode)
