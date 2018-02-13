@@ -53,7 +53,13 @@ class PropEditor extends Component {
         }
     }
     changed = (e) => {
-        if(this.props.def.type === 'string') this.setState({value:e.target.value})
+        if(this.props.def.type === 'string') {
+            this.setState({value:e.target.value})
+            if(this.props.def.live === true) {
+                const sel = selMan.getSelection();
+                this.props.provider.setPropertyValue(sel, this.props.def, e.target.value);
+            }
+        }
         if(this.props.def.type === 'number') this.updateNum(e.target.value)
         if(this.props.def.type === 'boolean') this.setState({value:e.target.checked})
     }
@@ -119,7 +125,12 @@ class PropEditor extends Component {
         const provider = this.props.provider
         if (def.custom === true) return this.props.provider.createCustomEditor(this.props.item, def, provider)
         if (def.locked === true) return <i>{def.type}:{def.value}</i>
-        if (def.type === 'string')  return <input type='string'   value={this.state.value} onChange={this.changed} onKeyPress={this.keypressed} onBlur={this.commit}/>
+        if (def.type === 'string')  return <input
+            type='string'
+            value={this.state.value}
+            onChange={this.changed}
+            onKeyPress={this.keypressed}
+            onBlur={this.commit}/>
         if (def.type === 'number')  return <input type='number'
                                                   value={this.state.value}
                                                   onChange={this.changed}
