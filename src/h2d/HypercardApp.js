@@ -11,7 +11,8 @@ export default class HypercardApp extends Component {
         super(props)
         this.state = {
             dirty:false,
-            showBounds:false
+            showBounds:false,
+            scale: 0
         }
     }
 
@@ -24,7 +25,8 @@ export default class HypercardApp extends Component {
     setDirty = () => {
         if(this.state.dirty === false) this.setState({dirty:true})
         if(this.dirtyTimeout) clearTimeout(this.dirtyTimeout)
-        this.dirtyTimeout = setTimeout(this.checkDirty,60*1000)
+        //save every 5 minutes
+        this.dirtyTimeout = setTimeout(this.checkDirty,5*60*1000)
     }
     checkDirty = () => {
         if(this.state.dirty === true) {
@@ -63,14 +65,13 @@ export default class HypercardApp extends Component {
     }
 
     deleteItem = () => {
-        let node = Selection.getSelection()
         const prov = this.props.provider
-        prov.deleteNode(node)
+        prov.deleteNode(Selection.getSelection())
     }
 
-    toggleBounds = () => {
-        this.setState({showBounds:!this.state.showBounds})
-    }
+    toggleBounds = () => this.setState({showBounds:!this.state.showBounds})
+    zoomIn = () => this.setState({scale:this.state.scale+1})
+    zoomOut = () => this.setState({scale:this.state.scale-1})
 
     render() {
         const prov = this.props.provider
@@ -86,7 +87,9 @@ export default class HypercardApp extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <HypercardCanvas provider={prov} showBounds={this.state.showBounds}/>
+                <HypercardCanvas provider={prov}
+                                 showBounds={this.state.showBounds}
+                                 scale={this.state.scale}/>
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
@@ -96,6 +99,8 @@ export default class HypercardApp extends Component {
                 <button className="fa fa-save" onClick={prov.save}/>
                 <label>{this.state.dirty?"dirty":""}</label>
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
+                <button onClick={this.zoomIn}>zoom in</button>
+                <button onClick={this.zoomOut}>zoom out</button>
             </Toolbar>
 
             <Toolbar right top/>

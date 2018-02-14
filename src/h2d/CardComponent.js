@@ -18,7 +18,7 @@ export default class CardComponent extends Component {
             provider: this.props.provider,
             toLocal: (pt) => {
                 const bds = this.container.getBoundingClientRect()
-                return pt.minus(makePoint(bds.x,bds.y))
+                return pt.minus(makePoint(bds.x,bds.y)).divide(this.calcScale())
             },
             xpropname: 'x',
             ypropname: 'y'
@@ -34,13 +34,17 @@ export default class CardComponent extends Component {
         </VBox>, e.target)
     }
     moveNodeToBack = (item) => this.props.provider.moveChildToBack(item)
+    calcScale() {
+        return Math.pow(2,this.props.scale)
+    }
     render() {
+        const scale = this.calcScale()
         const card = this.props.card
         const style = {
             position: 'relative',
             backgroundColor: card.backgroundColor?card.backgroundColor:"white",
-            width: '800px',
-            height: '800px'
+            width: `${800*scale}px`,
+            height: `${800*scale}px`
         }
         let clss = "hypercard-card"
         if(this.props.showBounds === true) clss += " show-bounds"
@@ -50,11 +54,11 @@ export default class CardComponent extends Component {
             className={clss}
             onMouseDown={this.clearSelection}
         >
-            {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i)  })}
-            {this.drawSelectionHandles(SelectionManager.getSelection())}
+            {card.children.map((item,i)=> { return this['renderItem_'+item.type](item,i,scale)  })}
+            {this.drawSelectionHandles(SelectionManager.getSelection(),scale)}
         </div>
     }
-    renderItem_text(item,key) {
+    renderItem_text(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
         let clss = "rect "
         if(selected) clss += " selected"
@@ -63,19 +67,19 @@ export default class CardComponent extends Component {
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
+                        left:`${item.x*scale}px`,
+                        top:`${item.y*scale}px`,
+                        width:`${item.w*scale}px`,
+                        height:`${item.h*scale}px`,
                         color:item.color,
-                        fontSize:item.fontSize+'pt',
+                        fontSize:`${item.fontSize*scale}pt`,
                     }}
                     onClick={()=>this.clicked(item)}
         >
             {item.text}
         </div>
     }
-    renderItem_rect(item,key) {
+    renderItem_rect(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
         let clss = "rect "
         if(selected) clss += " selected"
@@ -84,15 +88,15 @@ export default class CardComponent extends Component {
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left:item.x+'px',
-                        top:item.y+'px',
-                        width:item.w+'px',
-                        height:item.h+'px',
+                        left:`${item.x*scale}px`,
+                        top:`${item.y*scale}px`,
+                        width:`${item.w*scale}px`,
+                        height:`${item.h*scale}px`,
                         backgroundColor: item.color,
                     }}>
         </div>
     }
-    renderItem_image(item,key) {
+    renderItem_image(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
         let clss = "image "
         if(selected) clss += " selected"
@@ -102,14 +106,14 @@ export default class CardComponent extends Component {
                     className={clss}
                     style={{
                         position: 'absolute',
-                        left: item.x + 'px',
-                        top: item.y + 'px',
-                        width: item.w + 'px',
-                        height: item.h + 'px',
+                        left:`${item.x*scale}px`,
+                        top:`${item.y*scale}px`,
+                        width:`${item.w*scale}px`,
+                        height:`${item.h*scale}px`,
                         padding:0,
                         margin:0,
                     }}
-        ><img src={item.src} width={item.w}/></div>
+        ><img src={item.src} width={item.w*scale}/></div>
     }
     mouseDownOnHandle(e,item) {
         new DragHandler(e,{
@@ -117,26 +121,26 @@ export default class CardComponent extends Component {
             provider:this.props.provider,
             toLocal: (pt) => {
                 const bds = this.container.getBoundingClientRect()
-                return pt.minus(makePoint(bds.x,bds.y))
+                return pt.minus(makePoint(bds.x,bds.y)).divide(this.calcScale())
             },
             xpropname: 'w',
             ypropname: 'h'
         })
     }
-    drawSelectionHandles(item) {
+    drawSelectionHandles(item,scale) {
         if(!item) return
         if(item.type === 'card') return
         return <div>
             <div className="resize handle" style={{
-                width:'20px',
-                height:'20px',
-                backgroundColor:'red',
-                position:'absolute',
-                left:(item.x+item.w)+'px',
-                top:(item.y+item.h)+'px'
+                width: `${20 * scale}px`,
+                height: `${20 * scale}px`,
+                backgroundColor: 'red',
+                position: 'absolute',
+                left: (item.x + item.w) * scale + 'px',
+                top: (item.y + item.h) * scale + 'px'
             }}
-                 onMouseDown={(e)=>this.mouseDownOnHandle(e,item)}
-            ></div>
+            onMouseDown={(e) => this.mouseDownOnHandle(e, item)}
+            />
         </div>
 
     }
