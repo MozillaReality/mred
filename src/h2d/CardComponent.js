@@ -165,31 +165,16 @@ export default class CardComponent extends Component {
     }
 
     cacheFont(font) {
-        console.log("caching",font)
-            /*
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald">
-        <span>Select font:</span>
-<select onchange=fontSelected(event)>
-    <option value="default">Browser Default</option>
-    <option value="Droid+Sans">Droid Sans</option>
-    <option value="Open+Sans">Open Sans</option>
-</select>
-<h1 id="theText">This is a sample text...</h1>
-
-function fontSelected(e){
-    var select = e.target;
-    if (select.selectedIndex > 0) { // web font
-        var fontID = select.options[select.selectedIndex].value;
-        if (!document.getElementById(fontID)) {
-            var head = document.getElementsByTagName('head')[0];
-            var link = document.createElement('link');
-            link.id = fontID;
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = 'http://fonts.googleapis.com/css?family='+fontID;
-            link.media = 'all';
+        if (!document.getElementById(font.id) && font.url) {
+            var head = document.getElementsByTagName('head')[0]
+            var link = document.createElement('link')
+            link.id = font.id
+            link.rel = 'stylesheet'
+            link.type = 'text/css'
+            link.href = font.url
+            link.media = 'all'
+            console.log("adding",link)
             head.appendChild(link)
-        */
-
+        }
     }
 }
