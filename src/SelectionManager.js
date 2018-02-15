@@ -27,6 +27,10 @@ class SelectionManager {
         this.selected = [node]
         this.fire(SELECTION_MANAGER.CHANGED,this)
     }
+    addToSelection(node) {
+        this.selected.push(node)
+        this.fire(SELECTION_MANAGER.CHANGED,this)
+    }
     clearSelection() {
         this.selected = []
         this.fire(SELECTION_MANAGER.CHANGED,this)

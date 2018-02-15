@@ -7,7 +7,11 @@ export default class DragHandler {
         e.preventDefault()
         this.target = opts.target
         this.provider = opts.provider
-        SelectionManager.setSelection(this.target)
+        if(e.shiftKey) {
+            SelectionManager.addToSelection(this.target)
+        } else {
+            SelectionManager.setSelection(this.target)
+        }
 
         this.worldToLocal = opts.toLocal
         this.xpropname = opts.xpropname

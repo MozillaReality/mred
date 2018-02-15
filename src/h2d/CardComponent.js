@@ -68,11 +68,9 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_text(item,key,scale) {
-        const selected = SelectionManager.getSelection() === item
         let clss = "rect "
         if(SelectionManager.isSelected(item)) clss += " selected"
         const prov = this.props.provider
-        if(selected) clss += " selected"
         const fontFamily = this.props.provider.findNodeById(item.fontFamily)
         if(fontFamily) this.cacheFont(fontFamily)
         return <div key={key}
@@ -95,7 +93,6 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_rect(item,key,scale) {
-        const selected = SelectionManager.getSelection() === item
         const prov = this.props.provider
         let clss = "rect "
         if(SelectionManager.isSelected(item)) clss += " selected"
@@ -114,7 +111,6 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_image(item,key,scale) {
-        const selected = SelectionManager.getSelection() === item
         const prov = this.props.provider
         let clss = "image "
         if(SelectionManager.isSelected(item)) clss += " selected"
