@@ -1,10 +1,11 @@
 import React, {Component} from 'react'
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import HypercardCanvas from './HypercardCanvas'
-import {toQueryString} from '../utils'
+import {GET_JSON, toQueryString} from '../utils'
 import Selection from '../SelectionManager'
 import PropSheet from '../PropSheet'
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
+import {HBox, VBox} from "appy-comps";
 
 export default class HypercardApp extends Component {
     constructor(props) {
@@ -12,7 +13,8 @@ export default class HypercardApp extends Component {
         this.state = {
             dirty:false,
             showBounds:false,
-            scale: 0
+            scale: 0,
+            sidepanel:'props'
         }
     }
 
@@ -73,7 +75,7 @@ export default class HypercardApp extends Component {
                                  scale={this.state.scale}/>
             </Panel>
 
-            <Panel scroll right><PropSheet provider={this.prov()}/></Panel>
+            {this.renderSidePanel(this.state.sidepanel)}
 
 
             <Toolbar center top>
@@ -84,9 +86,79 @@ export default class HypercardApp extends Component {
                 <button onClick={this.zoomOut}>zoom out</button>
             </Toolbar>
 
-            <Toolbar right top/>
+            <Toolbar right top>
+                <button onClick={()=>this.setState({sidepanel:'props'})}>Properties</button>
+                <button onClick={()=>this.setState({sidepanel:'clipart'})}>Clip Art</button>
+            </Toolbar>
             <Toolbar right bottom/>
 
         </GridEditorApp>
+    }
+    renderSidePanel(sidepanel) {
+        if(sidepanel === 'clipart') {
+            return <Panel scroll right>
+                <ClipartSearchPanel provider={this.props.provider}/>
+            </Panel>
+        }
+        if(sidepanel === 'props') {
+            return <Panel scroll right>
+                <PropSheet provider={this.prov()}/>
+            </Panel>
+        }
+        return <Panel scroll right>empty</Panel>
+    }
+}
+
+class ClipartSearchPanel extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            query:'cat',
+            results:[]
+        }
+    }
+    edited = (e) => {
+        this.setState({query:e.target.value})
+    }
+    doSearch = () => {
+        console.log("searching for ",this.state.query)
+        GET_JSON(`https://openclipart.org/search/json/?query=${this.state.query}`).then((res)=> {
+            console.log("got the result", res)
+            if (res.msg !== 'success') {
+                console.log("not a success!")
+                return;
+            }
+
+            console.log("total result count", res.info.results, 'cross pages', res.info.pages)
+            res.payload.forEach((item) => console.log(item))
+            this.setState({results:res.payload})
+        })
+    }
+    render() {
+        return <VBox>
+            <HBox><input type="text" value={this.state.query} onChange={this.edited}/><button onClick={this.doSearch}>search</button></HBox>
+            <ul>
+                {this.state.results.map((res,i)=><ClipartResult result={res} key={i} provider={this.props.provider}/>)}
+            </ul>
+        </VBox>
+    }
+}
+
+class ClipartResult extends Component {
+    addToDocument = () => {
+        const prov = this.props.provider;
+        const url = this.props.result.svg.png_2400px
+        prov.appendChild(prov.findSelectedCard(),prov.createImageFromURL(url))
+    }
+    render() {
+        const res = this.props.result;
+        return <li>
+            {res.title}
+            {res.svg_filesize}
+            <a href={res.svg.url}>web</a>
+            <button className="fa fa-plus-circle" onClick={this.addToDocument}>add</button>
+            <br/>
+            <img src={res.svg.png_thumb} width='100px'/>
+        </li>
     }
 }

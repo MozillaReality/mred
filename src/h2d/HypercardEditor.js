@@ -256,6 +256,18 @@ export default class HypercardEditor extends TreeItemProvider {
             src:""
         }
     }
+    createImageFromURL(url) {
+        return {
+            id:this.genID('image'),
+            type:'image',
+            title:'image',
+            x: 100,
+            y: 100,
+            w: 200,
+            h: 200,
+            src:url
+        }
+    }
     createFont() {
         return {
             type:'font',
