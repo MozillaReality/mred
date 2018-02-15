@@ -60,6 +60,11 @@ export default class HypercardApp extends Component {
         prov.appendChild(prov.findSelectedCard(),prov.createImage())
     }
 
+    addFont = () => {
+        const prov = this.props.provider
+        prov.appendFont(prov.createFont())
+    }
+
     deleteItem = () => {
         let nodes = Selection.getFullSelection()
         const prov = this.props.provider
@@ -80,6 +85,7 @@ export default class HypercardApp extends Component {
                 <button className="fa fa-square" onClick={this.addSquare}/>
                 <button className="fa fa-text-width" onClick={this.addText}/>
                 <button className="fa fa-image" onClick={this.addImage}/>
+                <button className="fa fa-font" onClick={this.addFont}/>
                 <button className="fa fa-close" onClick={this.deleteItem}/>
             </Toolbar>
 

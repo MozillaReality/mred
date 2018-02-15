@@ -76,6 +76,10 @@ export default class HypercardEditor extends TreeItemProvider {
         parent.children.push(item);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
     }
+    appendFont(font) {
+        const fontStack = this.getSceneRoot().children.find((n)=>n.type === 'fontstack')
+        this.appendChild(fontStack, font)
+    }
     moveChildToBack(item) {
         const parent = this.getParent(item)
         const n = parent.children.indexOf(item)
@@ -250,6 +254,15 @@ export default class HypercardEditor extends TreeItemProvider {
             w: 50,
             h: 50,
             src:""
+        }
+    }
+    createFont() {
+        return {
+            type:'font',
+            id:this.genID('font'),
+            title:'Some Font',
+            key:`'some font', sans-serif`,
+            url:''
         }
     }
     findSelectedCard() {
