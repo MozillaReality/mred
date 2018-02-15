@@ -93,6 +93,8 @@ export const HypercardItemRenderer = (props) => {
     if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
     if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
+    if(type === 'fontstack') return <div><b>Fonts</b></div>
+    if(type === 'font') return <div>{props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 
@@ -119,7 +121,7 @@ export default class HypercardEditor extends TreeItemProvider {
             title:'stack',
             type:'stack',
             id: genID('stack'),
-            children: [this.createCard()]
+            children: [this.createCard(), this.createFontStack()]
         }
     }
 
@@ -211,6 +213,9 @@ export default class HypercardEditor extends TreeItemProvider {
                 type = 'string'
                 custom = true
             }
+            if(key === 'fontFamily') {
+                type = 'enum'
+            }
             defs.push({
                 name:name,
                 key:key,
@@ -240,9 +245,14 @@ export default class HypercardEditor extends TreeItemProvider {
 
     getValuesForEnum(key) {
         if(key === 'target') return this.getSceneRoot().children.map((ch)=>ch.id)
+        if(key === 'fontFamily') {
+            const fontStack = this.root.children.find((node)=>node.type === 'fontstack')
+            return fontStack.children.map((f)=>f.id)
+        }
     }
     getRendererForEnum(key,obj) {
-        if(key === 'target' || key === 'action') return IdToTitleRenderer;
+        if(key === 'target' || key === 'action') return IdToTitleRenderer
+        if(key === 'fontFamily') return IdToTitleRenderer
         return null
     }
 
@@ -253,6 +263,36 @@ export default class HypercardEditor extends TreeItemProvider {
             title: 'untitled card',
             children: [],
             backgroundColor: 'white'
+        }
+    }
+    createFontStack() {
+        return {
+            id: this.genID('fontstack'),
+            type:'fontstack',
+            title:'fonts',
+            children:[
+                {
+                    type:'font',
+                    id:this.genID('font'),
+                    title:'Sans Serif',
+                    key:'sans-serif',
+                    url:''
+                },
+                {
+                    type:'font',
+                    id:this.genID('font'),
+                    title:'Serif',
+                    key:'serif',
+                    url:''
+                },
+                {
+                    type:'font',
+                    id:this.genID('font'),
+                    title:'Oswald',
+                    key:`'Oswald', sans-serif`,
+                    url:'https://fonts.googleapis.com/css?family=Oswald'
+                }
+            ]
         }
     }
     createRect() {
@@ -279,7 +319,8 @@ export default class HypercardEditor extends TreeItemProvider {
             text:'the text',
             color:'black',
             target: 'card1',
-            fontSize:24
+            fontSize:24,
+            fontFamily:''
         }
     }
     createImage() {

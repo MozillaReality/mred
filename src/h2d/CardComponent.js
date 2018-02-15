@@ -62,6 +62,8 @@ export default class CardComponent extends Component {
         const selected = SelectionManager.getSelection() === item
         let clss = "rect "
         if(selected) clss += " selected"
+        const fontFamily = this.props.provider.findNodeById(item.fontFamily)
+        if(fontFamily) this.cacheFont(fontFamily)
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     className={clss}
@@ -73,6 +75,7 @@ export default class CardComponent extends Component {
                         height:`${item.h*scale}px`,
                         color:item.color,
                         fontSize:`${item.fontSize*scale}pt`,
+                        fontFamily:fontFamily?fontFamily.key:'sans-serif',
                     }}
                     onClick={()=>this.clicked(item)}
         >
@@ -142,6 +145,35 @@ export default class CardComponent extends Component {
             onMouseDown={(e) => this.mouseDownOnHandle(e, item)}
             />
         </div>
+
+    }
+
+    cacheFont(font) {
+        console.log("caching",font)
+            /*
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald">
+        <span>Select font:</span>
+<select onchange=fontSelected(event)>
+    <option value="default">Browser Default</option>
+    <option value="Droid+Sans">Droid Sans</option>
+    <option value="Open+Sans">Open Sans</option>
+</select>
+<h1 id="theText">This is a sample text...</h1>
+
+function fontSelected(e){
+    var select = e.target;
+    if (select.selectedIndex > 0) { // web font
+        var fontID = select.options[select.selectedIndex].value;
+        if (!document.getElementById(fontID)) {
+            var head = document.getElementsByTagName('head')[0];
+            var link = document.createElement('link');
+            link.id = fontID;
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = 'http://fonts.googleapis.com/css?family='+fontID;
+            link.media = 'all';
+            head.appendChild(link)
+        */
 
     }
 }
