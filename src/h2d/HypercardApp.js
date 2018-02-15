@@ -36,49 +36,27 @@ export default class HypercardApp extends Component {
         }
 
     }
-    clearDirty = () => {
-        if(this.state.dirty === true) this.setState({dirty:false})
-    }
 
-    addCard = () => {
-        const prov = this.props.provider;
-        prov.appendChild(prov.getSceneRoot(),prov.createCard())
-    }
+    prov = () => this.props.provider
+    clearDirty = () => (this.state.dirty === true)?this.setState({dirty:false}):""
 
-    addSquare = () => {
-        const prov = this.props.provider
-        prov.appendChild(prov.findSelectedCard(),prov.createRect())
-    }
+    addCard =   () => this.prov().appendChild(this.prov().getSceneRoot(),this.prov().createCard())
+    addSquare = () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createRect())
+    addText =   () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createText())
+    addImage =  () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createImage())
+    addFont =   () => this.prov().appendFont(this.prov().createFont())
 
-    addText = () => {
-        const prov = this.props.provider
-        prov.appendChild(prov.findSelectedCard(),prov.createText())
-    }
-
-    addImage = () => {
-        const prov = this.props.provider
-        prov.appendChild(prov.findSelectedCard(),prov.createImage())
-    }
-
-    addFont = () => {
-        const prov = this.props.provider
-        prov.appendFont(prov.createFont())
-    }
-
-    deleteItem = () => {
-        let nodes = Selection.getFullSelection()
-        const prov = this.props.provider
-        nodes.forEach((node)=>prov.deleteChild(node))
-    }
+    deleteItem = () => Selection.getFullSelection().forEach((node)=>this.prov().deleteChild(node))
 
     toggleBounds = () => this.setState({showBounds:!this.state.showBounds})
     zoomIn = () => this.setState({scale:this.state.scale+1})
     zoomOut = () => this.setState({scale:this.state.scale-1})
 
     render() {
-        const prov = this.props.provider
-        return <GridEditorApp provider={prov}>
-            <Toolbar left top><label>{prov.getTitle()}</label></Toolbar>
+        return <GridEditorApp provider={this.prov()}>
+            <Toolbar left top>
+                <label>{this.prov().getTitle()}</label>
+            </Toolbar>
 
             <Toolbar left bottom>
                 <button className="fa fa-vcard" onClick={this.addCard}/>
@@ -90,16 +68,16 @@ export default class HypercardApp extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <HypercardCanvas provider={prov}
+                <HypercardCanvas provider={this.prov()}
                                  showBounds={this.state.showBounds}
                                  scale={this.state.scale}/>
             </Panel>
 
-            <Panel scroll right><PropSheet provider={prov}/></Panel>
+            <Panel scroll right><PropSheet provider={this.prov()}/></Panel>
 
 
             <Toolbar center top>
-                <button className="fa fa-save" onClick={prov.save}/>
+                <button className="fa fa-save" onClick={this.prov().save}/>
                 <label>{this.state.dirty?"dirty":""}</label>
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
                 <button onClick={this.zoomIn}>zoom in</button>
