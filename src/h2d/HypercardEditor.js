@@ -16,92 +16,10 @@ const PROP_DEFS = {
     }
 }
 
-
-const data = {
-    root: {
-        title:'stack',
-        type:'stack',
-        children: [
-            {
-                type:'card',
-                id:'card1',
-                title:'First card',
-                children:[
-                    {
-                        id:'rect1',
-                        type:'rect',
-                        title:'first rect',
-                        x:10,
-                        y:10,
-                        w:250,
-                        h:50,
-                        color:'yellow',
-                    },
-                    {
-                        id:'text1',
-                        type:'text',
-                        title:'next card',
-                        text:'the next card',
-                        x:50,
-                        y:100,
-                        w:50,
-                        h:50,
-                        color:'black',
-                        target: 'card2'
-                    },
-                ]
-            },
-            {
-                type:'card',
-                id:'card2',
-                title:'Second Card',
-                children: [
-                    {
-                        id:'rect2',
-                        type:'rect',
-                        title:'first rect',
-                        x:200,
-                        y:200,
-                        w:50,
-                        h:50,
-                        color:'blue',
-                    },
-                    {
-                        id:'text2',
-                        type:'text',
-                        title:'go back',
-                        x:30,
-                        y:30,
-                        w:50,
-                        h:50,
-                        text:'go back',
-                        color:'black',
-                        target: 'card1'
-                    },
-                ]
-            }
-        ]
-    }
-}
-
-
-
-export const HypercardItemRenderer = (props) => {
-    const type = props.item.type;
-    if(type === 'rect')   return <div><i className="fa fa-square"/> {props.item.title}</div>
-    if(type === 'text') return <div><i className="fa fa-text-width"/> {props.item.title}</div>
-    if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
-    if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
-    if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
-    if(type === 'fontstack') return <div><b>Fonts</b></div>
-    if(type === 'font') return <div>{props.item.title}</div>
-    return <div>unknown item type = {type}</div>
-}
-
 export default class HypercardEditor extends TreeItemProvider {
     constructor() {
         super()
-        this.root = data.root;
+        this.root = this.makeEmptyRoot()
         this.id_index = {}
     }
     getApp() {
@@ -157,10 +75,6 @@ export default class HypercardEditor extends TreeItemProvider {
         this.id_index[item.id] = item
         parent.children.push(item);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
-    }
-    removeChild(parent,item) {
-        parent.children = parent.children.filter((it)=>it.id !== item.id)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent)
     }
     moveChildToBack(item) {
         const parent = this.getParent(item)
@@ -228,6 +142,9 @@ export default class HypercardEditor extends TreeItemProvider {
             })
         })
         return defs;
+    }
+    getPropertyValue(item,key) {
+        return item[key]
     }
     setPropertyValue(item,def,value) {
         if(def.type === 'number') value = parseFloat(value);
@@ -342,14 +259,25 @@ export default class HypercardEditor extends TreeItemProvider {
         if(sel === this.getSceneRoot()) return this.getSceneRoot().children[0]
         return this.getParent(sel)
     }
-    deleteNode(child) {
+    deleteChild(child) {
         const parent = this.findParent(this.getSceneRoot(),child)
         const index = parent.children.indexOf(child)
         if(index<0) return console.log("not really the parent. invalid!")
         parent.children.splice(index,1)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,child);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
         Selection.setSelection(parent)
     }
+    insertNodeBefore(parent, target, node) {
+        const index = parent.children.indexOf(target)
+        if(index<0)  {
+            parent.children.push(node)
+        } else {
+            parent.children.splice(index, 0, node)
+        }
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,node);
+        Selection.setSelection(node)
+    }
+
     findParent(root,target) {
         if(root === target) return root
         if(root.children) {
@@ -370,9 +298,16 @@ export default class HypercardEditor extends TreeItemProvider {
                 icon:'close',
                 fun: () => {
                     let node = Selection.getSelection()
-                    this.deleteNode(node)
+                    this.deleteChild(node)
                 }
             },
+            {
+                title:'move to back',
+                fun: () => {
+                    let node = Selection.getSelection()
+                    this.moveChildToBack(node)
+                }
+            }
         ]
     }
 
@@ -394,6 +329,16 @@ export default class HypercardEditor extends TreeItemProvider {
         return null
     }
 
+}
+
+export const HypercardItemRenderer = (props) => {
+    const type = props.item.type;
+    if(type === 'rect')   return <div><i className="fa fa-square"/> {props.item.title}</div>
+    if(type === 'text') return <div><i className="fa fa-text-width"/> {props.item.title}</div>
+    if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
+    if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
+    if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
+    return <div>unknown item type = {type}</div>
 }
 
 const IdToTitleRenderer = (props) => {

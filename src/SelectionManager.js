@@ -38,6 +38,9 @@ class SelectionManager {
         if(this.selected.length === 0) return null;
         return this.selected[0];
     }
+    getFullSelection() {
+        return this.selected
+    }
     setDropTarget(node) {
         this.dropTarget = node;
         this.fire(SELECTION_MANAGER.DROP_TARGET_CHANGED,this.dropTarget)

@@ -31,15 +31,24 @@ export default class CardComponent extends Component {
         e.preventDefault()
         PopupManager.show(<VBox>
             <button onClick={()=>this.moveNodeToBack(item)}>move to back</button>
+            <button onClick={()=>this.deleteNode(item)}>delete</button>
         </VBox>, e.target)
     }
-    moveNodeToBack = (item) => this.props.provider.moveChildToBack(item)
+    moveNodeToBack = (item) => {
+        PopupManager.hide()
+        this.props.provider.moveChildToBack(item)
+    }
+    deleteNode = (item) => {
+        PopupManager.hide()
+        this.props.provider.deleteChild(item)
+    }
     calcScale() {
         return Math.pow(2,this.props.scale)
     }
     render() {
         const scale = this.calcScale()
         const card = this.props.card
+        const prov = this.props.provider
         const style = {
             position: 'relative',
             backgroundColor: card.backgroundColor?card.backgroundColor:"white",
@@ -61,11 +70,14 @@ export default class CardComponent extends Component {
     renderItem_text(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
         let clss = "rect "
+        if(SelectionManager.isSelected(item)) clss += " selected"
+        const prov = this.props.provider
         if(selected) clss += " selected"
         const fontFamily = this.props.provider.findNodeById(item.fontFamily)
         if(fontFamily) this.cacheFont(fontFamily)
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
@@ -84,10 +96,12 @@ export default class CardComponent extends Component {
     }
     renderItem_rect(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
+        const prov = this.props.provider
         let clss = "rect "
-        if(selected) clss += " selected"
+        if(SelectionManager.isSelected(item)) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
+                    onContextMenu={(e)=>this.showContextMenu(e,item)}
                     className={clss}
                     style={{
                         position: 'absolute',
@@ -101,8 +115,9 @@ export default class CardComponent extends Component {
     }
     renderItem_image(item,key,scale) {
         const selected = SelectionManager.getSelection() === item
+        const prov = this.props.provider
         let clss = "image "
-        if(selected) clss += " selected"
+        if(SelectionManager.isSelected(item)) clss += " selected"
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     onContextMenu={(e)=>this.showContextMenu(e,item)}
@@ -133,6 +148,7 @@ export default class CardComponent extends Component {
     drawSelectionHandles(item,scale) {
         if(!item) return
         if(item.type === 'card') return
+        const size = 8
         return <div>
             <div className="resize handle" style={{
                 width: `${20 * scale}px`,

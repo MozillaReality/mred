@@ -149,8 +149,16 @@ export default class TreeItemProvider {
     getApp() { throw new Error("getApp() not implemented") }
     getTitle() { throw new Error("getTitle() not implemented") }
     getDocType() { throw new Error("getDocType() not implemented") }
-    getSceneRoot() { throw new Error("getSceneRoot() not implemented") }
 
+    getSceneRoot() {
+        return this.root;
+    }
+    // getSceneRoot() { throw new Error("getSceneRoot() not implemented") }
+
+    deleteChild() { throw new Error("deleteChild not implemented yet")}
+    findParent() { throw new Error("findParent() not implemented yet")}
+    findNodeById() { throw new Error("findNodeById() not implemented yet")}
+    insertNodeBefore() { throw new Error("insertNodeBefore() not implemented yet")}
     uploadFile(file) {
         return new Promise((res,rej)=>{
             const fd = new FormData()
