@@ -174,7 +174,7 @@ export default class CanvasSVG extends Component {
         let classname = ""
         if(Selection.getSelection()===item) classname += " selected"
         return <image key={key}
-                      href={item.src}
+                      xlinkHref={item.src}
                       width={item.w} height={item.h}
                       className={classname}
             // preserveAspectRatio="none"
@@ -201,7 +201,7 @@ export default class CanvasSVG extends Component {
         return <g key={key} transform={`translate(${item.tx},${item.ty})`} visibility={vis}>{this.drawChildren(item)}</g>
     }
     drawSVGRoot(item, key) {
-        return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+        return <svg key={key} id="svg-canvas" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
             <defs>
                 <marker id="arrow-head" markerWidth="5" markerHeight="5"
                         refX="0" refY="2.5"
