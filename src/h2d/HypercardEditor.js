@@ -338,6 +338,8 @@ export const HypercardItemRenderer = (props) => {
     if(type === 'stack')  return <div><i className="fa fa-table"/> {props.item.title}</div>
     if(type === 'card')  return <div><i className="fa fa-vcard"/> {props.item.title}</div>
     if(type === 'image')  return <div><i className="fa fa-image"/> {props.item.title}</div>
+    if(type === 'fontstack') return <div>fonts</div>
+    if(type === 'font') return <div>{props.item.title}</div>
     return <div>unknown item type = {type}</div>
 }
 

@@ -151,12 +151,12 @@ export default class CardComponent extends Component {
         const size = 8
         return <div>
             <div className="resize handle" style={{
-                width: `${20 * scale}px`,
-                height: `${20 * scale}px`,
+                width: `${size * 2 * scale}px`,
+                height: `${size * 2 * scale}px`,
                 backgroundColor: 'red',
                 position: 'absolute',
-                left: (item.x + item.w) * scale + 'px',
-                top: (item.y + item.h) * scale + 'px'
+                left: (item.x + item.w-size) * scale + 'px',
+                top: (item.y + item.h-size) * scale + 'px'
             }}
             onMouseDown={(e) => this.mouseDownOnHandle(e, item)}
             />
