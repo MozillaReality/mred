@@ -117,7 +117,7 @@ class PropEditor extends Component {
         const obj = selMan.getSelection();
         const provider = this.props.provider
         if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
-        if (prop.isLocked()) return <i>{prop.getType()}:{prop.getValue()}</i>
+        if (prop.isLocked()) return <i>blah{prop.getType()}:{prop.getValue()}</i>
         if (prop.isType('string'))  {
             return <input type='string'
                           value={this.state.value}
@@ -137,7 +137,7 @@ class PropEditor extends Component {
         if (prop.isType('enum')) return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={prop} obj={obj} provider={this.props.provider}/>
         if (prop.isType('color')) return <button style={{ backgroundColor:this.state.value}} onClick={this.openColorEditor}>{this.state.value}</button>
         if (prop.isType('array')) return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={prop} obj={obj} provider={this.props.provider}/>
-        return <b>{prop.type}:{prop.value}</b>
+        return <b>{prop.getType()}:{prop.getValue()}</b>
     }
 }
 
@@ -309,9 +309,57 @@ export default class PropSheet extends Component {
         })}</ul>
     }
     calculateProps() {
-        const item = selMan.getSelection()
-        const props = this.props.provider.getProperties(item)
-        return props.map((def)=>new PropProxy(this.props.provider,item,def));
+        const items = selMan.getFullSelection()
+        const first = items[0]
+        const prov = this.props.provider
+        let props = prov.getProperties(first)
+        items.forEach((item)=>{
+            props = calculateIntersection(props, prov.getProperties(item))
+        })
+        return props.map((prop)=>{
+            const multi = new MultiPropProxy(prov, prop.key)
+            items.forEach((item)=>{
+                const p2 = prov.getProperties(item)
+                const match = p2.find(def=>def.key === prop.key)
+                multi.addSubProxy(new PropProxy(prov,item,match))
+            })
+            return multi
+        });
+    }
+
+}
+
+//return items from A that are also in B
+function calculateIntersection(A,B) {
+    return  A.filter((pa)=> B.find((pb)=>pa.key===pb.key))
+}
+
+
+class MultiPropProxy {
+    constructor(provider,key) {
+        this.provider = provider
+        this.key = key
+        this.subs = []
+    }
+    addSubProxy(sub) {
+        this.subs.push(sub)
+    }
+    first() {
+        return this.subs[0]
+    }
+    getName()  { return this.first().getName()  }
+    getValue() { return this.first().getValue() }
+    isCustom() { return this.first().isCustom() }
+    hasHints() { return this.first().hasHints() }
+    getHints() { return this.first().getHints() }
+    isLocked() {
+        return this.first().isLocked()
+    }
+    getType()  { return this.first().getType()  }
+    isType(s)  { return this.first().isType(s)  }
+    getKey()   { return this.key }
+    setValue(v) {
+        this.subs.forEach((s)=> s.setValue(v))
     }
 }
 
