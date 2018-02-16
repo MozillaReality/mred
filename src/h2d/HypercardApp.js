@@ -6,6 +6,7 @@ import Selection from '../SelectionManager'
 import PropSheet from '../PropSheet'
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {HBox, VBox} from "appy-comps";
+import InputManager from '../common/InputManager'
 
 export default class HypercardApp extends Component {
     constructor(props) {
@@ -16,9 +17,24 @@ export default class HypercardApp extends Component {
             scale: 0,
             sidepanel:'props'
         }
+        this.im = new InputManager()
+        this.im.addKeyBinding({
+            id:'save',
+            key:InputManager.KEYS.S,
+            modifiers:[InputManager.MODIFIERS.COMMAND]
+        })
+        this.im.addListener('save',this.save)
+        this.im.addKeyBinding({ id:'undo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addListener('undo',this.undo)
+        this.im.addKeyBinding({ id:'redo', key:InputManager.KEYS.Z,
+            modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
+        this.im.addListener('redo',this.redo)
     }
 
+
+
     componentDidMount() {
+        this.im.attachKeyEvents(document)
         this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, ()=> this.setDirty())
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, ()=> this.setDirty())
         this.props.provider.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.clearDirty())
@@ -54,6 +70,10 @@ export default class HypercardApp extends Component {
     zoomIn = () => this.setState({scale:this.state.scale+1})
     zoomOut = () => this.setState({scale:this.state.scale-1})
 
+    save = () => this.prov().save()
+    redo = () => console.log("redo ")
+    undo = () => console.log("undo ")
+
     render() {
         return <GridEditorApp provider={this.prov()}>
             <Toolbar left top>
@@ -79,7 +99,7 @@ export default class HypercardApp extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-save" onClick={this.prov().save}/>
+                <button className="fa fa-save" onClick={this.save}/>
                 <label>{this.state.dirty?"dirty":""}</label>
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
                 <button onClick={this.zoomIn}>zoom in</button>
