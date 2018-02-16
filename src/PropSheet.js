@@ -44,41 +44,39 @@ class PropEditor extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            value:this.props.def.value
+            value:props.def.getValue()
         }
     }
     componentWillReceiveProps(nextProps) {
         if(this.props.def !== nextProps.def) {
-            this.setState({value:nextProps.def.value})
+            this.setState({value:nextProps.def.getValue()})
         }
     }
     changed = (e) => {
-        if(this.props.def.type === 'string') {
+        if(this.props.def.isType('string')) {
             this.setState({value:e.target.value})
-            if(this.props.def.live === true) {
-                const sel = selMan.getSelection();
-                this.props.provider.setPropertyValue(sel, this.props.def, e.target.value);
+            if(this.props.def.isLive()) {
+                this.props.def.setValue(e.target.value)
             }
         }
-        if(this.props.def.type === 'number') this.updateNum(e.target.value)
-        if(this.props.def.type === 'boolean') this.setState({value:e.target.checked})
+        if(this.props.def.isType('number')) this.updateNum(e.target.value)
+        if(this.props.def.isType('boolean')) this.setState({value:e.target.checked})
     }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
     }
     updateNum = (v) => {
         const def = this.props.def;
-        if(def.hints) {
-            if(def.hints.hasOwnProperty('min')) {
-                if(v < def.hints.min) {
-                    v = def.hints.min
+        if(def.hasHints()) {
+            if(def.getHints().hasOwnProperty('min')) {
+                if(v < def.getHints().min) {
+                    v = def.getHints().min
                 }
             }
         }
         this.setState({value:v})
         if(!isNaN(parseFloat(v))) {
-            const sel = selMan.getSelection();
-            this.props.provider.setPropertyValue(sel, this.props.def, v);
+            def.setValue(v)
         }
     }
     numberKeyDown = (e) => {
@@ -93,57 +91,53 @@ class PropEditor extends Component {
     }
     booleanChanged = (e) => {
         this.setState({value:e.target.checked});
-        const sel = selMan.getSelection();
-        this.props.provider.setPropertyValue(sel,this.props.def,e.target.checked);
+        this.props.def.setValue(e.target.checked)
     }
     enumChanged = (value) => {
         this.setState({value:value})
-        const sel = selMan.getSelection();
-        this.props.provider.setPropertyValue(sel,this.props.def,value);
+        this.props.def.setValue(value)
     }
     arrayChanged = (value) => {
         this.setState({value:value})
-        const sel = selMan.getSelection();
-        this.props.provider.setPropertyValue(sel,this.props.def,value);
+        this.props.def.setValue(value)
     }
     colorChanged = (color) => {
         this.setState({value:color});
-        const sel = selMan.getSelection();
-        this.props.provider.setPropertyValue(sel,this.props.def,color);
+        this.props.def.setValue(color)
         PopupManager.hide();
     }
     commit = () => {
-        const sel = selMan.getSelection();
-        this.props.provider.setPropertyValue(sel,this.props.def,this.state.value);
+        this.props.def.setValue(this.state.value)
     }
     openColorEditor = (e) => {
         PopupManager.show(<HSLUVColorPicker onSelect={this.colorChanged}/>, e.target)
     }
     render() {
-        const def = this.props.def;
+        const prop = this.props.def;
         const obj = selMan.getSelection();
         const provider = this.props.provider
-        if (def.custom === true) return this.props.provider.createCustomEditor(this.props.item, def, provider)
-        if (def.locked === true) return <i>{def.type}:{def.value}</i>
-        if (def.type === 'string')  return <input
-            type='string'
-            value={this.state.value}
-            onChange={this.changed}
-            onKeyPress={this.keypressed}
-            onBlur={this.commit}/>
-        if (def.type === 'number')  return <input type='number'
+        if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
+        if (prop.isLocked()) return <i>{prop.getType()}:{prop.getValue()}</i>
+        if (prop.isType('string'))  {
+            return <input type='string'
+                          value={this.state.value}
+                          onChange={this.changed}
+                          onKeyPress={this.keypressed}
+                          onBlur={this.commit}/>
+        }
+        if (prop.isType('number'))  return <input type='number'
                                                   value={this.state.value}
                                                   onChange={this.changed}
                                                   onKeyPress={this.keypressed}
                                                   onKeyDown={this.numberKeyDown}
                                                   onBlur={this.commit}/>
-        if (def.type === 'boolean') return <input type='checkbox' checked={this.state.value} onChange={this.booleanChanged}/>
-        if (def.type === 'enum') return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={def} obj={obj} provider={this.props.provider}/>
-        if (def.type === 'color') return <button style={{
-            backgroundColor:this.state.value
-        }} onClick={this.openColorEditor}>{this.state.value}</button>
-        if (def.type === 'array') return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={def} obj={obj} provider={this.props.provider}/>
-        return <b>{def.type}:{def.value}</b>
+        if (prop.isType("boolean")) return <input type='checkbox'
+                                                  checked={this.state.value}
+                                                  onChange={this.booleanChanged}/>
+        if (prop.isType('enum')) return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={prop} obj={obj} provider={this.props.provider}/>
+        if (prop.isType('color')) return <button style={{ backgroundColor:this.state.value}} onClick={this.openColorEditor}>{this.state.value}</button>
+        if (prop.isType('array')) return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={prop} obj={obj} provider={this.props.provider}/>
+        return <b>{prop.type}:{prop.value}</b>
     }
 }
 
@@ -168,15 +162,15 @@ const DefaultEnumRenderer = (props) => {
 }
 class EnumEditor extends Component {
     calculateRenderer() {
-        const def = this.props.def
+        const proxy = this.props.def
         const obj = this.props.obj
         if(!this.props.provider.getRendererForEnum) return DefaultEnumRenderer
-        const renderer = this.props.provider.getRendererForEnum(def.key,obj)
+        const renderer = this.props.provider.getRendererForEnum(proxy.getKey(),obj)
         if(!renderer) return DefaultEnumRenderer
         return renderer
     }
     calculateValues() {
-        return this.props.provider.getValuesForEnum(this.props.def.key,this.props.obj)
+        return this.props.provider.getValuesForEnum(this.props.def.getKey(),this.props.obj)
     }
     open = (e) => {
         PopupManager.show(<EnumPicker
@@ -311,11 +305,54 @@ export default class PropSheet extends Component {
         const props = this.calculateProps();
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
-            return <li key={i}><label>{prop.name}</label> <PropEditor def={prop} provider={this.props.provider} item={item}/></li>
+            return <li key={i}><label>{prop.getName()}</label> <PropEditor def={prop} provider={this.props.provider} item={item}/></li>
         })}</ul>
     }
     calculateProps() {
-        return this.props.provider.getProperties(selMan.getSelection());
+        const item = selMan.getSelection()
+        const props = this.props.provider.getProperties(item)
+        return props.map((def)=>new PropProxy(this.props.provider,item,def));
     }
 }
 
+
+class PropProxy {
+    constructor(provider, item, def) {
+        this.provider = provider
+        this.item = item
+        this.def = def
+    }
+    getKey() {
+        return this.def.key
+    }
+    getName() {
+        return this.def.name
+    }
+    isCustom() {
+        return this.def.custom
+    }
+    isLocked() {
+        return this.def.locked
+    }
+    getType() {
+        return this.def.type
+    }
+    getValue() {
+        return this.def.value
+    }
+    isLive() {
+        return this.def.live
+    }
+    isType(type) {
+        return this.def.type === type
+    }
+    setValue(value) {
+        return this.provider.setPropertyValue(this.item,this.def,value)
+    }
+    hasHints() {
+        return this.def.hints
+    }
+    getHints() {
+        return this.def.hints
+    }
+}
