@@ -18,7 +18,13 @@ const ContextMenu = (props) => {
 }
 
 class TreeTableItem extends Component {
-    onSelect = (e)=>  selMan.setSelection(this.props.node)
+    onSelect = (e)=>  {
+        if(e.shiftKey) {
+            selMan.addToSelection(this.props.node)
+        } else {
+            selMan.setSelection(this.props.node)
+        }
+    }
     onContextMenu = (e) => {
         e.preventDefault()
         e.stopPropagation()
