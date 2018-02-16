@@ -305,8 +305,19 @@ export default class PropSheet extends Component {
         const props = this.calculateProps();
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
-            return <li key={i}><label>{prop.getName()}</label> <PropEditor def={prop} provider={this.props.provider} item={item}/></li>
+            return <li key={i}>
+                <label>{prop.getName()}</label>
+                {this.renderIndeterminate(prop,i)}
+                <PropEditor def={prop} provider={this.props.provider} item={item}/>
+            </li>
         })}</ul>
+    }
+    renderIndeterminate(prop, i) {
+        if(prop.isIndeterminate()) {
+            return <i className="icon fa fa-exclamation-circle"></i>
+        } else {
+            return ""
+        }
     }
     calculateProps() {
         const items = selMan.getFullSelection()
@@ -357,9 +368,18 @@ class MultiPropProxy {
     }
     getType()  { return this.first().getType()  }
     isType(s)  { return this.first().isType(s)  }
+    isLive() { return this.first().isLive() }
     getKey()   { return this.key }
     setValue(v) {
         this.subs.forEach((s)=> s.setValue(v))
+    }
+    isIndeterminate() {
+        let same = true
+        let value = this.first().getValue()
+        this.subs.forEach((s)=>{
+            if(s.getValue() !== value) same = false
+        })
+        return !same;
     }
 }
 
@@ -403,4 +423,5 @@ class PropProxy {
     getHints() {
         return this.def.hints
     }
+    isIndeterminate() { return false; }
 }

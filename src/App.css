@@ -141,7 +141,7 @@ button {
 }
 .prop-sheet li {
     display: grid;
-    grid-template-columns: [name]6em [value]auto [icon]2em;
+    grid-template-columns: [name]5em [icon] 1em [value]auto [gutter] 2em;
     grid-column-gap: 0.25em;
     padding: 0.25em;
     border: 1px solid black;
@@ -150,6 +150,12 @@ button {
 .prop-sheet li label {
     grid-column-start: name;
     justify-self: right;
+}
+.prop-sheet li .icon {
+    grid-column-start: icon;
+}
+.prop-sheet li input, .prop-sheet li button {
+    grid-column-start: value;
 }
 
 
