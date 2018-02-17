@@ -7,6 +7,7 @@ import PropSheet from '../PropSheet'
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {HBox, VBox} from "appy-comps";
 import InputManager from '../common/InputManager'
+import UndoManager from '../common/UndoManager'
 
 export default class HypercardApp extends Component {
     constructor(props) {
@@ -29,6 +30,8 @@ export default class HypercardApp extends Component {
         this.im.addKeyBinding({ id:'redo', key:InputManager.KEYS.Z,
             modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
         this.im.addListener('redo',this.redo)
+
+        this.uman = new UndoManager(this.prov())
     }
 
 
@@ -36,6 +39,7 @@ export default class HypercardApp extends Component {
     componentDidMount() {
         this.im.attachKeyEvents(document)
         this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, ()=> this.setDirty())
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_ADDED, ()=> this.setDirty())
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, ()=> this.setDirty())
         this.props.provider.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.clearDirty())
         this.props.provider.on(TREE_ITEM_PROVIDER.CLEAR_DIRTY, ()=> this.clearDirty())
@@ -71,8 +75,8 @@ export default class HypercardApp extends Component {
     zoomOut = () => this.setState({scale:this.state.scale-1})
 
     save = () => this.prov().save()
-    redo = () => console.log("redo ")
-    undo = () => console.log("undo ")
+    undo = () => this.uman.undo()
+    redo = () => this.uman.redo()
 
     render() {
         return <GridEditorApp provider={this.prov()}>
@@ -104,6 +108,8 @@ export default class HypercardApp extends Component {
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
                 <button onClick={this.zoomIn}>zoom in</button>
                 <button onClick={this.zoomOut}>zoom out</button>
+                <button className="fa fa-undo" onClick={this.undo}>undo</button>
+                <button className="fa fa-repeat" onClick={this.redo}>redo</button>
             </Toolbar>
 
             <Toolbar right top>

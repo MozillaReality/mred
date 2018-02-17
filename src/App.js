@@ -38,7 +38,6 @@ export default class App extends Component {
     }
 
     structureChanged = (prop) => {
-        console.log("the structure changed");
         this.setState({root: this.state.provider.getSceneRoot()})
     }
     componentDidMount() {
@@ -61,6 +60,9 @@ export default class App extends Component {
         this.setState({provider: provider, root: provider.getSceneRoot(), providerName: name})
         provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
         provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
+        provider.on(TREE_ITEM_PROVIDER.STRUCTURE_ADDED, this.structureChanged)
+        provider.on(TREE_ITEM_PROVIDER.STRUCTURE_REMOVED, this.structureChanged)
+
         provider.loadDoc(this.props.options.doc)
     }
 

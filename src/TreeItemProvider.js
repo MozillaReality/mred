@@ -5,6 +5,8 @@ import Selection from './SelectionManager'
 export const TREE_ITEM_PROVIDER = {
     EXPANDED_CHANGED:'EXPANDED_CHANGED',
     STRUCTURE_CHANGED:'STRUCTURE_CHANGED',
+    STRUCTURE_ADDED:'STRUCTURE_ADDED',
+    STRUCTURE_REMOVED:'STRUCTURE_REMOVED',
     PROPERTY_CHANGED:'PROPERTY_CHANGED',
     CLEAR_DIRTY:'CLEAR_DIRTY',
     SAVED:'SAVED'
@@ -76,7 +78,9 @@ export default class TreeItemProvider {
         this.root = doc
         this.docid = docid
         this.pubnub.subscribe({channels: [docid]})
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.root);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, {
+            provider:this
+        });
     }
 
     getDocId() {

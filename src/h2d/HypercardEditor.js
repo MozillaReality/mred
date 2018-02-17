@@ -74,7 +74,11 @@ export default class HypercardEditor extends TreeItemProvider {
     appendChild(parent,item) {
         this.id_index[item.id] = item
         parent.children.push(item);
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_ADDED,{
+            provider:this,
+            parent:parent,
+            child:item
+        });
     }
     appendFont(font) {
         const fontStack = this.getSceneRoot().children.find((n)=>n.type === 'fontstack')
@@ -152,12 +156,26 @@ export default class HypercardEditor extends TreeItemProvider {
     }
     setPropertyValue(item,def,value) {
         if(def.type === 'number') value = parseFloat(value);
+        const oldValue = item[def.key]
         item[def.key] = value;
-        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
+            provider: this,
+            child:item,
+            propKey:def.key,
+            oldValue:oldValue,
+            newValue:value
+        })
     }
-    setPropertyValueByName(item,name,value) {
-        item[name] = value
-        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,item)
+    setPropertyValueByName(item,key,value) {
+        const oldValue = item[key]
+        item[key] = value
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
+            provider: this,
+            child:item,
+            propKey:key,
+            oldValue:oldValue,
+            newValue:value
+        })
     }
     createCustomEditor(item,def,provider) {
         if(def.key === 'src') return <URLFileEditor def={def} item={item} provider={provider}/>
@@ -289,7 +307,7 @@ export default class HypercardEditor extends TreeItemProvider {
         const index = parent.children.indexOf(child)
         if(index<0) return console.log("not really the parent. invalid!")
         parent.children.splice(index,1)
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,parent);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_REMOVED,{parent:parent,child:child});
         Selection.setSelection(parent)
     }
     insertNodeBefore(parent, target, node) {
@@ -299,7 +317,11 @@ export default class HypercardEditor extends TreeItemProvider {
         } else {
             parent.children.splice(index, 0, node)
         }
-        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,node);
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_ADDED,{
+            provider:this,
+            parent:parent,
+            child:node
+        });
         Selection.setSelection(node)
     }
 

@@ -126,6 +126,9 @@ export default class TreeTable extends Component {
     componentDidMount() {
         this.listener = this.props.provider.on(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,
             (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_ADDED,
+            (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+
         this.other_listener = selMan.on(SELECTION_MANAGER.CHANGED, (sel)=> this.setState({selection:sel}))
         selMan.on(SELECTION_MANAGER.DROP_TARGET_CHANGED, (sel) => this.setState({dropTarget:selMan.getDropTarget()}))
     }
