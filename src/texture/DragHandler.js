@@ -16,15 +16,18 @@ export default class DragHandler {
         this.worldToLocal = opts.toLocal
         this.xpropname = opts.xpropname
         this.ypropname = opts.ypropname
+        this.uman = opts.undoManager
 
         const pt2 = this.worldToLocal(makePoint(e.clientX, e.clientY))
         this.start = pt2.minus(makePoint(this.target[this.xpropname],this.target[this.ypropname]))
 
 
+        if(this.uman) this.uman.startGrouping()
         window.addEventListener('mousemove',this.onMouseMove)
         window.addEventListener('mouseup',this.onMouseUp)
     }
     onMouseUp = (e) => {
+        if(this.uman) this.uman.stopGrouping()
         window.removeEventListener('mousemove', this.onMouseMove)
         window.removeEventListener('mouseup', this.onMouseUp)
     }

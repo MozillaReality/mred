@@ -23,6 +23,7 @@ export default class HypercardCanvas extends Component {
             return <CardComponent
                 card={sel} live={false}
                 scale={this.props.scale}
+                undoManager={this.props.undoManager}
                 provider={this.props.provider}/>
         }
         if(sel.type === 'text' || sel.type === 'rect' || sel.type === 'image') {
@@ -31,7 +32,9 @@ export default class HypercardCanvas extends Component {
                 card={card} live={false}
                 scale={this.props.scale}
                 provider={this.props.provider}
-                showBounds={this.props.showBounds}/>
+                showBounds={this.props.showBounds}
+                undoManager={this.props.undoManager}
+            />
         }
         return <div>invalid selection</div>
     }

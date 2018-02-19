@@ -96,7 +96,9 @@ export default class HypercardApp extends Component {
             <Panel center middle scroll>
                 <HypercardCanvas provider={this.prov()}
                                  showBounds={this.state.showBounds}
-                                 scale={this.state.scale}/>
+                                 scale={this.state.scale}
+                                 undoManager={this.uman}
+                />
             </Panel>
 
             {this.renderSidePanel(this.state.sidepanel)}

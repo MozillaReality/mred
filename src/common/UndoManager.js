@@ -13,13 +13,13 @@ export default class UndoManager {
             // console.log(`structure added: ${e.child.id}`)
             this.stack = this.stack.slice(0,this.current+1)
             this.stack.push({
-                undo:()=>{
+                undo: () => {
                     e.provider.deleteChild(e.child)
                 },
-                redo:() => {
-                    e.provider.appendChild(e.parent,e.child)
+                redo: () => {
+                    e.provider.appendChild(e.parent, e.child)
                 },
-                toString:() => `ADD ${e.child.id}`
+                toString: () => `ADD ${e.child.id}`
             })
             this.current++
             this.dump()
@@ -41,20 +41,39 @@ export default class UndoManager {
             this.dump()
         })
         this.prov.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (e)=> {
-            // console.log(`property changed: ${e.child.id} ${e.propKey}`)
             if(this.locked) return
-            this.stack = this.stack.slice(0,this.current+1)
-            this.stack.push({
-                undo:()=>{
-                    e.provider.setPropertyValueByName(e.child,e.propKey,e.oldValue)
-                },
-                redo:() => {
-                    e.provider.setPropertyValueByName(e.child,e.propKey,e.newValue)
-                },
-                toString:() => `PROPCHANGE ${e.child.id} ${e.propKey}`
-            })
+            if(this.grouping) {
+                if(!this.groups[e.propKey]) {
+                    this.groups[e.propKey] = {
+                        oldValue: e.oldValue,
+                        newValue: e.newValue,
+                        undo: function () {
+                            e.provider.setPropertyValueByName(e.child, e.propKey, this.oldValue)
+                        },
+                        redo: function () {
+                            e.provider.setPropertyValueByName(e.child, e.propKey, this.newValue)
+                        },
+                        toString: function() {
+                            return `PROPCHANGE (grouped) ${e.child.id} ${e.propKey}:${this.oldValue}=>${this.newValue}`
+                        }
+                    }
+                } else {
+                    this.groups[e.propKey].newValue = e.newValue
+                }
+            } else {
+                this.stack = this.stack.slice(0, this.current + 1)
+                this.stack.push({
+                    undo: () => {
+                        e.provider.setPropertyValueByName(e.child, e.propKey, e.oldValue)
+                    },
+                    redo: () => {
+                        e.provider.setPropertyValueByName(e.child, e.propKey, e.newValue)
+                    },
+                    toString: () => `PROPCHANGE ${e.child.id} ${e.propKey}`
+                })
 
-            this.current++
+                this.current++
+            }
             this.dump()
         })
         // this.prov.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.clearDirty())
@@ -87,5 +106,26 @@ export default class UndoManager {
     dump() {
         console.log("current stack",this.stack.join(", "))
         console.log("at index",this.current)
+    }
+    startGrouping() {
+        this.grouping = true;
+        this.groups = {}
+    }
+    stopGrouping() {
+        this.grouping = false;
+        const groups = this.groups
+        this.groups = {}
+        this.stack = this.stack.slice(0, this.current + 1)
+        this.stack.push({
+            undo:() => {
+                Object.values(groups).forEach((g)=>g.undo())
+            },
+            redo:() => {
+                Object.values(groups).forEach((g)=>g.redo())
+            },
+            toString: () => `Grouped: (${Object.values(groups).join(",")})`
+        })
+        this.current++
+        this.dump()
     }
 }
