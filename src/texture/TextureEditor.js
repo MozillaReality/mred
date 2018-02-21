@@ -565,17 +565,29 @@ export default class TextureEditor extends TreeItemProvider {
                 const o = this.audioContext.createOscillator()
                 o.type = node.inputs.waveform.value
                 o.frequency.value = node.inputs.frequency.value
-                graph[node.id] = o
+                graph[node.id] = {
+                    model:node,
+                    template:node.template,
+                    webaudio:o
+                }
             }
             if(node.template === 'gain') {
                 console.log("making a gain node")
                 const o = this.audioContext.createGain()
                 o.gain.value = node.inputs.gain.value
-                graph[node.id] = o
+                graph[node.id] = {
+                    model:node,
+                    template:node.template,
+                    webaudio:o
+                }
             }
             if(node.template === 'speaker') {
                 console.log("dont do anything for the speaker")
-                graph[node.id] = this.audioContext.destination
+                graph[node.id] = {
+                    model: node,
+                    template: node.template,
+                    webaudio: this.audioContext
+                }
             }
         })
         console.log("graph",graph)
@@ -583,13 +595,47 @@ export default class TextureEditor extends TreeItemProvider {
             console.log("connection",conn)
             const out_node = graph[conn.output.node]
             const in_node = graph[conn.input.node]
-            console.log(out_node, in_node)
-            out_node.connect(in_node)
+
+            let src = null
+            let dst = null
+            if(out_node.template === 'oscillator') {
+                if(conn.output.prop === 'output') {
+                    src = out_node.webaudio
+                }
+            }
+            if(in_node.template === 'gain') {
+                if(conn.input.prop === 'input') {
+                    dst = in_node.webaudio
+                }
+                if(conn.input.prop === 'gain') {
+                    dst = in_node.webaudio.gain
+                }
+            }
+
+            if(out_node.template === 'gain') {
+                if (conn.output.prop === 'output') {
+                    src = out_node.webaudio
+                }
+            }
+
+            if(in_node.template === 'speaker') {
+                if(conn.input.prop === 'input') {
+                    dst = in_node.webaudio.destination
+                }
+            }
+
+            if(src === null || dst === null) {
+                console.log("WARNING. Invalid graph connection")
+            } else {
+                src.connect(dst)
+            }
+            // console.log(out_node,in_node)
+            // out_node.connect(in_node)
         })
 
         this.root.nodes.forEach((node)=>{
             if(node.template === 'oscillator') {
-                graph[node.id].start()
+                graph[node.id].webaudio.start()
             }
         })
 
@@ -597,7 +643,7 @@ export default class TextureEditor extends TreeItemProvider {
         setTimeout(()=>{
             this.root.nodes.forEach((node)=>{
                 if(node.template === 'oscillator') {
-                    graph[node.id].stop()
+                    graph[node.id].webaudio.stop()
                 }
             })
         },3000)
