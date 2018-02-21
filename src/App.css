@@ -252,6 +252,7 @@ g.selected > rect.selection {
     margin:0;
     padding-top: 0em;
     display: grid;
+    width: 15em;
     grid-template-columns: 1fr 1fr;
 }
 

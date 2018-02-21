@@ -173,12 +173,13 @@ export default class TextureEditorCanvas extends Component {
             const input = this.props.provider.findNodeById(conn.input.node)
             if(!output) return ""
             if(!input) return ""
-            // const iy = this.props.provider.getInputPropertyPosition(input,conn.input.prop);
-            const svgOutput = this.containerToSVGContainer(output).multiply(this.calcScale())
-            const svgInput = this.containerToSVGContainer(input).multiply(this.calcScale())
-            //calculate the dom position of the matching input circle
-
-            const path = `M ${svgOutput.x} ${svgOutput.y} ${svgInput.x} ${svgInput.y}`
+            const iy = this.props.provider.getInputPropertyPosition(input,conn.input.prop);
+            const oy = this.props.provider.getOutputPropertyPosition(output,conn.output.prop);
+            const ioff = makePoint(12, iy*25+50).multiply(this.calcScale())
+            const ooff = makePoint(231,oy*25+50).multiply(this.calcScale())
+            const svgInput = this.containerToSVGContainer(input).add(ioff).multiply(this.calcScale())
+            const svgOutput = this.containerToSVGContainer(output).add(ooff).multiply(this.calcScale())
+            const path = `M ${svgInput.x} ${svgInput.y} L ${svgOutput.x} ${svgOutput.y}`
             return <path key={i} d={path} className="connection-line" strokeWidth={5*this.calcScale()}/>
         })
         return <g>{conns}</g>
@@ -188,7 +189,7 @@ export default class TextureEditorCanvas extends Component {
         const spt = this.containerToSVGContainer(this.state.start)
         const ept = this.containerToSVGContainer(this.state.end)
         const path = `M ${spt.x} ${spt.y} L ${ept.x} ${ept.y}`;
-        return <path d={path} className="connection-line" strokeWidth={5/this.calcScale()}/>
+        return <path d={path} className="connection-line" strokeWidth={5*this.calcScale()}/>
     }
 
 }
@@ -196,7 +197,7 @@ export default class TextureEditorCanvas extends Component {
 
 class GenericNode extends Component {
     componentDidMount() {
-        this.redraw()
+        // this.redraw()
     }
 
     redraw = () => {
@@ -248,8 +249,8 @@ class GenericNode extends Component {
     }
 
     render() {
-        if(this.tid) clearTimeout(this.tid)
-        this.tid = setTimeout(this.redraw,500)
+        // if(this.tid) clearTimeout(this.tid)
+        // this.tid = setTimeout(this.redraw,500)
         const prov = this.props.provider
         const node = this.props.node
         const ins = Object.keys(node.inputs).map((prop,i)=>{
