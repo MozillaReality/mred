@@ -104,7 +104,6 @@ class PropEditor extends Component {
     colorChanged = (color) => {
         this.setState({value:color});
         this.props.def.setValue(color)
-        PopupManager.hide();
     }
     commit = () => {
         this.props.def.setValue(this.state.value)
