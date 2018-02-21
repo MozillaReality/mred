@@ -256,8 +256,8 @@ class GenericNode extends Component {
         const ins = Object.keys(node.inputs).map((prop,i)=>{
             let clss = "handle"
             if(prov.isInputConnected(node.id,prop)) clss += " connected"
-            return <li key={prop}>
-                <i className={"fa fa-circle-o "+clss}
+            return <li key={prop} className={clss}>
+                <i className="fa fa-circle-o "
                    onMouseDown={(e)=>this.props.owner.pressInputCircle(e,node,prop,"input")}
                    data-propname={prop}
                    data-nodeid={node.id}
@@ -269,9 +269,9 @@ class GenericNode extends Component {
         const outs = Object.keys(node.outputs).map((prop,i)=>{
             let clss = "handle"
             if(this.props.provider.isOutputConnected(node.id,prop)) clss += " connected"
-            return <li key={prop}>
+            return <li key={prop} className={clss}>
                 <b x={-10} y={0} textAnchor="end">{prop}</b>
-                <i className={clss+" fa fa-circle-o"}
+                <i className=" fa fa-circle-o"
                         data-propname={prop}
                         data-nodeid={node.id}
                         data-direction="output"

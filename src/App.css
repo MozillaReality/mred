@@ -296,3 +296,16 @@ g.selected > rect.selection {
 .hypercard-card.show-bounds > div {
     outline: 1px solid orangered;
 }
+
+.node-box .handle {
+    background-color: white;
+    border-radius: 0.5em;
+    border: 1px solid white;
+}
+.node-box .handle:hover {
+    color: orangered;
+}
+.node-box .handle.connected {
+    background-color: #ccffda;
+    border-color: black;
+}
