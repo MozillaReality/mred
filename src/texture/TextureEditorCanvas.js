@@ -295,7 +295,7 @@ class GenericNode extends Component {
             <h3>{template.title}</h3>
             <ul className="ins">{ins}</ul>
             <ul className="outs">{outs}</ul>
-            <canvas width="100" height="100" id="canvas" ref={(c)=>this.canvas=c}/>
+            {/*<canvas width="100" height="100" id="canvas" ref={(c)=>this.canvas=c}/>*/}
         </div>
     }
 
