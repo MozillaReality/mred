@@ -42,6 +42,16 @@ const, produces a constant value
 
 graph: graphs the input value over t from 0 to 2Pi
 
+
+
+
+
+- make node types in the model: oscillator, output. later add adsr.
+- add buttons to create these node types
+- make button which will build a webaudio graph from the current model. always destroys the previous graph if exists.
+- button will then wait 100ms and issue a trigger to play the audio.
+- let you set oscillator frequency and detune
+
  */
 
 
@@ -167,6 +177,82 @@ const templates = {
             const y = (1+prov.computeInputPropertyValueAt(node.id,'yin',pt.y))/2
             return x*y
         }
+    },
+
+
+    oscillator: {
+        title:'oscillator',
+        inputs: {
+            frequency: {
+                type:'number',
+                default:440
+            },
+            waveform: {
+                type:'enum',
+                value:'sine'
+            }
+
+        },
+        outputs: {
+            output: {
+                type:'pipe'
+            }
+        }
+    },
+
+    gain: {
+        title:'gain',
+        inputs: {
+            gain: {
+                type:'number',
+                default: 0.5
+            },
+            input: {
+                type:'pipe'
+            }
+        },
+        outputs: {
+            output: {
+                type:'pipe'
+            }
+        }
+    },
+
+    speaker: {
+        title:'speaker',
+        inputs: {
+            input: {
+                type:'pipe'
+            }
+        },
+        outputs: {}
+    },
+
+    envelope: {
+        title:'envelope',
+        inputs: {
+            attack: {
+                type:'number',
+                default:0.1,
+            },
+            decay: {
+                type:'number',
+                default:0.1
+            },
+            sustain: {
+                type:'number',
+                default: 0.5
+            },
+            release: {
+                type:'number',
+                default: 0.5
+            }
+        },
+        outputs: {
+            output: {
+                type:'pipe'
+            }
+        }
     }
 }
 
@@ -197,6 +283,7 @@ export default class TextureEditor extends TreeItemProvider {
     constructor() {
         super()
         this.id_index = {}
+        this.audioContext =new (window.AudioContext || window.webkitAudioContext)(); // define audio context
     }
     makeEmptyRoot() {
         return {
@@ -271,6 +358,7 @@ export default class TextureEditor extends TreeItemProvider {
 
     makeNodeFromTemplate(name) {
         const tmpl = this.getTemplateByName(name)
+        console.log("got template",name,tmpl)
         const inputs = {}
         Object.keys(tmpl.inputs).forEach((key)=>{
             inputs[key] = {
@@ -367,6 +455,12 @@ export default class TextureEditor extends TreeItemProvider {
     }
 
 
+    getValuesForEnum(key) {
+        const WAVEFORMS = ['sine','sawtooth','square','triangle']
+        if(key === 'waveform') return WAVEFORMS;
+    }
+
+
     getTemplate(node) {
         return templates[node.template]
     }
@@ -458,5 +552,54 @@ export default class TextureEditor extends TreeItemProvider {
         outputNode.outputs[outputKey].connections.push(conn.id)
         inputNode.inputs[inputKey].connections.push(conn.id)
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,this.root);
+    }
+
+
+    generateAndPlayAudioGraph() {
+        console.log("making the audio graph",this.root.nodes,this.audioContext)
+        const graph = {}
+        this.root.nodes.forEach((node,i)=>{
+            console.log("node is",node)
+            if(node.template === 'oscillator') {
+                console.log("making an oscillator")
+                const o = this.audioContext.createOscillator()
+                o.type = node.inputs.waveform.value
+                o.frequency.value = node.inputs.frequency.value
+                graph[node.id] = o
+            }
+            if(node.template === 'gain') {
+                console.log("making a gain node")
+                const o = this.audioContext.createGain()
+                o.gain.value = node.inputs.gain.value
+                graph[node.id] = o
+            }
+            if(node.template === 'speaker') {
+                console.log("dont do anything for the speaker")
+                graph[node.id] = this.audioContext.destination
+            }
+        })
+        console.log("graph",graph)
+        this.root.connections.forEach((conn)=>{
+            console.log("connection",conn)
+            const out_node = graph[conn.output.node]
+            const in_node = graph[conn.input.node]
+            console.log(out_node, in_node)
+            out_node.connect(in_node)
+        })
+
+        this.root.nodes.forEach((node)=>{
+            if(node.template === 'oscillator') {
+                graph[node.id].start()
+            }
+        })
+
+
+        setTimeout(()=>{
+            this.root.nodes.forEach((node)=>{
+                if(node.template === 'oscillator') {
+                    graph[node.id].stop()
+                }
+            })
+        },3000)
     }
 }

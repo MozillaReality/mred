@@ -209,6 +209,7 @@ class GenericNode extends Component {
         const prov = this.props.provider
         const templ = prov.getTemplateByName(this.props.node.template)
         const output = templ.outputs[Object.keys(templ.outputs)[0]]
+        if(!output) return;
         if(output.type === 'number') {
             c.beginPath()
             c.moveTo(0, 50)

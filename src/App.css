@@ -210,7 +210,7 @@ circle.handle.connected:hover {
 
 svg path.connection-line {
     stroke: orange;
-    stroke-width: 5px;
+    /*stroke-width: 5px;*/
     pointer-events: none;
     stroke-linecap: round;
 }
