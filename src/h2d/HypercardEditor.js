@@ -39,7 +39,8 @@ export default class HypercardEditor extends TreeItemProvider {
             title:'stack',
             type:'stack',
             id: genID('stack'),
-            children: [this.createCard(), this.createFontStack()]
+            children: [this.createCard()],
+            fontstack: this.createFontStack()
         }
     }
 
@@ -81,7 +82,7 @@ export default class HypercardEditor extends TreeItemProvider {
         });
     }
     appendFont(font) {
-        const fontStack = this.getSceneRoot().children.find((n)=>n.type === 'fontstack')
+        const fontStack = this.getSceneRoot().fontstack
         this.appendChild(fontStack, font)
     }
     moveChildToBack(item) {
@@ -185,7 +186,7 @@ export default class HypercardEditor extends TreeItemProvider {
     getValuesForEnum(key) {
         if(key === 'target') return this.getSceneRoot().children.map((ch)=>ch.id)
         if(key === 'fontFamily') {
-            const fontStack = this.root.children.find((node)=>node.type === 'fontstack')
+            const fontStack = this.root.fontstack
             return fontStack.children.map((f)=>f.id)
         }
     }
@@ -376,6 +377,10 @@ export default class HypercardEditor extends TreeItemProvider {
         return null
     }
 
+    findFontById(id) {
+        return this.root.fontstack.children.find(font => font.id === id)
+    }
+
 }
 
 export const HypercardItemRenderer = (props) => {
@@ -393,7 +398,7 @@ export const HypercardItemRenderer = (props) => {
 const IdToTitleRenderer = (props) => {
     let value = "nothing selected"
     if(props.value && props.provider) {
-        const node = props.provider.findNodeById(props.value)
+        const node = props.provider.findFontById(props.value)
         if(node) value = node.title
     }
     return <b>{value}</b>

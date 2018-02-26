@@ -72,7 +72,7 @@ export default class CardComponent extends Component {
         let clss = "rect "
         if(SelectionManager.isSelected(item)) clss += " selected"
         const prov = this.props.provider
-        const fontFamily = this.props.provider.findNodeById(item.fontFamily)
+        const fontFamily = this.props.provider.findFontById(item.fontFamily)
         if(fontFamily) this.cacheFont(fontFamily)
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}

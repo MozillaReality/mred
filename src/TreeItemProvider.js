@@ -88,7 +88,7 @@ export default class TreeItemProvider {
     }
 
     save = () => {
-        console.log("saving")
+        console.log("saving",this.getSceneRoot())
         const payload_obj = {
             doc:this.getSceneRoot(),
             type:this.getDocType(),
