@@ -16,6 +16,15 @@ const PROP_DEFS = {
     }
 }
 
+export const BLOCK_STYLES = {
+    NONE:'NONE',
+    TITLE:'TITLE',
+    SUBTITLE:'SUBTITLE',
+    PLAIN:'PLAIN',
+    CODE:'CODE',
+}
+
+
 export default class HypercardEditor extends TreeItemProvider {
     constructor() {
         super()
@@ -139,6 +148,9 @@ export default class HypercardEditor extends TreeItemProvider {
             if(key === 'fontFamily') {
                 type = 'enum'
             }
+            if(key === 'blockStyle') {
+                type = 'enum'
+            }
             defs.push({
                 name:name,
                 key:key,
@@ -189,6 +201,9 @@ export default class HypercardEditor extends TreeItemProvider {
             const fontStack = this.root.fontstack
             return fontStack.children.map((f)=>f.id)
         }
+        if(key === 'blockStyle') {
+            return Object.keys(BLOCK_STYLES)
+        }
     }
     getRendererForEnum(key,obj) {
         if(key === 'target' || key === 'action') return IdToTitleRenderer
@@ -213,16 +228,23 @@ export default class HypercardEditor extends TreeItemProvider {
             children:[
                 {
                     type:'font',
-                    id:this.genID('font'),
+                    id:'sans-serif',
                     title:'Sans Serif',
                     key:'sans-serif',
                     url:''
                 },
                 {
                     type:'font',
-                    id:this.genID('font'),
+                    id:'serif',
                     title:'Serif',
                     key:'serif',
+                    url:''
+                },
+                {
+                    type:'font',
+                    id:'monospace',
+                    title:'Monospace',
+                    key:'monospace',
                     url:''
                 },
                 {
@@ -260,7 +282,8 @@ export default class HypercardEditor extends TreeItemProvider {
             color:'black',
             target: 'card1',
             fontSize:24,
-            fontFamily:''
+            fontFamily:'',
+            blockStyle:BLOCK_STYLES.NONE,
         }
     }
     createImage() {
@@ -379,6 +402,41 @@ export default class HypercardEditor extends TreeItemProvider {
 
     findFontById(id) {
         return this.root.fontstack.children.find(font => font.id === id)
+    }
+
+    findBlockstyleById(id){
+        if(id === BLOCK_STYLES.NONE) {
+            return {}}
+
+        if(id === BLOCK_STYLES.TITLE) {
+            return {
+                color:'black',
+                fontSize:64,
+                fontFamily:'serif'
+            }
+        }
+        if(id === BLOCK_STYLES.SUBTITLE) {
+            return {
+                color:'black',
+                fontSize:36,
+                fontFamily:'serif'
+            }
+        }
+        if(id === BLOCK_STYLES.PLAIN) {
+            return {
+                color:'black',
+                fontSize:24,
+                fontFamily:'sans-serif'
+            }
+        }
+        if(id === BLOCK_STYLES.CODE) {
+            return {
+                color:'black',
+                fontSize:18,
+                fontFamily:'monospace'
+            }
+        }
+        return null
     }
 
 }

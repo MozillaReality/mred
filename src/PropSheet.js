@@ -169,7 +169,12 @@ class EnumEditor extends Component {
         return renderer
     }
     calculateValues() {
-        return this.props.provider.getValuesForEnum(this.props.def.getKey(),this.props.obj)
+        const vals = this.props.provider.getValuesForEnum(this.props.def.getKey(),this.props.obj)
+        if(!vals) {
+            console.log(`no values for enum ${this.props.def.getKey()}`);
+            return []
+        }
+        return vals
     }
     open = (e) => {
         PopupManager.show(<EnumPicker

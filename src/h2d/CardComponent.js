@@ -3,6 +3,7 @@ import SelectionManager from '../SelectionManager'
 import {makePoint} from '../utils'
 import DragHandler from '../texture/DragHandler'
 import { PopupManager, VBox}  from "appy-comps";
+import {BLOCK_STYLES} from "./HypercardEditor"
 
 export default class CardComponent extends Component {
     clicked(item) {
@@ -72,8 +73,22 @@ export default class CardComponent extends Component {
         let clss = "rect "
         if(SelectionManager.isSelected(item)) clss += " selected"
         const prov = this.props.provider
-        const fontFamily = this.props.provider.findFontById(item.fontFamily)
-        if(fontFamily) this.cacheFont(fontFamily)
+        let color = item.color
+        let fontSize = item.fontSize
+        let fontFamily_str = item.fontFamily
+        let blockStyle = item.blockStyle
+
+        if(blockStyle !== BLOCK_STYLES.NONE && blockStyle !== null && typeof blockStyle !== 'undefined') {
+            const style = prov.findBlockstyleById(blockStyle)
+            color = style.color
+            fontSize = style.fontSize
+            fontFamily_str = style.fontFamily
+        }
+
+
+
+        let fontFamily_ins = prov.findFontById(fontFamily_str)
+        if(fontFamily_ins) this.cacheFont(fontFamily_ins)
         return <div key={key}
                     onMouseDown={(e)=>this.startDrag(e,item)}
                     onContextMenu={(e)=>this.showContextMenu(e,item)}
@@ -84,9 +99,9 @@ export default class CardComponent extends Component {
                         top:`${item.y*scale}px`,
                         width:`${item.w*scale}px`,
                         height:`${item.h*scale}px`,
-                        color:item.color,
-                        fontSize:`${item.fontSize*scale}pt`,
-                        fontFamily:fontFamily?fontFamily.key:'sans-serif',
+                        color:color,
+                        fontSize:`${fontSize*scale}pt`,
+                        fontFamily:fontFamily_ins?fontFamily_ins.key:'sans-serif',
                     }}
                     onClick={()=>this.clicked(item)}
         >
