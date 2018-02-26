@@ -3,7 +3,7 @@ import SelectionManager from '../SelectionManager'
 import {makePoint} from '../utils'
 import DragHandler from '../texture/DragHandler'
 import { PopupManager, VBox}  from "appy-comps";
-import {BLOCK_STYLES} from "./HypercardEditor"
+import {BLOCK_STYLES, HORIZONTAL_ALIGNMENT} from "./HypercardEditor"
 
 export default class CardComponent extends Component {
     clicked(item) {
@@ -70,21 +70,28 @@ export default class CardComponent extends Component {
         </div>
     }
     renderItem_text(item,key,scale) {
-        let clss = "rect "
+        let clss = "hypercard-text "
         if(SelectionManager.isSelected(item)) clss += " selected"
         const prov = this.props.provider
         let color = item.color
         let fontSize = item.fontSize
         let fontFamily_str = item.fontFamily
         let blockStyle = item.blockStyle
+        let horizontalAlignment = item.horizontalAlignment
 
         if(blockStyle !== BLOCK_STYLES.NONE && blockStyle !== null && typeof blockStyle !== 'undefined') {
             const style = prov.findBlockstyleById(blockStyle)
             color = style.color
             fontSize = style.fontSize
             fontFamily_str = style.fontFamily
+            horizontalAlignment = style.horizontalAlignment
         }
 
+
+        let halign = 'flex-start'
+        if(horizontalAlignment === HORIZONTAL_ALIGNMENT.LEFT) halign = 'left'
+        if(horizontalAlignment === HORIZONTAL_ALIGNMENT.CENTER) halign = 'center'
+        if(horizontalAlignment === HORIZONTAL_ALIGNMENT.RIGHT) halign = 'right'
 
 
         let fontFamily_ins = prov.findFontById(fontFamily_str)
@@ -102,6 +109,7 @@ export default class CardComponent extends Component {
                         color:color,
                         fontSize:`${fontSize*scale}pt`,
                         fontFamily:fontFamily_ins?fontFamily_ins.key:'sans-serif',
+                        textAlign:halign
                     }}
                     onClick={()=>this.clicked(item)}
         >

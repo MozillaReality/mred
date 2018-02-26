@@ -13,6 +13,12 @@ const PROP_DEFS = {
         key:'fontSize',
         type:'number',
         locked:false
+    },
+    horizontalAlignment: {
+        name: 'Horiz Align',
+        key:'horizontalAlignment',
+        type:'enum',
+        locked: false
     }
 }
 
@@ -22,6 +28,12 @@ export const BLOCK_STYLES = {
     SUBTITLE:'SUBTITLE',
     PLAIN:'PLAIN',
     CODE:'CODE',
+}
+
+export const HORIZONTAL_ALIGNMENT = {
+    LEFT:'LEFT',
+    CENTER:'CENTER',
+    RIGHT:'RIGHT'
 }
 
 
@@ -201,9 +213,8 @@ export default class HypercardEditor extends TreeItemProvider {
             const fontStack = this.root.fontstack
             return fontStack.children.map((f)=>f.id)
         }
-        if(key === 'blockStyle') {
-            return Object.keys(BLOCK_STYLES)
-        }
+        if(key === 'blockStyle') return Object.keys(BLOCK_STYLES)
+        if(key === 'horizontalAlignment') return Object.keys(HORIZONTAL_ALIGNMENT)
     }
     getRendererForEnum(key,obj) {
         if(key === 'target' || key === 'action') return IdToTitleRenderer
@@ -284,6 +295,7 @@ export default class HypercardEditor extends TreeItemProvider {
             fontSize:24,
             fontFamily:'',
             blockStyle:BLOCK_STYLES.NONE,
+            horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT
         }
     }
     createImage() {
@@ -412,28 +424,32 @@ export default class HypercardEditor extends TreeItemProvider {
             return {
                 color:'black',
                 fontSize:64,
-                fontFamily:'serif'
+                fontFamily:'serif',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.CENTER,
             }
         }
         if(id === BLOCK_STYLES.SUBTITLE) {
             return {
                 color:'black',
                 fontSize:36,
-                fontFamily:'serif'
+                fontFamily:'serif',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.CENTER,
             }
         }
         if(id === BLOCK_STYLES.PLAIN) {
             return {
                 color:'black',
                 fontSize:24,
-                fontFamily:'sans-serif'
+                fontFamily:'sans-serif',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
             }
         }
         if(id === BLOCK_STYLES.CODE) {
             return {
                 color:'black',
                 fontSize:18,
-                fontFamily:'monospace'
+                fontFamily:'monospace',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
             }
         }
         return null
