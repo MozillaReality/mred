@@ -4,6 +4,7 @@ import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {makePoint} from '../utils'
 import TextureEditorCanvas from "./TextureEditorCanvas";
 import TextureApp from './TextureApp'
+import {ADSR_template} from './Audio'
 
 /*
 
@@ -227,33 +228,7 @@ const templates = {
         },
         outputs: {}
     },
-
-    envelope: {
-        title:'envelope',
-        inputs: {
-            attack: {
-                type:'number',
-                default:0.1,
-            },
-            decay: {
-                type:'number',
-                default:0.1
-            },
-            sustain: {
-                type:'number',
-                default: 0.5
-            },
-            release: {
-                type:'number',
-                default: 0.5
-            }
-        },
-        outputs: {
-            output: {
-                type:'pipe'
-            }
-        }
-    }
+    envelope: ADSR_template
 }
 
 function toHex2(val) {
@@ -557,22 +532,24 @@ export default class TextureEditor extends TreeItemProvider {
 
     generateAndPlayAudioGraph() {
         console.log("making the audio graph",this.root.nodes,this.audioContext)
+        const ctx = this.audioContext
         const graph = {}
         this.root.nodes.forEach((node,i)=>{
-            console.log("node is",node)
             if(node.template === 'oscillator') {
-                console.log("making an oscillator")
-                const o = this.audioContext.createOscillator()
-                o.type = node.inputs.waveform.value
-                o.frequency.value = node.inputs.frequency.value
                 graph[node.id] = {
                     model:node,
                     template:node.template,
-                    webaudio:o
+                    webaudio: {
+                        create: function(ctx) {
+                            const o = ctx.createOscillator()
+                            o.type = node.inputs.waveform.value
+                            o.frequency.value = node.inputs.frequency.value
+                            return o
+                        }
+                    }
                 }
             }
             if(node.template === 'gain') {
-                console.log("making a gain node")
                 const o = this.audioContext.createGain()
                 o.gain.value = node.inputs.gain.value
                 graph[node.id] = {
@@ -581,28 +558,64 @@ export default class TextureEditor extends TreeItemProvider {
                     webaudio:o
                 }
             }
+            if(node.template === 'envelope') {
+                graph[node.id] = {
+                    template: node.template,
+                    model: node,
+                    webaudio: {
+                        trigger: function (ctx,root,graph) {
+                            function findInput(input) {
+                                const connection_id = input.connections[0]
+                                const conn = root.connections.find((c)=>c.id === connection_id)
+                                return graph[conn.output.node]
+                            }
+                            const osc_graph = findInput(node.inputs.input)
+                            this.osc = osc_graph.webaudio.create(ctx)
+                            this.env = ctx.createGain()
+
+                            this.osc.connect(this.env)
+                            const a = node.inputs.attack.value
+                            const d = node.inputs.decay.value
+                            const s = node.inputs.sustain.value
+                            const r = node.inputs.release.value
+                            const time = ctx.currentTime
+                            this.env.gain.setValueAtTime(0.0,time+0.0)
+                            this.env.gain.linearRampToValueAtTime(1,time+a)
+                            this.env.gain.linearRampToValueAtTime(s,time+a+d)
+
+                            function findOutput(output) {
+                                const connection_id = output.connections[0]
+                                const conn = root.connections.find((c)=>c.id === connection_id)
+                                return graph[conn.input.node]
+                            }
+                            const output_graph = findOutput(node.outputs.output)
+                            this.env.connect(output_graph.webaudio)
+                            this.osc.start(time)
+                        },
+                        release: function (ctx) {
+                            const time = ctx.currentTime
+                            const r = node.inputs.release.value
+                            this.env.gain.linearRampToValueAtTime(0,time+r)
+                            this.osc.stop(time+r+0.1)
+                        }
+                    }
+                }
+            }
             if(node.template === 'speaker') {
-                console.log("dont do anything for the speaker")
                 graph[node.id] = {
                     model: node,
                     template: node.template,
-                    webaudio: this.audioContext
+                    webaudio: this.audioContext.destination
                 }
             }
         })
-        console.log("graph",graph)
         this.root.connections.forEach((conn)=>{
-            console.log("connection",conn)
-            const out_node = graph[conn.output.node]
+            console.log("trying ",conn.input.node + " to " + conn.output.node)
             const in_node = graph[conn.input.node]
+            const out_node = graph[conn.output.node]
 
             let src = null
             let dst = null
-            if(out_node.template === 'oscillator') {
-                if(conn.output.prop === 'output') {
-                    src = out_node.webaudio
-                }
-            }
             if(in_node.template === 'gain') {
                 if(conn.input.prop === 'input') {
                     dst = in_node.webaudio
@@ -620,32 +633,47 @@ export default class TextureEditor extends TreeItemProvider {
 
             if(in_node.template === 'speaker') {
                 if(conn.input.prop === 'input') {
-                    dst = in_node.webaudio.destination
+                    dst = in_node.webaudio
                 }
             }
 
             if(src === null || dst === null) {
                 console.log("WARNING. Invalid graph connection")
             } else {
+                console.log("connecting",conn.input.node + " to " + conn.output.node)
                 src.connect(dst)
             }
-            // console.log(out_node,in_node)
-            // out_node.connect(in_node)
         })
 
-        this.root.nodes.forEach((node)=>{
-            if(node.template === 'oscillator') {
-                graph[node.id].webaudio.start()
-            }
-        })
 
+        const key_down = (e) => {
+            e.preventDefault();
+            e.stopPropagation()
+            if(e.repeat) return
+            this.root.nodes
+                .filter((n)=>n.template === 'envelope')
+                .forEach((n)=>{
+                    const gn = graph[n.id]
+                    gn.webaudio.trigger(ctx,this.root,graph)
+                })
+        }
+        const key_up = (e) => {
+            e.preventDefault();
+            e.stopPropagation()
+            this.root.nodes
+                .filter((n)=>n.template === 'envelope')
+                .forEach((n)=>{
+                    const gn = graph[n.id]
+                    gn.webaudio.release(ctx,this.root,graph)
+                })
+        }
+        document.addEventListener('keydown',key_down)
+        document.addEventListener('keyup',key_up)
 
         setTimeout(()=>{
-            this.root.nodes.forEach((node)=>{
-                if(node.template === 'oscillator') {
-                    graph[node.id].webaudio.stop()
-                }
-            })
-        },3000)
+            console.log('disabling')
+            document.removeEventListener('keydown',key_down)
+            document.removeEventListener('keyup',key_up)
+        },10000)
     }
 }
