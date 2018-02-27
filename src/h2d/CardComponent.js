@@ -7,10 +7,10 @@ import {BLOCK_STYLES, HORIZONTAL_ALIGNMENT} from "./HypercardEditor"
 
 export default class CardComponent extends Component {
     clicked(item) {
-        if(this.props.live && item.target) {
-            console.log("going to the target",item.target)
-            this.props.navTo(item.target)
-        }
+        // if(this.props.live && item.target) {
+            // console.log("going to the target",item.target)
+            // this.props.navTo(item.target)
+        // }
     }
 
     startDrag = (e, obj) => {

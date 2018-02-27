@@ -16,8 +16,8 @@ console.log("options is",options);
 
 function init() {
     if(options.mode === 'preview') {
-        if(options.provider === 'hypercard-2d')  return <HypercardPreview2D options={options}/>
-        if(options.provider === 'hypercard-3d')  return <HypercardPreview3D options={options}/>
+        if(options.doctype === 'hypercard-2d')  return <HypercardPreview2D options={options}/>
+        if(options.doctype === 'hypercard-3d')  return <HypercardPreview3D options={options}/>
         console.log("invalid provider")
     }
     return <App options={options}/>;

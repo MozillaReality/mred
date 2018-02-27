@@ -2,7 +2,9 @@
 export default class InputManager {
     static KEYS = {
         S:83,
-        Z:90
+        Z:90,
+        LEFT_ARROW:37,
+        RIGHT_ARROW:39,
     }
     static MODIFIERS = {
         COMMAND:'COMMAND',

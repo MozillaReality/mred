@@ -160,6 +160,10 @@ export default class HypercardApp extends Component {
     save = () => this.prov().save()
     undo = () => this.uman.undo()
     redo = () => this.uman.redo()
+    preview = () => {
+        const url = `./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`
+        window.open(url)
+    }
 
     render() {
         return <GridEditorApp provider={this.prov()}>
@@ -193,8 +197,10 @@ export default class HypercardApp extends Component {
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
                 <button onClick={this.zoomIn} className="fa fa-plus-circle"/>
                 <button onClick={this.zoomOut} className="fa fa-minus-circle"/>
-                <button className="fa fa-undo" onClick={this.undo}>undo</button>
-                <button className="fa fa-repeat" onClick={this.redo}>redo</button>
+                <button className="fa fa-undo" onClick={this.undo}/>
+                <button className="fa fa-repeat" onClick={this.redo}/>
+                <Spacer/>
+                <button className="fa fa-play" onClick={this.preview}/>
             </Toolbar>
 
             <Toolbar right top>
