@@ -91,6 +91,9 @@ export default class CardComponent extends Component {
         if(blockStyle === BLOCK_STYLES.LIST) {
             text = item.text.split("\n").map((t,i)=><li key={i}>{t}</li>)
         }
+        if(blockStyle === BLOCK_STYLES.CODE) {
+            clss += " code-block"
+        }
 
 
         let halign = 'flex-start'

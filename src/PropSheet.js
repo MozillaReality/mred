@@ -117,13 +117,11 @@ class PropEditor extends Component {
         const provider = this.props.provider
         if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
         if (prop.isLocked()) return <i>blah{prop.getType()}:{prop.getValue()}</i>
-        if (prop.isType('string'))  {
-            return <input type='string'
-                          value={this.state.value}
-                          onChange={this.changed}
-                          onKeyPress={this.keypressed}
-                          onBlur={this.commit}/>
-        }
+        if (prop.isType('string'))  return <StringEditor value={this.state.value}
+                                                         onChange={this.changed}
+                                                         onBlur={this.commit}
+                                                         def={prop} obj={obj}
+                                                         provider={this.props.provider}/>
         if (prop.isType('number'))  return <input type='number'
                                                   value={this.state.value}
                                                   onChange={this.changed}
@@ -139,6 +137,25 @@ class PropEditor extends Component {
         return <b>{prop.getType()}:{prop.getValue()}</b>
     }
 }
+
+class StringEditor extends Component {
+    render() {
+        const prop = this.props.def;
+        if(prop.hasHints()) {
+            const hints = prop.getHints()
+            if(hints.multiline) {
+                return <textarea value={this.props.value} onChange={this.props.onChange}/>
+            }
+        }
+        return <input type='string'
+                      value={this.props.value}
+                      onChange={this.props.onChange}
+                      onBlur={this.props.onBlur}
+        />
+    }
+}
+
+
 
 const EnumPicker = (props) => {
     const Rend = props.renderer

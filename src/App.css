@@ -160,8 +160,12 @@ button {
 .prop-sheet li .icon {
     grid-column-start: icon;
 }
-.prop-sheet li input, .prop-sheet li button {
+.prop-sheet li input, .prop-sheet li textarea, .prop-sheet li button {
     grid-column-start: value;
+}
+
+.prop-sheet li textarea {
+    min-height: 5em;
 }
 
 
@@ -314,4 +318,8 @@ g.selected > rect.selection {
 .node-box .handle.connected {
     background-color: #ccffda;
     border-color: black;
+}
+
+.hypercard-card .code-block {
+    white-space: pre;
 }

@@ -154,6 +154,7 @@ export default class HypercardEditor extends TreeItemProvider {
             if(key === 'text') {
                 type = 'string'
                 live = true
+                hints.multiline = true
             }
             if(key === 'src') {
                 type = 'string'
