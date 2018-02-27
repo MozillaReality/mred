@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {Panel, Spacer, Toolbar} from '../GridEditorApp'
 import HypercardCanvas from './HypercardCanvas'
 import {GET_JSON, toQueryString} from '../utils'
 import Selection from '../SelectionManager'
@@ -86,11 +86,7 @@ export default class HypercardApp extends Component {
 
             <Toolbar left bottom>
                 <button className="fa fa-vcard" onClick={this.addCard}/>
-                <button className="fa fa-square" onClick={this.addSquare}/>
-                <button className="fa fa-text-width" onClick={this.addText}/>
-                <button className="fa fa-image" onClick={this.addImage}/>
                 <button className="fa fa-font" onClick={this.addFont}/>
-                <button className="fa fa-close" onClick={this.deleteItem}/>
             </Toolbar>
 
             <Panel center middle scroll>
@@ -105,11 +101,15 @@ export default class HypercardApp extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-save" onClick={this.save}/>
-                <label>{this.state.dirty?"dirty":""}</label>
+                <button className="fa fa-square" onClick={this.addSquare}/>
+                <button className="fa fa-text-width" onClick={this.addText}/>
+                <button className="fa fa-image" onClick={this.addImage}/>
+                <button className="fa fa-close" onClick={this.deleteItem}/>
+                <Spacer/>
+                <button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>
                 <button onClick={this.toggleBounds}>{this.state.showBounds?"hide bounds":"show bounds"}</button>
-                <button onClick={this.zoomIn}>zoom in</button>
-                <button onClick={this.zoomOut}>zoom out</button>
+                <button onClick={this.zoomIn} className="fa fa-plus-circle"/>
+                <button onClick={this.zoomOut} className="fa fa-minus-circle"/>
                 <button className="fa fa-undo" onClick={this.undo}>undo</button>
                 <button className="fa fa-repeat" onClick={this.redo}>redo</button>
             </Toolbar>

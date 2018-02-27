@@ -110,6 +110,12 @@ button {
     background-color: var(--fg);
     color: var(--bg);
 }
+.toolbar button:disabled {
+    color: var(--bd);
+}
+.toolbar button:disabled:hover {
+    background-color: transparent;
+}
 
 
 
