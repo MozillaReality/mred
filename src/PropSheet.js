@@ -109,7 +109,7 @@ class PropEditor extends Component {
         this.props.def.setValue(this.state.value)
     }
     openColorEditor = (e) => {
-        PopupManager.show(<HSLUVColorPicker onSelect={this.colorChanged}/>, e.target)
+        PopupManager.show(<HSLUVColorPicker onSelect={this.colorChanged} value={this.state.value}/>, e.target)
     }
     render() {
         const prop = this.props.def;

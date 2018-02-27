@@ -6,11 +6,14 @@ import {PopupManager} from "appy-comps"
 export default class HSLUVColorPicker extends Component {
     constructor(props) {
         super(props)
+
+        const comps = hsluv.hexToHsluv(props.value)
         this.state = {
-            hue:180,
-            lightness:0,
-            value:0,
+            hue:comps[0],
+            lightness:comps[1],
+            value:comps[2],
         }
+        console.log("the current value is",props.value, hsluv.hexToHsluv(props.value))
     }
     componentDidMount() {
         this.redraw();
@@ -60,9 +63,11 @@ export default class HSLUVColorPicker extends Component {
             }
         }
         const g = 20
-        c.strokeStyle = 'red'
         const cp = this.livalToCanvas(this.state.lightness, this.state.value)
+        c.strokeStyle = 'white'
         c.strokeRect(Math.floor(cp.x/g)*g, Math.floor(cp.y/g)*g,g,g)
+        c.strokeStyle = 'black'
+        c.strokeRect(Math.floor(cp.x/g)*g+1, Math.floor(cp.y/g)*g+1,g-2,g-2)
 
         c.strokeStyle = 'black';
         c.lineWidth = 1.0
