@@ -14,8 +14,11 @@ currently implemented demo editors:
 
 # Doc server
 
-General Ed comes with a document server
-
+General Ed comes with a document server. This server is small and generic, providing
+the bare minimum to save and load documents. You can post and get JSON documents from the
+store by ID. There is no way to list documents. You must know the ID of the doc you are looking
+for.  There are now accounts. Everything is public.  You can also store and load images. In this
+case the filetype is preserved, but the filename is not.
 
 
 # DocumentProvider

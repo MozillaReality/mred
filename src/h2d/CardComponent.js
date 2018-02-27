@@ -166,6 +166,7 @@ export default class CardComponent extends Component {
         new DragHandler(e,{
             target:item,
             provider:this.props.provider,
+            undoManager:this.props.undoManager,
             toLocal: (pt) => {
                 const bds = this.container.getBoundingClientRect()
                 return pt.minus(makePoint(bds.x,bds.y)).divide(this.calcScale())
