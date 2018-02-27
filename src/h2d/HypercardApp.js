@@ -5,9 +5,10 @@ import {GET_JSON, toQueryString} from '../utils'
 import Selection from '../SelectionManager'
 import PropSheet from '../PropSheet'
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
-import {HBox, VBox} from "appy-comps";
+import {HBox, PopupManager, VBox} from 'appy-comps'
 import InputManager from '../common/InputManager'
 import UndoManager from '../common/UndoManager'
+import {BLOCK_STYLES} from './HypercardEditor'
 
 export default class HypercardApp extends Component {
     constructor(props) {
@@ -62,7 +63,74 @@ export default class HypercardApp extends Component {
     prov = () => this.props.provider
     clearDirty = () => (this.state.dirty === true)?this.setState({dirty:false}):""
 
-    addCard =   () => this.prov().appendChild(this.prov().getSceneRoot(),this.prov().createCard())
+    createPopupAction = (act,title) => {
+        return <button onClick={(e)=>{
+            PopupManager.hide()
+            act(e)
+        }}>{title}</button>
+    }
+    showCardMenu = (e) => {
+        PopupManager.show(<VBox>
+            {this.createPopupAction(this.addCard,'empty')}
+            {this.createPopupAction(this.addTitleCard,'title')}
+            {this.createPopupAction(this.addStandardCard,'standard')}
+        </VBox>, e.target)
+    }
+    addCard =   () => {
+        const card = this.prov().createCard()
+        this.prov().appendChild(this.prov().getSceneRoot(),card)
+        Selection.setSelection(card)
+    }
+    addTitleCard = () => {
+        const prov = this.prov()
+        const card = prov.createCard()
+        const root = prov.getSceneRoot()
+        const title = prov.createText()
+        title.blockStyle = BLOCK_STYLES.TITLE
+        title.text = "The Title"
+        title.w = 400
+        title.h = 100
+        title.x = 200
+        title.y = 150
+        prov.appendChild(card,title)
+
+        const subtitle = prov.createText()
+        subtitle.blockStyle = BLOCK_STYLES.SUBTITLE
+        subtitle.text = "Subtitle"
+        subtitle.w = 400
+        subtitle.h = 100
+        subtitle.x = 200
+        subtitle.y = 300
+        prov.appendChild(card,subtitle)
+
+        prov.appendChild(root,card)
+        Selection.setSelection(card)
+    }
+    addStandardCard = () => {
+        const prov = this.prov()
+        const card = prov.createCard()
+        const root = prov.getSceneRoot()
+        const header = prov.createText()
+        header.blockStyle = BLOCK_STYLES.HEADER
+        header.text = "card header"
+        header.w = 500
+        header.h = 60
+        header.x = 100
+        header.y = 100
+        prov.appendChild(card,header)
+
+        const body = prov.createText()
+        body.blockStyle = BLOCK_STYLES.LIST
+        body.text = "some body\ntext"
+        body.w = 500
+        body.h = 400
+        body.x = 100
+        body.y = 200
+        prov.appendChild(card,body)
+
+        prov.appendChild(root,card)
+        Selection.setSelection(card)
+    }
     addSquare = () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createRect())
     addText =   () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createText())
     addImage =  () => this.prov().appendChild(this.prov().findSelectedCard(),this.prov().createImage())
@@ -85,7 +153,7 @@ export default class HypercardApp extends Component {
             </Toolbar>
 
             <Toolbar left bottom>
-                <button className="fa fa-vcard" onClick={this.addCard}/>
+                <button className="fa fa-vcard" onClick={this.showCardMenu}/>
                 <button className="fa fa-font" onClick={this.addFont}/>
             </Toolbar>
 

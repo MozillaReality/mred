@@ -78,6 +78,7 @@ export default class CardComponent extends Component {
         let fontFamily_str = item.fontFamily
         let blockStyle = item.blockStyle
         let horizontalAlignment = item.horizontalAlignment
+        let text = item.text
 
         if(blockStyle !== BLOCK_STYLES.NONE && blockStyle !== null && typeof blockStyle !== 'undefined') {
             const style = prov.findBlockstyleById(blockStyle)
@@ -85,6 +86,10 @@ export default class CardComponent extends Component {
             fontSize = style.fontSize
             fontFamily_str = style.fontFamily
             horizontalAlignment = style.horizontalAlignment
+        }
+
+        if(blockStyle === BLOCK_STYLES.LIST) {
+            text = item.text.split("\n").map((t,i)=><li key={i}>{t}</li>)
         }
 
 
@@ -113,7 +118,7 @@ export default class CardComponent extends Component {
                     }}
                     onClick={()=>this.clicked(item)}
         >
-            {item.text}
+            {text}
         </div>
     }
     renderItem_rect(item,key,scale) {

@@ -28,6 +28,8 @@ export const BLOCK_STYLES = {
     SUBTITLE:'SUBTITLE',
     PLAIN:'PLAIN',
     CODE:'CODE',
+    HEADER:'HEADER',
+    LIST:'LIST'
 }
 
 export const HORIZONTAL_ALIGNMENT = {
@@ -417,8 +419,7 @@ export default class HypercardEditor extends TreeItemProvider {
     }
 
     findBlockstyleById(id){
-        if(id === BLOCK_STYLES.NONE) {
-            return {}}
+        if(id === BLOCK_STYLES.NONE) return {}
 
         if(id === BLOCK_STYLES.TITLE) {
             return {
@@ -449,6 +450,22 @@ export default class HypercardEditor extends TreeItemProvider {
                 color:'black',
                 fontSize:18,
                 fontFamily:'monospace',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
+            }
+        }
+        if(id === BLOCK_STYLES.HEADER) {
+            return {
+                color:'black',
+                fontSize:36,
+                fontFamily:'sans-serif',
+                horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
+            }
+        }
+        if(id === BLOCK_STYLES.LIST) {
+            return {
+                color:'black',
+                fontSize:18,
+                fontFamily:'sans-serif',
                 horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
             }
         }
