@@ -18,8 +18,7 @@ export default class HSLUVColorPicker extends Component {
     canvasToPoint(e) {
         const canvasBounds = this.canvas.getBoundingClientRect()
         const pt = makePoint(e.clientX, e.clientY).minus(makePoint(canvasBounds.x,canvasBounds.y))
-        const g = 10
-        const h = this.canvas.height - g;
+        const h = this.canvas.height;
         const w = this.canvas.width;
         const f = makePoint(pt.x/w*100, pt.y/h*100)
         return f;
@@ -38,6 +37,7 @@ export default class HSLUVColorPicker extends Component {
     }
     mouseUp = (e) => {
         this.pressed = false
+        this.redraw()
     }
     redraw = () => {
         this.drawPicker()
@@ -48,25 +48,29 @@ export default class HSLUVColorPicker extends Component {
         const canvas = this.canvas
         if(!canvas) return
         const c = this.canvas.getContext('2d')
-        let w = this.canvas.width;
-        const g = 10
-        let h = this.canvas.height;
-        for(let x=0; x<w; x+=g) {
-            for(let y=0; y<=h; y+=g) {
-                const pt = makePoint(x/w*100, y/h*100)
-                let color = hsluv.hsluvToHex([Math.floor(this.state.hue),Math.floor(pt.x),Math.floor(pt.y)])
+        let w = 100
+        let h = 100
+        const hue = Math.floor(this.state.hue)
+        for(let i=0; i<=4; i++) {
+            for(let j=0; j<=4; j++) {
+                let color = hsluv.hsluvToHex([hue,i*25,j*25])
                 if(color.length > 7) color = '#000000'
                 c.fillStyle = color
-                c.fillRect(x,y,g,g)
+                c.fillRect(i*20,j*20,20,20)
             }
         }
-        c.strokeStyle = 'black'
-        const cp = this.livalToCanvas(this.state.lightness,this.state.value)
+        const g = 20
+        c.strokeStyle = 'red'
+        const cp = this.livalToCanvas(this.state.lightness, this.state.value)
         c.strokeRect(Math.floor(cp.x/g)*g, Math.floor(cp.y/g)*g,g,g)
+
+        c.strokeStyle = 'black';
+        c.lineWidth = 1.0
+        c.strokeRect(0,0,w,h)
     }
 
     livalToCanvas = (l,v) => {
-        return makePoint(l/100*this.canvas.width,v/100*this.canvas.height)
+        return makePoint(l/100*100,v/100*100)
     }
 
     mouseToCanvas = (e) => {
@@ -99,29 +103,36 @@ export default class HSLUVColorPicker extends Component {
     }
     drawSlider() {
         const g = 10
-        const c2 = this.slider.getContext('2d')
+        const c = this.slider.getContext('2d')
         const w = this.slider.width
         const h = this.slider.height
-        c2.fillStyle = 'red';
-        c2.fillRect(0,0,w,h)
+        c.fillStyle = 'red';
+        c.fillRect(0,0,w,h)
         for(let x=0; x<w; x+=g) {
             let hue = this.canvasToHue(makePoint(x,0))
             let color = hsluv.hsluvToHex([hue,100,50])
             if(color.length > 7) color = '#000000'
-            c2.fillStyle = color
-            c2.fillRect(x,0,g,h)
+            c.fillStyle = color
+            c.fillRect(x,0,g,h)
         }
-        c2.fillStyle = 'black'
+        c.strokeStyle = 'black'
+        c.lineWidth = 1.0
         const x = Math.floor(this.hueToCanvas(this.state.hue)/g)*g
-        c2.fillRect(x,0,2,h)
+        c.strokeRect(x,0,g,h)
+        c.strokeRect(0,0,w,h)
     }
 
     drawIndicator() {
         const c = this.indicator.getContext('2d')
+        const w = this.indicator.width
+        const h = this.indicator.height
         let color = hsluv.hsluvToHex([Math.floor(this.state.hue),Math.floor(this.state.lightness),Math.floor(this.state.value)])
         if(color.length > 7) color = '#000000'
         c.fillStyle = color
-        c.fillRect(0,0,this.indicator.width, this.indicator.height)
+        c.fillRect(0,0,w,h)
+        c.strokeStyle = 'black'
+        c.lineWidth = 1.0
+        c.strokeRect(0,0,w,h)
     }
 
     close = () => {
@@ -134,7 +145,8 @@ export default class HSLUVColorPicker extends Component {
     render() {
         return <div style={{
             display:'flex',
-            flexDirection:'column'
+            flexDirection:'column',
+            alignItems:'center'
         }}>
             <canvas
                 ref={(can)=>this.canvas = can}
