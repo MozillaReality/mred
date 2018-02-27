@@ -35,8 +35,6 @@ export default class HypercardApp extends Component {
         this.uman = new UndoManager(this.prov())
     }
 
-
-
     componentDidMount() {
         this.im.attachKeyEvents(document)
         this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, ()=> this.setDirty())
@@ -72,8 +70,9 @@ export default class HypercardApp extends Component {
     showCardMenu = (e) => {
         PopupManager.show(<VBox>
             {this.createPopupAction(this.addCard,'empty')}
-            {this.createPopupAction(this.addTitleCard,'title')}
-            {this.createPopupAction(this.addStandardCard,'standard')}
+            {this.createPopupAction(this.addTitleSubtitleCard,'Title & Subtitle')}
+            {this.createPopupAction(this.addTitleCenterCard,'Title Center')}
+            {this.createPopupAction(this.addStandardCard,'Title & Bullets')}
         </VBox>, e.target)
     }
     addCard =   () => {
@@ -81,7 +80,7 @@ export default class HypercardApp extends Component {
         this.prov().appendChild(this.prov().getSceneRoot(),card)
         Selection.setSelection(card)
     }
-    addTitleCard = () => {
+    addTitleSubtitleCard = () => {
         const prov = this.prov()
         const card = prov.createCard()
         const root = prov.getSceneRoot()
@@ -102,6 +101,22 @@ export default class HypercardApp extends Component {
         subtitle.x = 200
         subtitle.y = 300
         prov.appendChild(card,subtitle)
+
+        prov.appendChild(root,card)
+        Selection.setSelection(card)
+    }
+    addTitleCenterCard = () => {
+        const prov = this.prov()
+        const card = prov.createCard()
+        const root = prov.getSceneRoot()
+        const title = prov.createText()
+        title.blockStyle = BLOCK_STYLES.TITLE
+        title.text = "The Title"
+        title.w = 400
+        title.h = 100
+        title.x = 200
+        title.y = 450
+        prov.appendChild(card,title)
 
         prov.appendChild(root,card)
         Selection.setSelection(card)
