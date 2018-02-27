@@ -87,19 +87,19 @@ export default class HypercardApp extends Component {
         const title = prov.createText()
         title.blockStyle = BLOCK_STYLES.TITLE
         title.text = "The Title"
-        title.w = 400
-        title.h = 100
-        title.x = 200
-        title.y = 150
+        title.w = 1280-200
+        title.h = 150
+        title.x = 100
+        title.y = 250
         prov.appendChild(card,title)
 
         const subtitle = prov.createText()
         subtitle.blockStyle = BLOCK_STYLES.SUBTITLE
         subtitle.text = "Subtitle"
-        subtitle.w = 400
+        subtitle.w = 1280-200
         subtitle.h = 100
-        subtitle.x = 200
-        subtitle.y = 300
+        subtitle.x = 100
+        subtitle.y = 400
         prov.appendChild(card,subtitle)
 
         prov.appendChild(root,card)
@@ -112,10 +112,10 @@ export default class HypercardApp extends Component {
         const title = prov.createText()
         title.blockStyle = BLOCK_STYLES.TITLE
         title.text = "The Title"
-        title.w = 400
+        title.w = 1280-200
         title.h = 100
-        title.x = 200
-        title.y = 450
+        title.x = 100
+        title.y = 275
         prov.appendChild(card,title)
 
         prov.appendChild(root,card)
@@ -128,7 +128,7 @@ export default class HypercardApp extends Component {
         const header = prov.createText()
         header.blockStyle = BLOCK_STYLES.HEADER
         header.text = "card header"
-        header.w = 500
+        header.w = 1280-200
         header.h = 60
         header.x = 100
         header.y = 100
@@ -137,7 +137,7 @@ export default class HypercardApp extends Component {
         const body = prov.createText()
         body.blockStyle = BLOCK_STYLES.LIST
         body.text = "some body\ntext"
-        body.w = 500
+        body.w = 1280-200
         body.h = 400
         body.x = 100
         body.y = 200

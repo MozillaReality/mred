@@ -51,11 +51,12 @@ export default class CardComponent extends Component {
         const scale = this.calcScale()
         const card = this.props.card
         const prov = this.props.provider
+        const bounds = prov.getCardBounds().multiply(scale)
         const style = {
             position: 'relative',
             backgroundColor: card.backgroundColor?card.backgroundColor:"white",
-            width: `${800*scale}px`,
-            height: `${800*scale}px`
+            width: `${bounds.x}px`,
+            height: `${bounds.y}px`
         }
         let clss = "hypercard-card"
         if(this.props.showBounds === true) clss += " show-bounds"

@@ -425,16 +425,16 @@ export default class HypercardEditor extends TreeItemProvider {
         if(id === BLOCK_STYLES.TITLE) {
             return {
                 color:'black',
-                fontSize:64,
-                fontFamily:'serif',
+                fontSize:112,
+                fontFamily:'sans-serif',
                 horizontalAlignment:HORIZONTAL_ALIGNMENT.CENTER,
             }
         }
         if(id === BLOCK_STYLES.SUBTITLE) {
             return {
                 color:'black',
-                fontSize:36,
-                fontFamily:'serif',
+                fontSize:112/2,
+                fontFamily:'sans-serif',
                 horizontalAlignment:HORIZONTAL_ALIGNMENT.CENTER,
             }
         }
@@ -457,7 +457,7 @@ export default class HypercardEditor extends TreeItemProvider {
         if(id === BLOCK_STYLES.HEADER) {
             return {
                 color:'black',
-                fontSize:36,
+                fontSize:112/2,
                 fontFamily:'sans-serif',
                 horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
             }
@@ -465,7 +465,7 @@ export default class HypercardEditor extends TreeItemProvider {
         if(id === BLOCK_STYLES.LIST) {
             return {
                 color:'black',
-                fontSize:18,
+                fontSize:112/3,
                 fontFamily:'sans-serif',
                 horizontalAlignment:HORIZONTAL_ALIGNMENT.LEFT,
             }
@@ -473,6 +473,9 @@ export default class HypercardEditor extends TreeItemProvider {
         return null
     }
 
+    getCardBounds() {
+        return makePoint(1280,720)
+    }
 }
 
 export const HypercardItemRenderer = (props) => {
