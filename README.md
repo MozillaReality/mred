@@ -15,3 +15,24 @@ currently implemented demo editors:
 # Doc server
 
 General Ed comes with a document server
+
+
+
+# DocumentProvider
+
+The core of every editor is a document provider (currently named TreeItemProviderInterface).
+This is an object which provides information about the current document to the rest of the
+system. It contains the actual document model and exposes this model through methods like
+`findNodeById()`, `findParent()`, `hasChildren()`, etc.   Virtually every standard component of
+the editor will access this document provider.
+
+Document providers should extend the `TreeItemProviderInterface`, but most of them will
+extend the TreeItemProvider which contains default implementations for many functions, making
+it easier to get started.  This default ipmlementation assumes that there is a root 
+node at this.root, that all children are stored in an array called node.children, that
+every node has an id at node.id. It automatically tracks expanded/collapsed state, maintains
+a lookup table of nodes by id, and manages event listeners. Every example application extends
+this default TreeItemProvider so that the real provider can just worry about domain specific
+tasks.
+
+ 

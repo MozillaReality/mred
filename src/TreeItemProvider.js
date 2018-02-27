@@ -17,9 +17,84 @@ export const TREE_ITEM_PROVIDER = {
 export const SERVER_URL = "http://josh.earth:30068/doc/"
 export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
 
+class TreeItemProviderInterface {
+    /** register a listener */
+    on(type, cb) {
+        throw new Error(`interface 'on' not implemented`)
+    }
 
-export default class TreeItemProvider {
+    /** un-register a listener */
+    off(type, cb) {
+        throw  new Error("interface 'off' not implemented")
+    }
+
+    /** fire an event. internal use */
+    fire(type, value) {
+        throw  new Error("interface 'fire' not implemented")
+    }
+
+    // ============== tree interface
+    /** returns the root of the tree structure */
+    getSceneRoot() {
+        throw new Error("interface 'getSceneRoot' not implemented")
+    }
+    /** delete child node */
+    deleteChild(child) { throw new Error("deleteChild not implemented yet")}
+    /** append child to the parent */
+    appendChild(parent,child) { throw new Error("appendChild not implemented yet")}
+    /** insert child node before a particular other node */
+    insertNodeBefore(node,sibling) { throw new Error("insertNodeBefore() not implemented yet")}
+    /** find a given node by ID */
+    findNodeById(id) { throw new Error("findNodeById() not implemented yet")}
+    /** find the parent of the given node */
+    findParent(node) { throw new Error("findParent() not implemented yet")}
+    /** return true if the given node has children */
+    hasChildren(node) { throw new Error("hasChildren() not implemented yet")}
+    /** returns an array of children for the parent node */
+    getChildren(node) { throw new Error("getChildren() not implemented yet")}
+
+    // ========= Tree View support =========
+
+    /** returns true if item is expanded */
+    isExpanded(item) {
+        throw  new Error("interface 'isExpanded' not implemented")
+    }
+
+    /** return a react component for the context menu of the item in the tree view */
+    calculateContextMenu(item) {
+        throw new Error("calculateContextMenu() not implemented yet")
+    }
+    /** toggles the collapsed state of the item */
+    toggleItemCollapsed(item) {
+        throw new Error("toggleItemCollapsed() not implemented yet")
+    }
+    /** returns a react component to display the item in the tree view */
+    getRendererForItem(item) {
+        throw new Error("getRendererForItem() not implemented yet")
+    }
+
+
+
+    // ================ properties ==================
+    /** set the property value using a prop def */
+    setPropertyValue(item, def, value) {
+        throw new Error("interface setPropertyValue not implemented")
+    }
+    setPropertyValueByName(child,name,value) { throw new Error(`interface 'setPropertyValueByName() not implemented'`)}
+    /** return an array of property definitions for the specified tree item */
+    getProperties(item) { throw new Error('interface `getProperties()` not implemented') }
+
+
+    // ================ doc def stuff
+    getDocId() {  throw new Error("getDocId() not implemented")  }
+    getDocType() {  throw new Error("getDocType() not implemented")  }
+    getApp() { throw new Error("getApp() not implemented")  }
+    getTitle() { throw new Error("getTitle() not implemented") }
+}
+
+export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor() {
+        super()
         console.log('created a tree item Provider')
         this.listeners = {};
         this.expanded_map = {};
@@ -63,12 +138,6 @@ export default class TreeItemProvider {
     setPropertyValue(item, def, value) {
         throw new Error("subclass of TreeItemProvider must implement setPropertyValue")
     }
-
-    getTreeActions() {
-        return []
-    }
-
-    getTools = () => []
 
     genID = (prefix) => {
         return `${prefix}_${Math.floor(Math.random() * 10000)}`
@@ -141,28 +210,14 @@ export default class TreeItemProvider {
     findNodeFromSelectionPath() {
         throw new Error("findNodeFromSelectionPath not implemented")
     }
-    getSceneRoot() {
-        return this.root;
-    }
-    getDocType() {
-        throw new Error("getDocType() not implemented")
-    }
     makeEmptyRoot() {
         throw new Error("makeEmptyRoot() not implemented")
     }
-    getApp() { throw new Error("getApp() not implemented") }
-    getTitle() { throw new Error("getTitle() not implemented") }
-    getDocType() { throw new Error("getDocType() not implemented") }
 
     getSceneRoot() {
         return this.root;
     }
-    // getSceneRoot() { throw new Error("getSceneRoot() not implemented") }
 
-    deleteChild() { throw new Error("deleteChild not implemented yet")}
-    findParent() { throw new Error("findParent() not implemented yet")}
-    findNodeById() { throw new Error("findNodeById() not implemented yet")}
-    insertNodeBefore() { throw new Error("insertNodeBefore() not implemented yet")}
     uploadFile(file) {
         return new Promise((res,rej)=>{
             const fd = new FormData()
@@ -181,7 +236,4 @@ export default class TreeItemProvider {
             xml.send(file)
         })
     }
-
-
-
 }
