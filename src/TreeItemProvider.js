@@ -134,6 +134,12 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         if (typeof this.expanded_map[item.id] === 'undefined') this.expanded_map[item.id] = true;
         return this.expanded_map[item.id];
     }
+    toggleItemCollapsed(item) {
+        const current = this.isExpanded(item);
+        this.expanded_map[item.id] = !current;
+        this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
+    }
+
 
     setPropertyValue(item, def, value) {
         throw new Error("subclass of TreeItemProvider must implement setPropertyValue")
@@ -236,4 +242,9 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             xml.send(file)
         })
     }
+
+
+    hasChildren = (item) => item && item.children && item.children.length
+    getChildren = (item) => item.children
+
 }

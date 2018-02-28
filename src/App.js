@@ -13,6 +13,7 @@ import FamilyTree from "./familytree/FamilyTree"
 import TextureEditor from "./texture/TextureEditor"
 import {toQueryString} from './utils'
 import {MenuPopup} from './GridEditorApp'
+import GLTFInspector from './gltfinspector/GLTFInspector'
 
 export default class App extends Component {
     constructor(props) {
@@ -23,6 +24,7 @@ export default class App extends Component {
         this.addProvider(new SVGEditor())
         this.addProvider(new FamilyTree())
         this.addProvider(new TextureEditor())
+        this.addProvider(new GLTFInspector())
         this.state = {
             provider: this.providers.familytree,
             providerName: 'familytree',

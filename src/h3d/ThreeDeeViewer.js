@@ -184,9 +184,6 @@ export  default class ThreeDeeViewer extends Component {
         this.scene.add(directionalLight)
     }
 
-    redraw() {
-    }
-
     render() {
         let w = 800
         let h = 500
