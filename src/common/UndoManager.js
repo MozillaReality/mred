@@ -74,7 +74,7 @@ export default class UndoManager {
 
                 this.current++
             }
-            this.dump()
+            //this.dump()
         })
         // this.prov.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.clearDirty())
         // this.prov.on(TREE_ITEM_PROVIDER.CLEAR_DIRTY, ()=> this.clearDirty())

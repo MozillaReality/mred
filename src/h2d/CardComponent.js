@@ -22,6 +22,18 @@ export default class CardComponent extends Component {
                 const bds = this.container.getBoundingClientRect()
                 return pt.minus(makePoint(bds.x,bds.y)).divide(this.calcScale())
             },
+            getXSnaps: () => {
+                return [0,1280]
+            },
+            getYSnaps: () => {
+                return [0, 720]
+            },
+            getWExtent: (item) => {
+                return item.w
+            },
+            getHExtent: (item) => {
+                return item.h
+            },
             xpropname: 'x',
             ypropname: 'y'
         })
