@@ -4,7 +4,9 @@ import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import PropSheet from '../PropSheet'
 import * as THREE from 'three'
 import GLTFLoader from '../GLTFLoader'
+import GLTFExporter from "./GLTFExporter"
 import OrbitalControls from '../h3d/OrbitControls'
+import Selection from '../SelectionManager'
 
 
 
@@ -110,6 +112,30 @@ export default class GLTFInspector extends  TreeItemProvider {
             console.log("loaded",gltf)
             this.setDocument(gltf.scene,'gltfid')
         })
+    }
+    calculateContextMenu = () => {
+        return [
+            {
+                title:'export',
+                icon:'close',
+                fun: () => {
+                    console.log("exporting")
+                    const ch = Selection.getSelection()
+                    const exporter = new GLTFExporter()
+                    console.log("exporter",exporter)
+                    exporter.parse(ch,(gltf)=>{
+                        console.log("GLTF is",gltf)
+                        const str = JSON.stringify(gltf)
+                        console.log(str)
+                        const link = document.createElement('a');
+                        link.href = 'data:model/gltf+json,'+encodeURIComponent(str)
+                        link.download = 'test.gltf'
+                        document.body.appendChild(link)
+                        link.click()
+                    })
+                }
+            },
+        ]
     }
 }
 
