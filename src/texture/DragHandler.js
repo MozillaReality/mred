@@ -55,6 +55,13 @@ export default class DragHandler {
                     // console.log("right bounds snap")
                     cursor2.x = matchW - w
                 }
+
+                if(this.opts.getCenterXSnaps) {
+                    const matchCX = this.opts.getCenterXSnaps().find((x)=> Math.abs((cursor2.x+w/2) - x) < THRESHOLD)
+                    if(typeof matchCX !== 'undefined') {
+                        cursor2.x = matchCX - w/2
+                    }
+                }
             }
         }
         if(this.opts.getYSnaps) {
@@ -71,6 +78,12 @@ export default class DragHandler {
                 if(typeof matchH !== 'undefined') {
                     // console.log("bottom bounds snap")
                     cursor2.y = matchH - h
+                }
+                if(this.opts.getCenterYSnaps) {
+                    const matchCY = this.opts.getCenterYSnaps().find((y)=> Math.abs((cursor2.y+h/2) - y) < THRESHOLD)
+                    if(typeof matchCY !== 'undefined') {
+                        cursor2.y = matchCY - h/2
+                    }
                 }
             }
         }

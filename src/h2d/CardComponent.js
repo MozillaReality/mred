@@ -25,8 +25,14 @@ export default class CardComponent extends Component {
             getXSnaps: () => {
                 return [0,1280]
             },
+            getCenterXSnaps: () => {
+                return [1280/2]
+            },
             getYSnaps: () => {
                 return [0, 720]
+            },
+            getCenterYSnaps: () => {
+                return [720/2]
             },
             getWExtent: (item) => {
                 return item.w
