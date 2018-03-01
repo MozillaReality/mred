@@ -5,12 +5,11 @@ export default class DragHandler {
     constructor(e,opts) {
         e.stopPropagation()
         e.preventDefault()
-        this.target = opts.target
         this.provider = opts.provider
         if(e.shiftKey) {
-            SelectionManager.addToSelection(this.target)
+            SelectionManager.addToSelection(opts.target)
         } else {
-            SelectionManager.setSelection(this.target)
+            if(!SelectionManager.isSelected(opts.target)) SelectionManager.setSelection(opts.target)
         }
 
         this.worldToLocal = opts.toLocal
@@ -20,7 +19,10 @@ export default class DragHandler {
         this.opts = opts
 
         const pt2 = this.worldToLocal(makePoint(e.clientX, e.clientY))
-        this.start = pt2.minus(makePoint(this.target[this.xpropname],this.target[this.ypropname]))
+        this.starts = SelectionManager.getFullSelection().map(node => {
+            const pos  = makePoint(node[this.xpropname], node[this.ypropname])
+            return pt2.minus(pos)
+        })
 
 
         if(this.uman) this.uman.startGrouping()
@@ -35,20 +37,21 @@ export default class DragHandler {
 
     onMouseMove = (e) => {
         const cursor = this.worldToLocal(makePoint(e.clientX, e.clientY),e)
-        const defs = this.provider.getProperties(this.target)
+        const targets = SelectionManager.getFullSelection()
+        const defs = this.provider.getProperties(targets[0])
         const xdef = defs.find((def)=>def.key === this.xpropname)
         const ydef = defs.find((def)=>def.key === this.ypropname)
-        const cursor2 = cursor.minus(this.start)
         const THRESHOLD = 50
+        /*
         if(this.opts.getXSnaps) {
-            const snapsX = this.opts.getXSnaps(this.target)
+            const snapsX = this.opts.getXSnaps(targets[0])
             const matchX = snapsX.find((x)=>Math.abs(cursor2.x-x) < THRESHOLD)
             // console.log("real x = ", cursor2.x, 'snap x = ', snapsX, matchX)
             if(typeof matchX !== 'undefined') {
                 cursor2.x = matchX
             }
             if(this.opts.getWExtent) {
-                const w = this.opts.getWExtent(this.target)
+                const w = this.opts.getWExtent(targets[0])
                 // console.log("w = ", w)
                 const matchW = snapsX.find((x)=>Math.abs((cursor2.x+w)-x) < THRESHOLD)
                 if(typeof matchW !== 'undefined') {
@@ -86,9 +89,13 @@ export default class DragHandler {
                     }
                 }
             }
-        }
-        this.provider.setPropertyValue(this.target,xdef,cursor2.x)
-        this.provider.setPropertyValue(this.target,ydef,cursor2.y)
+        }*/
+
+        targets.forEach((target,i)=>{
+            const newPos = cursor.minus(this.starts[i])
+            this.provider.setPropertyValue(target,xdef,newPos.x)
+            this.provider.setPropertyValue(target,ydef,newPos.y)
+        })
     }
 }
 

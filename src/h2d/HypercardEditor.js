@@ -97,6 +97,7 @@ export default class HypercardEditor extends TreeItemProvider {
 
     appendChild(parent,item) {
         this.id_index[item.id] = item
+        item.parent = parent
         parent.children.push(item);
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_ADDED,{
             provider:this,
