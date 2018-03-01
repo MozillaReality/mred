@@ -398,13 +398,24 @@ export default class TextureEditor extends TreeItemProvider {
             if (!template) console.error("couldn't find template for node", node)
 
             Object.keys(node.inputs).forEach((key) => {
+                const hints = {}
+                if(key === 'attack' || key === 'decay') {
+                    hints.min = 0
+                    hints.max = 1;
+                    hints.incrementValue = 0.05
+                }
+                if(key === 'release' || key === 'sustain') {
+                    hints.min = 0
+                    hints.incrementValue = 0.05
+                }
                 defs.push({
                     name: key,
                     key: key,
                     value: node.inputs[key].value,
                     type: node.inputs[key].type,
                     dir:'input',
-                    locked: (node.inputs[key].connections.length > 0) //lock if connected
+                    locked: (node.inputs[key].connections.length > 0), //lock if connected
+                    hints:hints,
                 })
             });
             Object.keys(node.outputs).forEach((key) => {

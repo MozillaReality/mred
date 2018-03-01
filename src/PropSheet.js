@@ -69,9 +69,10 @@ class PropEditor extends Component {
         const def = this.props.def;
         if(def.hasHints()) {
             if(def.getHints().hasOwnProperty('min')) {
-                if(v < def.getHints().min) {
-                    v = def.getHints().min
-                }
+                if(v < def.getHints().min) v = def.getHints().min
+            }
+            if(def.getHints().hasOwnProperty('max')) {
+                if (v > def.getHints().max) v = def.getHints().max
             }
         }
         this.setState({value:v})
@@ -122,12 +123,22 @@ class PropEditor extends Component {
                                                          onBlur={this.commit}
                                                          def={prop} obj={obj}
                                                          provider={this.props.provider}/>
-        if (prop.isType('number'))  return <input type='number'
-                                                  value={this.state.value}
-                                                  onChange={this.changed}
-                                                  onKeyPress={this.keypressed}
-                                                  onKeyDown={this.numberKeyDown}
-                                                  onBlur={this.commit}/>
+        if (prop.isType('number'))  {
+            let step = 1
+            if(prop.hasHints()) {
+                const hints = prop.getHints()
+                if (hints.incrementValue) {
+                    step = hints.incrementValue
+                }
+            }
+            return <input type='number'
+                          value={this.state.value}
+                          onChange={this.changed}
+                          onKeyPress={this.keypressed}
+                          onKeyDown={this.numberKeyDown}
+                          onBlur={this.commit}
+                          step={step}/>
+        }
         if (prop.isType("boolean")) return <input type='checkbox'
                                                   checked={this.state.value}
                                                   onChange={this.booleanChanged}/>
