@@ -16,6 +16,8 @@ class GLTFApp extends Component {
             <Toolbar left top>
                 <label>GLTF Inspector</label>
             </Toolbar>
+            <Toolbar center top>
+            </Toolbar>
             <Panel center middle>
                 <GLTFView provider={this.props.provider}/>
             </Panel>
@@ -25,6 +27,7 @@ class GLTFApp extends Component {
 
         </GridEditorApp>
     }
+
 }
 
 export default class GLTFInspector extends  TreeItemProvider {
@@ -116,6 +119,20 @@ export default class GLTFInspector extends  TreeItemProvider {
     calculateContextMenu = () => {
         return [
             {
+                title:'dump',
+                fun:() => {
+                    const ch = Selection.getSelection()
+                    console.log(ch)
+                }
+            },
+            {
+                title:'toggle wireframe',
+                fun:() => {
+                    const ch = Selection.getSelection()
+                    ch.material.wireframe = !ch.material.wireframe
+                }
+            },
+            {
                 title:'export',
                 icon:'close',
                 fun: () => {
@@ -175,7 +192,7 @@ class GLTFView extends Component {
         this.renderer.render( this.scene, this.camera );
     }
     rebuildScene(gltfScene) {
-        console.log("making the scene for the GLTF",gltfScene)
+        // console.log("making the scene for the GLTF",gltfScene)
         if(!gltfScene) return
         this.scene.add(gltfScene)
     }
