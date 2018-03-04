@@ -33,7 +33,8 @@ class GLTFApp extends Component {
 export default class GLTFInspector extends  TreeItemProvider {
     constructor() {
         super()
-        this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
+        // this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
+        this.loadGLTF(`http://localhost:3000/mega_scene/scene.gltf`)
     }
     getDocType = () => "gltf-inspector"
     getApp = () => <GLTFApp provider={this}/>

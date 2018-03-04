@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Spacer, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {Panel, Spacer, Toolbar, ToggleButton} from '../GridEditorApp'
 import HypercardCanvas from './HypercardCanvas'
 import {GET_JSON, toQueryString} from '../utils'
 import Selection from '../SelectionManager'
@@ -204,11 +204,14 @@ export default class HypercardApp extends Component {
             </Toolbar>
 
             <Toolbar right top>
-                <button onClick={()=>this.setState({sidepanel:'props'})}>Properties</button>
-                <button onClick={()=>this.setState({sidepanel:'clipart'})}>Clip Art</button>
+                <ToggleButton
+                    selected={this.state.sidepanel === 'props'}
+                    onClick={()=>this.setState({sidepanel:'props'})}>Properties</ToggleButton>
+                <ToggleButton
+                    selected={this.state.sidepanel === 'clipart'}
+                    onClick={()=>this.setState({sidepanel:'clipart'})}>Clip Art</ToggleButton>
             </Toolbar>
             <Toolbar right bottom/>
-
         </GridEditorApp>
     }
     renderSidePanel(sidepanel) {

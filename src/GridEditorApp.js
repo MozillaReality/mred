@@ -36,6 +36,12 @@ export const Spacer = (props) => {
     return <span className='spacer'/>
 };
 
+export const ToggleButton = (props) => {
+    const {selected, ...rest} = props
+    const clss = selected?"selected":""
+    return <button className={clss} {...rest}></button>
+}
+
 export const MenuPopup = (props) => {
     return <VBox>
         {props.actions.map((act,i)=>{

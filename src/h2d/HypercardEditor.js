@@ -72,6 +72,7 @@ export default class HypercardEditor extends TreeItemProvider {
         return item.children;
     }
     getParent(item) {
+        if(!item.parent) throw new Error("item doesn't have a parent")
         return item.parent;
     }
     hasChildren(item) {
@@ -85,9 +86,11 @@ export default class HypercardEditor extends TreeItemProvider {
         this.id_index = {}
         this.root.children.forEach((card) => {
             this.id_index[card.id] = card
+            card.parent = this.root
+            if(!card.backgroundColor) card.backgroundColor = 'white'
             card.children.forEach((item)=>{
                 this.id_index[item.id] = item
-                if(!card.backgroundColor) card.backgroundColor = 'white'
+                item.parent = card
             })
         })
     }
