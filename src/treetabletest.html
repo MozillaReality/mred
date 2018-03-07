@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../node_modules/font-awesome/css/font-awesome.css">
+    <style type="text/css">
+        .tree-table {
+            border: 5px solid red;
+            width:400px;
+        }
+        .tree-table div {
+            display: flex;
+            flex-direction: row;
+            border: 1px solid green;
+        }
+        .tree-table div span {
+            flex: 1;
+            padding: 0 1em;
+        }
+
+
+        .tree-table-2 {
+            border: 5px solid red;
+            width:200px;
+            display: grid;
+            grid-template-columns:
+                [tree] 5em
+                [col1] 1fr
+                [col2] 1em;
+            padding:0;
+        }
+        .tree-table-2 i { grid-column: tree; }
+        .tree-table-2 span {
+            grid-column: col1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tree-table-2 b { grid-column: col2; }
+        .tree-table-2 i[depth="1"] {
+            padding-left: 1em;
+        }
+        .tree-table-2 i[depth="2"] {
+            padding-left: 2em;
+        }
+    </style>
+</head>
+<body>
+
+
+<ul class="tree-table">
+    <li>
+        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+        <ul>
+            <li>
+                <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+            </li>
+            <li>
+                <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+    </li>
+    <li>
+        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+    </li>
+</ul>
+
+
+<ul class="tree-table-2">
+    <i depth="1">start</i><span>this is a long wide thing</span>
+    <b class="fa fa-bars"></b>
+    <i depth="2">start</i><span>this is a long wide thing</span>
+    <b class="fa fa-bars"></b>
+    <i depth="2">start</i><span>this is a long wide thing</span>
+    <b class="fa fa-bars"></b>
+
+
+    <i depth="1">start</i><span>this is a long wide thing</span>
+    <b class="fa fa-bars"></b>
+
+    <i depth="1">start</i><span>this is a long wide thing</span>
+    <b class="fa fa-bars"></b>
+</ul>
+</body>
+</html>

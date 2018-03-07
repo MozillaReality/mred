@@ -6,11 +6,32 @@ import * as THREE from 'three'
 import GLTFLoader from '../GLTFLoader'
 import GLTFExporter from "./GLTFExporter"
 import OrbitalControls from '../h3d/OrbitControls'
-import Selection from '../SelectionManager'
+import Selection, {SELECTION_MANAGER} from '../SelectionManager'
 
 
 
 class GLTFApp extends Component {
+    componentDidMount() {
+        this.prev_sel = null
+        this.materials = []
+        this.WIREFRAME = new THREE.LineBasicMaterial( {
+            color: 0xff0000,
+            linewidth: 1,
+        } );
+
+        this.sel_listener = Selection.on(SELECTION_MANAGER.CHANGED, (sel)=> {
+            const ch = Selection.getSelection()
+            if(this.prev_sel && this.prev_sel.material && this.materials[this.prev_sel.id]) {
+                this.prev_sel.material = this.materials[this.prev_sel.id]
+            }
+            if(ch.material && ch.material !== this.WIREFRAME) {
+                this.materials[ch.id] = ch.material
+                ch.material = this.WIREFRAME
+                this.prev_sel = ch
+            }
+        })
+    }
+
     render() {
         return <GridEditorApp provider={this.props.provider}>
             <Toolbar left top>
@@ -49,6 +70,7 @@ export default class GLTFInspector extends  TreeItemProvider {
 
     getRendererForItem(item) {
         if(item.type === 'root') return <div>root</div>
+        if(item.type === 'Mesh') return <div><i className="fa fa-table"></i>{item.name}</div>
         if(item) return <div>{item.type}&nbsp;{item.name}</div>
         return <div> some error</div>
     }
@@ -58,11 +80,11 @@ export default class GLTFInspector extends  TreeItemProvider {
         if(!item) return defs;
         // console.log(item)
         if(item.type === 'Mesh') {
-            console.log("doing mesh. computing bounding box",item)
-            item.geometry.computeBoundingBox()
-            item.geometry.computeBoundingSphere()
-            console.log("boundinb box", item.geometry.boundingBox, item.geometry.boundingSphere)
-            console.log("vertex count", item.geometry.attributes.position.count)
+            // console.log("doing mesh. computing bounding box",item)
+            // item.geometry.computeBoundingBox()
+            // item.geometry.computeBoundingSphere()
+            // console.log("boundinb box", item.geometry.boundingBox, item.geometry.boundingSphere)
+            // console.log("vertex count", item.geometry.attributes.position.count)
         }
         Object.keys(item).forEach((key)=> {
             if (key === 'children') return;
@@ -96,9 +118,8 @@ export default class GLTFInspector extends  TreeItemProvider {
                 defs.push({name:'z position', key:'position.z', value:item.position.z, type:'number'})
             }
             if(item.type === 'Mesh' && key === 'geometry') {
-                console.log("found geometry",item[key])
                 defs.push({
-                    name:'geometry vertex count',
+                    name:'vertexes',
                     key:'geometry.attributes.position.count',
                     value:item.geometry.attributes.position.count,
                     locked:true
@@ -124,13 +145,6 @@ export default class GLTFInspector extends  TreeItemProvider {
                 fun:() => {
                     const ch = Selection.getSelection()
                     console.log(ch)
-                }
-            },
-            {
-                title:'toggle wireframe',
-                fun:() => {
-                    const ch = Selection.getSelection()
-                    ch.material.wireframe = !ch.material.wireframe
                 }
             },
             {
