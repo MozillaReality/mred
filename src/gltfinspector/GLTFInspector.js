@@ -30,6 +30,8 @@ class GLTFApp extends Component {
                 this.prev_sel = ch
             }
         })
+
+        this.props.provider.contextMenu = this.calculateContextMenu()
     }
 
     render() {
@@ -49,13 +51,52 @@ class GLTFApp extends Component {
         </GridEditorApp>
     }
 
+    calculateContextMenu = () => {
+        return [
+            {
+                title:'dump',
+                fun:() => {
+                    const ch = Selection.getSelection()
+                    console.log(ch)
+                }
+            },
+            {
+                title:'export',
+                icon:'close',
+                fun: () => {
+                    console.log("exporting")
+                    const ch = Selection.getSelection()
+
+                    if(ch.material === this.WIREFRAME) {
+                        console.log("need to swap it out")
+                        ch.material = this.materials[ch.id]
+                    }
+
+                    const exporter = new GLTFExporter()
+                    console.log("exporter",exporter)
+                    exporter.parse(ch,(gltf)=>{
+                        console.log("GLTF is",gltf)
+                        const str = JSON.stringify(gltf)
+                        console.log(str)
+                        const link = document.createElement('a');
+                        link.href = 'data:model/gltf+json,'+encodeURIComponent(str)
+                        link.download = 'test.gltf'
+                        document.body.appendChild(link)
+                        link.click()
+                    })
+                }
+            },
+        ]
+    }
+
 }
 
 export default class GLTFInspector extends  TreeItemProvider {
     constructor() {
         super()
-        // this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
-        this.loadGLTF(`http://localhost:3000/busterDrone/busterDrone.gltf`)
+        this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
+        // this.loadGLTF(`http://localhost:3000/busterDrone/busterDrone.gltf`)
+        // this.loadGLTF(`http://localhost:3000/moon/scene.gltf`)
     }
     getDocType = () => "gltf-inspector"
     getApp = () => <GLTFApp provider={this}/>
@@ -143,37 +184,7 @@ export default class GLTFInspector extends  TreeItemProvider {
             (err)=>console.log("error happened",err)
             )
     }
-    calculateContextMenu = () => {
-        return [
-            {
-                title:'dump',
-                fun:() => {
-                    const ch = Selection.getSelection()
-                    console.log(ch)
-                }
-            },
-            {
-                title:'export',
-                icon:'close',
-                fun: () => {
-                    console.log("exporting")
-                    const ch = Selection.getSelection()
-                    const exporter = new GLTFExporter()
-                    console.log("exporter",exporter)
-                    exporter.parse(ch,(gltf)=>{
-                        console.log("GLTF is",gltf)
-                        const str = JSON.stringify(gltf)
-                        console.log(str)
-                        const link = document.createElement('a');
-                        link.href = 'data:model/gltf+json,'+encodeURIComponent(str)
-                        link.download = 'test.gltf'
-                        document.body.appendChild(link)
-                        link.click()
-                    })
-                }
-            },
-        ]
-    }
+    calculateContextMenu = () => this.contextMenu
 }
 
 
@@ -230,15 +241,12 @@ class GLTFView extends Component {
         console.log("w = ", e.clientX-bounds.left, e.clientY-bounds.top)
         mouse.x = ((e.clientX-bounds.left)/w) * 2 - 1
         mouse.y = -((e.clientY-bounds.top)/h) * 2 + 1
-        console.log("clicked at",mouse)
 
         const raycaster = new THREE.Raycaster()
         raycaster.setFromCamera(mouse,this.camera)
         const intersects = raycaster.intersectObjects(this.scene.children,true)
-        console.log("got intersections",intersects)
         if(intersects.length > 0) {
             const int = intersects[0]
-            console.log("selected",int.object)
             Selection.setSelection(int.object)
         }
 
