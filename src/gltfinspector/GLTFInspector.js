@@ -54,8 +54,8 @@ class GLTFApp extends Component {
 export default class GLTFInspector extends  TreeItemProvider {
     constructor() {
         super()
-        // this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
-        this.loadGLTF(`http://localhost:3000/mega_scene/scene.gltf`)
+        this.loadGLTF(`http://localhost:3000/imp/scene.gltf`)
+        // this.loadGLTF(`http://localhost:3000/busterDrone/busterDrone.gltf`)
     }
     getDocType = () => "gltf-inspector"
     getApp = () => <GLTFApp provider={this}/>
@@ -70,7 +70,9 @@ export default class GLTFInspector extends  TreeItemProvider {
 
     getRendererForItem(item) {
         if(item.type === 'root') return <div>root</div>
-        if(item.type === 'Mesh') return <div><i className="fa fa-table"></i>{item.name}</div>
+        if(item.type === 'Object3D') return [<i className="fa fa-cube"></i>,<b>{item.name}</b>]
+        if(item.type === 'Mesh') return [<i className="fa fa-diamond fa-fw"></i>,<b>{item.name}</b>]
+        if(item.type === 'Bone') return [<i className="fa fa-question fa-fw"></i>,<b>item.name</b>]
         if(item) return <div>{item.type}&nbsp;{item.name}</div>
         return <div> some error</div>
     }
@@ -136,7 +138,10 @@ export default class GLTFInspector extends  TreeItemProvider {
         loader.load(url, (gltf)=>{
             console.log("loaded",gltf)
             this.setDocument(gltf.scene,'gltfid')
-        })
+        },
+            (xhr)=>console.log("progress",xhr),
+            (err)=>console.log("error happened",err)
+            )
     }
     calculateContextMenu = () => {
         return [

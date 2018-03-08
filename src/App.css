@@ -119,24 +119,31 @@ button {
 
 
 
-.tree-table li {
-    list-style: none;
-}
+/* ================= tree table ============== */
 .tree-table {
+    padding:0;
     margin:0;
-    padding-left:0;
+    width: 400px;
 }
-.tree-table ul {
-    margin:0;
-    padding-left: 1em;
+.tree-table .tree-node {
+    white-space: nowrap;
+    display: flex;
+    flex-direction: row;
+    padding: 0.25em;
 }
 
-.tree-node {
-    padding: 0.25em;
-    display: grid;
-    grid-template-columns: 2em auto 2em;
+.tree-table .tree-node span {
+    grid-column: icon;
 }
-.tree-node.selected {
+.tree-table .tree-node i {
+    grid-column: icon;
+}
+
+.tree-table .tree-node b {
+    grid-column: name;
+}
+
+.tree-table .tree-node.selected {
     background-color: aqua;
 }
 

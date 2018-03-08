@@ -38,11 +38,6 @@ class TreeTableItem extends Component {
         e.stopPropagation()
         this.props.provider.toggleItemCollapsed(this.props.node);
     }
-    findTreeNodeAtElement(elem) {
-        if(elem.getAttribute('data-nodeid')) return elem
-        if(elem.parentElement) return this.findTreeNodeAtElement(elem.parentElement)
-        return null;
-    }
     startDrag = (e,item) => {
         e.preventDefault()
         e.stopPropagation()
@@ -70,49 +65,38 @@ class TreeTableItem extends Component {
 
     }
     render() {
-        return <li>
-            {this.renderSelf(this.props.node)}
-            {this.renderChildren(this.props.node)}
-        </li>
-    }
-    renderSelf(node) {
         let cls = "tree-node";
-        if(this.props.selection && this.props.selection.isSelected(node)) {
+        const node = this.props.node
+        if (selMan.isSelected(node)) {
             cls += " selected"
         }
-        if(selMan.getDropTarget() === node)  cls += " drop-target"
+        if (selMan.getDropTarget() === node) cls += " drop-target"
         let arrow = "";
-        if(this.props.provider.hasChildren(node)) {
-            const expanded = this.props.provider.isExpanded(node)
-            if(expanded) {
-                arrow = <button className="fa fa-caret-down borderless" onClick={this.toggleItemCollapsed}/>;
+        const prov = this.props.provider
+        if (prov.hasChildren(node)) {
+            const expanded = prov.isExpanded(node)
+            if (expanded) {
+                arrow = <button className="fa fa-caret-down fa-fw borderless" onClick={this.toggleItemCollapsed}/>;
             } else {
-                arrow = <button className="fa fa-caret-right borderless" onClick={this.toggleItemCollapsed}/>;
+                arrow = <button className="fa fa-caret-right fa-fw borderless" onClick={this.toggleItemCollapsed}/>;
             }
         } else {
-            arrow = <span className=""/>
+            arrow = <span className="fa fa-fw borderless"/>
         }
+
         let dragHandle = <button className="fa fa-bars drag-handle" onMouseDown={(e)=>this.startDrag(e,node)}/>
-        return <div className={cls} onClick={this.onSelect} onContextMenu={this.onContextMenu}
-                    data-nodeid={node.id}
-        >
+        return <div className={cls} onClick={this.onSelect} onContextMenu={this.onContextMenu} data-nodeid={node.id}>
+            <span style={{
+                width:this.props.depth*1+'em'
+            }}></span>
             {arrow}
-            {this.props.provider.getRendererForItem(node)}
+            {prov.getRendererForItem(node)}
             {dragHandle}
         </div>
     }
-    renderChildren(node) {
-        if(!this.props.provider.hasChildren(node)) return "";
-        if(!this.props.provider.isExpanded(node)) return "";
-        const children = this.props.provider.getChildren(node);
-        return <ul>{children.map((ch,i)=>{
-            return <TreeTableItem key={i} node={ch}
-                                  provider={this.props.provider}
-                                  selection={this.props.selection}
-            />
-        })}</ul>
-    }
 }
+
+
 
 export default class TreeTable extends Component {
     constructor(props) {
@@ -142,12 +126,25 @@ export default class TreeTable extends Component {
 
     render() {
         if(!this.state.root) return <ul>no root yet</ul>
+        const children = [];
+        this.generateChildren(this.state.root,children,0)
         return <ul className='tree-table'>
-            <TreeTableItem node={this.state.root}
-                           provider={this.props.provider}
-                           selection={this.state.selection}
-            />
+            {children.map((info,i)=>{
+                return <TreeTableItem key={i} node={info.node} depth={info.depth}
+                                         provider={this.props.provider}
+                                         selection={this.state.selection}/>
+            })}
         </ul>
+    }
+
+    generateChildren = (root, chs,depth) => {
+        const prov = this.props.provider
+        chs.push({node:root, depth:depth})
+        if(!prov.hasChildren(root)) return
+        if(!prov.isExpanded(root)) return;
+        prov.getChildren(root).forEach((child)=>{
+            this.generateChildren(child,chs,depth+1)
+        })
     }
 }
 

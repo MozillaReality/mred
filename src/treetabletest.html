@@ -5,9 +5,17 @@
     <title>Title</title>
     <link rel="stylesheet" href="../node_modules/font-awesome/css/font-awesome.css">
     <style type="text/css">
+        .tt-wrap1 {
+            width: 200px;
+            overflow: scroll;
+        }
         .tree-table {
-            border: 5px solid red;
-            width:400px;
+            width:300px;
+            width: 100%;
+        }
+
+        .tree-table li {
+            border: 1px solid red;
         }
         .tree-table div {
             display: flex;
@@ -17,10 +25,11 @@
         .tree-table div span {
             flex: 1;
             padding: 0 1em;
+            white-space: pre;
         }
 
 
-        .tree-table-2 {
+        .tree-table {
             border: 5px solid red;
             width:200px;
             display: grid;
@@ -30,18 +39,18 @@
                 [col2] 1em;
             padding:0;
         }
-        .tree-table-2 i { grid-column: tree; }
-        .tree-table-2 span {
+        .tree-table i { grid-column: tree; }
+        .tree-table span {
             grid-column: col1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .tree-table-2 b { grid-column: col2; }
-        .tree-table-2 i[depth="1"] {
+        .tree-table b { grid-column: col2; }
+        .tree-table i[depth="1"] {
             padding-left: 1em;
         }
-        .tree-table-2 i[depth="2"] {
+        .tree-table i[depth="2"] {
             padding-left: 2em;
         }
     </style>
@@ -49,25 +58,27 @@
 <body>
 
 
-<ul class="tree-table">
-    <li>
-        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
-        <ul>
-            <li>
-                <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
-            </li>
-            <li>
-                <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
-            </li>
-        </ul>
-    </li>
-    <li>
-        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
-    </li>
-    <li>
-        <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
-    </li>
-</ul>
+<div class="tt-wrap1">
+    <ul class="tree-table">
+        <li>
+            <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+            <ul>
+                <li>
+                    <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+                </li>
+                <li>
+                    <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+        </li>
+        <li>
+            <div><i>start</i><span>this is a long wide thing</span><b>end</b></div>
+        </li>
+    </ul>
+</div>
 
 
 <ul class="tree-table-2">
