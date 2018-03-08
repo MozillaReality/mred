@@ -254,9 +254,16 @@ class ClipartSearchPanel extends Component {
             this.setState({results:res.payload})
         })
     }
+    keyDown = (e) => {
+        if(e.keyCode ===  13) this.doSearch()
+    }
     render() {
         return <VBox>
-            <HBox><input type="text" value={this.state.query} onChange={this.edited}/><button onClick={this.doSearch}>search</button></HBox>
+            <HBox>
+                <input type="text" value={this.state.query}
+                       onChange={this.edited}
+                       onKeyDown={this.keyDown}
+                /><button onClick={this.doSearch}>search</button></HBox>
             <ul>
                 {this.state.results.map((res,i)=><ClipartResult result={res} key={i} provider={this.props.provider}/>)}
             </ul>
