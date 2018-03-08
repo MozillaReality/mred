@@ -312,9 +312,9 @@ export default class HypercardEditor extends TreeItemProvider {
             title:'image',
             x: 100,
             y: 100,
-            w: 50,
-            h: 50,
-            src:""
+            w: 300,
+            h: 200,
+            src:"https://baconmockup.com/300/200/"
         }
     }
     createImageFromURL(url) {
