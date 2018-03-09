@@ -35,13 +35,6 @@ export default class App extends Component {
         this.providers[prov.getDocType()] = prov
     }
 
-    propertyChanged = (prop) => {
-        // this.setState({root: this.state.provider.getSceneRoot()})
-    }
-
-    structureChanged = (prop) => {
-        this.setState({root: this.state.provider.getSceneRoot()})
-    }
     componentDidMount() {
         let prov = 'hypercard-3d'
         if(this.props.options.doctype) prov = this.props.options.doctype
@@ -51,19 +44,13 @@ export default class App extends Component {
     switchProvider(name) {
         let provider = this.state.provider
         if(provider) {
-            provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
-            provider.off(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
         }
         provider = this.providers[name]
         if(!provider) {
             console.log('couldnt find the provider for ',name)
             return
         }
-        this.setState({provider: provider, root: provider.getSceneRoot(), providerName: name})
-        provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.propertyChanged)
-        provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
-        provider.on(TREE_ITEM_PROVIDER.STRUCTURE_ADDED, this.structureChanged)
-        provider.on(TREE_ITEM_PROVIDER.STRUCTURE_REMOVED, this.structureChanged)
+        this.setState({provider: provider, providerName: name})
 
         provider.loadDoc(this.props.options.doc)
     }

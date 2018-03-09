@@ -9,6 +9,7 @@ import {HBox, PopupManager, VBox} from 'appy-comps'
 import InputManager from '../common/InputManager'
 import UndoManager from '../common/UndoManager'
 import {BLOCK_STYLES} from './HypercardEditor'
+import TreeTable from '../TreeTable'
 
 export default class HypercardApp extends Component {
     constructor(props) {
@@ -171,6 +172,10 @@ export default class HypercardApp extends Component {
                 <label>{this.prov().getTitle()}</label>
             </Toolbar>
 
+            <Panel scroll left middle>
+                <TreeTable root={this.prov().getSceneRoot()} provider={this.prov()}/>
+            </Panel>
+
             <Toolbar left bottom>
                 <button className="fa fa-vcard" onClick={this.showCardMenu}/>
                 <button className="fa fa-font" onClick={this.addFont}/>
@@ -185,7 +190,6 @@ export default class HypercardApp extends Component {
             </Panel>
 
             {this.renderSidePanel(this.state.sidepanel)}
-
 
             <Toolbar center top>
                 <button className="fa fa-square" onClick={this.addSquare}/>
