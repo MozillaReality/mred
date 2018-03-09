@@ -93,8 +93,11 @@ export default class DragHandler {
 
         targets.forEach((target,i)=>{
             const newPos = cursor.minus(this.starts[i])
-            this.provider.setPropertyValue(target,xdef,newPos.x)
-            this.provider.setPropertyValue(target,ydef,newPos.y)
+            // this.provider.setPropertyValue(target,xdef,newPos.x)
+            // this.provider.setPropertyValue(target,ydef,newPos.y)
+            const defs = [xdef,ydef]
+            const values = [newPos.x, newPos.y]
+            this.provider.setPropertyValueGroup(target,defs,values)
         })
     }
 }

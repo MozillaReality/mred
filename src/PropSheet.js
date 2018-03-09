@@ -4,6 +4,7 @@ import {HBox, PopupManager, VBox} from 'appy-comps'
 import selMan, {SELECTION_MANAGER} from "./SelectionManager";
 import RGBColorPicker from "./RGBColorPicker";
 import HSLUVColorPicker from "./HSLUVColorPicker";
+import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
 
 const COLORS2 = {
     "black": 0x000000,
@@ -336,10 +337,14 @@ export default class PropSheet extends Component {
         }
     }
     componentDidMount() {
-        this.listener = selMan.on(SELECTION_MANAGER.CHANGED, (selection) => this.setState({selection:selection}))
+        this.h2 = () => this.setState({selection:selMan.getSelection()})
+        this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
+        this.hand = (selection) => this.setState({selection:selMan.getSelection()})
+        selMan.on(SELECTION_MANAGER.CHANGED, this.hand)
     }
     componentWillUnmount() {
-        selMan.off(SELECTION_MANAGER.CHANGED, this.listener);
+        selMan.off(SELECTION_MANAGER.CHANGED, this.hand);
+        this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
     }
     render() {
         const props = this.calculateProps();

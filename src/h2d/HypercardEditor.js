@@ -198,6 +198,21 @@ export default class HypercardEditor extends TreeItemProvider {
             newValue:value
         })
     }
+    setPropertyValueGroup(item, defs, values) {
+        defs.forEach((def,i) => {
+            let value = values[i]
+            if(def.type === 'number') value = parseFloat(value)
+            const oldValue = item[def.key]
+            item[def.key] = value
+        })
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, {
+            provider: this,
+            child:item,
+            propKey:defs[0].key,
+            oldValue:values[0], //TODO: this is a bug that will bite me later
+            newValue:values[0]
+        })
+    }
     setPropertyValueByName(item,key,value) {
         const oldValue = item[key]
         item[key] = value

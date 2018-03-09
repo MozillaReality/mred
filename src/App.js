@@ -36,7 +36,7 @@ export default class App extends Component {
     }
 
     propertyChanged = (prop) => {
-        this.setState({root: this.state.provider.getSceneRoot()})
+        // this.setState({root: this.state.provider.getSceneRoot()})
     }
 
     structureChanged = (prop) => {
