@@ -52,6 +52,14 @@ class PropEditor extends Component {
             this.setState({value:nextProps.def.getValue()})
         }
     }
+    shouldComponentUpdate(nextProps, nextState) {
+        if(this.props.def.getKey() === nextProps.def.getKey()) {
+            if(this.props.def.getValue() === nextProps.def.getValue()) {
+                return false
+            }
+        }
+        return true
+    }
     changed = (e) => {
         if(this.props.def.isType('string')) {
             this.setState({value:e.target.value})
@@ -337,7 +345,7 @@ export default class PropSheet extends Component {
         const props = this.calculateProps();
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
-            return <li key={i}>
+            return <li key={prop.getKey()}>
                 <label>{prop.getName()}</label>
                 {this.renderIndeterminate(prop,i)}
                 <PropEditor def={prop} provider={this.props.provider} item={item}/>
