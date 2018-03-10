@@ -27,7 +27,7 @@ button {
     background-color: var(--bd);
 }
 
-.grid .left-resize {
+.grid .left-resize, .grid .right-resize {
     background-color: var(--bd);
     grid-row-start: top;
     grid-row-end: bottom;

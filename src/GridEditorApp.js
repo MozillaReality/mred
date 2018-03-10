@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {PopupManager, VBox} from 'appy-comps'
+import {makePoint} from './utils'
 
 const GridLayout = (props) => {
     let clss = "grid fill";
@@ -66,14 +67,39 @@ export default class GridEditorApp extends Component {
         this.state = {
             showLeft: true,
             showRight: true,
-            leftWidth:300,
-            rightWidth:300
+            leftWidth:250,
+            rightWidth:250,
+            dragSide:'none'
         }
     }
     toggleLeftPane = (e) => this.setState({showLeft: !this.state.showLeft})
     toggleRightPane = (e) => this.setState({showRight: !this.state.showRight})
-    resizeMouseDownLeft = (e) => {
-        this.setState({leftWidth:400})
+    onMouseDownLeft = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.setState({dragSide:'left'})
+        window.addEventListener('mousemove',this.onMouseMove)
+        window.addEventListener('mouseup',this.onMouseUp)
+    }
+    onMouseDownRight = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.setState({dragSide:'right'})
+        window.addEventListener('mousemove',this.onMouseMove)
+        window.addEventListener('mouseup',this.onMouseUp)
+    }
+    onMouseMove = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const cursor = makePoint(e.clientX, e.clientY)
+        if(this.state.dragSide === 'left')  this.setState({leftWidth:cursor.x})
+        if(this.state.dragSide === 'right') this.setState({rightWidth:window.innerWidth-cursor.x})
+    }
+    onMouseUp = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        window.removeEventListener('mousemove', this.onMouseMove)
+        window.removeEventListener('mouseup', this.onMouseUp)
     }
     render() {
         return <GridLayout showLeft={this.state.showLeft}
@@ -89,8 +115,8 @@ export default class GridEditorApp extends Component {
                         onClick={this.toggleRightPane}/>
             </Toolbar>
 
-            <div className={'left-resize'} onMouseDown={this.resizeMouseDownLeft}/>
-            <div className={'right-resize'}/>
+            <div className={'left-resize'}  onMouseDown={this.onMouseDownLeft}/>
+            <div className={'right-resize'} onMouseDown={this.onMouseDownRight}/>
 
             {this.props.children}
         </GridLayout>
