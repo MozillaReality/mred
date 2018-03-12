@@ -34,6 +34,13 @@ export default class HypercardApp extends Component {
             modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
         this.im.addListener('redo',this.redo)
 
+        this.im.addKeyBinding({
+            id:'delete',
+            key:InputManager.KEYS.BACKSPACE,
+            modifiers:[]
+        })
+        this.im.addListener('delete',this.deleteItem)
+
         this.uman = new UndoManager(this.prov())
     }
 
