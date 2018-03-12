@@ -77,8 +77,8 @@ class TreeItemProviderInterface {
 
     // ================ properties ==================
     /** set the property value using a prop def */
-    setPropertyValue(item, def, value) {
-        throw new Error("interface setPropertyValue not implemented")
+    setPropertyValues(item, updates) {
+        throw new Error("interface setPropertyValues not implemented")
     }
     setPropertyValueByName(child,name,value) { throw new Error(`interface 'setPropertyValueByName() not implemented'`)}
     /** return an array of property definitions for the specified tree item */
@@ -140,10 +140,6 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
     }
 
-
-    setPropertyValue(item, def, value) {
-        throw new Error("subclass of TreeItemProvider must implement setPropertyValue")
-    }
 
     genID = (prefix) => {
         return `${prefix}_${Math.floor(Math.random() * 10000)}`
@@ -231,7 +227,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             console.log("filesize is",file.size);
             const xml = new XMLHttpRequest()
             xml.onreadystatechange = () => console.log(`ready state = ${xml.readyState} status ${xml.status}`)
-            xml.addEventListener('progress',(e)=>console.log(`progress`))
+            // xml.addEventListener('progress',(e)=>console.log(`progress`))
             xml.addEventListener('load',(e)=>res(xml.response))
             xml.addEventListener('error',(e)=>console.log(`error`))
             xml.addEventListener('abort',(e)=>console.log(`abort`))

@@ -43,33 +43,25 @@ export default class UndoManager {
         this.prov.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, (e)=> {
             if(this.locked) return
             if(this.grouping) {
-                if(!this.groups[e.propKey]) {
-                    this.groups[e.propKey] = {
-                        oldValue: e.oldValue,
-                        newValue: e.newValue,
-                        undo: function () {
-                            e.provider.setPropertyValueByName(e.child, e.propKey, this.oldValue)
-                        },
-                        redo: function () {
-                            e.provider.setPropertyValueByName(e.child, e.propKey, this.newValue)
-                        },
-                        toString: function() {
-                            return `PROPCHANGE (grouped) ${e.child.id} ${e.propKey}:${this.oldValue}=>${this.newValue}`
-                        }
+                if(!this.groups[e.node.id]) {
+                    this.groups[e.node.id] = {
+                        oldValues: e.oldValues,
+                        newValues: e.newValues,
+                        undo: () => e.provider.setPropertyValues(e.node, e.oldValues),
+                        redo: () => e.provider.setPropertyValues(e.node, e.newValues),
+                        toString: () => `PROPCHANGE (grouped) ${e.node.id} ${Object.keys(e.newValues).join(",")}`
                     }
                 } else {
-                    this.groups[e.propKey].newValue = e.newValue
+                    Object.keys(e.newValues).forEach(key => {
+                        this.groups[e.node.id].newValues[key] = e.newValues[key]
+                    })
                 }
             } else {
                 this.stack = this.stack.slice(0, this.current + 1)
                 this.stack.push({
-                    undo: () => {
-                        e.provider.setPropertyValueByName(e.child, e.propKey, e.oldValue)
-                    },
-                    redo: () => {
-                        e.provider.setPropertyValueByName(e.child, e.propKey, e.newValue)
-                    },
-                    toString: () => `PROPCHANGE ${e.child.id} ${e.propKey}`
+                    undo: () => e.provider.setPropertyValues(e.node, e.oldValues),
+                    redo: () => e.provider.setPropertyValues(e.node, e.newValues),
+                    toString: () => `PROPCHANGE ${e.node.id} ${Object.keys(e.newValues).join(",")}`
                 })
 
                 this.current++

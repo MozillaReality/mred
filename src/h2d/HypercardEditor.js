@@ -186,43 +186,28 @@ export default class HypercardEditor extends TreeItemProvider {
     getPropertyValue(item,key) {
         return item[key]
     }
-    setPropertyValue(item,def,value) {
-        if(def.type === 'number') value = parseFloat(value);
-        const oldValue = item[def.key]
-        item[def.key] = value;
-        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
-            provider: this,
-            child:item,
-            propKey:def.key,
-            oldValue:oldValue,
-            newValue:value
-        })
-    }
-    setPropertyValueGroup(item, defs, values) {
-        defs.forEach((def,i) => {
-            let value = values[i]
-            if(def.type === 'number') value = parseFloat(value)
-            const oldValue = item[def.key]
-            item[def.key] = value
+    setPropertyValues(item, updates) {
+        const olds = {}
+        const news = {}
+        Object.keys(updates).forEach((key)=>{
+            olds[key] = item[key]
+            news[key] = updates[key]
+            item[key] = updates[key]
         })
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, {
-            provider: this,
-            child:item,
-            propKey:defs[0].key,
-            oldValue:values[0], //TODO: this is a bug that will bite me later
-            newValue:values[0]
+            provider:this,
+            node:item,
+            newValues:news,
+            oldValues:olds
         })
     }
+
+        // if(def.type === 'number') value = parseFloat(value);
+
     setPropertyValueByName(item,key,value) {
-        const oldValue = item[key]
-        item[key] = value
-        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
-            provider: this,
-            child:item,
-            propKey:key,
-            oldValue:oldValue,
-            newValue:value
-        })
+        const updates = { }
+        updates[key] = value
+        this.setPropertyValues(item,updates)
     }
     createCustomEditor(item,def,provider) {
         if(def.key === 'src') return <URLFileEditor def={def} item={item} provider={provider}/>

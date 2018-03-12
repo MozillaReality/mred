@@ -3,7 +3,6 @@ import dagre from 'dagre'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID} from '../utils'
 import SelectionManager from "../SelectionManager";
-import GridEditorApp from '../GridEditorApp'
 import FamilyTreeApp from './FamilyTreeApp'
 
 export default class FamilyTree extends TreeItemProvider {
@@ -94,9 +93,26 @@ export default class FamilyTree extends TreeItemProvider {
         return node.children.find((ch)=>ch.id === path[1])
     }
 
-    setPropertyValue(item,def,value) {
-        item[def.key] = value
-        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, item)
+
+    setPropertyValues(item, updates) {
+        const olds = {}
+        const news = {}
+        Object.keys(updates).forEach((key)=>{
+            olds[key] = item[key]
+            news[key] = updates[key]
+            item[key] = updates[key]
+        })
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, {
+            provider:this,
+            node:item,
+            newValues:news,
+            oldValues:olds
+        })
+    }
+    setPropertyValueByName(item,key,value) {
+        const updates = { }
+        updates[key] = value
+        this.setPropertyValues(item,updates)
     }
 
     addPerson(per) {
@@ -134,6 +150,16 @@ const IdToNameRenderer = (props) => {
 }
 
 class FamilyTreeCanvas extends Component {
+    componentDidMount() {
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_ADDED,
+            (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,
+            (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+        this.props.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_REMOVED,
+            (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+        this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,
+            (item)=>  this.setState({root:this.props.provider.getSceneRoot()}))
+    }
     render() {
         const g = new dagre.graphlib.Graph()
         g.setGraph({})

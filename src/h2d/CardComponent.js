@@ -19,7 +19,7 @@ export default class CardComponent extends Component {
         }
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.h2)
     }
-    componentDidUnmount() {
+    componentWillUnmount() {
         this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
     }
 

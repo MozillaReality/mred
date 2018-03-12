@@ -54,6 +54,7 @@ class PropEditor extends Component {
         }
     }
     shouldComponentUpdate(nextProps, nextState) {
+        if(nextState.value !== this.state.value) return true
         if(this.props.def.getKey() === nextProps.def.getKey()) {
             if(this.props.def.getValue() === nextProps.def.getValue()) {
                 return false
@@ -131,6 +132,7 @@ class PropEditor extends Component {
                                                          onChange={this.changed}
                                                          onBlur={this.commit}
                                                          def={prop} obj={obj}
+                                                         onKeyPress={this.keypressed}
                                                          provider={this.props.provider}/>
         if (prop.isType('number'))  {
             let step = 1
@@ -171,6 +173,7 @@ class StringEditor extends Component {
                       value={this.props.value}
                       onChange={this.props.onChange}
                       onBlur={this.props.onBlur}
+                      onKeyPress={this.props.onKeyPress}
         />
     }
 }
@@ -460,7 +463,7 @@ class PropProxy {
         return this.def.type === type
     }
     setValue(value) {
-        return this.provider.setPropertyValue(this.item,this.def,value)
+        return this.provider.setPropertyValueByName(this.item,this.def.key,value)
     }
     hasHints() {
         return this.def.hints
