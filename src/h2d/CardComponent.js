@@ -4,8 +4,25 @@ import {makePoint} from '../utils'
 import DragHandler from '../texture/DragHandler'
 import { PopupManager, VBox}  from "appy-comps";
 import {BLOCK_STYLES, HORIZONTAL_ALIGNMENT} from "./HypercardEditor"
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 export default class CardComponent extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            child:null
+        }
+    }
+    componentDidMount() {
+        this.h2 = (e) => {
+            this.setState({child:e.child})
+        }
+        this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.h2)
+    }
+    componentDidUnmount() {
+        this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
+    }
+
     clicked(item) {
         // if(this.props.live && item.target) {
             // console.log("going to the target",item.target)

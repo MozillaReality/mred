@@ -20,12 +20,18 @@ button {
 }
 .grid {
     display: grid;
-    grid-template-columns: [left] 250px [center] auto [right] 400px;
     grid-template-rows: [top] 2em [middle] auto [bottom] 2em;
     padding:0;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
     background-color: var(--bd);
+}
+
+.grid .left-resize, .grid .right-resize {
+    background-color: var(--bd);
+    grid-row-start: top;
+    grid-row-end: bottom;
+    cursor: col-resize;
 }
 
 .toolbar {
@@ -50,7 +56,7 @@ button {
     grid-column-start: right;
 }
 .center {
-    grid-column: center/right
+    grid-column: center/right-resize
 }
 .middle {
     grid-row:middle/bottom;
