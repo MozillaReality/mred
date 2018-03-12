@@ -121,6 +121,11 @@ export default class FamilyTree extends TreeItemProvider {
         SelectionManager.setSelection(per)
     }
 
+    deletePerson(per) {
+        this.root.children = this.root.children.filter((ch)=>ch.id !== per.id)
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,per);
+    }
+
     findPersonById = (id) => this.root.children.find((per)=>per.id === id)
 
     makePerson(name) {

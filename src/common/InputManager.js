@@ -5,6 +5,7 @@ export default class InputManager {
         Z:90,
         LEFT_ARROW:37,
         RIGHT_ARROW:39,
+        BACKSPACE:8,
     }
     static MODIFIERS = {
         COMMAND:'COMMAND',

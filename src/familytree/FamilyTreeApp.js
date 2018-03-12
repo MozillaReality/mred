@@ -3,6 +3,7 @@ import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import PropSheet from '../PropSheet'
 import InputManager from '../common/InputManager'
 import TreeTable from '../TreeTable'
+import SelectionManager from '../SelectionManager'
 
 export default class FamilyTreeApp extends Component {
 
@@ -14,13 +15,20 @@ export default class FamilyTreeApp extends Component {
             key:InputManager.KEYS.S,
             modifiers:[InputManager.MODIFIERS.COMMAND]
         })
+        this.im.addKeyBinding({
+            id:'delete',
+            key:InputManager.KEYS.BACKSPACE,
+            modifiers:[]
+        })
         this.im.addListener('save',this.save)
+        this.im.addListener('delete',this.deletePerson)
     }
     componentDidMount() {
         this.im.attachKeyEvents(document)
     }
     save = () => this.props.provider.save()
     addPerson = ()=> this.props.provider.addPerson(this.props.provider.makePerson('unnamed'))
+    deletePerson = () => this.props.provider.deletePerson(SelectionManager.getSelection())
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
