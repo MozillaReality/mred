@@ -18,11 +18,39 @@ export default class DragHandler {
         this.uman = opts.undoManager
         this.opts = opts
 
-        const pt2 = this.worldToLocal(makePoint(e.clientX, e.clientY))
-        this.starts = SelectionManager.getFullSelection().map(node => {
-            const pos  = makePoint(node[this.xpropname], node[this.ypropname])
-            return pt2.minus(pos)
+
+        const nodes = SelectionManager.getFullSelection()
+
+        //create a rectangle for every node
+        const rects = nodes.map(node => {
+            return {
+                x: node[this.xpropname],
+                y: node[this.ypropname],
+                x2: node[this.xpropname] + opts.getWExtent(node),
+                y2: node[this.ypropname] + opts.getHExtent(node)
+            }
         })
+
+        //figure out the union of the rects to make the final bounds
+        const max  = rects[0]
+        rects.forEach(r=>{
+            if(r.x < max.x) max.x = r.x
+            if(r.x2 > max.x2) max.x2 = r.x2
+            if(r.y2 > max.y2) max.y2 = r.y2
+            if(r.y < max.y) max.y = r.y
+        })
+        max.w = max.x2-max.x
+        max.h = max.y2-max.y
+        this.bounds = max
+
+        //save the position of each node relative to the bounds
+        this.starts = nodes.map((n)=>{
+            return makePoint(n[this.xpropname],n[this.ypropname]).minus(makePoint(max.x,max.y))
+        })
+
+        //save the starting cursor relative to the bounds
+        const pt2 = this.worldToLocal(makePoint(e.clientX, e.clientY))
+        this.startOff = pt2.minus(makePoint(this.bounds.x,this.bounds.y))
 
 
         if(this.uman) this.uman.startGrouping()
@@ -42,56 +70,53 @@ export default class DragHandler {
         const xdef = defs.find((def)=>def.key === this.xpropname)
         const ydef = defs.find((def)=>def.key === this.ypropname)
         const THRESHOLD = 50
-        /*
+        const currentBounds = cursor.minus(this.startOff)
+        currentBounds.w = this.bounds.w
+        currentBounds.h = this.bounds.h
+
         if(this.opts.getXSnaps) {
             const snapsX = this.opts.getXSnaps(targets[0])
-            const matchX = snapsX.find((x)=>Math.abs(cursor2.x-x) < THRESHOLD)
-            // console.log("real x = ", cursor2.x, 'snap x = ', snapsX, matchX)
+            const matchX = snapsX.find((x)=>Math.abs(currentBounds.x-x) < THRESHOLD)
             if(typeof matchX !== 'undefined') {
-                cursor2.x = matchX
+                currentBounds.x = matchX
             }
-            if(this.opts.getWExtent) {
-                const w = this.opts.getWExtent(targets[0])
-                // console.log("w = ", w)
-                const matchW = snapsX.find((x)=>Math.abs((cursor2.x+w)-x) < THRESHOLD)
-                if(typeof matchW !== 'undefined') {
-                    // console.log("right bounds snap")
-                    cursor2.x = matchW - w
-                }
-
-                if(this.opts.getCenterXSnaps) {
-                    const matchCX = this.opts.getCenterXSnaps().find((x)=> Math.abs((cursor2.x+w/2) - x) < THRESHOLD)
-                    if(typeof matchCX !== 'undefined') {
-                        cursor2.x = matchCX - w/2
-                    }
+            const x2 = currentBounds.w + currentBounds.x
+            const matchX2 = snapsX.find((x)=>Math.abs(x2-x) < THRESHOLD)
+            if(typeof matchX2 !== 'undefined') {
+                currentBounds.x = matchX2 - currentBounds.w
+            }
+            if(this.opts.getCenterXSnaps) {
+                const w = currentBounds.w
+                const matchCX = this.opts.getCenterXSnaps().find((x)=> Math.abs((currentBounds.x+w/2) - x) < THRESHOLD)
+                if(typeof matchCX !== 'undefined') {
+                    currentBounds.x = matchCX - w/2
                 }
             }
         }
         if(this.opts.getYSnaps) {
-            const snapsY = this.opts.getYSnaps(this.target)
-            const matchY = snapsY.find((y)=>Math.abs(cursor2.y-y) < THRESHOLD)
-            // console.log("real y = ", cursor2.x, 'snap y = ', snapsY, matchY)
+            const snapsY = this.opts.getYSnaps(targets[0])
+            const matchY = snapsY.find((y)=>Math.abs(currentBounds.y-y) < THRESHOLD)
             if(typeof matchY !== 'undefined') {
-                cursor2.y = matchY
+                currentBounds.y = matchY
             }
-            if(this.opts.getHExtent) {
-                const h = this.opts.getHExtent(this.target)
-                // console.log("h = ", h)
-                const matchH = snapsY.find((y)=>Math.abs((cursor2.y+h)-y) < THRESHOLD)
-                if(typeof matchH !== 'undefined') {
-                    // console.log("bottom bounds snap")
-                    cursor2.y = matchH - h
-                }
-                if(this.opts.getCenterYSnaps) {
-                    const matchCY = this.opts.getCenterYSnaps().find((y)=> Math.abs((cursor2.y+h/2) - y) < THRESHOLD)
-                    if(typeof matchCY !== 'undefined') {
-                        cursor2.y = matchCY - h/2
-                    }
+
+            const y2 = currentBounds.h + currentBounds.y
+            const matchY2 = snapsY.find((y)=>Math.abs(y2-y)<THRESHOLD)
+            if(typeof matchY2 !== 'undefined') {
+                console.log("should bottom snap",y2,matchY2)
+                currentBounds.y = matchY2-currentBounds.h
+            }
+            if(this.opts.getCenterYSnaps) {
+                const h = currentBounds.h
+                const matchCY = this.opts.getCenterYSnaps().find((y)=> Math.abs((currentBounds.y+h/2) - y) < THRESHOLD)
+                if(typeof matchCY !== 'undefined') {
+                    currentBounds.y = matchCY - h/2
                 }
             }
-        }*/
+        }
 
         targets.forEach((target,i)=>{
+            // const newPos = currentBounds.add(this.starts[i])
             const newPos = cursor.minus(this.starts[i])
             const defs = [xdef,ydef]
             const values = [newPos.x, newPos.y]
