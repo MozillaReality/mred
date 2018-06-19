@@ -353,6 +353,7 @@ export default class PropSheet extends Component {
         const props = this.calculateProps();
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
+            if(prop.isHidden()) return <li key={prop.getKey()}>hidden</li>
             return <li key={prop.getKey()}>
                 <label>{prop.getName()}</label>
                 {this.renderIndeterminate(prop,i)}
@@ -406,6 +407,7 @@ class MultiPropProxy {
     first() {
         return this.subs[0]
     }
+    isHidden() { return this.first().isHidden() }
     getName()  { return this.first().getName()  }
     getValue() { return this.first().getValue() }
     isCustom() { return this.first().isCustom() }
@@ -440,6 +442,9 @@ class PropProxy {
     }
     getKey() {
         return this.def.key
+    }
+    isHidden() {
+        return this.def.hasOwnProperty('hidden') && this.def.hidden === true
     }
     getName() {
         return this.def.name

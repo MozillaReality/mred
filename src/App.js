@@ -14,21 +14,22 @@ import TextureEditor from "./texture/TextureEditor"
 import {toQueryString} from './utils'
 import {MenuPopup} from './GridEditorApp'
 import GLTFInspector from './gltfinspector/GLTFInspector'
+import {Editor360Provider} from './360/Editor360Editor'
 
 export default class App extends Component {
     constructor(props) {
         super(props)
         this.providers = {}
-        this.addProvider(new Hypercard3DEditor())
-        this.addProvider(new HypercardEditor())
-        this.addProvider(new SVGEditor())
-        this.addProvider(new FamilyTree())
-        this.addProvider(new TextureEditor())
-        this.addProvider(new GLTFInspector())
+        // this.addProvider(new Hypercard3DEditor())
+        // this.addProvider(new HypercardEditor())
+        // this.addProvider(new SVGEditor())
+        // this.addProvider(new FamilyTree())
+        // this.addProvider(new TextureEditor())
+        // this.addProvider(new GLTFInspector())
+        this.addProvider(new Editor360Provider())
         this.state = {
-            provider: this.providers.familytree,
-            providerName: 'familytree',
-            // selectedTool: this.providers.svg.getTools()[0]
+            provider: null,//this.providers.familytree,
+            providerName: '360',
         }
     }
     addProvider(prov) {
@@ -36,7 +37,7 @@ export default class App extends Component {
     }
 
     componentDidMount() {
-        let prov = 'hypercard-3d'
+        let prov = '360'
         if(this.props.options.doctype) prov = this.props.options.doctype
         this.switchProvider(prov)
     }
@@ -72,6 +73,7 @@ export default class App extends Component {
         )
     }
     render() {
+        if(!this.state.provider) return <h1>no provider</h1>
         const content = this.state.provider.getApp()
         return (
             <VBox fill>
