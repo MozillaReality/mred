@@ -5,6 +5,8 @@ import {genID, shallowCopy} from '../utils'
 import TreeTable from '../TreeTable'
 import PropSheet from '../PropSheet'
 import Selection from '../SelectionManager'
+import * as THREE from 'three'
+import OrbitalControls from '../h3d/OrbitControls'
 
 
 
@@ -51,12 +53,6 @@ const PROP_DEFS = {
         type:'number',
         locked:false,
     },
-    horizontalAlignment: {
-        name: 'Horiz Align',
-        key:'horizontalAlignment',
-        type:'enum',
-        locked: false
-    }
 }
 
 
@@ -190,16 +186,34 @@ export class Editor360Provider extends TreeItemProvider {
         if(sel.type === 'layer') return sel
         return this.findLayerParent(sel)
     }
+    generateSelectionPath(node) {
+        if(!node || !node.id) return []
+        if(!node.parent) return [node.id]
+        return this.generateSelectionPath(node.parent).concat([node.id])
+    }
+    findNodeFromSelectionPath(node,path) {
+        const part = path[0]
+        if(node.id === part) {
+            if(path.length <= 1) return node
+            for(let i=0; i<node.children.length; i++) {
+                const child = node.children[i]
+                const res = this.findNodeFromSelectionPath(child,path.slice(1))
+                if(res) return res
+            }
+        }
+        return null
+    }
 
 
 
 
-    /* ========== renderers ============ */
+
+        /* ========== renderers ============ */
     getRendererForItem(item) {
         if(item.type === 'stack') return <div><i className="fa fa-exclamation-triangle"/>Stack</div>
         if(item.type === 'scene') return <div><i className="fa fa-street-view"/>{item.title}</div>
         if(item.type === 'layer') return <div><i className="fa fa-cubes"/>{item.title}</div>
-        if(item.type === 'primitive') return <div><i className="fa fa-cube"/>Stack</div>
+        if(item.type === 'primitive') return <div><i className="fa fa-cube"/>{item.title}</div>
         return <div><i className="fa fa-diamond"/>foo</div>
     }
 
@@ -236,6 +250,7 @@ export class Editor360App extends Component {
                 <button className="fa fa-repeat" onClick={this.redo}/>
                 <Spacer/>
                 <button className="fa fa-play" onClick={this.preview}/>
+                <button className="fa fa-save" onClick={this.save}/>
             </Toolbar>
 
             <Panel center middle scroll>
@@ -255,6 +270,8 @@ export class Editor360App extends Component {
 
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
+    preview = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
+    save = () => this.prov().save()
 
 }
 
@@ -262,5 +279,124 @@ export class Editor360App extends Component {
 export class Editor3602DCanvas extends Component {
     render() {
         return <div>this is the 2d overhead view</div>
+    }
+}
+
+export class Preview360 extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            doc:null,
+            scene:null
+        }
+    }
+    componentDidMount() {
+        this.provider = new Editor360Provider()
+        this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
+        this.provider.loadDoc(this.props.options.doc)
+
+        let w = window.innerWidth - 4
+        let h = window.innerHeight - 4
+        this.clock = new THREE.Clock()
+        this.scene = new THREE.Scene()
+        this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
+        this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
+        this.renderer.setClearColor(0xffffff,1)
+        this.renderer.setSize(w, h)
+        this.camera.position.set(0, 1, 3)
+        this.camera.lookAt(new THREE.Vector3(0,0,0))
+        this.rebuildScene(this.state.scene)
+        this.startRepaint()
+    }
+
+    startRepaint() {
+        const repaint = () => {
+            requestAnimationFrame(repaint)
+            // this.controls.update();
+            // const delta = this.clock.getDelta(0)
+            // if(this.mixer) {
+            //     this.mixer.update(delta)
+            // }
+            // console.log('rendering')
+            this.renderer.render(this.scene, this.camera)
+        }
+        repaint()
+    }
+
+    structureChanged = () => {
+        const doc = this.provider.getSceneRoot()
+        this.setState({
+            doc:doc,
+            scene:doc.children[0]
+        })
+        this.rebuildScene(doc.children[0])
+    }
+
+    buildNode(node) {
+        let obj = null;
+
+        console.log("parsing node",node.type)
+        if (node.type === 'layer') {
+            obj = new THREE.Group()
+            // console.log('added the layer group')
+            node.children.forEach((nd) => obj.add(this.buildNode(nd)))
+            return obj
+        }
+
+        if (node.type === 'primitive') {
+            if(node.primitive === 'cube') {
+                const geometry = new THREE.BoxGeometry(node.width, node.height, node.depth);
+                // const color = parseInt(node.color.substring(1), 16)
+                const color = 'red'
+                const material = new THREE.MeshLambertMaterial({color: color})
+                obj = new THREE.Mesh(geometry, material)
+            }
+        }
+
+        if(!obj) return console.log(`don't know how to handle node of type '${node.type}'`)
+        console.log("node is",node)
+        // obj.position.x = node.x
+        // obj.position.y = node.y
+        // obj.position.z = node.z
+        obj._ge_id = node.id
+        return obj
+        // this.scene.add(obj)
+        // this.animatable.push(cube)
+    }
+
+    rebuildScene(scene) {
+        console.log("building the scene",scene)
+        if (!this.scene) return
+        if (!this.scene.children) return
+        //remove all children
+        while (this.scene.children.length) this.scene.remove(this.scene.children[0])
+        // this.animatable = []
+        if (scene) scene.children.forEach((node) => this.scene.add(this.buildNode(node)))
+        // if (scene) scene.children.forEach((node) => this.buildAnimation(node,scene))
+
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7)
+        this.scene.add(ambient)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
+        directionalLight.position.x = -10
+        this.scene.add(directionalLight)
+
+
+        const geometry = new THREE.BoxGeometry(1,1,1);//, node.size, node.size)
+        // const color = parseInt(node.color.substring(1), 16)
+        // const color = 'green'
+        // const material = new THREE.MeshLambertMaterial({color: color})
+        // const cube = new THREE.Mesh(geometry, material)
+        // this.scene.add(cube)
+    }
+
+
+    render() {
+        let w = 800
+        let h = 500
+        // if (this.props.fillScreen === true) {
+            w = '100%'
+            h = '100%'
+        // }
+        return <canvas width={w} height={h} ref={(canvas) => this.canvas = canvas}/>
     }
 }

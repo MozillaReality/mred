@@ -86,7 +86,9 @@ class PropEditor extends Component {
             }
         }
         this.setState({value:v})
-        if(!isNaN(parseFloat(v))) {
+        v = parseFloat(v)
+        if(!isNaN(v)) {
+            console.log("setting",typeof v)
             def.setValue(v)
         }
     }
