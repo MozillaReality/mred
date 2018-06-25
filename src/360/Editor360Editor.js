@@ -4,7 +4,7 @@ import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID, shallowCopy} from '../utils'
 import TreeTable from '../TreeTable'
 import PropSheet from '../PropSheet'
-import Selection from '../SelectionManager'
+import Selection, {SELECTION_MANAGER} from '../SelectionManager'
 import * as THREE from 'three'
 import OrbitalControls from '../h3d/OrbitControls'
 
@@ -76,6 +76,18 @@ export class Editor360Provider extends TreeItemProvider {
 
     getDocType() {
         return "360"
+    }
+    setDocument(doc,docid) {
+        super.setDocument(doc, docid)
+        this.id_index = {}
+        this.root.children.forEach(node => this.setParent(node,this.root))
+    }
+    setParent(node,parent) {
+        this.id_index[node.id] = node
+        node.parent = parent
+        if(node.children) {
+            node.children.forEach(n => this.setParent(n,node))
+        }
     }
     makeEmptyRoot() {
         return {
@@ -277,8 +289,33 @@ export class Editor360App extends Component {
 
 
 export class Editor3602DCanvas extends Component {
+    componentDidMount() {
+        Selection.on(SELECTION_MANAGER.CHANGED,()=>{
+            console.log("selection changed")
+            this.setState({'foo':''})
+        })
+    }
+    prov = () => this.props.provider
     render() {
-        return <div>this is the 2d overhead view</div>
+        const scene = this.prov().findSelectedScene()
+        console.log("rendering",scene)
+        return this.renderNode(scene,0)
+    }
+    renderNode(node,i) {
+        if(node.type === 'scene') {
+            return <div key={i}>scene{node.children.map((nd,i)=> {
+                return this.renderNode(nd, i)
+            })}</div>
+        }
+        if(node.type === 'layer') {
+            return <div key={i}>layer{node.children.map((nd,i)=> {
+                return this.renderNode(nd, i)
+            })}</div>
+        }
+        if(node.type === 'primitive') {
+            return <div key={i}>prim:{node.primitive}</div>
+        }
+        return <div key={i}>unknown</div>
     }
 }
 
