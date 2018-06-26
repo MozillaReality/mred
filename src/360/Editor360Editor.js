@@ -67,6 +67,18 @@ const PROP_DEFS = {
         min: 0,
         max: 360
     },
+    text: {
+        name:'text',
+        key:'text',
+        type:'string',
+        locked:false
+    },
+    fontSize: {
+        name:'fontSize',
+        key:'fontSize',
+        type:'number',
+        locked:false
+    }
 }
 
 
@@ -137,6 +149,18 @@ export class Editor360Provider extends TreeItemProvider {
             depth:1,
             angle:0,
             elevation:0,
+            title:'Cube',
+        }
+    }
+    createText() {
+        return {
+            id: this.genID('text'),
+            type:'primitive',
+            primitive:'text',
+            angle:0,
+            elevation:0,
+            text:'some text',
+            fontSize:36,
             title:'Cube',
         }
     }
@@ -241,7 +265,14 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'stack') return <div><i className="fa fa-exclamation-triangle"/>Stack</div>
         if(item.type === 'scene') return <div><i className="fa fa-street-view"/>{item.title}</div>
         if(item.type === 'layer') return <div><i className="fa fa-cubes"/>{item.title}</div>
-        if(item.type === 'primitive') return <div><i className="fa fa-cube"/>{item.title}</div>
+        if(item.type === 'primitive') {
+            if(item.primitive === 'cube') {
+                return <div><i className="fa fa-cube"/>{item.title}</div>
+            }
+            if(item.primitive === 'text') {
+                return <div><i className="fa fa-text"/>{item.text}</div>
+            }
+        }
         return <div><i className="fa fa-diamond"/>foo</div>
     }
 }
@@ -294,7 +325,8 @@ export class Editor360App extends Component {
 
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
-    preview = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
+    addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
+    preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()
 
 }

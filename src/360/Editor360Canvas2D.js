@@ -40,6 +40,14 @@ export default class Editor360Canvas2D extends Component {
                 }
                 return <div className="primitive cube" style={style}>cube</div>
             }
+            if(node.primitive === 'text') {
+                const style = {
+                    width: (node.width*50)+'px',
+                    height: (node.height*50)+'px',
+                    left: (node.angle)*2+'px'
+                }
+                return <div className="primitive text" style={style}>{node.text}</div>
+            }
             return <div className="primitive" key={i}>prim:{node.primitive}</div>
 
         }

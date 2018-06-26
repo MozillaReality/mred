@@ -1,5 +1,5 @@
 .canvas-360 {
-    border: 1px solid green;
+    border: 0px solid green;
     position: relative;
     width: 720px;
     height: 600px;
@@ -8,7 +8,7 @@
 .canvas-360 .layer {
     border: 1px solid blue;
     position: absolute;
-    width: 600px;
+    width: 720px;
     height: 150px;
 }
 
