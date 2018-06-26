@@ -34,6 +34,7 @@ export default class App360 extends Component {
                 <button className="fa fa-text-width" onClick={this.addText}/>
                 <button className="fa fa-image" onClick={this.addImageObject}/>
                 <button className="fa fa-imdb" onClick={this.add360BG}/>
+                <button className="fa fa-battery" onClick={this.addNavAction}/>
                 <button className="fa fa-close" onClick={this.deleteObject}/>
                 <Spacer/>
                 {/*<button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>*/}
@@ -63,13 +64,12 @@ export default class App360 extends Component {
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
+    addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()
-    upload2DImage = () => {
-        DialogManager.show(<Upload2DImageDialog provider={this.prov()}/>)
-    }
+    upload2DImage = () =>  DialogManager.show(<Upload2DImageDialog provider={this.prov()}/>)
     upload360Image = () => DialogManager.show(<Upload360ImageDialog provider={this.prov()}/>)
 
 }

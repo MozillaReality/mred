@@ -86,6 +86,12 @@ const PROP_DEFS = {
         key:'imageid',
         type:'enum',
         locked:false,
+    },
+    targetScene: {
+        name:'target',
+        key:'targetScene',
+        type:'enum',
+        locked:false
     }
 
 }
@@ -174,6 +180,7 @@ export class Editor360Provider extends TreeItemProvider {
             angle:0,
             elevation:0,
             title:'Cube',
+            children:[],
         }
     }
     createText() {
@@ -186,6 +193,7 @@ export class Editor360Provider extends TreeItemProvider {
             text:'some text',
             fontSize:36,
             title:'Cube',
+            children:[],
         }
     }
     createImageObject() {
@@ -197,6 +205,7 @@ export class Editor360Provider extends TreeItemProvider {
             elevation:0,
             imageid:null,
             title:'Image',
+            children:[],
         }
     }
     create360Background() {
@@ -208,7 +217,16 @@ export class Editor360Provider extends TreeItemProvider {
             title:'Image BG',
         }
     }
+    createNavAction() {
+        return {
+            id: this.genID('nav-action'),
+            type:'nav-action',
+            targetScene:null,
+            title:'Navigate To'
+        }
+    }
     appendChild(parent,item) {
+        if(!parent) throw new Error("cannot append to a null parent")
         this.id_index[item.id] = item
         item.parent = parent
         parent.children.push(item);
@@ -236,6 +254,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     getAssetsRoot() {
         return this.getSceneRoot().children[1]
+    }
+    getScenes() {
+        return this.getSceneRoot().children[0].children
     }
 
 
@@ -281,13 +302,15 @@ export class Editor360Provider extends TreeItemProvider {
     }
 
     getValuesForEnum(key,obj) {
-        if(key === PROP_DEFS.imageid.key) {
-            return this.getAssetsRoot().children.map(ass=>ass.id)
-        }
+        if(key === PROP_DEFS.imageid.key) return  this.getAssetsRoot().children.map(ass=>ass.id)
+        if(key === PROP_DEFS.targetScene.key) return this.getScenes().map(sc=>sc.id)
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.imageid.key) {
-            return IdToNameRenderer
+            return AssetItemRenderer
+        }
+        if(key === PROP_DEFS.targetScene.key) {
+            return ActionItemRenderer
         }
     }
 
@@ -317,6 +340,11 @@ export class Editor360Provider extends TreeItemProvider {
         if(sel.type === 'layer') return sel
         return this.findLayerParent(sel)
     }
+    findSelectedPrimitive() {
+        let sel = Selection.getSelection()
+        if(sel.type === 'primitive') return sel
+        return null
+    }
     generateSelectionPath(node) {
         if(!node || !node.id) return []
         if(!node.parent) return [node.id]
@@ -336,6 +364,12 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findAssetById(id) {
         return this.getAssetsRoot().children.find(a => a.id === id)
+    }
+    findSceneById(id) {
+        return this.getScenes().find(s => s.id === id)
+    }
+    findNodeById(id) {
+        return this.id_index[id]
     }
 
 
@@ -363,14 +397,20 @@ export class Editor360Provider extends TreeItemProvider {
                 return <div><i className="fa fa-image"/> {item.title} 360 </div>
             }
         }
+        if(item.title) return <div><i className="fa fa-diamond"/> {item.title}</div>
         return <div><i className="fa fa-diamond"/> unknown</div>
     }
 }
 
 
-const IdToNameRenderer = (props) => {
+const AssetItemRenderer = (props) => {
     let value = "---"
-    console.log("props",props)
     if(props.value && props.provider) value = props.provider.findAssetById(props.value).assetid
+    return <b>{value}</b>
+}
+
+const ActionItemRenderer = (props) => {
+    let value = "---"
+    if(props.value && props.provider) value = props.provider.findSceneById(props.value).title
     return <b>{value}</b>
 }

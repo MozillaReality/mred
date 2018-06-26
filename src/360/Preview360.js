@@ -15,6 +15,7 @@ export default class Preview360 extends Component {
 
     componentDidMount() {
         window.addEventListener('keydown',this.keyDown)
+        this.o3d_to_node = {}
 
         var loader = new THREE.FontLoader();
         loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
@@ -30,6 +31,7 @@ export default class Preview360 extends Component {
         let w = window.innerWidth - 4
         let h = window.innerHeight - 4
         this.clock = new THREE.Clock()
+        this.raycaster = new THREE.Raycaster()
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
@@ -38,7 +40,27 @@ export default class Preview360 extends Component {
         this.camera.position.set(0, 1, 3)
         this.camera.lookAt(new THREE.Vector3(0,1,0))
         this.rebuildScene(this.state.scene)
+        this.canvas.addEventListener('click',this.clicked)
         this.startRepaint()
+    }
+
+    clicked = (e) => {
+        const mouse = new THREE.Vector2();
+        const bounds = this.canvas.getBoundingClientRect()
+        mouse.x =   ((e.clientX-bounds.left) /this.canvas.width  ) * 2 - 1;
+        mouse.y = - ((e.clientY-bounds.top)  /this.canvas.height ) * 2 + 1;
+        this.raycaster.setFromCamera( mouse, this.camera );
+        const intersects = this.raycaster.intersectObjects( this.scene.children, true );
+        intersects.forEach((it)=>{
+            const node = this.getNodeForObject3D(it.object)
+            if(node && node.children && node.children.length >= 1) {
+                node.children.forEach((act)=>{
+                    if(act.type === 'nav-action') {
+                        this.navigateToScene(this.provider.findSceneById(act.targetScene))
+                    }
+                })
+            }
+        })
     }
 
     startRepaint() {
@@ -115,10 +137,17 @@ export default class Preview360 extends Component {
         obj.position.x =  Math.sin(node.angle/180*Math.PI)*2
         obj.position.z = -Math.cos(node.angle/180*Math.PI)*2
         obj.position.y = node.elevation*0.1
+        this.o3d_to_node[obj.id] = node.id
         obj._ge_id = node.id
         return obj
     }
 
+    getNodeForObject3D(obj) {
+        if(this.o3d_to_node[obj.id]) {
+            return this.provider.findNodeById(this.o3d_to_node[obj.id])
+        }
+        return null
+    }
     rebuildScene(scene) {
         if (!this.scene) return
         if (!this.scene.children) return
@@ -159,5 +188,9 @@ export default class Preview360 extends Component {
 
     render() {
         return <canvas width="100%" height='100%' ref={(canvas) => this.canvas = canvas}/>
+    }
+
+    navigateToScene(scene) {
+        console.log("navigating to the scene",scene)
     }
 }
