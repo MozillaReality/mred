@@ -1,0 +1,23 @@
+.canvas-360 {
+    border: 1px solid green;
+    position: relative;
+    width: 720px;
+    height: 600px;
+}
+
+.canvas-360 .layer {
+    border: 1px solid blue;
+    position: absolute;
+    width: 600px;
+    height: 150px;
+}
+
+.canvas-360 .primitive {
+    border: 1px solid red;
+    position: absolute;
+    top: 50px;
+    left: 50px;
+}
+
+.canvas-360 .primitive.cube {
+}

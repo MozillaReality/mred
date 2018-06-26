@@ -6,9 +6,7 @@ import TreeTable from '../TreeTable'
 import PropSheet from '../PropSheet'
 import Selection, {SELECTION_MANAGER} from '../SelectionManager'
 import * as THREE from 'three'
-import OrbitalControls from '../h3d/OrbitControls'
-
-
+import Editor360Canvas2D from './Editor360Canvas2D'
 
 const PROP_DEFS = {
     id: {
@@ -52,6 +50,22 @@ const PROP_DEFS = {
         key:'height',
         type:'number',
         locked:false,
+    },
+    elevation: {
+        name:'elevation',
+        key:'elevation',
+        type:'number',
+        locked:false,
+        min: -10,
+        max: 10
+    },
+    angle: {
+        name:'angle',
+        key:'angle',
+        type:'number',
+        locked:false,
+        min: 0,
+        max: 360
     },
 }
 
@@ -121,6 +135,8 @@ export class Editor360Provider extends TreeItemProvider {
             width:1,
             height:1,
             depth:1,
+            angle:0,
+            elevation:0,
             title:'Cube',
         }
     }
@@ -228,11 +244,7 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'primitive') return <div><i className="fa fa-cube"/>{item.title}</div>
         return <div><i className="fa fa-diamond"/>foo</div>
     }
-
-
-
 }
-
 
 export class Editor360App extends Component {
     constructor(props) {
@@ -266,7 +278,7 @@ export class Editor360App extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <Editor3602DCanvas provider={this.prov()}/>
+                <Editor360Canvas2D provider={this.prov()}/>
             </Panel>
 
 
@@ -287,37 +299,6 @@ export class Editor360App extends Component {
 
 }
 
-
-export class Editor3602DCanvas extends Component {
-    componentDidMount() {
-        Selection.on(SELECTION_MANAGER.CHANGED,()=>{
-            console.log("selection changed")
-            this.setState({'foo':''})
-        })
-    }
-    prov = () => this.props.provider
-    render() {
-        const scene = this.prov().findSelectedScene()
-        console.log("rendering",scene)
-        return this.renderNode(scene,0)
-    }
-    renderNode(node,i) {
-        if(node.type === 'scene') {
-            return <div key={i}>scene{node.children.map((nd,i)=> {
-                return this.renderNode(nd, i)
-            })}</div>
-        }
-        if(node.type === 'layer') {
-            return <div key={i}>layer{node.children.map((nd,i)=> {
-                return this.renderNode(nd, i)
-            })}</div>
-        }
-        if(node.type === 'primitive') {
-            return <div key={i}>prim:{node.primitive}</div>
-        }
-        return <div key={i}>unknown</div>
-    }
-}
 
 export class Preview360 extends Component {
     constructor(props) {
