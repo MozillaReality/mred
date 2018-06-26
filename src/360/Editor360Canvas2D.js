@@ -36,7 +36,8 @@ export default class Editor360Canvas2D extends Component {
                 const style = {
                     width: (node.width*50)+'px',
                     height: (node.height*50)+'px',
-                    left: (node.angle)*2+'px'
+                    left: (node.angle)*2+'px',
+                    top: (50-(node.elevation)*3)+'px',
                 }
                 return <div className="primitive cube" style={style}>cube</div>
             }
@@ -44,7 +45,8 @@ export default class Editor360Canvas2D extends Component {
                 const style = {
                     width: (node.width*50)+'px',
                     height: (node.height*50)+'px',
-                    left: (node.angle)*2+'px'
+                    left: (node.angle)*2+'px',
+                    top: (50-(node.elevation)*3)+'px',
                 }
                 return <div className="primitive text" style={style}>{node.text}</div>
             }

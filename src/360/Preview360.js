@@ -97,6 +97,7 @@ export default class Preview360 extends Component {
 
         obj.position.x =  Math.sin(node.angle/180*Math.PI)*2
         obj.position.z = -Math.cos(node.angle/180*Math.PI)*2
+        obj.position.y = node.elevation*0.1
         obj._ge_id = node.id
         return obj
     }
