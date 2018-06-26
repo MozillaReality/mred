@@ -24,7 +24,7 @@ export default class App360 extends Component {
 
             <Toolbar left bottom>
                 <button className="fa fa-image" onClick={this.upload2DImage}>2D</button>
-                <button className="fa fa-image" onClick={this.add360Image}>360</button>
+                <button className="fa fa-image" onClick={this.upload360Image}>360</button>
             </Toolbar>
 
 
@@ -33,6 +33,7 @@ export default class App360 extends Component {
                 <button className="fa fa-square" onClick={this.addCube}/>
                 <button className="fa fa-text-width" onClick={this.addText}/>
                 <button className="fa fa-image" onClick={this.addImageObject}/>
+                <button className="fa fa-imdb" onClick={this.add360BG}/>
                 <button className="fa fa-close" onClick={this.deleteObject}/>
                 <Spacer/>
                 {/*<button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>*/}
@@ -63,11 +64,13 @@ export default class App360 extends Component {
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
+    add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()
     upload2DImage = () => {
         DialogManager.show(<Upload2DImageDialog provider={this.prov()}/>)
     }
+    upload360Image = () => DialogManager.show(<Upload360ImageDialog provider={this.prov()}/>)
 
 }
 
@@ -89,6 +92,41 @@ class Upload2DImageDialog extends Component {
         this.props.provider.uploadFile(this.state.file).then((ans)=>{
             console.log("uploaded asset",ans)
             const asset = this.props.provider.create2DImageAssetWithId(ans.id)
+            this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
+            DialogManager.hide()
+        })
+    }
+    render() {
+        return <Dialog visible={true}>
+            <header>upload an image</header>
+            <input type="file" onChange={this.choseFile}/>
+            <label>{this.state.name}</label>
+
+            <footer>
+                <button>cancel</button>
+                <button onClick={this.uploadFile}>upload</button>
+            </footer>
+        </Dialog>
+    }
+}
+
+class Upload360ImageDialog extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            file: null,
+            name: ''
+        }
+    }
+    choseFile = (e) => {
+        this.setState({
+            file:e.target.files[0],
+            name:e.target.files[0].name
+        })
+    }
+    uploadFile = () => {
+        this.props.provider.uploadFile(this.state.file).then((ans)=>{
+            const asset = this.props.provider.create360ImageAssetWithId(ans.id)
             this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
             DialogManager.hide()
         })

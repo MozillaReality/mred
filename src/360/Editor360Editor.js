@@ -199,6 +199,15 @@ export class Editor360Provider extends TreeItemProvider {
             title:'Image',
         }
     }
+    create360Background() {
+        return {
+            id: this.genID('360-bg'),
+            type:'primitive',
+            primitive:'image360',
+            imageid:null,
+            title:'Image BG',
+        }
+    }
     appendChild(parent,item) {
         this.id_index[item.id] = item
         item.parent = parent
@@ -214,7 +223,15 @@ export class Editor360Provider extends TreeItemProvider {
             id:this.genID('asset'),
             type:'asset',
             assetid:id,
-            title:'some asset'
+            title:'some 2d image asset'
+        }
+    }
+    create360ImageAssetWithId(id) {
+        return {
+            id:this.genID('asset'),
+            type:'asset',
+            assetid:id,
+            title:'some 360 image asset'
         }
     }
     getAssetsRoot() {
@@ -340,10 +357,13 @@ export class Editor360Provider extends TreeItemProvider {
                 return <div><i className="fa fa-font"/> {item.text}</div>
             }
             if(item.primitive === 'image2d') {
-                return <div><i className="fa fa-image"/> image</div>
+                return <div><i className="fa fa-image"/> {item.title} 2d </div>
+            }
+            if(item.primitive === 'image360') {
+                return <div><i className="fa fa-image"/> {item.title} 360 </div>
             }
         }
-        return <div><i className="fa fa-diamond"/>foo</div>
+        return <div><i className="fa fa-diamond"/> unknown</div>
     }
 }
 

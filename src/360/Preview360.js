@@ -95,6 +95,16 @@ export default class Preview360 extends Component {
                 const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 obj = new THREE.Mesh(geometry, material)
             }
+            if(node.primitive === 'image360') {
+                const geometry = new THREE.SphereGeometry(1000, 25, 25);
+                const img = this.provider.findAssetById(node.imageid)
+                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.assetid)
+                const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
+                material.side = THREE.BackSide;
+                obj = new THREE.Mesh(geometry, material)
+                obj._ge_id = node.id
+                return obj
+            }
         }
 
         if(!obj) {

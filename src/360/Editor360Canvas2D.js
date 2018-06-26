@@ -63,6 +63,24 @@ export default class Editor360Canvas2D extends Component {
                     <img src={`${SERVER_URL_ASSETS}${img.assetid}`} width={50} height={50}/>
                 </div>
             }
+            if(node.primitive === 'image360') {
+                const w = 300
+                const h = 150
+                const style = {
+                    width: w+'px',
+                    height: h+'px',
+                    left:'0px',
+                    top:'0px',
+                }
+                const img = this.props.provider.findAssetById(node.imageid)
+                if(img) {
+                    return <div className="primitive image2d" style={style} key={i}>
+                        <img src={`${SERVER_URL_ASSETS}${img.assetid}`} width={w} height={h}/>
+                    </div>
+                } else {
+                    return <div className="primitive image2d" style={style} key={i}>img broken</div>
+                }
+            }
             return <div className="primitive" key={i}>prim:{node.primitive}</div>
 
         }
