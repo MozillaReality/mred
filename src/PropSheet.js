@@ -196,7 +196,7 @@ const EnumPicker = (props) => {
 
 const DefaultEnumRenderer = (props) => {
     let value = ""
-    if(typeof props.value !== 'undefined') {
+    if(typeof props.value !== 'undefined' && props.value !== null) {
         value = props.value.toString()
     }
     return <span>{value}</span>

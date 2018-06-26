@@ -243,4 +243,12 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     hasChildren = (item) => item && item.children && item.children.length
     getChildren = (item) => item.children
 
+
+    getValuesForEnum() {
+        throw new Error("getValuesForEnum not implemented")
+    }
+    getRendererForEnum(key,obj) {
+        throw new Error("getRendererForEnum not implemented")
+    }
+
 }

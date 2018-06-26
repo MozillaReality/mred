@@ -40,7 +40,7 @@ export default class Editor360Canvas2D extends Component {
                     left: (node.angle)*2+'px',
                     top: (50-(node.elevation)*3)+'px',
                 }
-                return <div className="primitive cube" style={style}>cube</div>
+                return <div className="primitive cube" style={style} key={i}>cube</div>
             }
             if(node.primitive === 'text') {
                 const style = {
@@ -49,7 +49,16 @@ export default class Editor360Canvas2D extends Component {
                     left: (node.angle)*2+'px',
                     top: (50-(node.elevation)*3)+'px',
                 }
-                return <div className="primitive text" style={style}>{node.text}</div>
+                return <div className="primitive text" style={style} key={i}>{node.text}</div>
+            }
+            if(node.primitive === 'image2d') {
+                const style = {
+                    width: (node.width*50)+'px',
+                    height: (node.height*50)+'px',
+                    left: (node.angle)*2+'px',
+                    top: (50-(node.elevation)*3)+'px',
+                }
+                return <div className="primitive image2d" style={style} key={i}>{node.imageid}</div>
             }
             return <div className="primitive" key={i}>prim:{node.primitive}</div>
 

@@ -80,6 +80,12 @@ const PROP_DEFS = {
         key:'assetid',
         type:'string',
         locked:true
+    },
+    imageid: {
+        name: 'Image ID',
+        key:'imageid',
+        type:'enum',
+        locked:false,
     }
 
 }
@@ -182,6 +188,17 @@ export class Editor360Provider extends TreeItemProvider {
             title:'Cube',
         }
     }
+    createImageObject() {
+        return {
+            id: this.genID('image-object'),
+            type:'primitive',
+            primitive:'image2d',
+            angle:0,
+            elevation:0,
+            imageid:null,
+            title:'Image',
+        }
+    }
     appendChild(parent,item) {
         this.id_index[item.id] = item
         item.parent = parent
@@ -246,6 +263,18 @@ export class Editor360Provider extends TreeItemProvider {
         this.setPropertyValues(item,updates)
     }
 
+    getValuesForEnum(key,obj) {
+        if(key === PROP_DEFS.imageid.key) {
+            return this.getAssetsRoot().children.map(ass=>ass.id)
+        }
+    }
+    getRendererForEnum(key,obj) {
+        if(key === PROP_DEFS.imageid.key) {
+            return IdToNameRenderer
+        }
+    }
+
+
     /* ========= selection =========== */
     findSceneParent(o) {
         if(o.type === 'scene') return o
@@ -288,7 +317,9 @@ export class Editor360Provider extends TreeItemProvider {
         }
         return null
     }
-
+    findAssetById(id) {
+        return this.getAssetsRoot().children.find(a => a.id === id)
+    }
 
 
 
@@ -308,9 +339,18 @@ export class Editor360Provider extends TreeItemProvider {
             if(item.primitive === 'text') {
                 return <div><i className="fa fa-font"/> {item.text}</div>
             }
+            if(item.primitive === 'image2d') {
+                return <div><i className="fa fa-image"/> image</div>
+            }
         }
         return <div><i className="fa fa-diamond"/>foo</div>
     }
 }
 
 
+const IdToNameRenderer = (props) => {
+    let value = "---"
+    console.log("props",props)
+    if(props.value && props.provider) value = props.provider.findAssetById(props.value).assetid
+    return <b>{value}</b>
+}
