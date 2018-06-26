@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {SELECTION_MANAGER} from '../SelectionManager'
 import Selection from '../SelectionManager'
 import './style.css'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 export default class Editor360Canvas2D extends Component {
     componentDidMount() {
@@ -58,7 +58,10 @@ export default class Editor360Canvas2D extends Component {
                     left: (node.angle)*2+'px',
                     top: (50-(node.elevation)*3)+'px',
                 }
-                return <div className="primitive image2d" style={style} key={i}>{node.imageid}</div>
+                const img = this.props.provider.findAssetById(node.imageid)
+                return <div className="primitive image2d" style={style} key={i}>
+                    <img src={`${SERVER_URL_ASSETS}${img.assetid}`} width={50} height={50}/>
+                </div>
             }
             return <div className="primitive" key={i}>prim:{node.primitive}</div>
 

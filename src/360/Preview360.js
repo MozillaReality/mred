@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {Editor360Provider} from './Editor360Editor'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import * as THREE from 'three'
 
 export default class Preview360 extends Component {
@@ -55,7 +55,7 @@ export default class Preview360 extends Component {
             doc:doc,
             scene:doc.children[0]
         })
-        this.rebuildScene(doc.children[0])
+        this.rebuildScene(doc.children[0].children[0])
     }
 
     buildNode(node) {
@@ -86,6 +86,13 @@ export default class Preview360 extends Component {
                 })
                 const color = 'black'
                 const material = new THREE.MeshLambertMaterial({color: color})
+                obj = new THREE.Mesh(geometry, material)
+            }
+            if(node.primitive === 'image2d') {
+                const geometry = new THREE.PlaneGeometry(1,1);
+                const img = this.provider.findAssetById(node.imageid)
+                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.assetid)
+                const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 obj = new THREE.Mesh(geometry, material)
             }
         }
