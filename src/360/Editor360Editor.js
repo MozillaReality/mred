@@ -74,7 +74,14 @@ const PROP_DEFS = {
         key:'fontSize',
         type:'number',
         locked:false
+    },
+    assetid: {
+        name:'Asset ID',
+        key:'assetid',
+        type:'string',
+        locked:true
     }
+
 }
 
 
@@ -185,6 +192,17 @@ export class Editor360Provider extends TreeItemProvider {
             child:item
         });
     }
+    create2DImageAssetWithId(id) {
+        return {
+            id:this.genID('asset'),
+            type:'asset',
+            assetid:id,
+            title:'some asset'
+        }
+    }
+    getAssetsRoot() {
+        return this.getSceneRoot().children[1]
+    }
 
 
 
@@ -239,11 +257,11 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findSelectedScene() {
         let sel = Selection.getSelection()
-        if(!sel
-            || sel === this.getSceneRoot()
-            || sel.type === 'scenes'
-            || sel.type === 'assets'
-        ) return this.getSceneRoot().children[0].children[0]
+        if(!sel) return this.getSceneRoot().children[0].children[0]
+        if(sel === this.getSceneRoot()) return null
+        if(sel.type === 'scenes') return null
+        if(sel.type === 'assets') return null
+        if(sel.type === 'asset') return null
         return this.findSceneParent(sel)
     }
     findSelectedLayer() {
@@ -282,6 +300,7 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
         if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
         if(item.type === 'layer')  return <div><i className="fa fa-cubes"/> {item.title}</div>
+        if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.assetid}</div>
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
                 return <div><i className="fa fa-cube"/> {item.title}</div>

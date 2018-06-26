@@ -18,6 +18,7 @@ export default class Editor360Canvas2D extends Component {
     prov = () => this.props.provider
     render() {
         const scene = this.prov().findSelectedScene()
+        if(!scene) return <div>no scene selected</div>
         return <div className="canvas-360">{this.renderNode(scene,0)}</div>
     }
     renderNode(node,i) {
