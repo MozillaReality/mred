@@ -16,6 +16,13 @@ export default class Preview360 extends Component {
     componentDidMount() {
         window.addEventListener('keydown',this.keyDown)
 
+        var loader = new THREE.FontLoader();
+        loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
+            console.log("fonts is loaded",font)
+            this.font = font
+            this.rebuildScene(this.state.scene)
+        })
+
         this.provider = new Editor360Provider()
         this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
         this.provider.loadDoc(this.props.options.doc)
@@ -71,6 +78,16 @@ export default class Preview360 extends Component {
                 const material = new THREE.MeshLambertMaterial({color: color})
                 obj = new THREE.Mesh(geometry, material)
             }
+            if(node.primitive === 'text' && this.font) {
+                const geometry = new THREE.TextGeometry(node.text,{
+                    font:this.font,
+                    size: 0.2,
+                    height: 0.05,
+                })
+                const color = 'black'
+                const material = new THREE.MeshLambertMaterial({color: color})
+                obj = new THREE.Mesh(geometry, material)
+            }
         }
 
         if(!obj) {
@@ -78,7 +95,7 @@ export default class Preview360 extends Component {
             return null
         }
 
-        obj.position.x = Math.sin(node.angle/180*Math.PI)*2
+        obj.position.x =  Math.sin(node.angle/180*Math.PI)*2
         obj.position.z = -Math.cos(node.angle/180*Math.PI)*2
         obj._ge_id = node.id
         return obj
