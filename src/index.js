@@ -6,7 +6,7 @@ import App from './App';
 import HypercardPreview3D from "./h3d/HypercardPreview3D"
 import {genAlphaID, parseOptions} from './utils'
 import HypercardPreview2D from './h2d/HypercardPreview2D'
-import { Preview360} from "./360/Editor360Editor"
+import Preview360 from "./360/Preview360"
 
 const default_options = {
     mode: 'edit',
