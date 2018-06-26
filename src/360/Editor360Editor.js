@@ -1,12 +1,8 @@
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Spacer, Toolbar, ToggleButton} from '../GridEditorApp'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {genID, shallowCopy} from '../utils'
-import TreeTable from '../TreeTable'
-import PropSheet from '../PropSheet'
 import Selection, {SELECTION_MANAGER} from '../SelectionManager'
-import * as THREE from 'three'
-import Editor360Canvas2D from './Editor360Canvas2D'
+import App360 from './App360'
 
 const PROP_DEFS = {
     id: {
@@ -91,7 +87,7 @@ export class Editor360Provider extends TreeItemProvider {
 
     /* general stuff */
     getApp() {
-        return <Editor360App provider={this}/>
+        return <App360 provider={this}/>
     }
     getTitle() {
         return "360 Experience Editor"
@@ -275,60 +271,6 @@ export class Editor360Provider extends TreeItemProvider {
         }
         return <div><i className="fa fa-diamond"/>foo</div>
     }
-}
-
-export class Editor360App extends Component {
-    constructor(props) {
-        super(props)
-    }
-    prov = () => this.props.provider
-
-    render() {
-        return <GridEditorApp provider={this.prov()}>
-            <Toolbar left top>
-                <label>{this.prov().getTitle()}</label>
-            </Toolbar>
-            <Panel scroll left middle>
-                <TreeTable root={this.prov().getSceneRoot()} provider={this.prov()}/>
-            </Panel>
-
-
-            <Toolbar center top>
-                <button className="fa fa-laptop" onClick={this.addLayer}/>
-                <button className="fa fa-square" onClick={this.addCube}/>
-                <button className="fa fa-text-width" onClick={this.addText}/>
-                <button className="fa fa-image" onClick={this.addBGImage}/>
-                <button className="fa fa-close" onClick={this.deleteObject}/>
-                <Spacer/>
-                {/*<button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>*/}
-                <button className="fa fa-undo" onClick={this.undo}/>
-                <button className="fa fa-repeat" onClick={this.redo}/>
-                <Spacer/>
-                <button className="fa fa-play" onClick={this.preview}/>
-                <button className="fa fa-save" onClick={this.save}/>
-            </Toolbar>
-
-            <Panel center middle scroll>
-                <Editor360Canvas2D provider={this.prov()}/>
-            </Panel>
-
-
-
-            <Toolbar right top>
-                <label>Properties</label>
-            </Toolbar>
-            <Panel scroll right>
-                <PropSheet provider={this.prov()}/>
-            </Panel>
-        </GridEditorApp>
-    }
-
-    addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
-    addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
-    addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
-    preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
-    save = () => this.prov().save()
-
 }
 
 
