@@ -116,15 +116,30 @@ export class Editor360Provider extends TreeItemProvider {
             title:'stack',
             type:'stack',
             id: genID('stack'),
-            children: [this.createScene()],
+            children: [this.createScenes(),this.createAssets()],
         }
     }
-    createScene() {
+    createScenes() {
+        return {
+            id: this.genID('scenes'),
+            type: 'scenes',
+            title: 'scenes',
+            children: [this.createScene('scene1'), this.createScene('scene2')],
+        }
+    }
+    createScene(title) {
         return {
             id: this.genID('scene'),
             type: 'scene',
-            title: 'untitled scene',
+            title: title?title:'untitled scene',
             children: [this.createLayer()],
+        }
+    }
+    createAssets() {
+        return {
+            id: this.genID('assets'),
+            type: 'assets',
+            children:[]
         }
     }
     createLayer() {
@@ -224,7 +239,11 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findSelectedScene() {
         let sel = Selection.getSelection()
-        if(!sel || sel === this.getSceneRoot()) return this.getSceneRoot().children[0]
+        if(!sel
+            || sel === this.getSceneRoot()
+            || sel.type === 'scenes'
+            || sel.type === 'assets'
+        ) return this.getSceneRoot().children[0].children[0]
         return this.findSceneParent(sel)
     }
     findSelectedLayer() {
@@ -258,15 +277,17 @@ export class Editor360Provider extends TreeItemProvider {
 
         /* ========== renderers ============ */
     getRendererForItem(item) {
-        if(item.type === 'stack') return <div><i className="fa fa-exclamation-triangle"/>Stack</div>
-        if(item.type === 'scene') return <div><i className="fa fa-street-view"/>{item.title}</div>
-        if(item.type === 'layer') return <div><i className="fa fa-cubes"/>{item.title}</div>
+        if(item.type === 'stack')  return <div>Project</div>
+        if(item.type === 'scenes') return <div><i className="fa fa-book"/> Scenes</div>
+        if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
+        if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
+        if(item.type === 'layer')  return <div><i className="fa fa-cubes"/> {item.title}</div>
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
-                return <div><i className="fa fa-cube"/>{item.title}</div>
+                return <div><i className="fa fa-cube"/> {item.title}</div>
             }
             if(item.primitive === 'text') {
-                return <div><i className="fa fa-text"/>{item.text}</div>
+                return <div><i className="fa fa-font"/> {item.text}</div>
             }
         }
         return <div><i className="fa fa-diamond"/>foo</div>
