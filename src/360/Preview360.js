@@ -17,31 +17,28 @@ export default class Preview360 extends Component {
         window.addEventListener('keydown',this.keyDown)
         this.o3d_to_node = {}
 
-        var loader = new THREE.FontLoader();
+        const loader = new THREE.FontLoader();
         loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
-            console.log("fonts is loaded",font)
             this.font = font
             this.rebuildScene(this.state.scene)
         })
 
         this.provider = new Editor360Provider()
         this.provider.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.structureChanged)
-        this.provider.loadDoc(this.props.options.doc)
 
         let w = window.innerWidth - 4
         let h = window.innerHeight - 4
-        this.clock = new THREE.Clock()
         this.raycaster = new THREE.Raycaster()
-        this.scene = new THREE.Scene()
+        this.scene3 = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, w / h, 1, 5000)
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
         this.renderer.setClearColor(0xffffff,1)
         this.renderer.setSize(w, h)
         this.camera.position.set(0, 1, 3)
         this.camera.lookAt(new THREE.Vector3(0,1,0))
-        this.rebuildScene(this.state.scene)
         this.canvas.addEventListener('click',this.clicked)
         this.startRepaint()
+        this.provider.loadDoc(this.props.options.doc)
     }
 
     clicked = (e) => {
@@ -50,7 +47,7 @@ export default class Preview360 extends Component {
         mouse.x =   ((e.clientX-bounds.left) /this.canvas.width  ) * 2 - 1;
         mouse.y = - ((e.clientY-bounds.top)  /this.canvas.height ) * 2 + 1;
         this.raycaster.setFromCamera( mouse, this.camera );
-        const intersects = this.raycaster.intersectObjects( this.scene.children, true );
+        const intersects = this.raycaster.intersectObjects( this.scene3.children, true );
         intersects.forEach((it)=>{
             const node = this.getNodeForObject3D(it.object)
             if(node && node.children && node.children.length >= 1) {
@@ -66,18 +63,16 @@ export default class Preview360 extends Component {
     startRepaint() {
         const repaint = () => {
             requestAnimationFrame(repaint)
-            this.renderer.render(this.scene, this.camera)
+            this.renderer.render(this.scene3, this.camera)
         }
         repaint()
     }
 
     structureChanged = () => {
         const doc = this.provider.getSceneRoot()
-        this.setState({
-            doc:doc,
-            scene:doc.children[0]
-        })
-        this.rebuildScene(doc.children[0].children[0])
+        const scene = doc.children[0].children[0]
+        this.setState({doc:doc,scene:scene})
+        this.rebuildScene(scene)
     }
 
     buildNode(node) {
@@ -149,17 +144,18 @@ export default class Preview360 extends Component {
         return null
     }
     rebuildScene(scene) {
-        if (!this.scene) return
-        if (!this.scene.children) return
+        if(!scene) return
+        if (!this.scene3) return
+        if (!this.scene3.children) return
         //remove all children
-        while (this.scene.children.length) this.scene.remove(this.scene.children[0])
-        if (scene) scene.children.forEach((node) => this.scene.add(this.buildNode(node)))
+        while (this.scene3.children.length) this.scene3.remove(this.scene3.children[0])
+        if (scene) scene.children.forEach((node) => this.scene3.add(this.buildNode(node)))
 
         const ambient = new THREE.AmbientLight(0xffffff, 0.7)
-        this.scene.add(ambient)
+        this.scene3.add(ambient)
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
         directionalLight.position.x = -10
-        this.scene.add(directionalLight)
+        this.scene3.add(directionalLight)
     }
 
     keyDown = (e) => {
@@ -191,6 +187,7 @@ export default class Preview360 extends Component {
     }
 
     navigateToScene(scene) {
-        console.log("navigating to the scene",scene)
+        this.setState({scene:scene})
+        this.rebuildScene(scene)
     }
 }
