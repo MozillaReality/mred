@@ -50,7 +50,7 @@ export default class Editor360Canvas2D extends Component {
                 const style = {
                     width: (node.width*50)+'px',
                     height: (node.height*50)+'px',
-                    left: (node.angle/360*w)*2+'px',
+                    left: (node.angle/360*w)+'px',
                     top: (h/2-(node.elevation)*3)+'px',
                 }
                 return <div className="primitive text" style={style} key={i}>{node.text}</div>
