@@ -23,6 +23,7 @@ export default class App360 extends Component {
             </Panel>
 
             <Toolbar left bottom>
+                <button className="fa fa-globe" onClick={this.addScene}>Scene</button>
                 <button className="fa fa-image" onClick={this.upload2DImage}>2D</button>
                 <button className="fa fa-image" onClick={this.upload360Image}>360</button>
             </Toolbar>
@@ -61,11 +62,13 @@ export default class App360 extends Component {
         </GridEditorApp>
     }
 
+    addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
+    deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()

@@ -147,12 +147,16 @@ export class Editor360Provider extends TreeItemProvider {
         }
     }
     createScene(title) {
-        return {
+        const sc = {
             id: this.genID('scene'),
             type: 'scene',
-            title: title?title:'untitled scene',
-            children: [this.createLayer()],
+            title: title ? title : 'untitled scene',
+            children: []
         }
+        const layer = this.createLayer()
+        sc.children.push(layer)
+        layer.parent = sc
+        return sc
     }
     createAssets() {
         return {
@@ -236,6 +240,20 @@ export class Editor360Provider extends TreeItemProvider {
             child:item
         });
     }
+    deleteChild(item) {
+        if(!item) throw new Error("can't delete a null child")
+        if(!item.parent) throw new Error("child doesn't have a parent!")
+        const parent = item.parent
+        parent.children = parent.children.filter(ch=>ch.id !== item.id)
+        item.parent = null
+        Selection.clearSelection()
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_REMOVED,{
+            provider:this,
+            parent:parent,
+            child:item
+        })
+    }
+
     create2DImageAssetWithId(id) {
         return {
             id:this.genID('asset'),
@@ -251,6 +269,9 @@ export class Editor360Provider extends TreeItemProvider {
             assetid:id,
             title:'some 360 image asset'
         }
+    }
+    getScenesRoot() {
+        return this.getSceneRoot().children[0]
     }
     getAssetsRoot() {
         return this.getSceneRoot().children[1]
@@ -345,6 +366,9 @@ export class Editor360Provider extends TreeItemProvider {
         if(sel.type === 'primitive') return sel
         return null
     }
+    findSelectedNode() {
+        return Selection.getSelection()
+    }
     generateSelectionPath(node) {
         if(!node || !node.id) return []
         if(!node.parent) return [node.id]
@@ -385,16 +409,16 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.assetid}</div>
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
-                return <div><i className="fa fa-cube"/> {item.title}</div>
+                return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
             }
             if(item.primitive === 'text') {
-                return <div><i className="fa fa-font"/> {item.text}</div>
+                return <div><i className="fa fa-font fa-fw"/> {item.text}</div>
             }
             if(item.primitive === 'image2d') {
-                return <div><i className="fa fa-image"/> {item.title} 2d </div>
+                return <div><i className="fa fa-image fa-fw"/> {item.title} 2d </div>
             }
             if(item.primitive === 'image360') {
-                return <div><i className="fa fa-image"/> {item.title} 360 </div>
+                return <div><i className="fa fa-image fa-fw"/> {item.title} 360 </div>
             }
         }
         if(item.title) return <div><i className="fa fa-diamond"/> {item.title}</div>

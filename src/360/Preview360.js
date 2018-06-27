@@ -34,8 +34,8 @@ export default class Preview360 extends Component {
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas})
         this.renderer.setClearColor(0xffffff,1)
         this.renderer.setSize(w, h)
-        this.camera.position.set(0, 1, 3)
-        this.camera.lookAt(new THREE.Vector3(0,1,0))
+        this.camera.position.set(0, 0, 0)
+        this.camera.lookAt(new THREE.Vector3(0,0,0))
         this.canvas.addEventListener('click',this.clicked)
         this.startRepaint()
         this.provider.loadDoc(this.props.options.doc)
@@ -94,6 +94,7 @@ export default class Preview360 extends Component {
                 const color = 'red'
                 const material = new THREE.MeshLambertMaterial({color: color})
                 obj = new THREE.Mesh(geometry, material)
+                obj.rotation.y = -node.angle/180*Math.PI
             }
             if(node.primitive === 'text' && this.font) {
                 const geometry = new THREE.TextGeometry(node.text,{
@@ -104,6 +105,7 @@ export default class Preview360 extends Component {
                 const color = 'black'
                 const material = new THREE.MeshLambertMaterial({color: color})
                 obj = new THREE.Mesh(geometry, material)
+                obj.rotation.y = -node.angle/180*Math.PI
             }
             if(node.primitive === 'image2d') {
                 const geometry = new THREE.PlaneGeometry(1,1);
@@ -111,6 +113,7 @@ export default class Preview360 extends Component {
                 const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.assetid)
                 const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 obj = new THREE.Mesh(geometry, material)
+                obj.rotation.y = -node.angle/180*Math.PI
             }
             if(node.primitive === 'image360') {
                 const geometry = new THREE.SphereGeometry(1000, 25, 25);
@@ -119,6 +122,8 @@ export default class Preview360 extends Component {
                 const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 material.side = THREE.BackSide;
                 obj = new THREE.Mesh(geometry, material)
+                obj.scale.set( - 1, 1, 1 ); //invert so the picture looks right
+                obj.rotation.y = Math.PI*0.5 //adjust so the picture starts at the 0 degree point
                 obj._ge_id = node.id
                 return obj
             }
@@ -129,8 +134,8 @@ export default class Preview360 extends Component {
             return null
         }
 
-        obj.position.x =  Math.sin(node.angle/180*Math.PI)*2
-        obj.position.z = -Math.cos(node.angle/180*Math.PI)*2
+        obj.position.x =  Math.sin(node.angle/180*Math.PI)*4
+        obj.position.z = -Math.cos(node.angle/180*Math.PI)*4
         obj.position.y = node.elevation*0.1
         this.o3d_to_node[obj.id] = node.id
         obj._ge_id = node.id
