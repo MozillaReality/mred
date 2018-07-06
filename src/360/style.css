@@ -21,7 +21,7 @@
 }
 
 .canvas-360 .primitive {
-    border: 1px solid red;
+    border: 1px solid black;
     position: absolute;
     top: 50px;
     left: 50px;
@@ -36,7 +36,6 @@
     background-color: white;
 }
 .canvas-360 .primitive.image360 {
-    border: 0px solid red;
     z-index: 0;
     width: 600px;
     height: 300px;
@@ -46,4 +45,9 @@
 .canvas-360 .primitive.image360 img {
     width: 100%;
     height: auto;
+}
+
+
+.canvas-360 .primitive.selected {
+    border: 1px solid orange;
 }

@@ -363,6 +363,7 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findSelectedPrimitive() {
         let sel = Selection.getSelection()
+        if(!sel) return null
         if(sel.type === 'primitive') return sel
         return null
     }
