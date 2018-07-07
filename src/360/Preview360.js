@@ -110,7 +110,7 @@ export default class Preview360 extends Component {
             if(node.primitive === 'image2d') {
                 const geometry = new THREE.PlaneGeometry(1,1);
                 const img = this.provider.findAssetById(node.imageid)
-                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.assetid)
+                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.resourceId)
                 const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 obj = new THREE.Mesh(geometry, material)
                 obj.rotation.y = -node.angle/180*Math.PI
@@ -118,7 +118,7 @@ export default class Preview360 extends Component {
             if(node.primitive === 'image360') {
                 const geometry = new THREE.SphereGeometry(1000, 25, 25);
                 const img = this.provider.findAssetById(node.imageid)
-                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.assetid)
+                const texture = new THREE.TextureLoader().load(SERVER_URL_ASSETS+img.resourceId)
                 const material = new THREE.MeshLambertMaterial({color:'white', map:texture})
                 material.side = THREE.BackSide;
                 obj = new THREE.Mesh(geometry, material)

@@ -38,7 +38,15 @@ export default class Editor360Canvas2D extends Component {
                     </div>
                 </VBox>
             }
-            return <div>showing an asset{asset.title}</div>
+            if(asset.resourceType === 'audio') {
+                return <VBox>
+                    <h3>{asset.title}</h3>
+                    <div>
+                        <audio src={SERVER_URL_ASSETS+asset.resourceId} controls={true}/>
+                    </div>
+                </VBox>
+            }
+            return <div>showing an asset: <b>{asset.title}</b></div>
         }
         const scene = this.prov().findSelectedScene()
         if(!scene) return <div>no scene selected</div>
@@ -107,7 +115,7 @@ export default class Editor360Canvas2D extends Component {
                 }
                 const img = this.props.provider.findAssetById(node.imageid)
                 return <div className={toClassString(clss)} style={style} key={i}>
-                    <img src={`${SERVER_URL_ASSETS}${img.assetid}`} width={50} height={50}/>
+                    <img src={`${SERVER_URL_ASSETS}${img.resourceId}`} width={50} height={50}/>
                 </div>
             }
             if(node.primitive === 'image360') {
@@ -119,7 +127,7 @@ export default class Editor360Canvas2D extends Component {
                 }
                 if(img) {
                     return <div className={toClassString(clss)} key={i}>
-                        <img src={`${SERVER_URL_ASSETS}${img.assetid}`}/>
+                        <img src={`${SERVER_URL_ASSETS}${img.resourceId}`}/>
                     </div>
                 } else {
                     return <div className={toClassString(clss)} key={i}>img broken</div>

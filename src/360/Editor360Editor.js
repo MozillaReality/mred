@@ -75,12 +75,6 @@ const PROP_DEFS = {
         type:'number',
         locked:false
     },
-    assetid: {
-        name:'Asset ID',
-        key:'assetid',
-        type:'string',
-        locked:true
-    },
     resourceId: {
         name:'Resource Id',
         key:'resourceId',
@@ -443,7 +437,10 @@ export class Editor360Provider extends TreeItemProvider {
 
 const AssetItemRenderer = (props) => {
     let value = "---"
-    if(props.value && props.provider) value = props.provider.findAssetById(props.value).title
+    if(props.value && props.provider) {
+        const asset = props.provider.findAssetById(props.value);
+        if(asset) value = asset.title
+    }
     return <b>{value}</b>
 }
 

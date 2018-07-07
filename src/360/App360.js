@@ -26,6 +26,8 @@ export default class App360 extends Component {
                 <button className="fa fa-globe" onClick={this.addScene}>Scene</button>
                 <button className="fa fa-image" onClick={this.upload2DImage}>2D</button>
                 <button className="fa fa-image" onClick={this.upload360Image}>360</button>
+                <button className="fa fa-file-audio-o" onClick={this.uploadSound}>Sound</button>
+                <button className="fa fa-close" onClick={this.deleteSelectedAsset}>asset</button>
             </Toolbar>
 
 
@@ -73,7 +75,9 @@ export default class App360 extends Component {
     preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()
     upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
+    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
     upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
+    deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
 
