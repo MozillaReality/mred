@@ -114,9 +114,13 @@ export default class Editor360Canvas2D extends Component {
                     selected:this.prov().findSelectedPrimitive() === node
                 }
                 const img = this.props.provider.findAssetById(node.imageid)
-                return <div className={toClassString(clss)} style={style} key={i}>
-                    <img src={`${SERVER_URL_ASSETS}${img.resourceId}`} width={50} height={50}/>
-                </div>
+                if(img) {
+                    return <div className={toClassString(clss)} style={style} key={i}>
+                        <img src={`${SERVER_URL_ASSETS}${img.resourceId}`} width={50} height={50}/>
+                    </div>
+                } else {
+                    return <div className={toClassString(clss)} key={i}>img broken</div>
+                }
             }
             if(node.primitive === 'image360') {
                 const img = this.props.provider.findAssetById(node.imageid)

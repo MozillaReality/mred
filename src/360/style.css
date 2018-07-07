@@ -21,7 +21,7 @@
 }
 
 .canvas-360 .primitive {
-    border: 1px solid black;
+    border: 4px solid white;
     position: absolute;
     top: 50px;
     left: 50px;
@@ -49,5 +49,5 @@
 
 
 .canvas-360 .primitive.selected {
-    border: 1px solid orange;
+    border: 4px solid orange;
 }

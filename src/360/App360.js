@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
-import {Toolbar, Panel, Spacer} from '../GridEditorApp'
+import {Toolbar, Panel, Spacer, MenuPopup} from '../GridEditorApp'
 import TreeTable from '../TreeTable'
-import {DialogManager, DialogContainer, Dialog, HBox, VBox} from "appy-comps"
+import {DialogManager, DialogContainer, Dialog, HBox, VBox, PopupManager} from "appy-comps"
 import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
@@ -32,12 +32,8 @@ export default class App360 extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-laptop" onClick={this.addLayer}/>
-                <button className="fa fa-square" onClick={this.addCube}/>
-                <button className="fa fa-text-width" onClick={this.addText}/>
-                <button className="fa fa-image" onClick={this.addImageObject}/>
-                <button className="fa fa-imdb" onClick={this.add360BG}/>
-                <button className="fa fa-battery" onClick={this.addNavAction}/>
+                <button className="fa fa-plus" onClick={this.showAddPopupMenu}>Object</button>
+                <button className="fa fa-plus" onClick={this.showAddActionMenu}>Action</button>
                 <button className="fa fa-close" onClick={this.deleteObject}/>
                 <Spacer/>
                 {/*<button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>*/}
@@ -62,6 +58,46 @@ export default class App360 extends Component {
             </Panel>
             <DialogContainer/>
         </GridEditorApp>
+    }
+    showAddPopupMenu = (e) => {
+        const acts = [
+            {
+                title:'Layer',
+                icon:'window-maximize',
+                fun: this.addLayer
+            },
+            {
+                title:'Cube',
+                icon:'cube',
+                fun:this.addCube
+            },
+            {
+                title:'Text',
+                icon:'font',
+                fun: this.addText
+            },
+            {
+                title:'2D Image',
+                icon:'image',
+                fun: this.addImageObject,
+            },
+            {
+                title:'360 Image Background',
+                icon:'image',
+                fun: this.add360BG
+            }
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+    }
+    showAddActionMenu = (e) => {
+        const acts = [
+            {
+                title:'Go to...',
+                icon:'arrow-right',
+                fun: this.addNavAction
+            }
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
 
     addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())

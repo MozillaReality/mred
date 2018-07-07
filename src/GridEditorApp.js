@@ -50,12 +50,12 @@ export const ToggleButton = (props) => {
 }
 
 export const MenuPopup = (props) => {
-    return <VBox>
+    return <VBox className="popup-menu">
         {props.actions.map((act,i)=>{
-            return <button  key={i} onClick={()=>{
+            return <div  key={i} onClick={()=>{
                 PopupManager.hide();
                 if(act.fun) act.fun()
-            }}><i className={'fa fa-' + act.icon}/> {act.title}</button>
+            }}><i className={'fa fa-' + act.icon}/> {act.title}</div>
         })}
     </VBox>
 

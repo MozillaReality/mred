@@ -410,10 +410,10 @@ export class Editor360Provider extends TreeItemProvider {
         /* ========== renderers ============ */
     getRendererForItem(item) {
         if(item.type === 'stack')  return <div>Project</div>
-        if(item.type === 'scenes') return <div><i className="fa fa-book"/> Scenes</div>
+        if(item.type === 'scenes') return <div><i className="fa fa-atlas"/> Scenes</div>
         if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
         if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
-        if(item.type === 'layer')  return <div><i className="fa fa-cubes"/> {item.title}</div>
+        if(item.type === 'layer')  return <div><i className="fa fa-window-maximize"/> {item.title}</div>
         if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.title}</div>
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
@@ -429,6 +429,7 @@ export class Editor360Provider extends TreeItemProvider {
                 return <div><i className="fa fa-image fa-fw"/> {item.title} 360 </div>
             }
         }
+        if(item.type === 'nav-action') return <div><i className="fa fa-arrow-right"/>{item.title}</div>
         if(item.title) return <div><i className="fa fa-diamond"/> {item.title}</div>
         return <div><i className="fa fa-diamond"/> unknown</div>
     }
