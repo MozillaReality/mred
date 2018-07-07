@@ -376,6 +376,13 @@ export class Editor360Provider extends TreeItemProvider {
     findSelectedNode() {
         return Selection.getSelection()
     }
+    isAssetSelected() {
+        const node = this.findSelectedNode()
+        return (node && node.type === 'asset')
+    }
+    findSelectedAsset() {
+        return this.findSelectedNode()
+    }
     generateSelectionPath(node) {
         if(!node || !node.id) return []
         if(!node.parent) return [node.id]

@@ -3,6 +3,7 @@ import {SELECTION_MANAGER} from '../SelectionManager'
 import Selection from '../SelectionManager'
 import './style.css'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {VBox} from 'appy-comps'
 
 function toClassString(obj) {
     return Object.keys(obj).map((key)=> obj[key]?key:"").join(" ")
@@ -21,6 +22,24 @@ export default class Editor360Canvas2D extends Component {
     }
     prov = () => this.props.provider
     render() {
+        if(this.prov().isAssetSelected()) {
+            const asset = this.prov().findSelectedAsset()
+            if(asset.resourceType === '360-image') {
+                return <VBox>
+                    <h3>{asset.title}</h3>
+                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'900px',height:'auto'}}/>
+                </VBox>
+            }
+            if(asset.resourceType === '2d-image') {
+                return <VBox>
+                    <h3>{asset.title}</h3>
+                    <div>
+                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'auto',height:'auto'}}/>
+                    </div>
+                </VBox>
+            }
+            return <div>showing an asset{asset.title}</div>
+        }
         const scene = this.prov().findSelectedScene()
         if(!scene) return <div>no scene selected</div>
         return <div className="canvas-360">{this.renderNode(scene,0)}</div>
