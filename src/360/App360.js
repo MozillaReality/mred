@@ -24,12 +24,9 @@ export default class App360 extends Component {
 
             <Toolbar left bottom>
                 <button className="fa fa-globe" onClick={this.addScene}>Scene</button>
-                <button className="fa fa-image" onClick={this.upload2DImage}>2D</button>
-                <button className="fa fa-image" onClick={this.upload360Image}>360</button>
-                <button className="fa fa-file-audio-o" onClick={this.uploadSound}>Sound</button>
+                <button className="fa fa-plus" onClick={this.showAddAssetMenu}>Asset</button>
                 <button className="fa fa-close" onClick={this.deleteSelectedAsset}>asset</button>
             </Toolbar>
-
 
             <Toolbar center top>
                 <button className="fa fa-plus" onClick={this.showAddPopupMenu}>Object</button>
@@ -47,8 +44,6 @@ export default class App360 extends Component {
             <Panel center middle scroll>
                 <Editor360Canvas2D provider={this.prov()}/>
             </Panel>
-
-
 
             <Toolbar right top>
                 <label>Properties</label>
@@ -95,6 +90,26 @@ export default class App360 extends Component {
                 title:'Go to...',
                 icon:'arrow-right',
                 fun: this.addNavAction
+            }
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+    }
+    showAddAssetMenu = (e) => {
+        const acts = [
+            {
+                title: '2D Image',
+                icon:'image',
+                fun: this.upload2DImage
+            },
+            {
+                title: '360 Image',
+                icon:'image',
+                fun: this.upload360Image
+            },
+            {
+                title:'Sound',
+                icon:'file-audio-o',
+                fun: this.uploadSound
             }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
