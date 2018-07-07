@@ -81,6 +81,18 @@ const PROP_DEFS = {
         type:'string',
         locked:true
     },
+    resourceId: {
+        name:'Resource Id',
+        key:'resourceId',
+        type:'string',
+        locked:true,
+    },
+    resourceType: {
+        name:"Resource Type",
+        key:'resourceType',
+        type:'string',
+        locked:true,
+    },
     imageid: {
         name: 'Image ID',
         key:'imageid',
@@ -196,7 +208,7 @@ export class Editor360Provider extends TreeItemProvider {
             elevation:0,
             text:'some text',
             fontSize:36,
-            title:'Cube',
+            title:'Text',
             children:[],
         }
     }
@@ -254,20 +266,14 @@ export class Editor360Provider extends TreeItemProvider {
         })
     }
 
-    create2DImageAssetWithId(id) {
+    createAssetWithInfo(info) {
+        if(!info.id) throw new Error("cannot created an asset without a resource ID")
         return {
             id:this.genID('asset'),
             type:'asset',
-            assetid:id,
-            title:'some 2d image asset'
-        }
-    }
-    create360ImageAssetWithId(id) {
-        return {
-            id:this.genID('asset'),
-            type:'asset',
-            assetid:id,
-            title:'some 360 image asset'
+            resourceType: info.resourceType?info.resourceType:"unknown",
+            resourceId:info.id,
+            title: info.title?info.title:"some unknown asset"
         }
     }
     getScenesRoot() {
@@ -407,7 +413,7 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
         if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
         if(item.type === 'layer')  return <div><i className="fa fa-cubes"/> {item.title}</div>
-        if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.assetid}</div>
+        if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.title}</div>
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
                 return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
@@ -430,7 +436,7 @@ export class Editor360Provider extends TreeItemProvider {
 
 const AssetItemRenderer = (props) => {
     let value = "---"
-    if(props.value && props.provider) value = props.provider.findAssetById(props.value).assetid
+    if(props.value && props.provider) value = props.provider.findAssetById(props.value).title
     return <b>{value}</b>
 }
 

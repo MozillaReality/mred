@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {Toolbar, Panel, Spacer} from '../GridEditorApp'
 import TreeTable from '../TreeTable'
-import {DialogManager, DialogContainer, Dialog} from "appy-comps"
+import {DialogManager, DialogContainer, Dialog, HBox, VBox} from "appy-comps"
 import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
@@ -72,76 +72,61 @@ export default class App360 extends Component {
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
     save = () => this.prov().save()
-    upload2DImage = () =>  DialogManager.show(<Upload2DImageDialog provider={this.prov()}/>)
-    upload360Image = () => DialogManager.show(<Upload360ImageDialog provider={this.prov()}/>)
+    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
+    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
 
 }
 
-class Upload2DImageDialog extends Component {
+
+class UploadAssetDialog extends Component {
     constructor(props) {
         super(props)
         this.state = {
             file: null,
+            filename:'',
             name: ''
         }
     }
     choseFile = (e) => {
         this.setState({
             file:e.target.files[0],
-            name:e.target.files[0].name
+            filename:e.target.files[0].name
         })
     }
+    editedName = (e) => {
+        this.setState({name:e.target.value})
+    }
     uploadFile = () => {
-        this.props.provider.uploadFile(this.state.file).then((ans)=>{
-            console.log("uploaded asset",ans)
-            const asset = this.props.provider.create2DImageAssetWithId(ans.id)
+        this.props.provider.uploadFile(this.state.file).then((resource)=>{
+            const asset = this.props.provider.createAssetWithInfo({
+                id:resource.id,
+                title:this.state.name,
+                resourceType:this.props.resourceType
+            })
             this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
             DialogManager.hide()
         })
     }
-    render() {
-        return <Dialog visible={true}>
-            <header>upload an image</header>
-            <input type="file" onChange={this.choseFile}/>
-            <label>{this.state.name}</label>
-
-            <footer>
-                <button>cancel</button>
-                <button onClick={this.uploadFile}>upload</button>
-            </footer>
-        </Dialog>
-    }
-}
-
-class Upload360ImageDialog extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            file: null,
-            name: ''
-        }
-    }
-    choseFile = (e) => {
-        this.setState({
-            file:e.target.files[0],
-            name:e.target.files[0].name
-        })
-    }
-    uploadFile = () => {
-        this.props.provider.uploadFile(this.state.file).then((ans)=>{
-            const asset = this.props.provider.create360ImageAssetWithId(ans.id)
-            this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
-            DialogManager.hide()
-        })
+    cancel = () => {
+        DialogManager.hide()
     }
     render() {
         return <Dialog visible={true}>
-            <header>upload an image</header>
-            <input type="file" onChange={this.choseFile}/>
-            <label>{this.state.name}</label>
+            <header>{this.props.title}</header>
+            <VBox>
+                <HBox>
+                    <label>name</label>
+                    <input type="text" value={this.state.name} onChange={this.editedName}/>
+                </HBox>
+                <HBox>
+                    <label>file</label>
+                    <input type="file" onChange={this.choseFile}/>
+                    <label>{this.state.filename}</label>
+                </HBox>
+            </VBox>
 
             <footer>
-                <button>cancel</button>
+                <button onClick={this.cancel}>cancel</button>
                 <button onClick={this.uploadFile}>upload</button>
             </footer>
         </Dialog>
