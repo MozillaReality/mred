@@ -108,7 +108,7 @@ export default class App360 extends Component {
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
-    preview   = () => window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`)
+    preview   = () => this.save().then(()=>window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`))
     save = () => this.prov().save()
     upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
     uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
