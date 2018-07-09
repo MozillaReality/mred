@@ -6,11 +6,25 @@ import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
 import {SERVER_URL_ASSETS} from '../TreeItemProvider'
+import InputManager from "../common/InputManager";
 
 export default class App360 extends Component {
     constructor(props) {
         super(props)
+
+        this.im = new InputManager();
+        this.im.addKeyBinding({
+            id:'save',
+            key:InputManager.KEYS.S,
+            modifiers:[InputManager.MODIFIERS.COMMAND]
+        })
+        this.im.addListener('save',this.save)
     }
+
+    componentDidMount() {
+        this.im.attachKeyEvents(document)
+    }
+
     prov = () => this.props.provider
 
     render() {
