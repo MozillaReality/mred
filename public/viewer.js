@@ -13,14 +13,12 @@ const SERVER_URL = "https://vr.josh.earth/360/doc/"
 fetch(SERVER_URL+args.doc)
     .then(res => res.json())
     .then(doc=>{
-        console.log("got back",doc)
         clearScene()
         parseDocument(doc)
     })
 
 function clearScene() {
     const scene = $('#children')
-    console.log("clearing the scene",scene)
     while(scene.firstChild) {
         scene.removeChild(scene.firstChild)
     }
@@ -44,14 +42,12 @@ function parseQuery(str) {
 
 
 function parseDocument(doc) {
-    console.log("parsing",doc)
     const scenes = doc.doc.children[0]
     const firstScene = scenes.children[0]
     generateScene(firstScene)
 }
 
 function generateScene(scene) {
-    console.log("making",scene)
     scene.children.forEach(generateLayer)
 }
 
