@@ -141,7 +141,7 @@ export default class App360 extends Component {
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => {
         const win = window.open()
-        const location = `./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`
+        const location = `./viewer.html?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`
         this.save().then(()=> win.location = location)
     }
     save = () => this.prov().save()
