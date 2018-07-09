@@ -7,6 +7,7 @@ import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
 import {SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
+import UndoManager from "../common/UndoManager";
 
 export default class App360 extends Component {
     constructor(props) {
@@ -19,6 +20,7 @@ export default class App360 extends Component {
             modifiers:[InputManager.MODIFIERS.COMMAND]
         })
         this.im.addListener('save',this.save)
+        this.uman = new UndoManager(this.prov())
     }
 
     componentDidMount() {
@@ -139,6 +141,8 @@ export default class App360 extends Component {
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => this.save().then(()=>window.open(`./?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`))
     save = () => this.prov().save()
+    undo = () => this.uman.undo()
+    redo = () => this.uman.redo()
     upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
     uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
     upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
