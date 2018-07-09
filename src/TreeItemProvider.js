@@ -14,8 +14,8 @@ export const TREE_ITEM_PROVIDER = {
 
 // export const SERVER_URL = "http://localhost:30065/doc/"
 // export const SERVER_URL_ASSETS = "http://localhost:30065/asset/"
-export const SERVER_URL = "http://josh.earth:30068/doc/"
-export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
+export const SERVER_URL = "https://josh.earth:30068/doc/"
+export const SERVER_URL_ASSETS = "https://josh.earth:30068/asset/"
 
 class TreeItemProviderInterface {
     /** register a listener */
