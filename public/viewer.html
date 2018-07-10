@@ -8,8 +8,48 @@
 </head>
 <body>
 <a-scene>
+    <a-entity camera look-controls wasd-cotnrols>
+        <a-entity cursor="fuse: true; maxDistance: 30;"
+                  id="cursor"
+                  position="0 0 -3"
+                  geometry="primitive:ring; radiusInner: 0.2; radiusOuter:0.3"
+                  material="color:cyan; shader:flat"
+                  >
+            <a-animation begin="click" easing="ease-in" attribute="scale" dur="150"
+                         fill="forwards" from="0.2 0.2 0.2" to="1 1 1"></a-animation>
+            <a-animation begin="fusing" easing="ease-in" attribute="scale" dur="1500"
+                         fill="backwards" from="1 1 1" to="0.2 0.2 0.2"></a-animation>
+
+        </a-entity>
+    </a-entity>
     <a-entity id="children">
     </a-entity>
+
+    <a-entity id="box" geometry="primitive: box" material="color: green" position="-2 0 -4">
+        <a-animation begin="click" attribute="rotation" to="0 360 0"
+                     easing="linear" dur="2000" fill="backwards"></a-animation>
+    </a-entity>
+
+    <a-entity laser-controls="hand: right"></a-entity>
+
 </a-scene>
+
+<script>
+    window.addEventListener('load',()=>{
+        console.log("done loading=======")
+        $('#cursor').addEventListener('fusing',()=>{
+            console.log("fusing")
+        })
+        $('#cursor').addEventListener('mouseenter',()=>{
+            console.log("entering")
+        })
+        $('#cursor').addEventListener('mouseleave',()=>{
+            console.log("leaving")
+        })
+        $('#cursor').addEventListener('click',(e)=>{
+            console.log("clicked",e.detail.intersectedEl.getAttribute('id'), e.detail.intersection.object)
+        })
+    })
+</script>
 </body>
 </html>
