@@ -12,6 +12,9 @@ const args = parseQuery(document.location.search)
 console.log("args = ", args)
 const SERVER_URL = "https://vr.josh.earth/360/doc/"
 const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
+const els_to_nodes = {}
+
+
 fetch(SERVER_URL+args.doc)
     .then(res => res.json())
     .then(doc=>{
@@ -25,7 +28,6 @@ function clearScene() {
         scene.removeChild(scene.firstChild)
     }
 }
-
 function $(sel) {
     return document.querySelector(sel)
 }
@@ -41,8 +43,6 @@ function parseQuery(str) {
     })
     return args
 }
-
-
 function parseDocument(doc) {
     this.doc = doc
     const scenes = doc.doc.children[0]
@@ -62,9 +62,13 @@ function generateLayer(layer) {
     })
 }
 
+function genId(prefix) {
+    return prefix+"_"+Math.floor(Math.random()*1000000)
+}
 function generatePrimitive(prim) {
     if(prim.primitive === 'cube') {
         const el = document.createElement('a-entity')
+        el.setAttribute('id',genId('cube'))
         el.setAttribute('geometry',{
             primitive:'box',
             width:prim.width,
@@ -80,9 +84,11 @@ function generatePrimitive(prim) {
             color:'red',
         })
         $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
     }
     if(prim.primitive === 'sphere') {
         const el = document.createElement('a-entity')
+        el.setAttribute('id',genId('sphere'))
         el.setAttribute('geometry',{
             primitive:'sphere',
             radius:prim.radius,
@@ -96,12 +102,14 @@ function generatePrimitive(prim) {
             color:'red',
         })
         $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
     }
     if(prim.primitive === 'image360') {
         const img = findAssetById(prim.imageid)
         const url = SERVER_URL_ASSETS + img.resourceId
 
         const el = document.createElement('a-entity')
+        el.setAttribute('id',genId('image360'))
         el.setAttribute('geometry',{
             primitive:'sphere',
             radius:100,
@@ -112,11 +120,28 @@ function generatePrimitive(prim) {
             side:'back'
         })
         $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
     }
 }
 
 function findAssetById(id) {
     const assets = doc.doc.children[1]
-    const asset = assets.children.find(a => a.id === id)
-    return asset
+    return assets.children.find(ch => ch.id === id)
+}
+function findSceneById(id) {
+    const scenes = doc.doc.children[0]
+    return scenes.children.find(ch => ch.id === id)
+}
+
+function loadScene(sceneId) {
+    const scene = findSceneById(sceneId)
+    if(scene) {
+        clearScene()
+        generateScene(scene)
+    }
+
+}
+
+function getNodeForAFrameObject(el) {
+    return els_to_nodes[el.id]
 }

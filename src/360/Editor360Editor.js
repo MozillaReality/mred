@@ -450,7 +450,7 @@ export class Editor360Provider extends TreeItemProvider {
                 return <div><i className="fa fa-image fa-fw"/> {item.title} 360 </div>
             }
         }
-        if(item.type === 'nav-action') return <div><i className="fa fa-arrow-right"/>{item.title}</div>
+        if(item.type === 'nav-action') return <div><i className="fa fa-arrow-right"/> {item.title}</div>
         if(item.title) return <div><i className="fa fa-diamond"/> {item.title}</div>
         return <div><i className="fa fa-diamond"/> unknown</div>
     }
