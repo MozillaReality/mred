@@ -83,6 +83,11 @@ export default class App360 extends Component {
                 fun:this.addCube
             },
             {
+                title:'Sphere',
+                icon:'circle',
+                fun: this.addSphere
+            },
+            {
                 title:'Text',
                 icon:'font',
                 fun: this.addText
@@ -134,6 +139,7 @@ export default class App360 extends Component {
     addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
+    addSphere = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createSphere())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())

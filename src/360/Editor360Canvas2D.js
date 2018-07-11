@@ -87,6 +87,22 @@ export default class Editor360Canvas2D extends Component {
                 }
                 return <div className={toClassString(clss)} style={style} key={i}>cube</div>
             }
+            if(node.primitive === 'sphere') {
+                const style = {
+                    width: (node.width*50)+'px',
+                    height: (node.height*50)+'px',
+                    left: (node.angle/360*w)+'px',
+                    top: (h/2-(node.elevation)*3)+'px',
+                    borderRadius:'1em',
+                    padding:'1em'
+                }
+                const clss = {
+                    primitive:true,
+                    cube:true,
+                    selected:this.prov().findSelectedPrimitive() === node
+                }
+                return <div className={toClassString(clss)} style={style} key={i}>sphere</div>
+            }
             if(node.primitive === 'text') {
                 const style = {
                     width: (node.width*50)+'px',

@@ -47,6 +47,12 @@ const PROP_DEFS = {
         type:'number',
         locked:false,
     },
+    radius: {
+        name:'radius',
+        key:'radius',
+        type:'number',
+        locked:false,
+    },
     elevation: {
         name:'elevation',
         key:'elevation',
@@ -191,6 +197,18 @@ export class Editor360Provider extends TreeItemProvider {
             elevation:0,
             title:'Cube',
             children:[],
+        }
+    }
+    createSphere() {
+        return {
+            id: this.genID('sphere'),
+            type:'primitive',
+            primitive:'sphere',
+            radius:1,
+            angle:0,
+            elevation:0,
+            title:'Sphere',
+            children:[]
         }
     }
     createText() {
@@ -418,6 +436,9 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
                 return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
+            }
+            if(item.primitive === 'sphere') {
+                return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
             }
             if(item.primitive === 'text') {
                 return <div><i className="fa fa-font fa-fw"/> {item.text}</div>

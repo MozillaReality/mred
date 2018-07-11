@@ -63,13 +63,28 @@ function generateLayer(layer) {
 
 function generatePrimitive(prim) {
     if(prim.primitive === 'cube') {
-        console.log('we are making a cube!',prim)
         const el = document.createElement('a-entity')
         el.setAttribute('geometry',{
             primitive:'box',
             width:prim.width,
             height:prim.height,
             depth:prim.depth
+        })
+        el.setAttribute('position',{
+            x:  Math.sin(prim.angle/180*Math.PI)*4,
+            z: -Math.cos(prim.angle/180*Math.PI)*4,
+            y: prim.elevation*0.1
+        })
+        el.setAttribute('material',{
+            color:'red',
+        })
+        $('#children').appendChild(el)
+    }
+    if(prim.primitive === 'sphere') {
+        const el = document.createElement('a-entity')
+        el.setAttribute('geometry',{
+            primitive:'sphere',
+            radius:prim.radius,
         })
         el.setAttribute('position',{
             x:  Math.sin(prim.angle/180*Math.PI)*4,
