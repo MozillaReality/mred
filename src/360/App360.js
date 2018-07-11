@@ -167,7 +167,7 @@ class UploadAssetDialog extends Component {
         this.state = {
             file: null,
             filename:'',
-            name: ''
+            name: 'unnamed asset'
         }
     }
     choseFile = (e) => {

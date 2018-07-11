@@ -6,10 +6,12 @@
 //loop through the doc for scenes and entities
 //create layers and entities as needed using createElement
 
+
 console.log("setting everything up")
 const args = parseQuery(document.location.search)
 console.log("args = ", args)
 const SERVER_URL = "https://vr.josh.earth/360/doc/"
+const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
 fetch(SERVER_URL+args.doc)
     .then(res => res.json())
     .then(doc=>{
@@ -42,6 +44,7 @@ function parseQuery(str) {
 
 
 function parseDocument(doc) {
+    this.doc = doc
     const scenes = doc.doc.children[0]
     const firstScene = scenes.children[0]
     generateScene(firstScene)
@@ -52,9 +55,7 @@ function generateScene(scene) {
 }
 
 function generateLayer(layer) {
-    console.log("layer",layer)
     layer.children.forEach(ch=>{
-        console.log("child is",ch)
         if(ch.type === 'primitive') {
             generatePrimitive(ch)
         }
@@ -96,4 +97,26 @@ function generatePrimitive(prim) {
         })
         $('#children').appendChild(el)
     }
+    if(prim.primitive === 'image360') {
+        const img = findAssetById(prim.imageid)
+        const url = SERVER_URL_ASSETS + img.resourceId
+
+        const el = document.createElement('a-entity')
+        el.setAttribute('geometry',{
+            primitive:'sphere',
+            radius:100,
+        })
+        el.setAttribute('material',{
+            color:'white',
+            src:url,
+            side:'back'
+        })
+        $('#children').appendChild(el)
+    }
+}
+
+function findAssetById(id) {
+    const assets = doc.doc.children[1]
+    const asset = assets.children.find(a => a.id === id)
+    return asset
 }
