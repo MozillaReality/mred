@@ -158,3 +158,7 @@ function loadScene(sceneId) {
 function getNodeForAFrameObject(el) {
     return els_to_nodes[el.id]
 }
+
+function getURLForResourceId(id) {
+    return SERVER_URL_ASSETS + id
+}

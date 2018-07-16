@@ -300,6 +300,14 @@ export class Editor360Provider extends TreeItemProvider {
             title:'Navigate To'
         }
     }
+    createPlaySoundAction() {
+        return {
+            id: this.genID('playsound-action'),
+            type:'playsound-action',
+            assetid:null,
+            title:'Play Sound'
+        }
+    }
     appendChild(parent,item) {
         if(!parent) throw new Error("cannot append to a null parent")
         this.id_index[item.id] = item

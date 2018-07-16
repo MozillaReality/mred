@@ -51,6 +51,14 @@
                     console.log("found the nav",nav)
                     loadScene(nav.targetScene)
                 }
+                const play = node.children.find(ch=>ch.type === 'playsound-action')
+                if(play) {
+                    const asset = findAssetById(play.assetid)
+                    const url = getURLForResourceId(asset.resourceId)
+                    const audio = document.createElement('audio')
+                    audio.autoplay = true
+                    audio.src = url
+                }
             }
         })
 

@@ -116,6 +116,11 @@ export default class App360 extends Component {
                 title:'Go to...',
                 icon:'arrow-right',
                 fun: this.addNavAction
+            },
+            {
+                title:'Play Sound',
+                icon:'play',
+                fun: this.addPlaySoundAction
             }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
@@ -153,6 +158,7 @@ export default class App360 extends Component {
     add3DModel = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create3DModel())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
+    addPlaySoundAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createPlaySoundAction())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
     add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
