@@ -122,6 +122,18 @@ const PROP_DEFS = {
         key:'assetid',
         type:'enum',
         locked:false,
+    },
+    color: {
+        name:'Color',
+        key:'color',
+        type:'string',
+        locked:false,
+    },
+    backgroundColor: {
+        name:'Background Color',
+        key:'backgroundColor',
+        type:'string',
+        locked:false,
     }
 
 }
@@ -214,6 +226,7 @@ export class Editor360Provider extends TreeItemProvider {
             angle:0,
             elevation:0,
             title:'Cube',
+            color:'red',
             children:[],
         }
     }
@@ -226,6 +239,7 @@ export class Editor360Provider extends TreeItemProvider {
             angle:0,
             elevation:0,
             title:'Sphere',
+            color:'yellow',
             children:[]
         }
     }
@@ -252,6 +266,8 @@ export class Editor360Provider extends TreeItemProvider {
             text:'some text',
             fontSize:36,
             title:'Text',
+            backgroundColor:'white',
+            color:'black',
             children:[],
         }
     }

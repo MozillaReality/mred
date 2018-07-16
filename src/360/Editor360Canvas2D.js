@@ -87,6 +87,7 @@ export default class Editor360Canvas2D extends Component {
                     height: (node.height*50)+'px',
                     left: (node.angle/360*w)+'px',
                     top: (h/2-(node.elevation)*3)+'px',
+                    backgroundColor:node.color||'red',
                 }
                 const clss = {
                     primitive:true,
@@ -102,11 +103,12 @@ export default class Editor360Canvas2D extends Component {
                     left: (node.angle/360*w)+'px',
                     top: (h/2-(node.elevation)*3)+'px',
                     borderRadius:'1em',
-                    padding:'1em'
+                    padding:'1em',
+                    backgroundColor:node.color||'red',
                 }
                 const clss = {
                     primitive:true,
-                    cube:true,
+                    sphere:true,
                     selected:this.prov().findSelectedPrimitive() === node
                 }
                 return <div className={toClassString(clss)} style={style} key={i}>sphere</div>
@@ -122,7 +124,7 @@ export default class Editor360Canvas2D extends Component {
                 }
                 const clss = {
                     primitive:true,
-                    cube:true,
+                    gltf:true,
                     selected:this.prov().findSelectedPrimitive() === node
                 }
                 return <div className={toClassString(clss)} style={style} key={i}>GLTF Model</div>
@@ -133,6 +135,8 @@ export default class Editor360Canvas2D extends Component {
                     height: (node.height*50)+'px',
                     left: (node.angle/360*w)+'px',
                     top: (h/2-(node.elevation)*3)+'px',
+                    color:node.color,
+                    backgroundColor:node.backgroundColor,
                 }
                 const clss = {
                     primitive:true,

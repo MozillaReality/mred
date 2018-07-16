@@ -81,7 +81,7 @@ function generatePrimitive(prim) {
             y: prim.elevation*0.1
         })
         el.setAttribute('material',{
-            color:'red',
+            color:prim.color,
         })
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim
@@ -99,7 +99,7 @@ function generatePrimitive(prim) {
             y: prim.elevation*0.1
         })
         el.setAttribute('material',{
-            color:'red',
+            color:prim.color,
         })
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim

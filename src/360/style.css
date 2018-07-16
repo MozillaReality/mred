@@ -29,11 +29,12 @@
 }
 
 .canvas-360 .primitive.cube {
-    background-color: red;
 }
 
+.canvas-360 .primitive.gltf {
+    background-color: aqua;
+}
 .canvas-360 .primitive.text {
-    background-color: white;
 }
 .canvas-360 .primitive.image360 {
     z-index: 0;
