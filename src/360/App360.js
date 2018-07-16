@@ -88,6 +88,11 @@ export default class App360 extends Component {
                 fun: this.addSphere
             },
             {
+                title:'GLTF Model',
+                icon:'cube',
+                fun: this.add3DModel
+            },
+            {
                 title:'Text',
                 icon:'font',
                 fun: this.addText
@@ -131,6 +136,11 @@ export default class App360 extends Component {
                 title:'Sound',
                 icon:'file-audio-o',
                 fun: this.uploadSound
+            },
+            {
+                title:'GLTF from URL',
+                icon:'file-o',
+                fun: this.addGLTFURLAsset,
             }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
@@ -140,6 +150,7 @@ export default class App360 extends Component {
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
     addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
     addSphere = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createSphere())
+    add3DModel = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create3DModel())
     addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
@@ -156,6 +167,11 @@ export default class App360 extends Component {
     upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
     uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
     upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
+    addGLTFURLAsset = () => {
+        DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
+                                                 title={"Add a GLTF from a URL"}
+        />)
+    }
     deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
@@ -213,5 +229,50 @@ class UploadAssetDialog extends Component {
                 <button onClick={this.uploadFile}>upload</button>
             </footer>
         </Dialog>
+    }
+}
+
+
+class AddGLTFFromURLDialog extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            name:'unnamed GLTF model',
+            url:''
+        }
+    }
+    editedName = (e) => this.setState({name:e.target.value})
+    editedURL = (e) => this.setState({url:e.target.value})
+    cancel = () => DialogManager.hide()
+    add = () => {
+        const asset = this.props.provider.createAssetWithURLInfo({
+            title:this.state.name,
+            resourceType:'gltf-url',
+            url: this.state.url
+        })
+        this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
+        DialogManager.hide()
+    }
+
+    render() {
+        return <Dialog visible={true}>
+            <header>{this.props.title}</header>
+            <VBox>
+                <HBox>
+                    <label>name</label>
+                    <input type="text" value={this.state.name} onChange={this.editedName}/>
+                </HBox>
+                <HBox>
+                    <label>URL</label>
+                    <input type="text" value={this.state.url} onChange={this.editedURL}/>
+                </HBox>
+            </VBox>
+
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.add}>add</button>
+            </footer>
+        </Dialog>
+
     }
 }

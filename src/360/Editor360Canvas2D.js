@@ -46,6 +46,14 @@ export default class Editor360Canvas2D extends Component {
                     </div>
                 </VBox>
             }
+            if(asset.resourceType === 'gltf-url') {
+                return <VBox>
+                    <h3>{asset.title}</h3>
+                    <div>
+                        the url is {asset.url}
+                    </div>
+                </VBox>
+            }
             return <div>showing an asset: <b>{asset.title}</b></div>
         }
         const scene = this.prov().findSelectedScene()
@@ -102,6 +110,22 @@ export default class Editor360Canvas2D extends Component {
                     selected:this.prov().findSelectedPrimitive() === node
                 }
                 return <div className={toClassString(clss)} style={style} key={i}>sphere</div>
+            }
+            if(node.primitive === 'gltf') {
+                const style = {
+                    width: (node.width*50)+'px',
+                    height: (node.height*50)+'px',
+                    left: (node.angle/360*w)+'px',
+                    top: (h/2-(node.elevation)*3)+'px',
+                    borderRadius:'1em',
+                    padding:'1em'
+                }
+                const clss = {
+                    primitive:true,
+                    cube:true,
+                    selected:this.prov().findSelectedPrimitive() === node
+                }
+                return <div className={toClassString(clss)} style={style} key={i}>GLTF Model</div>
             }
             if(node.primitive === 'text') {
                 const style = {

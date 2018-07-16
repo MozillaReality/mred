@@ -104,6 +104,24 @@ const PROP_DEFS = {
         key:'targetScene',
         type:'enum',
         locked:false
+    },
+    url: {
+        name:'URL',
+        key:'url',
+        type:'string',
+        locked:false,
+    },
+    scale: {
+        name:'Scale',
+        key:'scale',
+        type:'number',
+        locked:false,
+    },
+    assetid: {
+        name:'Asset',
+        key:'assetid',
+        type:'enum',
+        locked:false,
     }
 
 }
@@ -211,6 +229,19 @@ export class Editor360Provider extends TreeItemProvider {
             children:[]
         }
     }
+    create3DModel() {
+        return {
+            id: this.genID('3dmodel'),
+            type:'primitive',
+            primitive:'gltf',
+            scale:1,
+            angle:0,
+            elevation:0,
+            title:'GLTF Model',
+            assetid:null,
+            children:[]
+        }
+    }
     createText() {
         return {
             id: this.genID('text'),
@@ -278,6 +309,7 @@ export class Editor360Provider extends TreeItemProvider {
         })
     }
 
+    //creates an asset represented by a resource on the doc server
     createAssetWithInfo(info) {
         if(!info.id) throw new Error("cannot created an asset without a resource ID")
         return {
@@ -286,6 +318,16 @@ export class Editor360Provider extends TreeItemProvider {
             resourceType: info.resourceType?info.resourceType:"unknown",
             resourceId:info.id,
             title: info.title?info.title:"some unknown asset"
+        }
+    }
+    //creates an asset represented by a URL, instead of a resource on the server
+    createAssetWithURLInfo(info) {
+        return {
+            id:this.genID('asset'),
+            type:'asset',
+            resourceType: info.resourceType?info.resourceType:"unknown",
+            title: info.title?info.title:"some unknown asset",
+            url:info.url,
         }
     }
     getScenesRoot() {
@@ -343,6 +385,7 @@ export class Editor360Provider extends TreeItemProvider {
     getValuesForEnum(key,obj) {
         if(key === PROP_DEFS.imageid.key) return  this.getAssetsRoot().children.map(ass=>ass.id)
         if(key === PROP_DEFS.targetScene.key) return this.getScenes().map(sc=>sc.id)
+        if(key === PROP_DEFS.assetid.key) return this.getAssetsRoot().children.map(ass => ass.id)
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.imageid.key) {
@@ -350,6 +393,9 @@ export class Editor360Provider extends TreeItemProvider {
         }
         if(key === PROP_DEFS.targetScene.key) {
             return ActionItemRenderer
+        }
+        if(key === PROP_DEFS.assetid.key) {
+            return AssetItemRenderer
         }
     }
 
@@ -432,12 +478,18 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
         if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
         if(item.type === 'layer')  return <div><i className="fa fa-window-maximize"/> {item.title}</div>
-        if(item.type === 'asset')  return <div><i className="fa fa-image"/> {item.title}</div>
+        if(item.type === 'asset')  {
+            if(item.resourceType === 'audio') return <div><i className="fa fa-file-audio-o"/> {item.title}</div>
+            return <div><i className="fa fa-image"/> {item.title}</div>
+        }
         if(item.type === 'primitive') {
             if(item.primitive === 'cube') {
                 return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
             }
             if(item.primitive === 'sphere') {
+                return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
+            }
+            if(item.primitive === 'gltf-model') {
                 return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
             }
             if(item.primitive === 'text') {
