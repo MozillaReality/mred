@@ -138,6 +138,9 @@ const PROP_DEFS = {
 
 }
 
+const PRIM_TYPES = {
+    IMAGE2D:'image2d'
+}
 
 export class Editor360Provider extends TreeItemProvider {
     constructor() {
@@ -275,11 +278,12 @@ export class Editor360Provider extends TreeItemProvider {
         return {
             id: this.genID('image-object'),
             type:'primitive',
-            primitive:'image2d',
+            primitive:PRIM_TYPES.IMAGE2D,
             angle:0,
             elevation:0,
             imageid:null,
             title:'Image',
+            scale:1,
             children:[],
         }
     }

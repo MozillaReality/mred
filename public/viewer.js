@@ -15,7 +15,8 @@ const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
 const els_to_nodes = {}
 
 const PRIM_TYPES = {
-    IMAGE2D:'image2d'
+    IMAGE2D:'image2d',
+    TEXT2D:'text'
 }
 
 fetch(SERVER_URL+args.doc)
@@ -140,6 +141,8 @@ function generatePrimitive(prim) {
     }
     if(prim.primitive === PRIM_TYPES.IMAGE2D)
         return createImage2D(prim)
+    if(prim.primitive === PRIM_TYPES.TEXT2D)
+        return createText2D(prim)
 }
 
 function createImage2D(prim) {
@@ -148,6 +151,25 @@ function createImage2D(prim) {
     const image = findAssetById(prim.imageid)
     const url = SERVER_URL_ASSETS + image.resourceId
     el.setAttribute('src',url)
+    el.setAttribute('position',{
+        x:  Math.sin(prim.angle/180*Math.PI)*4,
+        z: -Math.cos(prim.angle/180*Math.PI)*4,
+        y: prim.elevation*0.1
+    })
+    el.setAttribute('scale', {
+        x: prim.scale,
+        y: prim.scale,
+        z: prim.scale
+    })
+    $('#children').appendChild(el)
+    els_to_nodes[el.getAttribute('id')] = prim
+}
+
+function createText2D(prim) {
+    const el = document.createElement('a-text')
+    el.setAttribute('id',genId(PRIM_TYPES.TEXT2D))
+    el.setAttribute('value','some cool text')
+    el.setAttribute('color',prim.color)
     el.setAttribute('position',{
         x:  Math.sin(prim.angle/180*Math.PI)*4,
         z: -Math.cos(prim.angle/180*Math.PI)*4,
