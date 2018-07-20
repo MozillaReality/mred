@@ -469,7 +469,7 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findSelectedLayer() {
         let sel = Selection.getSelection()
-        if(!sel || sel.type === TYPES.NODES.STACK) return this.getSceneRoot().children[0].children[0]
+        if(!sel || sel.type === TYPES.NODES.STACK) return this.findSelectedScene().children[0]
         if(sel.type === TYPES.NODES.SCENE) return sel.children[0]
         if(sel.type === TYPES.NODES.LAYER) return sel
         return this.findLayerParent(sel)
