@@ -455,10 +455,22 @@ export class Editor360Provider extends TreeItemProvider {
         return sc
     }
     createAssets() {
+        const assets = [
+            this.createAssetWithInfo({
+                id:'hotel_small.jpg',
+                resourceType:TYPES.ASSETS.IMAGE360,
+                title:'Bellagio Hotel'
+            }),
+            this.createAssetWithURLInfo({
+                resourceType:TYPES.ASSETS.GLTF_URL,
+                title:'MR Duck',
+                url:'https://vr.josh.earth/assets/models/duck/duck.gltf'
+            })
+        ]
         return {
             id: this.genID( TYPES.NODES.ASSETS),
             type: TYPES.NODES.ASSETS,
-            children:[]
+            children:assets
         }
     }
     createLayer() {

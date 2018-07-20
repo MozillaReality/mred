@@ -16,6 +16,7 @@ const els_to_nodes = {}
 
 const PRIM_TYPES = {
     IMAGE2D:'image2d',
+    MODEL3D:'model3d',
     TEXT2D:'text'
 }
 
@@ -108,19 +109,7 @@ function generatePrimitive(prim) {
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim
     }
-    if(prim.primitive === 'gltf') {
-        const el = document.createElement('a-entity')
-        el.setAttribute('id',genId('gltf'))
-        const model = findAssetById(prim.assetid)
-        el.setAttribute('gltf-model',model.url)
-        el.setAttribute('position',{
-            x:  Math.sin(prim.angle/180*Math.PI)*4,
-            z: -Math.cos(prim.angle/180*Math.PI)*4,
-            y: prim.elevation*0.1
-        })
-        $('#children').appendChild(el)
-        els_to_nodes[el.getAttribute('id')] = prim
-    }
+    if(prim.primitive === PRIM_TYPES.MODEL3D) return createModel3D(prim)
     if(prim.primitive === 'image360') {
         const img = findAssetById(prim.imageid)
         const url = SERVER_URL_ASSETS + img.resourceId
@@ -139,10 +128,22 @@ function generatePrimitive(prim) {
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim
     }
-    if(prim.primitive === PRIM_TYPES.IMAGE2D)
-        return createImage2D(prim)
-    if(prim.primitive === PRIM_TYPES.TEXT2D)
-        return createText2D(prim)
+    if(prim.primitive === PRIM_TYPES.IMAGE2D) return createImage2D(prim)
+    if(prim.primitive === PRIM_TYPES.TEXT2D)  return createText2D(prim)
+}
+
+function createModel3D(prim) {
+    const el = document.createElement('a-entity')
+    el.setAttribute('id',genId('gltf'))
+    const model = findAssetById(prim.assetid)
+    el.setAttribute('gltf-model',model.url)
+    el.setAttribute('position',{
+        x:  Math.sin(prim.angle/180*Math.PI)*4,
+        z: -Math.cos(prim.angle/180*Math.PI)*4,
+        y: prim.elevation*0.1
+    })
+    $('#children').appendChild(el)
+    els_to_nodes[el.getAttribute('id')] = prim
 }
 
 function createImage2D(prim) {
