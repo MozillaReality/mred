@@ -150,7 +150,8 @@ export default class App360 extends Component {
     upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
                                                                  title={"Upload 360 Image"}
                                                                  resourceType={TYPES.ASSETS.IMAGE360}/>)
-    addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()} title={"Add a GLTF from a URL"}/>)
+    addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
+                                                                     title={"Add a GLTF from a URL"}/>)
     deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }

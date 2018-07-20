@@ -125,3 +125,8 @@ export function shallowCopy(obj) {
     Object.keys(obj).forEach((key) => out[key] = obj[key])
     return out;
 }
+
+export function toClassString(obj) {
+    return Object.keys(obj).map((key)=> obj[key]?key:"").join(" ")
+}
+
