@@ -8,6 +8,7 @@ import PropSheet from '../PropSheet'
 import {SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
+import {TYPES} from "./Editor360Editor";
 
 export default class App360 extends Component {
     constructor(props) {
@@ -170,14 +171,16 @@ export default class App360 extends Component {
     save = () => this.prov().save()
     undo = () => this.uman.undo()
     redo = () => this.uman.redo()
-    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
-    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
-    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
-    addGLTFURLAsset = () => {
-        DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
-                                                 title={"Add a GLTF from a URL"}
-        />)
-    }
+    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                                 title={"Upload 2D Image"}
+                                                                 resourceType={TYPES.ASSETS.IMAGE2D}/>)
+    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                               title={"Upload Sound"}
+                                                               resourceType={TYPES.ASSETS.AUDIO}/>)
+    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                                 title={"Upload 360 Image"}
+                                                                 resourceType={TYPES.ASSETS.IMAGE360}/>)
+    addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()} title={"Add a GLTF from a URL"}/>)
     deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
@@ -253,7 +256,7 @@ class AddGLTFFromURLDialog extends Component {
     add = () => {
         const asset = this.props.provider.createAssetWithURLInfo({
             title:this.state.name,
-            resourceType:'gltf-url',
+            resourceType:TYPES.ASSETS.GLTF_URL,
             url: this.state.url
         })
         this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)

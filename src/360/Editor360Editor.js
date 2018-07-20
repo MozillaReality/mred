@@ -137,9 +137,35 @@ const PROP_DEFS = {
     }
 
 }
-
-const PRIM_TYPES = {
-    IMAGE2D:'image2d'
+const DOC_TYPE = "360"
+export const TYPES = {
+    NODES: {
+        STACK:'stack',
+        SCENE:'scene',
+        SCENES:'scenes',
+        ASSET:'asset',
+        ASSETS:'assets',
+        LAYER:'layer',
+        PRIMITIVE: 'primitive',
+        PRIMS: {
+            IMAGE2D:'image2d',
+            IMAGE360:'image360',
+            CUBE:'cube',
+            SPHERE:'sphere',
+            MODEL3D:'gltf',
+            TEXT:'text',
+        },
+    },
+    ASSETS: {
+        AUDIO:'audio',
+        IMAGE360:'360-image',
+        IMAGE2D:'2d-image',
+        GLTF_URL:'gltf-url',
+    },
+    ACTIONS: {
+        NAV:'nav-action',
+        PLAY_SOUND:'playsound-action',
+    }
 }
 
 export class Editor360Provider extends TreeItemProvider {
@@ -161,7 +187,7 @@ export class Editor360Provider extends TreeItemProvider {
     /* ============= document model =========== */
 
     getDocType() {
-        return "360"
+        return DOC_TYPE
     }
     setDocument(doc,docid) {
         super.setDocument(doc, docid)
@@ -177,24 +203,24 @@ export class Editor360Provider extends TreeItemProvider {
     }
     makeEmptyRoot() {
         return {
-            title:'stack',
-            type:'stack',
-            id: genID('stack'),
+            title:'Stack',
+            type:TYPES.NODES.STACK,
+            id: genID(TYPES.NODES.STACK),
             children: [this.createScenes(),this.createAssets()],
         }
     }
     createScenes() {
         return {
-            id: this.genID('scenes'),
-            type: 'scenes',
-            title: 'scenes',
+            id: this.genID(TYPES.NODES.SCENES),
+            type: TYPES.NODES.SCENES,
+            title: 'Scenes',
             children: [this.createScene('scene1'), this.createScene('scene2')],
         }
     }
     createScene(title) {
         const sc = {
-            id: this.genID('scene'),
-            type: 'scene',
+            id: this.genID(TYPES.NODES.SCENE),
+            type: TYPES.NODES.SCENE,
             title: title ? title : 'untitled scene',
             children: []
         }
@@ -205,24 +231,24 @@ export class Editor360Provider extends TreeItemProvider {
     }
     createAssets() {
         return {
-            id: this.genID('assets'),
-            type: 'assets',
+            id: this.genID( TYPES.NODES.ASSETS),
+            type: TYPES.NODES.ASSETS,
             children:[]
         }
     }
     createLayer() {
         return {
-            id: this.genID('layer'),
-            type:'layer',
+            id: this.genID(TYPES.NODES.LAYER),
+            type:TYPES.NODES.LAYER,
             title:'A Layer',
             children: [],
         }
     }
     createCube() {
         return {
-            id: this.genID('cube'),
-            type:'primitive',
-            primitive:'cube',
+            id: this.genID(TYPES.NODES.PRIMS.CUBE),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.CUBE,
             width:1,
             height:1,
             depth:1,
@@ -235,9 +261,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     createSphere() {
         return {
-            id: this.genID('sphere'),
-            type:'primitive',
-            primitive:'sphere',
+            id: this.genID(TYPES.NODES.PRIMS.SPHERE),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.SPHERE,
             radius:1,
             angle:0,
             elevation:0,
@@ -248,9 +274,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     create3DModel() {
         return {
-            id: this.genID('3dmodel'),
-            type:'primitive',
-            primitive:'gltf',
+            id: this.genID(TYPES.NODES.PRIMS.MODEL3D),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.MODEL3D,
             scale:1,
             angle:0,
             elevation:0,
@@ -261,9 +287,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     createText() {
         return {
-            id: this.genID('text'),
-            type:'primitive',
-            primitive:'text',
+            id: this.genID(TYPES.NODES.PRIMS.TEXT),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.TEXT,
             angle:0,
             elevation:0,
             text:'some text',
@@ -276,9 +302,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     createImageObject() {
         return {
-            id: this.genID('image-object'),
-            type:'primitive',
-            primitive:PRIM_TYPES.IMAGE2D,
+            id: this.genID(TYPES.NODES.PRIMS.IMAGE2D),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.IMAGE2D,
             angle:0,
             elevation:0,
             imageid:null,
@@ -289,25 +315,25 @@ export class Editor360Provider extends TreeItemProvider {
     }
     create360Background() {
         return {
-            id: this.genID('360-bg'),
-            type:'primitive',
-            primitive:'image360',
+            id: this.genID(TYPES.NODES.PRIMS.IMAGE360),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.IMAGE360,
             imageid:null,
             title:'Image BG',
         }
     }
     createNavAction() {
         return {
-            id: this.genID('nav-action'),
-            type:'nav-action',
+            id: this.genID(TYPES.ACTIONS.NAV),
+            type:TYPES.ACTIONS.NAV,
             targetScene:null,
             title:'Navigate To'
         }
     }
     createPlaySoundAction() {
         return {
-            id: this.genID('playsound-action'),
-            type:'playsound-action',
+            id: this.genID(TYPES.ACTIONS.PLAY_SOUND),
+            type:TYPES.ACTIONS.PLAY_SOUND,
             assetid:null,
             title:'Play Sound'
         }
@@ -416,21 +442,16 @@ export class Editor360Provider extends TreeItemProvider {
         if(key === PROP_DEFS.assetid.key) return this.getAssetsRoot().children.map(ass => ass.id)
     }
     getRendererForEnum(key,obj) {
-        if(key === PROP_DEFS.imageid.key) {
-            return AssetItemRenderer
-        }
-        if(key === PROP_DEFS.targetScene.key) {
-            return ActionItemRenderer
-        }
-        if(key === PROP_DEFS.assetid.key) {
-            return AssetItemRenderer
-        }
+        if(key === PROP_DEFS.imageid.key) return AssetItemRenderer
+        if(key === PROP_DEFS.targetScene.key) return ActionItemRenderer
+        if(key === PROP_DEFS.assetid.key)  return AssetItemRenderer
     }
 
 
     /* ========= selection =========== */
     findSceneParent(o) {
-        if(o.type === 'scene') return o
+        if(!o) return null
+        if(o.type === TYPES.NODES.SCENE) return o
         return this.findSceneParent(o.parent)
     }
     findLayerParent(o) {
@@ -441,22 +462,22 @@ export class Editor360Provider extends TreeItemProvider {
         let sel = Selection.getSelection()
         if(!sel) return this.getSceneRoot().children[0].children[0]
         if(sel === this.getSceneRoot()) return null
-        if(sel.type === 'scenes') return null
-        if(sel.type === 'assets') return null
-        if(sel.type === 'asset') return null
+        if(sel.type === TYPES.NODES.SCENES) return null
+        if(sel.type === TYPES.NODES.ASSETS) return null
+        if(sel.type === TYPES.NODES.ASSET) return null
         return this.findSceneParent(sel)
     }
     findSelectedLayer() {
         let sel = Selection.getSelection()
-        if(!sel || sel.type === 'stack') return this.getSceneRoot().children[0].children[0]
-        if(sel.type === 'scene') return sel.children[0]
-        if(sel.type === 'layer') return sel
+        if(!sel || sel.type === TYPES.NODES.STACK) return this.getSceneRoot().children[0].children[0]
+        if(sel.type === TYPES.NODES.SCENE) return sel.children[0]
+        if(sel.type === TYPES.NODES.LAYER) return sel
         return this.findLayerParent(sel)
     }
     findSelectedPrimitive() {
         let sel = Selection.getSelection()
         if(!sel) return null
-        if(sel.type === 'primitive') return sel
+        if(sel.type === TYPES.NODES.PRIMITIVE) return sel
         return null
     }
     findSelectedNode() {
@@ -464,7 +485,7 @@ export class Editor360Provider extends TreeItemProvider {
     }
     isAssetSelected() {
         const node = this.findSelectedNode()
-        return (node && node.type === 'asset')
+        return (node && node.type === TYPES.NODES.ASSET)
     }
     findSelectedAsset() {
         return this.findSelectedNode()
@@ -501,37 +522,38 @@ export class Editor360Provider extends TreeItemProvider {
 
         /* ========== renderers ============ */
     getRendererForItem(item) {
-        if(item.type === 'stack')  return <div>Project</div>
-        if(item.type === 'scenes') return <div><i className="fa fa-atlas"/> Scenes</div>
-        if(item.type === 'assets') return <div><i className="fa fa-folder"/> Assets</div>
-        if(item.type === 'scene')  return <div><i className="fa fa-globe"/> {item.title}</div>
-        if(item.type === 'layer')  return <div><i className="fa fa-window-maximize"/> {item.title}</div>
-        if(item.type === 'asset')  {
-            if(item.resourceType === 'audio') return <div><i className="fa fa-file-audio-o"/> {item.title}</div>
+        if(item.type === TYPES.NODES.STACK)  return <div>Project</div>
+        if(item.type === TYPES.NODES.SCENES) return <div><i className="fa fa-atlas"/> Scenes</div>
+        if(item.type === TYPES.NODES.ASSETS) return <div><i className="fa fa-folder"/> Assets</div>
+        if(item.type === TYPES.NODES.SCENE)  return <div><i className="fa fa-globe"/> {item.title}</div>
+        if(item.type === TYPES.NODES.LAYER)  return <div><i className="fa fa-window-maximize"/> {item.title}</div>
+        if(item.type === TYPES.NODES.ASSET)  {
+            if(item.resourceType === TYPES.ASSETS.AUDIO) return <div><i className="fa fa-file-audio-o"/> {item.title}</div>
             return <div><i className="fa fa-image"/> {item.title}</div>
         }
-        if(item.type === 'primitive') {
-            if(item.primitive === 'cube') {
+        if(item.type === TYPES.NODES.PRIMITIVE) {
+            if(item.primitive === TYPES.NODES.PRIMS.CUBE) {
                 return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
             }
-            if(item.primitive === 'sphere') {
+            if(item.primitive === TYPES.NODES.PRIMS.SPHERE) {
                 return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
             }
-            if(item.primitive === 'gltf-model') {
+            if(item.primitive === TYPES.NODES.PRIMS.MODEL3D) {
                 return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
             }
-            if(item.primitive === 'text') {
+            if(item.primitive === TYPES.NODES.PRIMS.TEXT) {
                 return <div><i className="fa fa-font fa-fw"/> {item.text}</div>
             }
-            if(item.primitive === 'image2d') {
+            if(item.primitive === TYPES.NODES.PRIMS.IMAGE2D) {
                 return <div><i className="fa fa-image fa-fw"/> {item.title} 2d </div>
             }
-            if(item.primitive === 'image360') {
+            if(item.primitive === TYPES.NODES.PRIMS.IMAGE360) {
                 return <div><i className="fa fa-image fa-fw"/> {item.title} 360 </div>
             }
         }
-        if(item.type === 'nav-action') return <div><i className="fa fa-arrow-right"/> {item.title}</div>
-        if(item.title) return <div><i className="fa fa-diamond"/> {item.title}</div>
+        if(item.type === TYPES.ACTIONS.NAV) return <div><i className="fa fa-arrow-right"/> {item.title}</div>
+        if(item.type === TYPES.ACTIONS.PLAY_SOUND) return <div><i className="fa fa-play"/> {item.title}</div>
+        if(item.title) return <div><i className="fa fa-question"/> {item.title}</div>
         return <div><i className="fa fa-diamond"/> unknown</div>
     }
 }
