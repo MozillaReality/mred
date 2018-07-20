@@ -8,7 +8,7 @@ import PropSheet from '../PropSheet'
 import {SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
-import {TYPES} from "./Editor360Editor";
+import {PRIMS, TYPES} from "./Editor360Editor";
 
 export default class App360 extends Component {
     constructor(props) {
@@ -72,43 +72,19 @@ export default class App360 extends Component {
         </GridEditorApp>
     }
     showAddPopupMenu = (e) => {
-        const acts = [
-            {
-                title:'Layer',
-                icon:'window-maximize',
-                fun: this.addLayer
-            },
-            {
-                title:'Cube',
-                icon:'cube',
-                fun:this.addCube
-            },
-            {
-                title:'Sphere',
-                icon:'circle',
-                fun: this.addSphere
-            },
-            {
-                title:'GLTF Model',
-                icon:'cube',
-                fun: this.add3DModel
-            },
-            {
-                title:'Text',
-                icon:'font',
-                fun: this.addText
-            },
-            {
-                title:'2D Image',
-                icon:'image',
-                fun: this.addImageObject,
-            },
-            {
-                title:'360 Image Background',
-                icon:'image',
-                fun: this.add360BG
+        const acts = Object.keys(PRIMS).map((key) => {
+            const info = PRIMS[key]
+            return {
+                title:info.title,
+                icon:info.icon,
+                fun:() => this.prov().appendChild(this.prov().findSelectedLayer(),info.make(this.prov()))
             }
-        ]
+        })
+        acts.unshift({
+            title:'Layer',
+            icon:'window-maximize',
+            fun: this.addLayer
+        })
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
     showAddActionMenu = (e) => {
@@ -130,12 +106,12 @@ export default class App360 extends Component {
         const acts = [
             {
                 title: '2D Image',
-                icon:'image',
+                icon:'file-photo-o',
                 fun: this.upload2DImage
             },
             {
                 title: '360 Image',
-                icon:'image',
+                icon:'file-image-o',
                 fun: this.upload360Image
             },
             {
@@ -145,7 +121,7 @@ export default class App360 extends Component {
             },
             {
                 title:'GLTF from URL',
-                icon:'file-o',
+                icon:'file-text-o',
                 fun: this.addGLTFURLAsset,
             }
         ]
@@ -154,15 +130,9 @@ export default class App360 extends Component {
 
     addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
-    addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
-    addSphere = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createSphere())
-    add3DModel = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create3DModel())
-    addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addPlaySoundAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createPlaySoundAction())
-    addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
-    add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => {
         const win = window.open()
         const location = `./viewer.html?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`

@@ -168,6 +168,125 @@ export const TYPES = {
     }
 }
 
+const ASSET_INFOS = {
+    'audio':{
+        icon:'file-audio-o'
+    },
+    '360-image':{
+        icon:'file-photo-o'
+    },
+    '2d-image':{
+        icon:'file-image-o',
+    },
+    'gltf-url':{
+        icon:'file-text'
+    }
+}
+
+export const PRIMS = {
+    'cube': {
+        icon:'square',
+        title:'Cube',
+        make: (prov) => {
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.CUBE),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.CUBE,
+                width:1,
+                height:1,
+                depth:1,
+                angle:0,
+                elevation:0,
+                title:'Cube',
+                color:'red',
+                children:[],
+            }
+        }
+    },
+    'sphere': {
+        icon:'circle',
+        title:'Sphere',
+        make:(prov) => {
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.SPHERE),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.SPHERE,
+                radius:1,
+                angle:0,
+                elevation:0,
+                title:'Sphere',
+                color:'yellow',
+                children:[]
+            }
+        }
+    },
+    'text': {
+        icon:'font',
+        title:'Text',
+        make: (prov) => {
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.TEXT),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.TEXT,
+                angle:0,
+                elevation:0,
+                text:'some text',
+                fontSize:36,
+                title:'Text',
+                backgroundColor:'white',
+                color:'black',
+                children:[],
+            }
+        }
+    },
+    'image2d':{
+        icon:'image',
+        title:'2D Image',
+        make:(prov)=>{
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.IMAGE2D),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.IMAGE2D,
+                angle:0,
+                elevation:0,
+                imageid:null,
+                title:'2D Image',
+                scale:1,
+                children:[],
+            }
+        }
+    },
+    'image360':{
+        icon:'image',
+        title:'360 Image Background',
+        make:(prov)=>{
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.IMAGE360),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.IMAGE360,
+                imageid:null,
+                title:'360 BG Image',
+            }
+        }
+    },
+    'model3d':{
+        icon:'cube',
+        title:'3D Model',
+        make:(prov)=>{
+            return {
+                id: prov.genID(TYPES.NODES.PRIMS.MODEL3D),
+                type:TYPES.NODES.PRIMITIVE,
+                primitive:TYPES.NODES.PRIMS.MODEL3D,
+                scale:1,
+                angle:0,
+                elevation:0,
+                title:'GLTF Model',
+                assetid:null,
+                children:[]
+            }
+        }
+    },
+}
 export class Editor360Provider extends TreeItemProvider {
     constructor() {
         super()
@@ -244,84 +363,6 @@ export class Editor360Provider extends TreeItemProvider {
             children: [],
         }
     }
-    createCube() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.CUBE),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.CUBE,
-            width:1,
-            height:1,
-            depth:1,
-            angle:0,
-            elevation:0,
-            title:'Cube',
-            color:'red',
-            children:[],
-        }
-    }
-    createSphere() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.SPHERE),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.SPHERE,
-            radius:1,
-            angle:0,
-            elevation:0,
-            title:'Sphere',
-            color:'yellow',
-            children:[]
-        }
-    }
-    create3DModel() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.MODEL3D),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.MODEL3D,
-            scale:1,
-            angle:0,
-            elevation:0,
-            title:'GLTF Model',
-            assetid:null,
-            children:[]
-        }
-    }
-    createText() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.TEXT),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.TEXT,
-            angle:0,
-            elevation:0,
-            text:'some text',
-            fontSize:36,
-            title:'Text',
-            backgroundColor:'white',
-            color:'black',
-            children:[],
-        }
-    }
-    createImageObject() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.IMAGE2D),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.IMAGE2D,
-            angle:0,
-            elevation:0,
-            imageid:null,
-            title:'Image',
-            scale:1,
-            children:[],
-        }
-    }
-    create360Background() {
-        return {
-            id: this.genID(TYPES.NODES.PRIMS.IMAGE360),
-            type:TYPES.NODES.PRIMITIVE,
-            primitive:TYPES.NODES.PRIMS.IMAGE360,
-            imageid:null,
-            title:'Image BG',
-        }
-    }
     createNavAction() {
         return {
             id: this.genID(TYPES.ACTIONS.NAV),
@@ -367,8 +408,8 @@ export class Editor360Provider extends TreeItemProvider {
     createAssetWithInfo(info) {
         if(!info.id) throw new Error("cannot created an asset without a resource ID")
         return {
-            id:this.genID('asset'),
-            type:'asset',
+            id:this.genID(TYPES.NODES.ASSET),
+            type:TYPES.NODES.ASSET,
             resourceType: info.resourceType?info.resourceType:"unknown",
             resourceId:info.id,
             title: info.title?info.title:"some unknown asset"
@@ -377,8 +418,8 @@ export class Editor360Provider extends TreeItemProvider {
     //creates an asset represented by a URL, instead of a resource on the server
     createAssetWithURLInfo(info) {
         return {
-            id:this.genID('asset'),
-            type:'asset',
+            id:this.genID(TYPES.NODES.ASSET),
+            type:TYPES.NODES.ASSET,
             resourceType: info.resourceType?info.resourceType:"unknown",
             title: info.title?info.title:"some unknown asset",
             url:info.url,
@@ -522,39 +563,27 @@ export class Editor360Provider extends TreeItemProvider {
 
         /* ========== renderers ============ */
     getRendererForItem(item) {
+        function renderTitle(icon, item) {
+            return <div><i className={`fa fa-${icon} fa-fw`}/> {item.title}</div>
+        }
+
         if(item.type === TYPES.NODES.STACK)  return <div>Project</div>
         if(item.type === TYPES.NODES.SCENES) return <div><i className="fa fa-atlas"/> Scenes</div>
         if(item.type === TYPES.NODES.ASSETS) return <div><i className="fa fa-folder"/> Assets</div>
-        if(item.type === TYPES.NODES.SCENE)  return <div><i className="fa fa-globe"/> {item.title}</div>
-        if(item.type === TYPES.NODES.LAYER)  return <div><i className="fa fa-window-maximize"/> {item.title}</div>
+        if(item.type === TYPES.NODES.SCENE)  return renderTitle('globe',item)
+        if(item.type === TYPES.NODES.LAYER)  return renderTitle('window-maximize',item)
         if(item.type === TYPES.NODES.ASSET)  {
-            if(item.resourceType === TYPES.ASSETS.AUDIO) return <div><i className="fa fa-file-audio-o"/> {item.title}</div>
-            return <div><i className="fa fa-image"/> {item.title}</div>
+            const info = ASSET_INFOS[item.resourceType]
+            return renderTitle(info?info.icon:'question',item)
         }
         if(item.type === TYPES.NODES.PRIMITIVE) {
-            if(item.primitive === TYPES.NODES.PRIMS.CUBE) {
-                return <div><i className="fa fa-cube fa-fw"/> {item.title}</div>
-            }
-            if(item.primitive === TYPES.NODES.PRIMS.SPHERE) {
-                return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
-            }
-            if(item.primitive === TYPES.NODES.PRIMS.MODEL3D) {
-                return <div><i className="fa fa-circle fa-fw"/> {item.title}</div>
-            }
-            if(item.primitive === TYPES.NODES.PRIMS.TEXT) {
-                return <div><i className="fa fa-font fa-fw"/> {item.text}</div>
-            }
-            if(item.primitive === TYPES.NODES.PRIMS.IMAGE2D) {
-                return <div><i className="fa fa-image fa-fw"/> {item.title} 2d </div>
-            }
-            if(item.primitive === TYPES.NODES.PRIMS.IMAGE360) {
-                return <div><i className="fa fa-image fa-fw"/> {item.title} 360 </div>
-            }
+            const info = PRIMS[item.primitive]
+            if(info) return renderTitle(info?info.icon:'question',item)
         }
-        if(item.type === TYPES.ACTIONS.NAV) return <div><i className="fa fa-arrow-right"/> {item.title}</div>
-        if(item.type === TYPES.ACTIONS.PLAY_SOUND) return <div><i className="fa fa-play"/> {item.title}</div>
-        if(item.title) return <div><i className="fa fa-question"/> {item.title}</div>
-        return <div><i className="fa fa-diamond"/> unknown</div>
+        if(item.type === TYPES.ACTIONS.NAV) return renderTitle('arrow-right',item)
+        if(item.type === TYPES.ACTIONS.PLAY_SOUND) return renderTitle('play',item)
+        if(item.title) return renderTitle('question',item)
+        return <div><i className="fa fa-question"/> unknown</div>
     }
 }
 
