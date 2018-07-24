@@ -9,6 +9,7 @@ import {SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
 import {PRIMS, TYPES} from "./Editor360Editor";
+import ReactGA from 'react-ga'
 
 export default class App360 extends Component {
     constructor(props) {
@@ -22,6 +23,7 @@ export default class App360 extends Component {
         })
         this.im.addListener('save',this.save)
         this.uman = new UndoManager(this.prov())
+        ReactGA.pageview('/360/')
     }
 
     componentDidMount() {
@@ -134,6 +136,7 @@ export default class App360 extends Component {
     addPlaySoundAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createPlaySoundAction())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
     preview   = () => {
+        ReactGA.event({action:'preview',doc:this.prov().getDocId()})
         const win = window.open()
         const location = `./viewer.html?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`
         this.save().then(()=> win.location = location)
