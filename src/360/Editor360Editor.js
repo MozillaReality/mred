@@ -81,24 +81,80 @@ const PROP_DEFS = {
         type:'number',
         locked:false
     },
-    resourceId: {
-        name:'Resource Id',
-        key:'resourceId',
-        type:'string',
-        locked:true,
-    },
-    resourceType: {
-        name:"Resource Type",
-        key:'resourceType',
-        type:'string',
-        locked:true,
-    },
-    imageid: {
-        name: 'Image ID',
-        key:'imageid',
+
+
+    assetRef: {
+        name:"Asset",
+        key:'assetRef',
         type:'enum',
         locked:false,
     },
+    assetId: {
+        name:'Asset',
+        key:'assetId',
+        type:'string',
+        locked:true,
+    },
+    assetType: {
+        name:"Resource Type",
+        key:'assetType',
+        type:'string',
+        locked:true,
+    },
+    assetSubtype: {
+        name:"subtype",
+        key:'assetSubtype',
+        type:'string',
+        locked:true,
+    },
+    originalFilename: {
+        name:"filename",
+        key:'originalFilename',
+        type:'string',
+        locked:true,
+    },
+    lastModified: {
+        name:'last modified ',
+        key:'lastModified',
+        type:'timestamp',
+        locked:true,
+    },
+    info: {
+        name:'info',
+        key:'info',
+        type:'object',
+        locked:true,
+        hidden:true,
+    },
+    fileSize: {
+        name:'File Size',
+        key:'fileSize',
+        type:'bytecount',
+        locked:true,
+    },
+    author: {
+        name:'Author',
+        key:'author',
+        type:'string',
+        locked:false,
+    },
+    infourl: {
+        name:'Info URL',
+        key:'infourl',
+        type:'string',
+        locked:false,
+    },
+    license: {
+        name:'License',
+        key:'license',
+        type:'string',
+        locked:false,
+    },
+    remote: {
+
+    },
+
+
     targetScene: {
         name:'target',
         key:'targetScene',
@@ -115,12 +171,6 @@ const PROP_DEFS = {
         name:'Scale',
         key:'scale',
         type:'number',
-        locked:false,
-    },
-    assetid: {
-        name:'Asset',
-        key:'assetid',
-        type:'enum',
         locked:false,
     },
     color: {
@@ -158,9 +208,14 @@ export const TYPES = {
     },
     ASSETS: {
         AUDIO:'audio',
-        IMAGE360:'360-image',
-        IMAGE2D:'2d-image',
-        GLTF_URL:'gltf-url',
+        IMAGE:'image',
+        MODEL:'model',
+        SUBTYPES: {
+            GLTF_JSON:'gltf+json',
+            JPEG:'JPEG',
+            PNG:'png',
+            GIF:'gif',
+        }
     },
     ACTIONS: {
         NAV:'nav-action',
@@ -172,13 +227,10 @@ const ASSET_INFOS = {
     'audio':{
         icon:'file-audio-o'
     },
-    '360-image':{
-        icon:'file-photo-o'
-    },
-    '2d-image':{
+    'image':{
         icon:'file-image-o',
     },
-    'gltf-url':{
+    'model':{
         icon:'file-text'
     }
 }
@@ -322,7 +374,7 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE2D] = {
         const img = prov.findAssetById(node.imageid)
         if(img) {
             return <div className={toClassString(clss)} style={style} key={i}>
-                <img src={`${SERVER_URL_ASSETS}${img.resourceId}`} width={50} height={50}/>
+                <img src={`${SERVER_URL_ASSETS}${img.assetId}`} width={50} height={50}/>
             </div>
         } else {
             return <div className={toClassString(clss)} key={i}>img broken</div>
@@ -338,12 +390,12 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE360] = {
             id: prov.genID(TYPES.NODES.PRIMS.IMAGE360),
             type:TYPES.NODES.PRIMITIVE,
             primitive:TYPES.NODES.PRIMS.IMAGE360,
-            imageid:null,
+            assetRef:null,
             title:'360 BG Image',
         }
     },
     render2D: (prov,node,w,h,i) => {
-        const img = prov.findAssetById(node.imageid)
+        const img = prov.findAssetById(node.assetRef)
         const clss = {
             primitive:true,
             image360:true,
@@ -351,7 +403,7 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE360] = {
         }
         if(img) {
             return <div className={toClassString(clss)} key={i}>
-                <img src={`${SERVER_URL_ASSETS}${img.resourceId}`}/>
+                <img src={`${SERVER_URL_ASSETS}${img.assetId}`}/>
             </div>
         } else {
             return <div className={toClassString(clss)} key={i}>img broken</div>
@@ -371,7 +423,7 @@ PRIMS[TYPES.NODES.PRIMS.MODEL3D] = {
             angle:0,
             elevation:0,
             title:'GLTF Model',
-            assetid:null,
+            assetRef:null,
             children:[]
         }
     },
@@ -458,11 +510,14 @@ export class Editor360Provider extends TreeItemProvider {
         const assets = [
             this.createAssetWithInfo({
                 id:'hotel_small.jpg',
-                resourceType:TYPES.ASSETS.IMAGE360,
+                assetType:TYPES.ASSETS.IMAGE,
+                assetSubtype:TYPES.ASSETS.SUBTYPES.JPEG,
                 title:'Bellagio Hotel'
             }),
             this.createAssetWithURLInfo({
-                resourceType:TYPES.ASSETS.GLTF_URL,
+                assetType:TYPES.ASSETS.MODEL,
+                assetSubtype:TYPES.ASSETS.SUBTYPES.GLTF_JSON,
+                remote:true,
                 title:'MR Duck',
                 url:'https://vr.josh.earth/assets/models/duck/duck.gltf'
             })
@@ -493,7 +548,7 @@ export class Editor360Provider extends TreeItemProvider {
         return {
             id: this.genID(TYPES.ACTIONS.PLAY_SOUND),
             type:TYPES.ACTIONS.PLAY_SOUND,
-            assetid:null,
+            assetRef:null,
             title:'Play Sound'
         }
     }
@@ -528,9 +583,17 @@ export class Editor360Provider extends TreeItemProvider {
         return {
             id:this.genID(TYPES.NODES.ASSET),
             type:TYPES.NODES.ASSET,
-            resourceType: info.resourceType?info.resourceType:"unknown",
-            resourceId:info.id,
-            title: info.title?info.title:"some unknown asset"
+            assetType: info.assetType?info.assetType:"unknown",
+            assetSubtype: info.assetSubtype,
+            assetId:info.id,
+            title: info.title?info.title:"some unknown asset",
+            originalFilename:info.originalFilename,
+            lastModified:info.lastModified,
+            fileSize:info.fileSize,
+            info:info.info,
+            author:info.author,
+            infourl:info.infourl,
+            license:info.license,
         }
     }
     //creates an asset represented by a URL, instead of a resource on the server
@@ -538,7 +601,8 @@ export class Editor360Provider extends TreeItemProvider {
         return {
             id:this.genID(TYPES.NODES.ASSET),
             type:TYPES.NODES.ASSET,
-            resourceType: info.resourceType?info.resourceType:"unknown",
+            remote:true,
+            assetType: info.assetType?info.assetType:"unknown",
             title: info.title?info.title:"some unknown asset",
             url:info.url,
         }
@@ -596,14 +660,29 @@ export class Editor360Provider extends TreeItemProvider {
     }
 
     getValuesForEnum(key,obj) {
-        if(key === PROP_DEFS.imageid.key) return  this.getAssetsRoot().children.map(ass=>ass.id)
         if(key === PROP_DEFS.targetScene.key) return this.getScenes().map(sc=>sc.id)
-        if(key === PROP_DEFS.assetid.key) return this.getAssetsRoot().children.map(ass => ass.id)
+        if(key === PROP_DEFS.assetRef.key) {
+            if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.IMAGE360) {
+                return this.getAssetsRoot().children
+                    .filter(ass => ass.assetType === TYPES.ASSETS.IMAGE)
+                    .map(ass => ass.id)
+            }
+            if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.IMAGE2D) {
+                return this.getAssetsRoot().children
+                    .filter(ass => ass.assetType === TYPES.ASSETS.IMAGE)
+                    .map(ass => ass.id)
+            }
+            if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.MODEL3D) {
+                return this.getAssetsRoot().children
+                    .filter(ass => ass.assetType === TYPES.ASSETS.MODEL)
+                    .map(ass => ass.id)
+            }
+            return this.getAssetsRoot().children.map(ass => ass.id)
+        }
     }
     getRendererForEnum(key,obj) {
-        if(key === PROP_DEFS.imageid.key) return AssetItemRenderer
         if(key === PROP_DEFS.targetScene.key) return ActionItemRenderer
-        if(key === PROP_DEFS.assetid.key)  return AssetItemRenderer
+        if(key === PROP_DEFS.assetRef.key)  return AssetItemRenderer
     }
 
 
@@ -694,7 +773,7 @@ export class Editor360Provider extends TreeItemProvider {
         if(item.type === TYPES.NODES.SCENE)  return renderTitle('globe',item)
         if(item.type === TYPES.NODES.LAYER)  return renderTitle('window-maximize',item)
         if(item.type === TYPES.NODES.ASSET)  {
-            const info = ASSET_INFOS[item.resourceType]
+            const info = ASSET_INFOS[item.assetType]
             return renderTitle(info?info.icon:'question',item)
         }
         if(item.type === TYPES.NODES.PRIMITIVE) {

@@ -22,29 +22,21 @@ export default class Editor360Canvas2D extends Component {
     render() {
         if(this.prov().isAssetSelected()) {
             const asset = this.prov().findSelectedAsset()
-            if(asset.resourceType === TYPES.ASSETS.IMAGE360) {
+            if(asset.assetType === TYPES.ASSETS.IMAGE) {
                 return <VBox>
                     <h3>{asset.title}</h3>
-                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'900px',height:'auto'}}/>
+                    <img src={SERVER_URL_ASSETS+asset.assetId} style={{width:'900px',height:'auto'}}/>
                 </VBox>
             }
-            if(asset.resourceType === TYPES.ASSETS.IMAGE2D) {
-                return <VBox>
-                    <h3>{asset.title}</h3>
-                    <div>
-                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'auto',height:'auto'}}/>
-                    </div>
-                </VBox>
-            }
-            if(asset.resourceType === TYPES.ASSETS.AUDIO) {
+            if(asset.assetType === TYPES.ASSETS.AUDIO) {
                 return <VBox>
                     <h3>{asset.title}</h3>
                     <div>
-                        <audio src={SERVER_URL_ASSETS+asset.resourceId} controls={true}/>
+                        <audio src={SERVER_URL_ASSETS+asset.assetId} controls={true}/>
                     </div>
                 </VBox>
             }
-            if(asset.resourceType === TYPES.ASSETS.GLTF_URL) {
+            if(asset.assetType === TYPES.ASSETS.MODEL && asset.remote) {
                 return <VBox>
                     <h3>{asset.title}</h3>
                     <div>

@@ -129,7 +129,16 @@ class PropEditor extends Component {
         const obj = selMan.getSelection();
         const provider = this.props.provider
         if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
-        if (prop.isLocked()) return <i>{prop.getValue()}</i>
+        if (prop.isLocked()) {
+            const value = prop.getValue()
+            let str = value
+            //convert from object to string if needed
+            if(typeof value !== 'string' && !(value instanceof String)) {
+                if(value) str = value.toString()
+            }
+            if(!str) str = ""
+            return <i>{str}</i>
+        }
         if (prop.isType('string'))  return <StringEditor value={this.state.value}
                                                          onChange={this.changed}
                                                          onBlur={this.commit}

@@ -12,6 +12,7 @@ import {PRIMS, TYPES} from "./Editor360Editor";
 import ReactGA from 'react-ga'
 import JSZip from "jszip"
 import {saveAs} from "file-saver/FileSaver"
+import UploadAssetDialog from './UploadAssetDialog'
 
 export default class App360 extends Component {
     constructor(props) {
@@ -110,19 +111,9 @@ export default class App360 extends Component {
     showAddAssetMenu = (e) => {
         const acts = [
             {
-                title: '2D Image',
-                icon:'file-photo-o',
-                fun: this.upload2DImage
-            },
-            {
-                title: '360 Image',
-                icon:'file-image-o',
-                fun: this.upload360Image
-            },
-            {
-                title:'Sound',
-                icon:'file-audio-o',
-                fun: this.uploadSound
+                title: 'Local Image or Sound',
+                icon:'file-o',
+                fun: this.uploadLocal
             },
             {
                 title:'GLTF from URL',
@@ -180,76 +171,13 @@ export default class App360 extends Component {
     }
     undo = () => this.uman.undo()
     redo = () => this.uman.redo()
-    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
-                                                                 title={"Upload 2D Image"}
-                                                                 resourceType={TYPES.ASSETS.IMAGE2D}/>)
-    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
-                                                               title={"Upload Sound"}
-                                                               resourceType={TYPES.ASSETS.AUDIO}/>)
-    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
-                                                                 title={"Upload 360 Image"}
-                                                                 resourceType={TYPES.ASSETS.IMAGE360}/>)
+    uploadLocal  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}/>)
     addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
                                                                      title={"Add a GLTF from a URL"}/>)
     deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
 
-
-class UploadAssetDialog extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            file: null,
-            filename:'',
-            name: 'unnamed asset'
-        }
-    }
-    choseFile = (e) => {
-        this.setState({
-            file:e.target.files[0],
-            filename:e.target.files[0].name
-        })
-    }
-    editedName = (e) => {
-        this.setState({name:e.target.value})
-    }
-    uploadFile = () => {
-        this.props.provider.uploadFile(this.state.file).then((resource)=>{
-            const asset = this.props.provider.createAssetWithInfo({
-                id:resource.id,
-                title:this.state.name,
-                resourceType:this.props.resourceType
-            })
-            this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
-            DialogManager.hide()
-        })
-    }
-    cancel = () => {
-        DialogManager.hide()
-    }
-    render() {
-        return <Dialog visible={true}>
-            <header>{this.props.title}</header>
-            <VBox>
-                <HBox>
-                    <label>name</label>
-                    <input type="text" value={this.state.name} onChange={this.editedName}/>
-                </HBox>
-                <HBox>
-                    <label>file</label>
-                    <input type="file" onChange={this.choseFile}/>
-                    <label>{this.state.filename}</label>
-                </HBox>
-            </VBox>
-
-            <footer>
-                <button onClick={this.cancel}>cancel</button>
-                <button onClick={this.uploadFile}>upload</button>
-            </footer>
-        </Dialog>
-    }
-}
 
 
 class AddGLTFFromURLDialog extends Component {
