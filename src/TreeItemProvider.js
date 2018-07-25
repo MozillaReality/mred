@@ -95,7 +95,6 @@ class TreeItemProviderInterface {
 export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor() {
         super()
-        console.log('created a tree item Provider')
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
@@ -104,11 +103,9 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
         })
         this.pubnub.addListener({
-            status: (status)=> console.log(status),
+            // status: (status)=> console.log(status),
             message: (msg) => {
-                console.log(msg)
                 if(msg.channel === this.docid) {
-                    console.log("got a message for my doc. reloading")
                     this.reloadDocument()
                 }
             }
@@ -169,7 +166,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             if(key === 'parent') return undefined
             return value
         })
-        console.log("doc is",payload_string)
+        // console.log("doc is",payload_string)
         return POST_JSON(SERVER_URL+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
@@ -177,7 +174,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         }).catch((e)=> console.log("error",e))
     }
     loadDoc(docid) {
-        console.log("need to load the doc",docid)
+        // console.log("need to load the doc",docid)
         GET_JSON(SERVER_URL+docid).then((payload)=>{
             console.log("got the doc",payload)
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
@@ -190,13 +187,13 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
     reloadDocument() {
         const spath = this.generateSelectionPath(Selection.getSelection());
-        console.log("got the path",spath)
+        // console.log("got the path",spath)
         GET_JSON(SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
             const newsel = this.findNodeFromSelectionPath(this.getSceneRoot(),spath)
-            console.log("set new selection to ", newsel)
+            // console.log("set new selection to ", newsel)
             Selection.setSelection(newsel)
         }).catch((e)=>{
             console.log("couldn't reload the doc",e)

@@ -7,201 +7,230 @@
 //create layers and entities as needed using createElement
 
 
-console.log("setting everything up")
-const args = parseQuery(document.location.search)
-console.log("args = ", args)
-const SERVER_URL = "https://vr.josh.earth/360/doc/"
-const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
-const els_to_nodes = {}
 
-const PRIM_TYPES = {
-    IMAGE2D:'image2d',
-    MODEL3D:'model3d',
-    TEXT2D:'text'
-}
+function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
+    const els_to_nodes = {}
 
-fetch(SERVER_URL+args.doc)
-    .then(res => res.json())
-    .then(doc=>{
-        clearScene()
-        parseDocument(doc)
-    })
-
-function clearScene() {
-    const scene = $('#children')
-    while(scene.firstChild) {
-        scene.removeChild(scene.firstChild)
+    const PRIM_TYPES = {
+        IMAGE2D: 'image2d',
+        MODEL3D: 'model3d',
+        TEXT2D: 'text'
     }
-}
-function $(sel) {
-    return document.querySelector(sel)
-}
-function parseQuery(str) {
-    if(str.startsWith('?')) str = str.substring(1)
-    console.log("parsing",str)
-    const parts = str.split("&")
-    console.log(parts)
-    const args = {}
-    parts.forEach(part=>{
-        const p2 = part.split('=')
-        args[p2[0]] = p2[1]
-    })
-    return args
-}
-function parseDocument(doc) {
-    this.doc = doc
-    const scenes = doc.doc.children[0]
-    const firstScene = scenes.children[0]
-    generateScene(firstScene)
-}
 
-function generateScene(scene) {
-    scene.children.forEach(generateLayer)
-}
+    fetch(SERVER_URL + docid)
+        .then(res => res.json())
+        .then(doc => {
+            clearScene()
+            parseDocument(doc)
+        })
 
-function generateLayer(layer) {
-    layer.children.forEach(ch=>{
-        if(ch.type === 'primitive') {
-            generatePrimitive(ch)
+    function clearScene() {
+        const scene = $('#children')
+        while (scene.firstChild) {
+            scene.removeChild(scene.firstChild)
         }
-    })
-}
+    }
 
-function genId(prefix) {
-    return prefix+"_"+Math.floor(Math.random()*1000000)
-}
-function generatePrimitive(prim) {
-    if(prim.primitive === 'cube') {
+    function $(sel) {
+        return document.querySelector(sel)
+    }
+
+    function parseDocument(doc) {
+        this.doc = doc
+        const scenes = doc.doc.children[0]
+        const firstScene = scenes.children[0]
+        generateScene(firstScene)
+    }
+
+    function generateScene(scene) {
+        scene.children.forEach(generateLayer)
+    }
+
+    function generateLayer(layer) {
+        layer.children.forEach(ch => {
+            if (ch.type === 'primitive') {
+                generatePrimitive(ch)
+            }
+        })
+    }
+
+    function genId(prefix) {
+        return prefix + "_" + Math.floor(Math.random() * 1000000)
+    }
+
+    function generatePrimitive(prim) {
+        if (prim.primitive === 'cube') {
+            const el = document.createElement('a-entity')
+            el.setAttribute('id', genId('cube'))
+            el.setAttribute('geometry', {
+                primitive: 'box',
+                width: prim.width,
+                height: prim.height,
+                depth: prim.depth
+            })
+            el.setAttribute('position', {
+                x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+                z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+                y: prim.elevation * 0.1
+            })
+            el.setAttribute('material', {
+                color: prim.color,
+            })
+            $('#children').appendChild(el)
+            els_to_nodes[el.getAttribute('id')] = prim
+        }
+        if (prim.primitive === 'sphere') {
+            const el = document.createElement('a-entity')
+            el.setAttribute('id', genId('sphere'))
+            el.setAttribute('geometry', {
+                primitive: 'sphere',
+                radius: prim.radius,
+            })
+            el.setAttribute('position', {
+                x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+                z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+                y: prim.elevation * 0.1
+            })
+            el.setAttribute('material', {
+                color: prim.color,
+            })
+            $('#children').appendChild(el)
+            els_to_nodes[el.getAttribute('id')] = prim
+        }
+        if (prim.primitive === PRIM_TYPES.MODEL3D) return createModel3D(prim)
+        if (prim.primitive === 'image360') {
+            const img = findAssetById(prim.imageid)
+            const url = SERVER_URL_ASSETS + img.resourceId
+
+            const el = document.createElement('a-entity')
+            el.setAttribute('id', genId('image360'))
+            el.setAttribute('geometry', {
+                primitive: 'sphere',
+                radius: 100,
+            })
+            el.setAttribute('material', {
+                color: 'white',
+                src: url,
+                side: 'back'
+            })
+            $('#children').appendChild(el)
+            els_to_nodes[el.getAttribute('id')] = prim
+        }
+        if (prim.primitive === PRIM_TYPES.IMAGE2D) return createImage2D(prim)
+        if (prim.primitive === PRIM_TYPES.TEXT2D) return createText2D(prim)
+    }
+
+    function createModel3D(prim) {
         const el = document.createElement('a-entity')
-        el.setAttribute('id',genId('cube'))
-        el.setAttribute('geometry',{
-            primitive:'box',
-            width:prim.width,
-            height:prim.height,
-            depth:prim.depth
-        })
-        el.setAttribute('position',{
-            x:  Math.sin(prim.angle/180*Math.PI)*4,
-            z: -Math.cos(prim.angle/180*Math.PI)*4,
-            y: prim.elevation*0.1
-        })
-        el.setAttribute('material',{
-            color:prim.color,
+        el.setAttribute('id', genId('gltf'))
+        const model = findAssetById(prim.assetid)
+        el.setAttribute('gltf-model', model.url)
+        el.setAttribute('position', {
+            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y: prim.elevation * 0.1
         })
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim
     }
-    if(prim.primitive === 'sphere') {
-        const el = document.createElement('a-entity')
-        el.setAttribute('id',genId('sphere'))
-        el.setAttribute('geometry',{
-            primitive:'sphere',
-            radius:prim.radius,
-        })
-        el.setAttribute('position',{
-            x:  Math.sin(prim.angle/180*Math.PI)*4,
-            z: -Math.cos(prim.angle/180*Math.PI)*4,
-            y: prim.elevation*0.1
-        })
-        el.setAttribute('material',{
-            color:prim.color,
-        })
-        $('#children').appendChild(el)
-        els_to_nodes[el.getAttribute('id')] = prim
-    }
-    if(prim.primitive === PRIM_TYPES.MODEL3D) return createModel3D(prim)
-    if(prim.primitive === 'image360') {
-        const img = findAssetById(prim.imageid)
-        const url = SERVER_URL_ASSETS + img.resourceId
 
-        const el = document.createElement('a-entity')
-        el.setAttribute('id',genId('image360'))
-        el.setAttribute('geometry',{
-            primitive:'sphere',
-            radius:100,
+    function createImage2D(prim) {
+        const el = document.createElement('a-image')
+        el.setAttribute('id', genId('image2d'))
+        const image = findAssetById(prim.imageid)
+        const url = SERVER_URL_ASSETS + image.resourceId
+        el.setAttribute('src', url)
+        el.setAttribute('position', {
+            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y: prim.elevation * 0.1
         })
-        el.setAttribute('material',{
-            color:'white',
-            src:url,
-            side:'back'
+        el.setAttribute('scale', {
+            x: prim.scale,
+            y: prim.scale,
+            z: prim.scale
         })
         $('#children').appendChild(el)
         els_to_nodes[el.getAttribute('id')] = prim
     }
-    if(prim.primitive === PRIM_TYPES.IMAGE2D) return createImage2D(prim)
-    if(prim.primitive === PRIM_TYPES.TEXT2D)  return createText2D(prim)
-}
 
-function createModel3D(prim) {
-    const el = document.createElement('a-entity')
-    el.setAttribute('id',genId('gltf'))
-    const model = findAssetById(prim.assetid)
-    el.setAttribute('gltf-model',model.url)
-    el.setAttribute('position',{
-        x:  Math.sin(prim.angle/180*Math.PI)*4,
-        z: -Math.cos(prim.angle/180*Math.PI)*4,
-        y: prim.elevation*0.1
-    })
-    $('#children').appendChild(el)
-    els_to_nodes[el.getAttribute('id')] = prim
-}
-
-function createImage2D(prim) {
-    const el = document.createElement('a-image')
-    el.setAttribute('id',genId('image2d'))
-    const image = findAssetById(prim.imageid)
-    const url = SERVER_URL_ASSETS + image.resourceId
-    el.setAttribute('src',url)
-    el.setAttribute('position',{
-        x:  Math.sin(prim.angle/180*Math.PI)*4,
-        z: -Math.cos(prim.angle/180*Math.PI)*4,
-        y: prim.elevation*0.1
-    })
-    el.setAttribute('scale', {
-        x: prim.scale,
-        y: prim.scale,
-        z: prim.scale
-    })
-    $('#children').appendChild(el)
-    els_to_nodes[el.getAttribute('id')] = prim
-}
-
-function createText2D(prim) {
-    const el = document.createElement('a-text')
-    el.setAttribute('id',genId(PRIM_TYPES.TEXT2D))
-    el.setAttribute('value','some cool text')
-    el.setAttribute('color',prim.color)
-    el.setAttribute('position',{
-        x:  Math.sin(prim.angle/180*Math.PI)*4,
-        z: -Math.cos(prim.angle/180*Math.PI)*4,
-        y: prim.elevation*0.1
-    })
-    $('#children').appendChild(el)
-    els_to_nodes[el.getAttribute('id')] = prim
-}
-
-function findAssetById(id) {
-    const assets = doc.doc.children[1]
-    return assets.children.find(ch => ch.id === id)
-}
-function findSceneById(id) {
-    const scenes = doc.doc.children[0]
-    return scenes.children.find(ch => ch.id === id)
-}
-
-function loadScene(sceneId) {
-    const scene = findSceneById(sceneId)
-    if(scene) {
-        clearScene()
-        generateScene(scene)
+    function createText2D(prim) {
+        const el = document.createElement('a-text')
+        el.setAttribute('id', genId(PRIM_TYPES.TEXT2D))
+        el.setAttribute('value', 'some cool text')
+        el.setAttribute('color', prim.color)
+        el.setAttribute('position', {
+            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y: prim.elevation * 0.1
+        })
+        $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
     }
 
+    function findAssetById(id) {
+        const assets = doc.doc.children[1]
+        return assets.children.find(ch => ch.id === id)
+    }
+
+    function findSceneById(id) {
+        const scenes = doc.doc.children[0]
+        return scenes.children.find(ch => ch.id === id)
+    }
+
+    function loadScene(sceneId) {
+        const scene = findSceneById(sceneId)
+        if (scene) {
+            clearScene()
+            generateScene(scene)
+        }
+
+    }
+
+    function getNodeForAFrameObject(el) {
+        return els_to_nodes[el.id]
+    }
+
+    function getURLForResourceId(id) {
+        return SERVER_URL_ASSETS + id
+    }
+
+
+    window.addEventListener('load', () => {
+        console.log("done loading=======")
+        $('#cursor').addEventListener('fusing', () => {
+            console.log("fusing")
+        })
+        $('#cursor').addEventListener('mouseenter', () => {
+            console.log("entering")
+        })
+        $('#cursor').addEventListener('mouseleave', () => {
+            console.log("leaving")
+        })
+        $('#cursor').addEventListener('click', (e) => {
+            console.log("clicked", e.detail)
+            const node = getNodeForAFrameObject(e.detail.intersectedEl)
+            console.log("the node is", node)
+            if (node.children) {
+                const nav = node.children.find(ch => ch.type === 'nav-action')
+                if (nav) {
+                    console.log("found the nav", nav)
+                    loadScene(nav.targetScene)
+                }
+                const play = node.children.find(ch => ch.type === 'playsound-action')
+                if (play) {
+                    const asset = findAssetById(play.assetid)
+                    const url = getURLForResourceId(asset.resourceId)
+                    const audio = document.createElement('audio')
+                    audio.autoplay = true
+                    audio.src = url
+                }
+            }
+        })
+
+    })
 }
 
-function getNodeForAFrameObject(el) {
-    return els_to_nodes[el.id]
-}
-
-function getURLForResourceId(id) {
-    return SERVER_URL_ASSETS + id
+Viewer = {
+    doLoad:doLoad
 }

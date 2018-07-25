@@ -5,11 +5,13 @@ import {DialogManager, DialogContainer, Dialog, HBox, VBox, PopupManager} from "
 import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
-import {SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {SERVER_URL, SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
 import {PRIMS, TYPES} from "./Editor360Editor";
 import ReactGA from 'react-ga'
+import JSZip from "jszip"
+import {saveAs} from "file-saver/FileSaver"
 
 export default class App360 extends Component {
     constructor(props) {
@@ -58,6 +60,7 @@ export default class App360 extends Component {
                 <Spacer/>
                 <button className="fa fa-play" onClick={this.preview}/>
                 <button className="fa fa-save" onClick={this.save}/>
+                <button className="fa fa-download" onClick={this.exportProject}/>
             </Toolbar>
 
             <Panel center middle scroll>
@@ -142,6 +145,39 @@ export default class App360 extends Component {
         this.save().then(()=> win.location = location)
     }
     save = () => this.prov().save()
+    exportProject = () => {
+        this.prov().save().then(()=>{
+            const zip = new JSZip()
+            const folder = zip.folder('project')
+
+            function fetchAsBlob(url) {
+                return fetch(url).then(r => {
+                    if (r.status === 200) return r.blob()
+                    return Promise.reject(new Error(r.statusText))
+                })
+            }
+
+            this.prov().getAssetsRoot().children.map(asset => {
+                let url = null
+                if(asset.resourceType === TYPES.ASSETS.GLTF_URL) {
+                    url = asset.url
+                }else {
+                    url = SERVER_URL_ASSETS+asset.resourceId
+                }
+                const name = url.substring(url.lastIndexOf('/'))
+                console.log('adding',name,url)
+                folder.file(name, fetchAsBlob(url))
+            })
+
+            folder.file('viewer.html',fetchAsBlob("./viewer.html"))
+            folder.file('viewer.js',fetchAsBlob("./viewer.js"))
+            folder.file('doc.json',fetchAsBlob(SERVER_URL+this.prov().getDocId()))
+
+            zip.generateAsync({type:"blob"})
+                .then(blob => saveAs(blob, 'project.zip'))
+                .catch(e => console.log(e));
+        })
+    }
     undo = () => this.uman.undo()
     redo = () => this.uman.redo()
     upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
