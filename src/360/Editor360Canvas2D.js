@@ -25,9 +25,10 @@ export default class Editor360Canvas2D extends Component {
         if(this.prov().isAssetSelected()) {
             const asset = this.prov().findSelectedAsset()
             if(asset.resourceType === '360-image') {
+                const url = SERVER_URL_ASSETS+'thumbnail/w_600/'+asset.resourceId
                 return <VBox>
                     <h3>{asset.title}</h3>
-                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'900px',height:'auto'}}/>
+                    <img src={url} style={{width:'600px',height:'auto'}}/>
                 </VBox>
             }
             if(asset.resourceType === '2d-image') {
@@ -174,9 +175,8 @@ export default class Editor360Canvas2D extends Component {
                     selected:this.prov().findSelectedPrimitive() === node
                 }
                 if(img) {
-                    return <div className={toClassString(clss)} key={i}>
-                        <img src={`${SERVER_URL_ASSETS}${img.resourceId}`}/>
-                    </div>
+                    const url = SERVER_URL_ASSETS+'thumbnail/w_600/'+img.resourceId
+                    return <div className={toClassString(clss)} key={i}><img src={url}/></div>
                 } else {
                     return <div className={toClassString(clss)} key={i}>img broken</div>
                 }

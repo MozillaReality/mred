@@ -4,6 +4,11 @@ const paths = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const PubNub = require("pubnub")
+const imageCache = new (require('pureimage-cache'))({
+    cacheDir:paths.join(process.cwd(),"thumbnails"),
+    useWorkers:false,
+})
+
 
 let pubnub = null;
 let dir = null;
@@ -48,9 +53,9 @@ function parseId(req) {
     return req.params.id.replace(/\W/g, '_')
 }
 function parseAssetId(req) {
-   console.log("start = ", req.params.id)
+   // console.log("start = ", req.params.id)
     const parts = req.params.id.split('.').map((part)=>part.replace(/\W/g,'_'))
-console.log("parts",parts.length,parts)
+    // console.log("parts",parts.length,parts)
     if(parts.length === 1) return parts[0]
     const end = parts.pop()
     return parts.join("")+'.'+end
@@ -85,6 +90,26 @@ function startServer() {
             console.log("sending message to channel",id)
             pubnub.publish({channel:id, message:{message:'updated'}}).then((t)=>console.log(t)).catch((e)=>console.log(e))
             res.json({success:true,message:"saved it!"})
+        })
+    })
+    app.get('/asset/thumbnail/:info/:id',(req,res)=>{
+        const id = parseAssetId(req)
+        // console.log("id = ",id)
+        const path = assetPath(id)
+        // console.log('original path',path)
+        // console.log("image info is",req.params.info)
+        const imageParams = imageCache.parseParams(req.params.info+'/'+id)
+        console.log("making thumbnail with image params",imageParams, path, id)
+        imageCache.makeThumbnail({
+            width:imageParams.width,
+            path:path,
+            name:id,
+            extension:imageParams.extension,
+        }).then(fpath =>{
+            console.log("sending file",fpath,'with content type',imageParams.contentType)
+            res.statusCode = 200;
+            res.setHeader('Content-Type',imageParams.contentType)
+            fs.createReadStream(fpath).pipe(res)
         })
     })
     app.get('/asset/:id', (req,res) => {
