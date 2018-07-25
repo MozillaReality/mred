@@ -12,9 +12,12 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
     const els_to_nodes = {}
 
     const PRIM_TYPES = {
+        CUBE:'cube',
         IMAGE2D: 'image2d',
+        IMAGE360: 'image360',
         MODEL3D: 'model3d',
-        TEXT2D: 'text'
+        TEXT2D: 'text',
+        SPHERE:'sphere',
     }
 
     fetch(SERVER_URL + docid)
@@ -59,71 +62,58 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
     }
 
     function generatePrimitive(prim) {
-        if (prim.primitive === 'cube') {
-            const el = document.createElement('a-entity')
-            el.setAttribute('id', genId('cube'))
-            el.setAttribute('geometry', {
-                primitive: 'box',
-                width: prim.width,
-                height: prim.height,
-                depth: prim.depth
-            })
-            el.setAttribute('position', {
-                x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-                z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-                y: prim.elevation * 0.1
-            })
-            el.setAttribute('material', {
-                color: prim.color,
-            })
-            $('#children').appendChild(el)
-            els_to_nodes[el.getAttribute('id')] = prim
-        }
-        if (prim.primitive === 'sphere') {
-            const el = document.createElement('a-entity')
-            el.setAttribute('id', genId('sphere'))
-            el.setAttribute('geometry', {
-                primitive: 'sphere',
-                radius: prim.radius,
-            })
-            el.setAttribute('position', {
-                x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-                z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-                y: prim.elevation * 0.1
-            })
-            el.setAttribute('material', {
-                color: prim.color,
-            })
-            $('#children').appendChild(el)
-            els_to_nodes[el.getAttribute('id')] = prim
-        }
+        if (prim.primitive === PRIM_TYPES.CUBE) return createCube(prim)
+        if (prim.primitive === PRIM_TYPES.SPHERE) return createSphere(prim)
         if (prim.primitive === PRIM_TYPES.MODEL3D) return createModel3D(prim)
-        if (prim.primitive === 'image360') {
-            const img = findAssetById(prim.imageid)
-            const url = SERVER_URL_ASSETS + img.resourceId
-
-            const el = document.createElement('a-entity')
-            el.setAttribute('id', genId('image360'))
-            el.setAttribute('geometry', {
-                primitive: 'sphere',
-                radius: 100,
-            })
-            el.setAttribute('material', {
-                color: 'white',
-                src: url,
-                side: 'back'
-            })
-            $('#children').appendChild(el)
-            els_to_nodes[el.getAttribute('id')] = prim
-        }
+        if (prim.primitive === PRIM_TYPES.IMAGE360) return createImage360(prim)
         if (prim.primitive === PRIM_TYPES.IMAGE2D) return createImage2D(prim)
         if (prim.primitive === PRIM_TYPES.TEXT2D) return createText2D(prim)
+    }
+
+    function createCube(prim) {
+        const el = document.createElement('a-entity')
+        el.setAttribute('id', genId('cube'))
+        el.setAttribute('geometry', {
+            primitive: 'box',
+            width: prim.width,
+            height: prim.height,
+            depth: prim.depth
+        })
+        el.setAttribute('position', {
+            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y: prim.elevation * 0.1
+        })
+        el.setAttribute('material', {
+            color: prim.color,
+        })
+        $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
+    }
+
+    function createSphere(prim) {
+        const el = document.createElement('a-entity')
+        el.setAttribute('id', genId('sphere'))
+        el.setAttribute('geometry', {
+            primitive: 'sphere',
+            radius: prim.radius,
+        })
+        el.setAttribute('position', {
+            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y: prim.elevation * 0.1
+        })
+        el.setAttribute('material', {
+            color: prim.color,
+        })
+        $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
     }
 
     function createModel3D(prim) {
         const el = document.createElement('a-entity')
         el.setAttribute('id', genId('gltf'))
-        const model = findAssetById(prim.assetid)
+        const model = findAssetById(prim.assetRef)
         el.setAttribute('gltf-model', model.url)
         el.setAttribute('position', {
             x: Math.sin(prim.angle / 180 * Math.PI) * 4,
@@ -134,11 +124,30 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
         els_to_nodes[el.getAttribute('id')] = prim
     }
 
+    function createImage360(prim) {
+        const img = findAssetById(prim.assetRef)
+        const url = SERVER_URL_ASSETS + img.assetId
+
+        const el = document.createElement('a-entity')
+        el.setAttribute('id', genId('image360'))
+        el.setAttribute('geometry', {
+            primitive: 'sphere',
+            radius: 100,
+        })
+        el.setAttribute('material', {
+            color: 'white',
+            src: url,
+            side: 'back'
+        })
+        $('#children').appendChild(el)
+        els_to_nodes[el.getAttribute('id')] = prim
+    }
+
     function createImage2D(prim) {
         const el = document.createElement('a-image')
         el.setAttribute('id', genId('image2d'))
-        const image = findAssetById(prim.imageid)
-        const url = SERVER_URL_ASSETS + image.resourceId
+        const image = findAssetById(prim.assetRef)
+        const url = SERVER_URL_ASSETS + image.assetId
         el.setAttribute('src', url)
         el.setAttribute('position', {
             x: Math.sin(prim.angle / 180 * Math.PI) * 4,
@@ -231,8 +240,8 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
                 }
                 const play = node.children.find(ch => ch.type === 'playsound-action')
                 if (play) {
-                    const asset = findAssetById(play.assetid)
-                    const url = getURLForResourceId(asset.resourceId)
+                    const asset = findAssetById(play.assetRef)
+                    const url = getURLForResourceId(asset.assetId)
                     const audio = document.createElement('audio')
                     audio.autoplay = true
                     audio.src = url
