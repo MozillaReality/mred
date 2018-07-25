@@ -165,8 +165,8 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
             color:prim.backgroundColor,
         })
         el.setAttribute('text',{
-            width: 2,
-            wrapCount: prim.text.length,
+            width: prim.fontSize/10,
+            wrapCount: prim.text.length*0.8,
             value:prim.text,
             color: prim.color
         })
