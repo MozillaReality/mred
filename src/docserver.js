@@ -131,6 +131,8 @@ function startServer() {
             res.statusCode = 200;
             res.setHeader('Content-Type',contentType)
             fs.createReadStream(fpath).pipe(res)
+        }).catch(e => {
+            console.log(e)
         })
     })
     app.get('/asset/:id', (req,res) => {
