@@ -155,10 +155,22 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
     }
 
     function createText2D(prim) {
-        const el = document.createElement('a-text')
+        const el = document.createElement('a-entity')
+        el.setAttribute('geometry',{
+            primitive:'plane',
+            height:'auto',
+            width:'auto'
+        })
+        el.setAttribute('material',{
+            color:prim.backgroundColor,
+        })
+        el.setAttribute('text',{
+            width: 2,
+            wrapCount: prim.text.length,
+            value:prim.text,
+            color: prim.color
+        })
         el.setAttribute('id', genId(PRIM_TYPES.TEXT2D))
-        el.setAttribute('value', 'some cool text')
-        el.setAttribute('color', prim.color)
         el.setAttribute('position', {
             x: Math.sin(prim.angle / 180 * Math.PI) * 4,
             z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
