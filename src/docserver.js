@@ -4,7 +4,8 @@ const paths = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const PubNub = require("pubnub")
-const imageCache = new (require('pureimage-cache'))({
+const ImageCache = require('pureimage-cache')
+const imageCache = new ImageCache({
     cacheDir:paths.join(process.cwd(),"thumbnails"),
     useWorkers:false,
 })
@@ -94,21 +95,41 @@ function startServer() {
     })
     app.get('/asset/thumbnail/:info/:id',(req,res)=>{
         const id = parseAssetId(req)
-        // console.log("id = ",id)
+        console.log("id = ",id)
         const path = assetPath(id)
-        // console.log('original path',path)
-        // console.log("image info is",req.params.info)
-        const imageParams = imageCache.parseParams(req.params.info+'/'+id)
-        console.log("making thumbnail with image params",imageParams, path, id)
+        console.log('original path',path)
+        console.log("image info is",req.params.info)
+        const ip = {}
+        req.params.info.split('-').map(key =>{
+            const parts = key.split('_')
+            ip[parts[0]] = parts[1]
+        })
+        Object.keys(ip).forEach(key => {
+            if(key === 'w') ip[key] = parseInt(ip[key])
+        })
+
+        let ext = id.toLowerCase().substring(id.lastIndexOf('.')+1)
+        console.log("ext",ext)
+        let contentType = ''
+        if(ext === 'jpg') {
+            ext = ImageCache.JPEG
+            contentType = 'image/jpeg'
+        }
+        if(ext === 'png') {
+            ext = ImageCache.PNG
+            contentType = 'image/png'
+        }
+
+        console.log("using image params",ip)
         imageCache.makeThumbnail({
-            width:imageParams.width,
+            width:ip.w,
             path:path,
             name:id,
-            extension:imageParams.extension,
+            extension:ext
         }).then(fpath =>{
-            console.log("sending file",fpath,'with content type',imageParams.contentType)
+            console.log("sending file",fpath,'with content type',contentType)
             res.statusCode = 200;
-            res.setHeader('Content-Type',imageParams.contentType)
+            res.setHeader('Content-Type',contentType)
             fs.createReadStream(fpath).pipe(res)
         })
     })

@@ -12,7 +12,7 @@
     "hsluv": "0.0.1",
     "jszip": "^3.1.5",
     "pubnub": "^4.20.1",
-    "pureimage-cache": "0.0.2",
+    "pureimage-cache": "0.0.4",
     "qrcode": "^1.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

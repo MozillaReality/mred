@@ -23,9 +23,10 @@ export default class Editor360Canvas2D extends Component {
         if(this.prov().isAssetSelected()) {
             const asset = this.prov().findSelectedAsset()
             if(asset.assetType === TYPES.ASSETS.IMAGE) {
+                const url = SERVER_URL_ASSETS+'thumbnail/w_512/'+asset.assetId
                 return <VBox>
                     <h3>{asset.title}</h3>
-                    <img src={SERVER_URL_ASSETS+asset.assetId} style={{width:'900px',height:'auto'}}/>
+                    <img src={url} style={{width:'900px',height:'auto'}}/>
                 </VBox>
             }
             if(asset.assetType === TYPES.ASSETS.AUDIO) {
