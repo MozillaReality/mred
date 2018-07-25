@@ -10,7 +10,7 @@
     "font-awesome": "^4.7.0",
     "hsluv": "0.0.1",
     "pubnub": "^4.20.1",
-    "pureimage-cache": "0.0.1",
+    "pureimage-cache": "0.0.2",
     "qrcode": "^1.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
