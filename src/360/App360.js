@@ -5,9 +5,13 @@ import {DialogManager, DialogContainer, Dialog, HBox, VBox, PopupManager} from "
 import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
-import {SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {SERVER_URL, SERVER_URL_ASSETS} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
+import {PRIMS, TYPES} from "./Editor360Editor";
+import ReactGA from 'react-ga'
+import JSZip from "jszip"
+import {saveAs} from "file-saver/FileSaver"
 
 export default class App360 extends Component {
     constructor(props) {
@@ -21,6 +25,7 @@ export default class App360 extends Component {
         })
         this.im.addListener('save',this.save)
         this.uman = new UndoManager(this.prov())
+        ReactGA.pageview('/360/')
     }
 
     componentDidMount() {
@@ -55,6 +60,7 @@ export default class App360 extends Component {
                 <Spacer/>
                 <button className="fa fa-play" onClick={this.preview}/>
                 <button className="fa fa-save" onClick={this.save}/>
+                <button className="fa fa-download" onClick={this.exportProject}/>
             </Toolbar>
 
             <Panel center middle scroll>
@@ -71,43 +77,19 @@ export default class App360 extends Component {
         </GridEditorApp>
     }
     showAddPopupMenu = (e) => {
-        const acts = [
-            {
-                title:'Layer',
-                icon:'window-maximize',
-                fun: this.addLayer
-            },
-            {
-                title:'Cube',
-                icon:'cube',
-                fun:this.addCube
-            },
-            {
-                title:'Sphere',
-                icon:'circle',
-                fun: this.addSphere
-            },
-            {
-                title:'GLTF Model',
-                icon:'cube',
-                fun: this.add3DModel
-            },
-            {
-                title:'Text',
-                icon:'font',
-                fun: this.addText
-            },
-            {
-                title:'2D Image',
-                icon:'image',
-                fun: this.addImageObject,
-            },
-            {
-                title:'360 Image Background',
-                icon:'image',
-                fun: this.add360BG
+        const acts = Object.keys(PRIMS).map((key) => {
+            const info = PRIMS[key]
+            return {
+                title:info.title,
+                icon:info.icon,
+                fun:() => this.prov().appendChild(this.prov().findSelectedLayer(),info.make(this.prov()))
             }
-        ]
+        })
+        acts.unshift({
+            title:'Layer',
+            icon:'window-maximize',
+            fun: this.addLayer
+        })
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
     showAddActionMenu = (e) => {
@@ -129,12 +111,12 @@ export default class App360 extends Component {
         const acts = [
             {
                 title: '2D Image',
-                icon:'image',
+                icon:'file-photo-o',
                 fun: this.upload2DImage
             },
             {
                 title: '360 Image',
-                icon:'image',
+                icon:'file-image-o',
                 fun: this.upload360Image
             },
             {
@@ -144,7 +126,7 @@ export default class App360 extends Component {
             },
             {
                 title:'GLTF from URL',
-                icon:'file-o',
+                icon:'file-text-o',
                 fun: this.addGLTFURLAsset,
             }
         ]
@@ -153,31 +135,62 @@ export default class App360 extends Component {
 
     addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
-    addCube   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createCube())
-    addSphere = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createSphere())
-    add3DModel = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create3DModel())
-    addText   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createText())
     addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
     addPlaySoundAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createPlaySoundAction())
-    addImageObject   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().createImageObject())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
-    add360BG   = () => this.prov().appendChild(this.prov().findSelectedLayer(),this.prov().create360Background())
     preview   = () => {
+        ReactGA.event({action:'preview',doc:this.prov().getDocId()})
         const win = window.open()
         const location = `./viewer.html?mode=preview&doctype=${this.prov().getDocType()}&doc=${this.prov().getDocId()}`
         this.save().then(()=> win.location = location)
     }
     save = () => this.prov().save()
+    exportProject = () => {
+        this.prov().save().then(()=>{
+            const zip = new JSZip()
+            const folder = zip.folder('project')
+
+            function fetchAsBlob(url) {
+                return fetch(url).then(r => {
+                    if (r.status === 200) return r.blob()
+                    return Promise.reject(new Error(r.statusText))
+                })
+            }
+
+            this.prov().getAssetsRoot().children.map(asset => {
+                let url = null
+                if(asset.resourceType === TYPES.ASSETS.GLTF_URL) {
+                    url = asset.url
+                }else {
+                    url = SERVER_URL_ASSETS+asset.resourceId
+                }
+                const name = url.substring(url.lastIndexOf('/'))
+                console.log('adding',name,url)
+                folder.file(name, fetchAsBlob(url))
+            })
+
+            folder.file('viewer.html',fetchAsBlob("./viewer.html"))
+            folder.file('viewer.js',fetchAsBlob("./viewer.js"))
+            folder.file('doc.json',fetchAsBlob(SERVER_URL+this.prov().getDocId()))
+
+            zip.generateAsync({type:"blob"})
+                .then(blob => saveAs(blob, 'project.zip'))
+                .catch(e => console.log(e));
+        })
+    }
     undo = () => this.uman.undo()
     redo = () => this.uman.redo()
-    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 2D Image"} resourceType="2d-image"/>)
-    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload Sound"} resourceType="audio"/>)
-    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()} title={"Upload 360 Image"} resourceType="360-image"/>)
-    addGLTFURLAsset = () => {
-        DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
-                                                 title={"Add a GLTF from a URL"}
-        />)
-    }
+    upload2DImage  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                                 title={"Upload 2D Image"}
+                                                                 resourceType={TYPES.ASSETS.IMAGE2D}/>)
+    uploadSound  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                               title={"Upload Sound"}
+                                                               resourceType={TYPES.ASSETS.AUDIO}/>)
+    upload360Image = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}
+                                                                 title={"Upload 360 Image"}
+                                                                 resourceType={TYPES.ASSETS.IMAGE360}/>)
+    addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
+                                                                     title={"Add a GLTF from a URL"}/>)
     deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
@@ -253,7 +266,7 @@ class AddGLTFFromURLDialog extends Component {
     add = () => {
         const asset = this.props.provider.createAssetWithURLInfo({
             title:this.state.name,
-            resourceType:'gltf-url',
+            resourceType:TYPES.ASSETS.GLTF_URL,
             url: this.state.url
         })
         this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)

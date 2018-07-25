@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-122855516-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-122855516-2');
+    </script>
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
@@ -30,39 +39,24 @@
 </a-scene>
 
 <script>
-    window.addEventListener('load',()=>{
-        console.log("done loading=======")
-        $('#cursor').addEventListener('fusing',()=>{
-            console.log("fusing")
+    function parseQuery(str) {
+        if (str.startsWith('?')) str = str.substring(1)
+        console.log("parsing", str)
+        const parts = str.split("&")
+        console.log(parts)
+        const args = {}
+        parts.forEach(part => {
+            const p2 = part.split('=')
+            args[p2[0]] = p2[1]
         })
-        $('#cursor').addEventListener('mouseenter',()=>{
-            console.log("entering")
-        })
-        $('#cursor').addEventListener('mouseleave',()=>{
-            console.log("leaving")
-        })
-        $('#cursor').addEventListener('click',(e)=>{
-            console.log("clicked",e.detail)
-            const node = getNodeForAFrameObject(e.detail.intersectedEl)
-            console.log("the node is",node)
-            if(node.children) {
-                const nav = node.children.find(ch=>ch.type==='nav-action')
-                if(nav) {
-                    console.log("found the nav",nav)
-                    loadScene(nav.targetScene)
-                }
-                const play = node.children.find(ch=>ch.type === 'playsound-action')
-                if(play) {
-                    const asset = findAssetById(play.assetid)
-                    const url = getURLForResourceId(asset.resourceId)
-                    const audio = document.createElement('audio')
-                    audio.autoplay = true
-                    audio.src = url
-                }
-            }
-        })
-
-    })
+        return args
+    }
+    console.log("loading from the URL string")
+    const args = parseQuery(document.location.search)
+    console.log("args = ", args)
+    const SERVER_URL = "https://vr.josh.earth/360/doc/"
+    const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
+    Viewer.doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS)
 </script>
 </body>
 </html>

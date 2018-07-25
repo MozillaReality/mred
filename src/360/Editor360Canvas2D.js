@@ -4,10 +4,8 @@ import Selection from '../SelectionManager'
 import './style.css'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {VBox} from 'appy-comps'
-
-function toClassString(obj) {
-    return Object.keys(obj).map((key)=> obj[key]?key:"").join(" ")
-}
+import {PRIMS, TYPES} from "./Editor360Editor";
+import {toClassString} from "../utils";
 
 export default class Editor360Canvas2D extends Component {
     componentDidMount() {
@@ -24,14 +22,13 @@ export default class Editor360Canvas2D extends Component {
     render() {
         if(this.prov().isAssetSelected()) {
             const asset = this.prov().findSelectedAsset()
-            if(asset.resourceType === '360-image') {
-                const url = SERVER_URL_ASSETS+'thumbnail/w_600/'+asset.resourceId
+            if(asset.resourceType === TYPES.ASSETS.IMAGE360) {
                 return <VBox>
                     <h3>{asset.title}</h3>
-                    <img src={url} style={{width:'600px',height:'auto'}}/>
+                    <img src={SERVER_URL_ASSETS+asset.resourceId} style={{width:'900px',height:'auto'}}/>
                 </VBox>
             }
-            if(asset.resourceType === '2d-image') {
+            if(asset.resourceType === TYPES.ASSETS.IMAGE2D) {
                 return <VBox>
                     <h3>{asset.title}</h3>
                     <div>
@@ -39,7 +36,7 @@ export default class Editor360Canvas2D extends Component {
                     </div>
                 </VBox>
             }
-            if(asset.resourceType === 'audio') {
+            if(asset.resourceType === TYPES.ASSETS.AUDIO) {
                 return <VBox>
                     <h3>{asset.title}</h3>
                     <div>
@@ -47,7 +44,7 @@ export default class Editor360Canvas2D extends Component {
                     </div>
                 </VBox>
             }
-            if(asset.resourceType === 'gltf-url') {
+            if(asset.resourceType === TYPES.ASSETS.GLTF_URL) {
                 return <VBox>
                     <h3>{asset.title}</h3>
                     <div>
@@ -65,12 +62,12 @@ export default class Editor360Canvas2D extends Component {
     renderNode(node,i) {
         const w = 600
         const h = 300
-        if(node.type === 'scene') {
+        if(node.type === TYPES.NODES.SCENE) {
             return <div key={i}>{node.children.map((nd,i)=> {
                 return this.renderNode(nd, i)
             })}</div>
         }
-        if(node.type === 'layer') {
+        if(node.type === TYPES.NODES.LAYER) {
             const clss = {
                 layer:true,
                 selected:this.prov().findSelectedLayer() === node
@@ -81,108 +78,10 @@ export default class Editor360Canvas2D extends Component {
                 return this.renderNode(nd, i)
             })}</div>
         }
-        if(node.type === 'primitive') {
-            if(node.primitive === 'cube') {
-                const style = {
-                    width: (node.width*50)+'px',
-                    height: (node.height*50)+'px',
-                    left: (node.angle/360*w)+'px',
-                    top: (h/2-(node.elevation)*3)+'px',
-                    backgroundColor:node.color||'red',
-                }
-                const clss = {
-                    primitive:true,
-                    cube:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                return <div className={toClassString(clss)} style={style} key={i}>cube</div>
-            }
-            if(node.primitive === 'sphere') {
-                const style = {
-                    width: (node.width*50)+'px',
-                    height: (node.height*50)+'px',
-                    left: (node.angle/360*w)+'px',
-                    top: (h/2-(node.elevation)*3)+'px',
-                    borderRadius:'1em',
-                    padding:'1em',
-                    backgroundColor:node.color||'red',
-                }
-                const clss = {
-                    primitive:true,
-                    sphere:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                return <div className={toClassString(clss)} style={style} key={i}>sphere</div>
-            }
-            if(node.primitive === 'gltf') {
-                const style = {
-                    width: (node.width*50)+'px',
-                    height: (node.height*50)+'px',
-                    left: (node.angle/360*w)+'px',
-                    top: (h/2-(node.elevation)*3)+'px',
-                    borderRadius:'1em',
-                    padding:'1em'
-                }
-                const clss = {
-                    primitive:true,
-                    gltf:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                return <div className={toClassString(clss)} style={style} key={i}>GLTF Model</div>
-            }
-            if(node.primitive === 'text') {
-                const style = {
-                    width: (node.width*50)+'px',
-                    height: (node.height*50)+'px',
-                    left: (node.angle/360*w)+'px',
-                    top: (h/2-(node.elevation)*3)+'px',
-                    color:node.color,
-                    backgroundColor:node.backgroundColor,
-                }
-                const clss = {
-                    primitive:true,
-                    text:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                return <div className={toClassString(clss)} style={style} key={i}>{node.text}</div>
-            }
-            if(node.primitive === 'image2d') {
-                const style = {
-                    width: (node.width*50)+'px',
-                    height: (node.height*50)+'px',
-                    left: (node.angle/360*w)+'px',
-                    top: (h/2-(node.elevation)*3)+'px',
-                }
-                const clss = {
-                    primitive:true,
-                    image2d:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                const img = this.props.provider.findAssetById(node.imageid)
-                if(img) {
-                    return <div className={toClassString(clss)} style={style} key={i}>
-                        <img src={`${SERVER_URL_ASSETS}${img.resourceId}`} width={50} height={50}/>
-                    </div>
-                } else {
-                    return <div className={toClassString(clss)} key={i}>img broken</div>
-                }
-            }
-            if(node.primitive === 'image360') {
-                const img = this.props.provider.findAssetById(node.imageid)
-                const clss = {
-                    primitive:true,
-                    image360:true,
-                    selected:this.prov().findSelectedPrimitive() === node
-                }
-                if(img) {
-                    const url = SERVER_URL_ASSETS+'thumbnail/w_600/'+img.resourceId
-                    return <div className={toClassString(clss)} key={i}><img src={url}/></div>
-                } else {
-                    return <div className={toClassString(clss)} key={i}>img broken</div>
-                }
-            }
-            return <div className="primitive" key={i}>prim:{node.primitive}</div>
-
+        if(node.type === TYPES.NODES.PRIMITIVE) {
+            const info = PRIMS[node.primitive]
+            if(info && info.render2D) return info.render2D(this.prov(),node,w,h,i)
+            return <div className="primitive" key={i}>unknown prim:{node.primitive}</div>
         }
         return <div key={i}>unknown</div>
     }

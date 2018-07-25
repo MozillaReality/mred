@@ -2,6 +2,8 @@ import React, {Component} from 'react'
 import './App.css'
 import {PopupContainer, PopupManager, VBox} from "appy-comps"
 import {Editor360Provider} from './360/Editor360Editor'
+import ReactGA from "react-ga"
+ReactGA.initialize('UA-122855516-2')
 
 export default class App extends Component {
     constructor(props) {
