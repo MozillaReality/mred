@@ -217,16 +217,24 @@ function doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
     }
 
 
+    function enterNode(node,el) {
+        el.setAttribute('scale',{x:1.1, y:1.1, z:1.1})
+    }
+    function exitNode(node,el) {
+        el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
+    }
+
     window.addEventListener('load', () => {
-        console.log("done loading=======")
         $('#cursor').addEventListener('fusing', () => {
             console.log("fusing")
         })
-        $('#cursor').addEventListener('mouseenter', () => {
-            console.log("entering")
+        $('#cursor').addEventListener('mouseenter', (e) => {
+            const node = getNodeForAFrameObject(e.detail.intersectedEl)
+            if(node) enterNode(node,e.detail.intersectedEl)
         })
-        $('#cursor').addEventListener('mouseleave', () => {
-            console.log("leaving")
+        $('#cursor').addEventListener('mouseleave', (e) => {
+            const node = getNodeForAFrameObject(e.detail.intersectedEl)
+            if(node) exitNode(node,e.detail.intersectedEl)
         })
         $('#cursor').addEventListener('click', (e) => {
             console.log("clicked", e.detail)
