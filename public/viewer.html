@@ -12,17 +12,52 @@
     </script>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script>
     <script src="./viewer.js"></script>
+    <script>
+        AFRAME.registerComponent('click-handler', {
+            init: function () {
+                this.el.addEventListener('mouseenter', () => {
+                    this.el.setAttribute('scale',{x:1.1, y:1.1, z:1.1})
+                });
+
+                this.el.addEventListener('mouseleave', () => {
+                    this.el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
+                });
+                this.el.addEventListener('click', () => {
+                    console.log("looking for the node")
+                    const viewer = Viewer.getViewer()
+                    const node = viewer.getNodeForAFrameObject(this.el)
+                    if (node.children) {
+                        const nav = node.children.find(ch => ch.type === 'nav-action')
+                        if (nav) {
+                            console.log("found the nav", nav)
+                            viewer.loadScene(nav.targetScene)
+                        }
+                        const play = node.children.find(ch => ch.type === 'playsound-action')
+                        if (play) {
+                            const asset = viewer.findAssetById(play.assetRef)
+                            const url = viewer.getURLForResourceId(asset.assetId)
+                            const audio = document.createElement('audio')
+                            audio.autoplay = true
+                            audio.src = url
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
 </head>
 <body>
 <a-scene>
-    <a-entity camera look-controls wasd-cotnrols>
+    <a-entity camera look-controls wasd-controls>
         <a-entity cursor="fuse: true; maxDistance: 30;"
                   id="cursor"
                   position="0 0 -3"
                   geometry="primitive:ring; radiusInner: 0.2; radiusOuter:0.3"
                   material="color:cyan; shader:flat"
+                  raycaster="objects: .action; recursive:true;"
                   >
             <a-animation begin="click" easing="ease-in" attribute="scale" dur="150"
                          fill="forwards" from="0.2 0.2 0.2" to="1 1 1"></a-animation>
@@ -31,10 +66,12 @@
 
         </a-entity>
     </a-entity>
-    <a-entity id="children">
-    </a-entity>
+    <a-entity id="children"></a-entity>
 
-    <a-entity laser-controls="hand: right"></a-entity>
+    <a-entity laser-controls="hand: left"
+              raycaster="objects: .action;" line="color:blue;"></a-entity>
+    <a-entity laser-controls="hand: right"
+              raycaster="objects: .action;" line="color:blue;"></a-entity>
 
 </a-scene>
 
@@ -56,7 +93,7 @@
     console.log("args = ", args)
     const SERVER_URL = "https://vr.josh.earth/360/doc/"
     const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
-    Viewer.doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS)
+    Viewer.getViewer().doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS)
 </script>
 </body>
 </html>
