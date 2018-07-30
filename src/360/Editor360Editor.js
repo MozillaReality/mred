@@ -580,10 +580,12 @@ export class Editor360Provider extends TreeItemProvider {
     //creates an asset represented by a resource on the doc server
     createAssetWithInfo(info) {
         if(!info.id) throw new Error("cannot created an asset without a resource ID")
+        if(!info.assetType) throw new Error("asset must have an asset type")
+        if(!info.assetSubtype) throw new Error("asset must have an asset sub type")
         return {
             id:this.genID(TYPES.NODES.ASSET),
             type:TYPES.NODES.ASSET,
-            assetType: info.assetType?info.assetType:"unknown",
+            assetType: info.assetType,
             assetSubtype: info.assetSubtype,
             assetId:info.id,
             title: info.title?info.title:"some unknown asset",
@@ -598,11 +600,14 @@ export class Editor360Provider extends TreeItemProvider {
     }
     //creates an asset represented by a URL, instead of a resource on the server
     createAssetWithURLInfo(info) {
+        if(!info.assetType) throw new Error("asset must have an asset type")
+        if(!info.assetSubtype) throw new Error("asset must have an asset sub type")
         return {
             id:this.genID(TYPES.NODES.ASSET),
             type:TYPES.NODES.ASSET,
             remote:true,
-            assetType: info.assetType?info.assetType:"unknown",
+            assetType: info.assetType,
+            assetSubtype: info.assetSubtype,
             title: info.title?info.title:"some unknown asset",
             url:info.url,
         }

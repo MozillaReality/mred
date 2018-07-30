@@ -150,10 +150,10 @@ export default class App360 extends Component {
 
             this.prov().getAssetsRoot().children.map(asset => {
                 let url = null
-                if(asset.resourceType === TYPES.ASSETS.GLTF_URL) {
+                if(asset.assetType === TYPES.ASSETS.MODEL && asset.assetSubtype === TYPES.ASSETS.SUBTYPES.GLTF_JSON) {
                     url = asset.url
-                }else {
-                    url = SERVER_URL_ASSETS+asset.resourceId
+                } else {
+                    url = SERVER_URL_ASSETS+asset.assetId
                 }
                 const name = url.substring(url.lastIndexOf('/'))
                 console.log('adding',name,url)
