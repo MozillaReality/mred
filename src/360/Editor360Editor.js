@@ -353,7 +353,7 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE2D] = {
             primitive:TYPES.NODES.PRIMS.IMAGE2D,
             angle:0,
             elevation:0,
-            imageid:null,
+            assetRef:null,
             title:'2D Image',
             scale:1,
             children:[],
@@ -371,7 +371,7 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE2D] = {
             image2d:true,
             selected:prov.findSelectedPrimitive() === node
         }
-        const img = prov.findAssetById(node.imageid)
+        const img = prov.findAssetById(node.assetRef)
         if(img) {
             return <div className={toClassString(clss)} style={style} key={i}>
                 <img src={`${SERVER_URL_ASSETS}${img.assetId}`} width={50} height={50}/>
