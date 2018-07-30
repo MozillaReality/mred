@@ -24,7 +24,7 @@ class SceneViewer {
         this.doc = null
     }
     getURLForResourceId(id) {
-        return SERVER_URL_ASSETS + id
+        return this.SERVER_URL_ASSETS + id
     }
     getNodeForAFrameObject(el) {
         return this.els_to_nodes[el.id]
@@ -68,7 +68,9 @@ class SceneViewer {
 
 
     doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
-        fetch(SERVER_URL + docid)
+        this.SERVER_URL = SERVER_URL
+        this.SERVER_URL_ASSETS = SERVER_URL_ASSETS
+        fetch(this.SERVER_URL + docid)
             .then(res => res.json())
             .then(doc => {
                 this.clearScene()
@@ -148,7 +150,7 @@ class SceneViewer {
         const el = document.createElement('a-entity')
         el.setAttribute('id', this.genId('gltf'))
         el.classList.add('action')
-        const model = findAssetById(prim.assetRef)
+        const model = this.findAssetById(prim.assetRef)
         el.setAttribute('gltf-model', model.url)
         el.setAttribute('position', {
             x: Math.sin(prim.angle / 180 * Math.PI) * 4,
@@ -161,8 +163,8 @@ class SceneViewer {
     }
 
     createImage360(prim) {
-        const img = findAssetById(prim.assetRef)
-        const url = SERVER_URL_ASSETS + img.assetId
+        const img = this.findAssetById(prim.assetRef)
+        const url = this.SERVER_URL_ASSETS + img.assetId
 
         const el = document.createElement('a-entity')
         el.setAttribute('id', this.genId('image360'))
@@ -184,8 +186,8 @@ class SceneViewer {
         const el = document.createElement('a-image')
         el.setAttribute('id', this.genId('image2d'))
         el.classList.add('action')
-        const image = findAssetById(prim.assetRef)
-        const url = SERVER_URL_ASSETS + image.assetId
+        const image = this.findAssetById(prim.assetRef)
+        const url = this.SERVER_URL_ASSETS + image.assetId
         el.setAttribute('src', url)
         el.setAttribute('position', {
             x: Math.sin(prim.angle / 180 * Math.PI) * 4,
