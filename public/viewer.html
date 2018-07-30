@@ -53,6 +53,7 @@
 <a-scene>
     <a-entity camera look-controls wasd-controls>
         <a-entity cursor="fuse: true; maxDistance: 30;"
+                  class="gaze"
                   id="cursor"
                   position="0 0 -3"
                   geometry="primitive:ring; radiusInner: 0.2; radiusOuter:0.3"
@@ -69,8 +70,10 @@
     <a-entity id="children"></a-entity>
 
     <a-entity laser-controls="hand: left"
+              class="dof6"
               raycaster="objects: .action;" line="color:blue;"></a-entity>
     <a-entity laser-controls="hand: right"
+              class="dof6"
               raycaster="objects: .action;" line="color:blue;"></a-entity>
 
 </a-scene>
@@ -94,6 +97,38 @@
     const SERVER_URL = "https://vr.josh.earth/360/doc/"
     const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
     Viewer.getViewer().doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS)
+
+
+
+    function $(sel) { return document.querySelector(sel)}
+    function on(elem,type,cb) { return elem.addEventListener(type,cb)}
+    function setEnabled(sel,vis) {
+        const elem = $(sel)
+        elem.setAttribute('visible', vis)
+    }
+
+    function switch6DOF() {
+        setEnabled('.gaze',false)
+        setEnabled('.dof6',true)
+    }
+
+
+    function switchGaze() {
+        setEnabled('.gaze',true)
+        setEnabled('.dof6',false)
+    }
+
+    on($('a-scene'),'enter-vr',()=>{
+        if(AFRAME.utils.device.checkHeadsetConnected()) {
+            switch6DOF()
+        } else {
+            switchGaze()
+        }
+    })
+    on($('a-scene'),'exit-vr',switchGaze)
+
+    //always start up in gaze mode
+    on($('a-scene'),'loaded',switchGaze)
 </script>
 </body>
 </html>
