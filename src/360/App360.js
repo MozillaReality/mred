@@ -193,8 +193,10 @@ class AddGLTFFromURLDialog extends Component {
     cancel = () => DialogManager.hide()
     add = () => {
         const asset = this.props.provider.createAssetWithURLInfo({
+            assetType: TYPES.ASSETS.MODEL,
+            assetSubtype:TYPES.ASSETS.SUBTYPES.GLTF_JSON,
+            remote:true,
             title:this.state.name,
-            resourceType:TYPES.ASSETS.GLTF_URL,
             url: this.state.url
         })
         this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
