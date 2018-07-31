@@ -109,7 +109,6 @@ class SceneViewer {
     createCube(prim) {
         const el = document.createElement('a-entity')
         el.setAttribute('id', this.genId('cube'))
-        el.classList.add('action')
         el.setAttribute('geometry', {
             primitive: 'box',
             width: prim.width,
@@ -128,7 +127,6 @@ class SceneViewer {
     createSphere(prim) {
         const el = document.createElement('a-entity')
         el.setAttribute('id', this.genId('sphere'))
-        el.classList.add('action')
         el.setAttribute('geometry', {
             primitive: 'sphere',
             radius: prim.radius,
@@ -145,7 +143,6 @@ class SceneViewer {
     createModel3D(prim) {
         const el = document.createElement('a-entity')
         el.setAttribute('id', this.genId('gltf'))
-        el.classList.add('action')
         const model = this.findAssetById(prim.assetRef)
         el.setAttribute('gltf-model', model.url)
         this.commonSetup(el,prim)
@@ -177,7 +174,6 @@ class SceneViewer {
     createImage2D(prim) {
         const el = document.createElement('a-image')
         el.setAttribute('id', this.genId('image2d'))
-        el.classList.add('action')
         const image = this.findAssetById(prim.assetRef)
         const url = this.SERVER_URL_ASSETS + image.assetId
         el.setAttribute('src', url)
@@ -194,7 +190,6 @@ class SceneViewer {
 
     createText2D(prim) {
         const el = document.createElement('a-entity')
-        el.classList.add('action')
         el.setAttribute('geometry',{
             primitive:'plane',
             height:'auto',
@@ -216,6 +211,9 @@ class SceneViewer {
         return el
     }
     commonSetup(el, prim) {
+        if(this.primHasAction(prim)) {
+            el.classList.add('action')
+        }
         el.setAttribute('position', {
             x:  Math.sin(prim.angle / 180 * Math.PI) * 4,
             z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
@@ -233,6 +231,19 @@ class SceneViewer {
     }
     exitNode(node,el) {
         el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
+    }
+
+    primHasAction(node) {
+        if (node.children) {
+            const nav = node.children.find(ch => ch.type === 'nav-action')
+            if(nav) return true
+            const play = node.children.find(ch => ch.type === 'playsound-action')
+            if(play) return true
+        }
+        return false
+    }
+    elementHasAction(el) {
+        return this.primHasAction(this.getNodeForAFrameObject(el))
     }
 }
 

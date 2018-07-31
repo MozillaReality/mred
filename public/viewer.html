@@ -18,20 +18,22 @@
         AFRAME.registerComponent('click-handler', {
             init: function () {
                 this.el.addEventListener('mouseenter', () => {
-                    this.el.setAttribute('scale',{x:1.1, y:1.1, z:1.1})
+                    if(Viewer.getViewer().elementHasAction(this.el)) {
+                        this.el.setAttribute('scale', {x: 1.1, y: 1.1, z: 1.1})
+                    }
                 });
 
                 this.el.addEventListener('mouseleave', () => {
-                    this.el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
+                    if(Viewer.getViewer().elementHasAction(this.el)) {
+                        this.el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
+                    }
                 });
                 this.el.addEventListener('click', () => {
-                    console.log("looking for the node")
                     const viewer = Viewer.getViewer()
                     const node = viewer.getNodeForAFrameObject(this.el)
                     if (node.children) {
                         const nav = node.children.find(ch => ch.type === 'nav-action')
                         if (nav) {
-                            console.log("found the nav", nav)
                             viewer.loadScene(nav.targetScene)
                         }
                         const play = node.children.find(ch => ch.type === 'playsound-action')
