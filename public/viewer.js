@@ -6,9 +6,10 @@
 //loop through the doc for scenes and entities
 //create layers and entities as needed using createElement
 
-function $(sel) {
-    return document.querySelector(sel)
-}
+const $ = (sel) => document.querySelector(sel)
+const asRad = (deg) => deg/180*Math.PI
+const on = (elem,type,cb) => elem.addEventListener(type,cb)
+
 const PRIM_TYPES = {
     CUBE:'cube',
     IMAGE2D: 'image2d',
@@ -70,7 +71,7 @@ class SceneViewer {
     }
 
 
-    doLoad(docid, SERVER_URL, SERVER_URL_ASSETS) {
+    doLoad(docid, SERVER_URL, SERVER_URL_ASSETS, local) {
         this.SERVER_URL = SERVER_URL
         this.SERVER_URL_ASSETS = SERVER_URL_ASSETS
         fetch(this.SERVER_URL + docid)
@@ -115,11 +116,7 @@ class SceneViewer {
             height: prim.height,
             depth: prim.depth
         })
-        el.setAttribute('position', {
-            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-            y: prim.elevation * 0.1
-        })
+        this.commonSetup(el,prim)
         el.setAttribute('material', {
             color: prim.color,
         })
@@ -136,11 +133,7 @@ class SceneViewer {
             primitive: 'sphere',
             radius: prim.radius,
         })
-        el.setAttribute('position', {
-            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-            y: prim.elevation * 0.1
-        })
+        this.commonSetup(el,prim)
         el.setAttribute('material', {
             color: prim.color,
         })
@@ -155,11 +148,7 @@ class SceneViewer {
         el.classList.add('action')
         const model = this.findAssetById(prim.assetRef)
         el.setAttribute('gltf-model', model.url)
-        el.setAttribute('position', {
-            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-            y: prim.elevation * 0.1
-        })
+        this.commonSetup(el,prim)
         $('#children').appendChild(el)
         this.els_to_nodes[el.getAttribute('id')] = prim
         return el
@@ -192,11 +181,7 @@ class SceneViewer {
         const image = this.findAssetById(prim.assetRef)
         const url = this.SERVER_URL_ASSETS + image.assetId
         el.setAttribute('src', url)
-        el.setAttribute('position', {
-            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-            y: prim.elevation * 0.1
-        })
+        this.commonSetup(el,prim)
         el.setAttribute('scale', {
             x: prim.scale,
             y: prim.scale,
@@ -225,14 +210,22 @@ class SceneViewer {
             color: prim.color
         })
         el.setAttribute('id', this.genId(PRIM_TYPES.TEXT2D))
-        el.setAttribute('position', {
-            x: Math.sin(prim.angle / 180 * Math.PI) * 4,
-            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
-            y: prim.elevation * 0.1
-        })
+        this.commonSetup(el,prim)
         $('#children').appendChild(el)
         this.els_to_nodes[el.getAttribute('id')] = prim
         return el
+    }
+    commonSetup(el, prim) {
+        el.setAttribute('position', {
+            x:  Math.sin(prim.angle / 180 * Math.PI) * 4,
+            z: -Math.cos(prim.angle / 180 * Math.PI) * 4,
+            y:  prim.elevation * 0.1
+        })
+        el.setAttribute('rotation',{
+            x:0,
+            y:-prim.angle,
+            z:0,
+        })
     }
 
     enterNode(node,el) {

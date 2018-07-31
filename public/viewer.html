@@ -94,14 +94,19 @@
     console.log("loading from the URL string")
     const args = parseQuery(document.location.search)
     console.log("args = ", args)
-    const SERVER_URL = "https://vr.josh.earth/360/doc/"
-    const SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
-    Viewer.getViewer().doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS)
+    let SERVER_URL = "https://vr.josh.earth/360/doc/"
+    let SERVER_URL_ASSETS = "https://vr.josh.earth/360/asset/"
 
+    let local = false
+    if(!args.doc) {
+        local = true
+        args.doc = "scene.json"
+        SERVER_URL = "./"
+        SERVER_URL_ASSETS = "./"
 
+    }
+    Viewer.getViewer().doLoad(args.doc,SERVER_URL,SERVER_URL_ASSETS,local)
 
-    function $(sel) { return document.querySelector(sel)}
-    function on(elem,type,cb) { return elem.addEventListener(type,cb)}
     function setEnabled(sel,vis) {
         const elem = $(sel)
         elem.setAttribute('visible', vis)
