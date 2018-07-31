@@ -183,6 +183,10 @@ class SceneViewer {
             y: prim.scale,
             z: prim.scale
         })
+        if(image.info && image.info.width && image.info.height) {
+            el.setAttribute('width',image.info.width/100)
+            el.setAttribute('height',image.info.height/100)
+        }
         $('#children').appendChild(el)
         this.els_to_nodes[el.getAttribute('id')] = prim
         return el

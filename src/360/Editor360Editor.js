@@ -374,7 +374,7 @@ PRIMS[TYPES.NODES.PRIMS.IMAGE2D] = {
         const img = prov.findAssetById(node.assetRef)
         if(img) {
             return <div className={toClassString(clss)} style={style} key={i}>
-                <img src={`${SERVER_URL_ASSETS}${img.assetId}`} width={50} height={50}/>
+                <img src={`${SERVER_URL_ASSETS}${img.assetId}`} width={img.info.width/5} height={img.info.height/5}/>
             </div>
         } else {
             return <div className={toClassString(clss)} key={i}>img broken</div>
