@@ -499,7 +499,8 @@ export class Editor360Provider extends TreeItemProvider {
             id: this.genID(TYPES.NODES.SCENE),
             type: TYPES.NODES.SCENE,
             title: title ? title : 'untitled scene',
-            children: []
+            children: [],
+            backgroundColor:'white'
         }
         const layer = this.createLayer()
         sc.children.push(layer)

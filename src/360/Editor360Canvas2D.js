@@ -56,7 +56,9 @@ export default class Editor360Canvas2D extends Component {
         const w = 600
         const h = 300
         if(node.type === TYPES.NODES.SCENE) {
-            return <div key={i}>{node.children.map((nd,i)=> {
+            const style = {}
+            if(node.backgroundColor) style.backgroundColor = node.backgroundColor
+            return <div key={i} style={style}>{node.children.map((nd,i)=> {
                 return this.renderNode(nd, i)
             })}</div>
         }

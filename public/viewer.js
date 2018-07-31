@@ -48,7 +48,10 @@ class SceneViewer {
         }
     }
     generateScene(scene) {
-        console.log('generating')
+        if(scene.backgroundColor) {
+            const aFrameScene = $("#scene")
+            aFrameScene.setAttribute('background',{color:scene.backgroundColor})
+        }
         scene.children.forEach((layer)=>this.generateLayer(layer))
     }
     generateLayer(layer) {
