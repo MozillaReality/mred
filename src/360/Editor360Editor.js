@@ -680,6 +680,11 @@ export class Editor360Provider extends TreeItemProvider {
                     .filter(ass => ass.assetType === TYPES.ASSETS.MODEL)
                     .map(ass => ass.id)
             }
+            if(obj.type === TYPES.ACTIONS.PLAY_SOUND) {
+                return this.getAssetsRoot().children
+                    .filter(ass => ass.assetType === TYPES.ASSETS.AUDIO)
+                    .map(ass => ass.id)
+            }
             return this.getAssetsRoot().children.map(ass => ass.id)
         }
     }
