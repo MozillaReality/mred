@@ -12,21 +12,24 @@
     </script>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!-- required for the transitions -->
+    <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
     <script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script>
     <script src="./viewer.js"></script>
     <script>
+        function scaleTo(el, sc, dur) {
+            const scale = el.object3D.scale
+            const tween = new TWEEN.Tween(scale).to({x:sc,y:sc,z:sc,},dur)
+            tween.start()
+        }
         AFRAME.registerComponent('click-handler', {
             init: function () {
                 this.el.addEventListener('mouseenter', () => {
-                    if(Viewer.getViewer().elementHasAction(this.el)) {
-                        this.el.setAttribute('scale', {x: 1.1, y: 1.1, z: 1.1})
-                    }
+                    if(Viewer.getViewer().elementHasAction(this.el)) scaleTo(this.el,1.2, 200)
                 });
 
                 this.el.addEventListener('mouseleave', () => {
-                    if(Viewer.getViewer().elementHasAction(this.el)) {
-                        this.el.setAttribute('scale',{x:1.0, y:1.0, z:1.0})
-                    }
+                    if(Viewer.getViewer().elementHasAction(this.el)) scaleTo(this.el,1.0, 200)
                 });
                 this.el.addEventListener('click', () => {
                     const viewer = Viewer.getViewer()
