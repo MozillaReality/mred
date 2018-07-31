@@ -576,7 +576,6 @@ export class Editor360Provider extends TreeItemProvider {
             child:item
         })
     }
-
     //creates an asset represented by a resource on the doc server
     createAssetWithInfo(info) {
         if(!info.id) throw new Error("cannot created an asset without a resource ID")
@@ -663,7 +662,6 @@ export class Editor360Provider extends TreeItemProvider {
         updates[key] = value
         this.setPropertyValues(item,updates)
     }
-
     getValuesForEnum(key,obj) {
         if(key === PROP_DEFS.targetScene.key) return this.getScenes().map(sc=>sc.id)
         if(key === PROP_DEFS.assetRef.key) {
@@ -725,6 +723,9 @@ export class Editor360Provider extends TreeItemProvider {
     }
     findSelectedNode() {
         return Selection.getSelection()
+    }
+    setSelectedObject(node) {
+        return Selection.setSelection(node)
     }
     isAssetSelected() {
         const node = this.findSelectedNode()

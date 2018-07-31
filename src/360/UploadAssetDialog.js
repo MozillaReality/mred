@@ -80,6 +80,7 @@ export default class UploadAssetDialog extends Component {
                 info: info,
             })
             this.props.provider.appendChild(this.props.provider.getAssetsRoot(),asset)
+            this.props.provider.setSelectedObject(asset)
             DialogManager.hide()
         })
     }

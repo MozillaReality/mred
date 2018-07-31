@@ -83,7 +83,12 @@ export default class App360 extends Component {
             return {
                 title:info.title,
                 icon:info.icon,
-                fun:() => this.prov().appendChild(this.prov().findSelectedLayer(),info.make(this.prov()))
+                fun:() => {
+                    const layer = this.prov().findSelectedLayer()
+                    const obj = info.make(this.prov())
+                    this.prov().appendChild(layer,obj)
+                    this.prov().setSelectedObject(obj)
+                }
             }
         })
         acts.unshift({
@@ -126,8 +131,13 @@ export default class App360 extends Component {
 
     addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
     addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
-    addNavAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createNavAction())
-    addPlaySoundAction = () => this.prov().appendChild(this.prov().findSelectedPrimitive(), this.prov().createPlaySoundAction())
+    addAction = (action) => {
+        const prim = this.prov().findSelectedPrimitive()
+        this.prov().appendChild(prim, action)
+        this.prov().setSelectedObject(action)
+    }
+    addNavAction = () => this.addAction(this.prov().createNavAction())
+    addPlaySoundAction = () => this.addAction(this.prov().createPlaySoundAction())
     deleteObject = () => this.prov().deleteChild(this.prov().findSelectedNode())
     preview   = () => {
         ReactGA.event({action:'preview',doc:this.prov().getDocId()})
