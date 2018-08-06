@@ -5,7 +5,7 @@ import {DialogManager, DialogContainer, Dialog, HBox, VBox, PopupManager} from "
 import GridEditorApp from '../GridEditorApp'
 import Editor360Canvas2D from './Editor360Canvas2D'
 import PropSheet from '../PropSheet'
-import {SERVER_URL, SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {SERVER_URL, SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import InputManager from "../common/InputManager";
 import UndoManager from "../common/UndoManager";
 import {PRIMS, TYPES} from "./Editor360Editor";
@@ -17,6 +17,7 @@ import UploadAssetDialog from './UploadAssetDialog'
 export default class App360 extends Component {
     constructor(props) {
         super(props)
+        this.state = {}
 
         this.im = new InputManager();
         this.im.addKeyBinding({
@@ -27,6 +28,7 @@ export default class App360 extends Component {
         this.im.addListener('save',this.save)
         this.uman = new UndoManager(this.prov())
         ReactGA.pageview('/360/')
+        this.props.provider.on(TREE_ITEM_PROVIDER.SAVED, ()=> this.notify('saved'))
     }
 
     componentDidMount() {
@@ -34,6 +36,23 @@ export default class App360 extends Component {
     }
 
     prov = () => this.props.provider
+    notify = (txt) => {
+        this.setState({notification:txt})
+        setTimeout(()=>this.setState({notification:''}),1000)
+    }
+    renderNotification() {
+        if(!this.state.notification || this.state.notification.trim() === '') return <div/>
+        return <div style={{
+            position:'absolute',
+            bottom:'10px',
+            left:'10px',
+            backgroundColor:'rgba(0,0,0,0.6)',
+            borderRadius:'1em',
+            color:'white',
+            fontSize:'24pt',
+            padding:'1em'
+        }}>{this.state.notification}</div>
+    }
 
     render() {
         return <GridEditorApp provider={this.prov()}>
@@ -74,6 +93,7 @@ export default class App360 extends Component {
             <Panel scroll right>
                 <PropSheet provider={this.prov()}/>
             </Panel>
+            {this.renderNotification()}
             <DialogContainer/>
         </GridEditorApp>
     }
