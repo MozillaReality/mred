@@ -30,6 +30,7 @@ export default class UploadAssetDialog extends Component {
             origin_author: 'unknown',
             origin_infourl:'',
             origin_license:'unknown',
+            uploading:false,
         }
     }
     chooseFile = (e) => {
@@ -55,7 +56,9 @@ export default class UploadAssetDialog extends Component {
     editedOriginInfourl = (e) => this.setState({origin_infourl:e.target.value})
     editedOriginLicense = (e) => this.setState({origin_license:e.target.value})
     uploadFile = () => {
+        this.setState({uploading:true})
         this.props.provider.uploadFile(this.state.file).then((resource)=>{
+            this.setState({uploading:false})
             const info = {
                 usetype:this.state.usetype,
             }
@@ -97,6 +100,7 @@ export default class UploadAssetDialog extends Component {
                     <label>File:</label>
                     <input type="file" onChange={this.chooseFile}/>
                     <label>{this.state.originalFilename}</label>
+                    {this.renderSpinner()}
                 </HBox>
                 <HBox>
                     <label>Author</label>
@@ -117,12 +121,12 @@ export default class UploadAssetDialog extends Component {
             {this.renderPreview()}
 
             <footer>
-                <button onClick={this.cancel}>cancel</button>
-                <button onClick={this.uploadFile}>upload</button>
+                <button onClick={this.cancel} disabled={this.state.uploading}>cancel</button>
+                <button onClick={this.uploadFile} disabled={this.state.uploading}>upload</button>
             </footer>
         </Dialog>
     }
-
+    renderSpinner = () => this.state.uploading?<i className="fa fa-spinner fa-spin"/>:<i/>
     renderInfo() {
         if(!this.state.file) return <div>no info</div>
         return <VBox>
