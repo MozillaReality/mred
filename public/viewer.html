@@ -15,6 +15,7 @@
     <!-- required for the transitions -->
     <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
     <script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script>
+    <!--<script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>-->
     <script src="./viewer.js"></script>
     <script>
         function scaleTo(el, sc, dur) {
@@ -51,15 +52,72 @@
                 });
             }
         });
+
+        AFRAME.registerComponent('jmouse-controls', {
+            init: function() {
+                this.raycaster = new THREE.Raycaster()
+                this.scene = this.el.sceneEl
+                this.canvas = this.scene.canvas
+                this.current = null
+                this.clickedDown = false
+
+
+                const getIntersections = (e)=>{
+                    const mouse = new THREE.Vector2();
+                    const bounds = this.canvas.getBoundingClientRect()
+                    mouse.x =   ((e.clientX-bounds.left) / (bounds.width))  * 2 - 1 ;
+                    mouse.y = - ((e.clientY-bounds.top)  / (bounds.height)) * 2 + 1;
+                    this.raycaster.setFromCamera( mouse, this.scene.camera );
+                    const ch = $('#children')
+                    return this.raycaster.intersectObjects( ch.object3D.children, true );
+                }
+
+                this.canvas.addEventListener('mousemove',(e)=>{
+                    const intersects = getIntersections(e)
+                    if(intersects.length > 0) {
+                        const it = intersects[0]
+                        //if different
+                        if(this.current !== it.object) {
+                            if(this.current) this.current.el.emit('mouseleave')
+                            this.current = it.object
+                            it.object.el.emit('mouseenter')
+                        }
+                    } else {
+                        if(this.current) {
+                            this.current.el.emit('mouseleave')
+                            this.current = null
+                        }
+                    }
+                })
+                this.canvas.addEventListener('mousedown',(e)=>{
+                    const intersects = getIntersections(e)
+                    if(intersects.length > 0) {
+                        if(intersects[0].object === this.current && this.current) {
+                            console.log("successfully clicked down")
+                            this.clickedDown = true
+                        }
+                    }
+                })
+                this.canvas.addEventListener('mouseup',(e)=>{
+                    const intersects = getIntersections(e)
+                    if(intersects.length > 0) {
+                        if (intersects[0].object === this.current && this.current && this.clickedDown) {
+                            this.current.el.emit('click')
+                        }
+                    }
+                    this.clickedDown = false
+                })
+            }
+        })
     </script>
 
 </head>
 <body>
 <a-scene id="scene">
+    <a-entity jmouse-controls class="mouse"></a-entity>
     <a-entity camera look-controls wasd-controls>
         <a-entity cursor="fuse: true; maxDistance: 30;"
                   class="gaze"
-                  id="cursor"
                   position="0 0 -3"
                   geometry="primitive:ring; radiusInner: 0.2; radiusOuter:0.3"
                   material="color:cyan; shader:flat"
@@ -72,7 +130,6 @@
 
         </a-entity>
     </a-entity>
-    <a-entity id="children"></a-entity>
 
     <a-entity laser-controls="hand: left"
               class="dof6"
@@ -80,6 +137,10 @@
     <a-entity laser-controls="hand: right"
               class="dof6"
               raycaster="objects: .action;" line="color:blue;"></a-entity>
+
+
+
+    <a-entity id="children"></a-entity>
 
 </a-scene>
 
@@ -115,30 +176,28 @@
     function setEnabled(sel,vis) {
         const elem = $(sel)
         elem.setAttribute('visible', vis)
+        elem.pause()
     }
 
-    function switch6DOF() {
-        setEnabled('.gaze',false)
-        setEnabled('.dof6',true)
-    }
-
-
-    function switchGaze() {
-        setEnabled('.gaze',true)
-        setEnabled('.dof6',false)
-    }
-
-    on($('a-scene'),'enter-vr',()=>{
+    function switchInputs() {
         if(AFRAME.utils.device.checkHeadsetConnected()) {
-            switch6DOF()
+            setEnabled('.dof6',true)
+            setEnabled('.gaze',false)
+            setEnabled('.mouse',false)
+        } else if(AFRAME.utils.device.isMobile()) {
+            setEnabled('.dof6',false)
+            setEnabled('.gaze',true)
+            setEnabled('.mouse',false)
         } else {
-            switchGaze()
+            setEnabled('.dof6',false)
+            setEnabled('.gaze',false)
+            setEnabled('.mouse',true)
         }
-    })
-    on($('a-scene'),'exit-vr',switchGaze)
+    }
 
-    //always start up in gaze mode
-    on($('a-scene'),'loaded',switchGaze)
+    on($('a-scene'),'enter-vr',switchInputs)
+    on($('a-scene'),'exit-vr', switchInputs)
+    on($('a-scene'),'loaded',  switchInputs)
 </script>
 </body>
 </html>
