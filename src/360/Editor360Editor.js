@@ -199,6 +199,7 @@ export const TYPES = {
         PRIMITIVE: 'primitive',
         PRIMS: {
             IMAGE2D:'image2d',
+            VIDEO2D:'video2d',
             IMAGE360:'image360',
             CUBE:'cube',
             SPHERE:'sphere',
@@ -210,11 +211,13 @@ export const TYPES = {
         AUDIO:'audio',
         IMAGE:'image',
         MODEL:'model',
+        VIDEO:'video',
         SUBTYPES: {
             GLTF_JSON:'gltf+json',
             JPEG:'JPEG',
             PNG:'png',
             GIF:'gif',
+            MPEG4:'MPEG4'
         }
     },
     ACTIONS: {
@@ -226,6 +229,9 @@ export const TYPES = {
 const ASSET_INFOS = {
     'audio':{
         icon:'file-audio-o'
+    },
+    'video':{
+        icon:'file-video-o'
     },
     'image':{
         icon:'file-image-o',
@@ -442,6 +448,40 @@ PRIMS[TYPES.NODES.PRIMS.MODEL3D] = {
             selected:prov.findSelectedPrimitive() === node
         }
         return <div className={toClassString(clss)} style={style} key={i}>GLTF Model</div>
+    }
+}
+
+PRIMS[TYPES.NODES.PRIMS.VIDEO2D] = {
+    icon:'file-video-o',
+    title:'2D Video',
+    make:(prov) => {
+        return {
+            id: prov.genID(TYPES.NODES.PRIMS.VIDEO2D),
+            type:TYPES.NODES.PRIMITIVE,
+            primitive:TYPES.NODES.PRIMS.VIDEO2D,
+            angle:0,
+            elevation:0,
+            assetRef:null,
+            title:'2D Video',
+            scale:1,
+            children:[],
+        }
+    },
+    render2D: (prov,node,w,h,i) => {
+        const style = {
+            width: (node.width*50)+'px',
+            height: (node.height*50)+'px',
+            left: (node.angle/360*w)+'px',
+            top: (h/2-(node.elevation)*3)+'px',
+        }
+        const clss = {
+            primitive:true,
+            video2d:true,
+            selected:prov.findSelectedPrimitive() === node
+        }
+        return <div className={toClassString(clss)} style={style} key={i}>
+            video
+        </div>
     }
 }
 
@@ -674,6 +714,11 @@ export class Editor360Provider extends TreeItemProvider {
             if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.IMAGE2D) {
                 return this.getAssetsRoot().children
                     .filter(ass => ass.assetType === TYPES.ASSETS.IMAGE)
+                    .map(ass => ass.id)
+            }
+            if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.VIDEO2D) {
+                return this.getAssetsRoot().children
+                    .filter(ass => ass.assetType === TYPES.ASSETS.VIDEO)
                     .map(ass => ass.id)
             }
             if(obj.type === TYPES.NODES.PRIMITIVE && obj.primitive === TYPES.NODES.PRIMS.MODEL3D) {

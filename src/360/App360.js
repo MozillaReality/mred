@@ -142,7 +142,7 @@ export default class App360 extends Component {
                 fun: this.uploadLocal
             },
             {
-                title:'GLTF from URL',
+                title:'GLTF or video from URL',
                 icon:'file-text-o',
                 fun: this.addGLTFURLAsset,
             }
@@ -242,17 +242,28 @@ class AddGLTFFromURLDialog extends Component {
         super(props);
         this.state = {
             name:'unnamed GLTF model',
-            url:''
+            url:'',
+            type:'2dvideo',
         }
     }
     editedName = (e) => this.setState({name:e.target.value})
-    editedURL = (e) => this.setState({url:e.target.value})
+    editedURL = (e) => {
+        const url = e.target.value
+        const name = url.substring(url.lastIndexOf('/')+1,url.lastIndexOf('.'))
+        this.setState({url:url, name: name})
+    }
+    changedType = (e) => this.setState({type:e.target.value})
     cancel = () => DialogManager.hide()
     add = () => {
+        let type = TYPES.ASSETS.MODEL
+        let subtype = TYPES.ASSETS.SUBTYPES.GLTF_JSON
+        if(this.state.type === '2dvideo') {
+            type = TYPES.ASSETS.VIDEO
+            subtype = TYPES.ASSETS.SUBTYPES.MPEG4
+        }
         const asset = this.props.provider.createAssetWithURLInfo({
-            assetType: TYPES.ASSETS.MODEL,
-            assetSubtype:TYPES.ASSETS.SUBTYPES.GLTF_JSON,
-            remote:true,
+            assetType: type,
+            assetSubtype: subtype,
             title:this.state.name,
             url: this.state.url
         })
@@ -265,12 +276,19 @@ class AddGLTFFromURLDialog extends Component {
             <header>{this.props.title}</header>
             <VBox>
                 <HBox>
+                    <label>URL</label>
+                    <input type="text" value={this.state.url} onChange={this.editedURL}/>
+                </HBox>
+                <HBox>
                     <label>name</label>
                     <input type="text" value={this.state.name} onChange={this.editedName}/>
                 </HBox>
                 <HBox>
-                    <label>URL</label>
-                    <input type="text" value={this.state.url} onChange={this.editedURL}/>
+                    <label>type</label>
+                    <select value={this.state.type} onChange={this.changedType}>
+                        <option value="gltf">GLTF (3dmodel)</option>
+                        <option value="2dvideo">2D video</option>
+                    </select>
                 </HBox>
             </VBox>
 

@@ -46,6 +46,11 @@
     width: 100%;
     height: auto;
 }
+.canvas-360 .primitive.video2d {
+    border: 1px solid red;
+    padding: 0.5em;
+    background-color: white;
+}
 
 
 .canvas-360 .primitive.selected {

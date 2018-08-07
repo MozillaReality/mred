@@ -14,6 +14,7 @@ const PRIM_TYPES = {
     CUBE:'cube',
     IMAGE2D: 'image2d',
     IMAGE360: 'image360',
+    VIDEO2D:'video2d',
     MODEL3D: 'model3d',
     TEXT2D: 'text',
     SPHERE:'sphere',
@@ -103,6 +104,7 @@ class SceneViewer {
         if (prim.primitive === PRIM_TYPES.MODEL3D) return this.createModel3D(prim)
         if (prim.primitive === PRIM_TYPES.IMAGE360) return this.createImage360(prim)
         if (prim.primitive === PRIM_TYPES.IMAGE2D) return this.createImage2D(prim)
+        if (prim.primitive === PRIM_TYPES.VIDEO2D) return this.createVideo2D(prim)
         if (prim.primitive === PRIM_TYPES.TEXT2D) return this.createText2D(prim)
     }
 
@@ -188,6 +190,33 @@ class SceneViewer {
             el.setAttribute('width',image.info.width/100)
             el.setAttribute('height',image.info.height/100)
         }
+        $('#children').appendChild(el)
+        this.els_to_nodes[el.getAttribute('id')] = prim
+        return el
+    }
+
+    createVideo2D(prim) {
+        const el = document.createElement('a-video')
+        el.setAttribute('id', this.genId('video2d'))
+        const asset = this.findAssetById(prim.assetRef)
+        if(asset.remote) {
+            console.log("the asset is remote")
+            el.setAttribute('src',asset.url)
+        } else {
+            const url = this.SERVER_URL_ASSETS + asset.assetId
+            el.setAttribute('src', url)
+        }
+        el.removeAttribute('autoplay')
+        this.commonSetup(el,prim)
+        el.setAttribute('scale', {
+            x: prim.scale,
+            y: prim.scale,
+            z: prim.scale
+        })
+        // if(image.info && image.info.width && image.info.height) {
+        //     el.setAttribute('width',image.info.width/100)
+        //     el.setAttribute('height',image.info.height/100)
+        // }
         $('#children').appendChild(el)
         this.els_to_nodes[el.getAttribute('id')] = prim
         return el

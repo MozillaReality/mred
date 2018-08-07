@@ -22,6 +22,14 @@ export default class Editor360Canvas2D extends Component {
     render() {
         if(this.prov().isAssetSelected()) {
             const asset = this.prov().findSelectedAsset()
+            if(asset.remote) {
+                return <VBox>
+                    <h3>{asset.title}</h3>
+                    <div>
+                        remote asset: <b>{asset.url}</b>
+                    </div>
+                </VBox>
+            }
             if(asset.assetType === TYPES.ASSETS.IMAGE) {
                 const url = SERVER_URL_ASSETS+'thumbnail/w_512/'+asset.assetId
                 return <VBox>
@@ -34,14 +42,6 @@ export default class Editor360Canvas2D extends Component {
                     <h3>{asset.title}</h3>
                     <div>
                         <audio src={SERVER_URL_ASSETS+asset.assetId} controls={true}/>
-                    </div>
-                </VBox>
-            }
-            if(asset.assetType === TYPES.ASSETS.MODEL && asset.remote) {
-                return <VBox>
-                    <h3>{asset.title}</h3>
-                    <div>
-                        the url is {asset.url}
                     </div>
                 </VBox>
             }
