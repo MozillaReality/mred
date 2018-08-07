@@ -166,6 +166,7 @@ class SceneViewer {
             src: url,
             side: 'back'
         })
+        el.setAttribute('scale',{x:-1,y:1, z:1})
         $('#children').appendChild(el)
         this.els_to_nodes[el.getAttribute('id')] = prim
         return el
