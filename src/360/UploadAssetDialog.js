@@ -49,6 +49,7 @@ export default class UploadAssetDialog extends Component {
             originalFilename: file.name,
             lastModified: new Date(file.lastModified),
             fileSize:file.size,
+            title: file.name.substring(0,file.name.lastIndexOf('.'))
         })
     }
     editedName = (e) => this.setState({title:e.target.value})
@@ -93,14 +94,14 @@ export default class UploadAssetDialog extends Component {
             <header>Upload an Image or Audio File</header>
             <VBox>
                 <HBox>
-                    <label>Name:</label>
-                    <input type="text" value={this.state.title} onChange={this.editedName}/>
-                </HBox>
-                <HBox>
                     <label>File:</label>
                     <input type="file" onChange={this.chooseFile}/>
                     <label>{this.state.originalFilename}</label>
                     {this.renderSpinner()}
+                </HBox>
+                <HBox>
+                    <label>Name:</label>
+                    <input type="text" value={this.state.title} onChange={this.editedName}/>
                 </HBox>
                 <HBox>
                     <label>Author</label>
