@@ -702,6 +702,7 @@ export class Editor360Provider extends TreeItemProvider {
         return this.findSceneParent(o.parent)
     }
     findLayerParent(o) {
+        if(!o) return null
         if(o.type === TYPES.NODES.LAYER) return o
         return this.findLayerParent(o.parent)
     }

@@ -100,6 +100,7 @@ export default class App360 extends Component {
                 icon:info.icon,
                 fun:() => {
                     const layer = this.prov().findSelectedLayer()
+                    if(!layer) return this.showWarning("3D Objects can only be added to layers.")
                     const obj = info.make(this.prov())
                     this.prov().appendChild(layer,obj)
                     this.prov().setSelectedObject(obj)
@@ -161,6 +162,7 @@ export default class App360 extends Component {
     }
     addAction = (action) => {
         const prim = this.prov().findSelectedPrimitive()
+        if(!prim) return this.showWarning('Actions can only be added to 3d objects')
         this.prov().appendChild(prim, action)
         this.prov().setSelectedObject(action)
     }
@@ -212,9 +214,27 @@ export default class App360 extends Component {
     uploadLocal  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}/>)
     addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
                                                                      title={"Add a GLTF from a URL"}/>)
+    showWarning = (error) => DialogManager.show(<WarningDialog error={error}/>)
 
 }
 
+class WarningDialog extends Component {
+    constructor(props) {
+        super(props)
+    }
+    close = () => DialogManager.hide()
+    render() {
+        return <Dialog visible={true}>
+            <header>Warning</header>
+            <VBox>
+                <p>{this.props.error}</p>
+            </VBox>
+            <footer>
+                <button onClick={this.close}>Okay</button>
+            </footer>
+        </Dialog>
+    }
+}
 
 
 class AddGLTFFromURLDialog extends Component {
