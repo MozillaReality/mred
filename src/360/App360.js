@@ -63,18 +63,13 @@ export default class App360 extends Component {
                 <TreeTable root={this.prov().getSceneRoot()} provider={this.prov()}/>
             </Panel>
 
-            <Toolbar left bottom>
-                <button className="fa fa-globe" onClick={this.addScene}>Scene</button>
-                <button className="fa fa-plus" onClick={this.showAddAssetMenu}>Asset</button>
-                <button className="fa fa-close" onClick={this.deleteSelectedAsset}>asset</button>
-            </Toolbar>
 
             <Toolbar center top>
                 <button className="fa fa-plus" onClick={this.showAddPopupMenu}>Object</button>
+                <button className="fa fa-plus" onClick={this.showAddAssetMenu}>Asset</button>
                 <button className="fa fa-plus" onClick={this.showAddActionMenu}>Action</button>
                 <button className="fa fa-close" onClick={this.deleteObject}/>
                 <Spacer/>
-                {/*<button className="fa fa-save" onClick={this.save} disabled={!this.state.dirty}/>*/}
                 <button className="fa fa-undo" onClick={this.undo}/>
                 <button className="fa fa-repeat" onClick={this.redo}/>
                 <Spacer/>
@@ -111,10 +106,15 @@ export default class App360 extends Component {
                 }
             }
         })
-        acts.unshift({
+        acts.push({
             title:'Layer',
             icon:'window-maximize',
             fun: this.addLayer
+        })
+        acts.push({
+            title:'Scene',
+            icon:'globe',
+            fun: this.addScene
         })
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
@@ -149,8 +149,16 @@ export default class App360 extends Component {
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
 
-    addScene  = () => this.prov().appendChild(this.prov().getScenesRoot(),this.prov().createScene())
-    addLayer  = () => this.prov().appendChild(this.prov().findSelectedScene(),this.prov().createLayer())
+    addScene  = () => {
+        const scene = this.prov().createScene()
+        this.prov().appendChild(this.prov().getScenesRoot(),scene)
+        this.prov().setSelectedObject(scene)
+    }
+    addLayer  = () => {
+        const layer = this.prov().createLayer()
+        this.prov().appendChild(this.prov().findSelectedScene(),layer)
+        this.prov().setSelectedObject(layer)
+    }
     addAction = (action) => {
         const prim = this.prov().findSelectedPrimitive()
         this.prov().appendChild(prim, action)
@@ -204,7 +212,6 @@ export default class App360 extends Component {
     uploadLocal  = () => DialogManager.show(<UploadAssetDialog provider={this.prov()}/>)
     addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
                                                                      title={"Add a GLTF from a URL"}/>)
-    deleteSelectedAsset = () => this.prov().deleteChild(this.prov().findSelectedAsset())
 
 }
 
