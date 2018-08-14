@@ -33,6 +33,8 @@ export default class HelpDialog extends Component {
                 <p>
                     Report bugs and request features <button onClick={this.reportBug}>now</button>
                 </p>
+                <p>NODE_ENV = {process.env.NODE_ENV}</p>
+                <p>version = {process.env.REACT_APP_VERSION}</p>
             </VBox>
             <footer>
                 <button className="primary" onClick={this.close}>Dismiss</button>

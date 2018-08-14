@@ -1,6 +1,6 @@
 {
   "name": "general-editor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "appy-comps": "^0.1.15",
@@ -17,7 +17,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-ga": "^2.5.3",
-    "react-scripts": "1.0.17",
+    "react-scripts": "1.1.4",
     "three": "^0.89.0",
     "three-gltf2-loader": "^1.2.0"
   },
