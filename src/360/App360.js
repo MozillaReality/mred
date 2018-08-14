@@ -13,6 +13,7 @@ import ReactGA from 'react-ga'
 import JSZip from "jszip"
 import {saveAs} from "file-saver/FileSaver"
 import UploadAssetDialog from './UploadAssetDialog'
+import HelpDialog from './HelpDialog'
 
 export default class App360 extends Component {
     constructor(props) {
@@ -33,6 +34,7 @@ export default class App360 extends Component {
 
     componentDidMount() {
         this.im.attachKeyEvents(document)
+        this.showHelp()
     }
 
     prov = () => this.props.provider
@@ -76,6 +78,7 @@ export default class App360 extends Component {
                 <button className="fa fa-play" onClick={this.preview}/>
                 <button className="fa fa-save" onClick={this.save}/>
                 <button className="fa fa-download" onClick={this.exportProject}/>
+                <button className="fa fa-question-circle-o" onClick={this.showHelp}/>
             </Toolbar>
 
             <Panel center middle scroll>
@@ -215,6 +218,7 @@ export default class App360 extends Component {
     addGLTFURLAsset = () => DialogManager.show(<AddGLTFFromURLDialog provider={this.prov()}
                                                                      title={"Add a GLTF from a URL"}/>)
     showWarning = (error) => DialogManager.show(<WarningDialog error={error}/>)
+    showHelp = () => DialogManager.show(<HelpDialog/>)
 
 }
 
