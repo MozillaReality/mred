@@ -122,8 +122,8 @@ export default class UploadAssetDialog extends Component {
             {this.renderPreview()}
 
             <footer>
-                <button onClick={this.cancel} disabled={this.state.uploading}>cancel</button>
-                <button onClick={this.uploadFile} disabled={this.state.uploading}>upload</button>
+                <button className="plain" onClick={this.cancel} disabled={this.state.uploading}>cancel</button>
+                <button className="primary" onClick={this.uploadFile} disabled={this.state.uploading}>upload</button>
             </footer>
         </Dialog>
     }

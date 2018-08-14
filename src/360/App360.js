@@ -67,8 +67,8 @@ export default class App360 extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-plus" onClick={this.showAddPopupMenu}>Object</button>
                 <button className="fa fa-plus" onClick={this.showAddAssetMenu}>Asset</button>
+                <button className="fa fa-plus" onClick={this.showAddPopupMenu}>Object</button>
                 <button className="fa fa-plus" onClick={this.showAddActionMenu}>Action</button>
                 <button className="fa fa-close" onClick={this.deleteObject}/>
                 <Spacer/>
@@ -277,7 +277,7 @@ class AddGLTFFromURLDialog extends Component {
 
     render() {
         return <Dialog visible={true}>
-            <header>{this.props.title}</header>
+            <header><h3>{this.props.title}</h3></header>
             <VBox>
                 <HBox>
                     <label>URL</label>
@@ -297,8 +297,8 @@ class AddGLTFFromURLDialog extends Component {
             </VBox>
 
             <footer>
-                <button onClick={this.cancel}>cancel</button>
-                <button onClick={this.add}>add</button>
+                <button className="plain" onClick={this.cancel}>cancel</button>
+                <button className="primary" onClick={this.add}>add</button>
             </footer>
         </Dialog>
 

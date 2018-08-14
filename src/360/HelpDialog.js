@@ -1,7 +1,14 @@
 import React, {Component} from "react"
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import ReactGA from 'react-ga'
 export default class HelpDialog extends Component {
     close = () => DialogManager.hide()
+    reportBug = () => {
+        ReactGA.event({action:'issue'})
+        const win = window.open()
+        const location = `https://github.com/joshmarinacci/general-editor/issues`
+        win.location = location
+    }
     render() {
         return <Dialog visible={true}>
             <header>
@@ -22,9 +29,13 @@ export default class HelpDialog extends Component {
                         <p>Then <i className="fa fa-play"></i> <b>preview</b> in full 3D.</p>
                     </li>
                 </ul>
+
+                <p>
+                    Report bugs and request features <button onClick={this.reportBug}>now</button>
+                </p>
             </VBox>
             <footer>
-                <button onClick={this.close}>Dismiss</button>
+                <button className="primary" onClick={this.close}>Dismiss</button>
             </footer>
         </Dialog>
     }

@@ -10,6 +10,27 @@ html, body {
 button {
     font-size: 100%;
 }
+button.plain {
+    background-color: lightgray;
+    border-radius: 0.25em;
+    border: 1px solid gray;
+    padding: 0.25em 0.5em;
+}
+button.plain:hover {
+    background-color: #eee;
+}
+button.primary {
+    background-color: lightskyblue;
+    border-radius: 0.25em;
+    border: 1px solid gray;
+    padding: 0.25em 0.5em;
+}
+button.primary:hover {
+    background-color: lightcyan;
+    border-radius: 0.25em;
+    border: 1px solid gray;
+    padding: 0.25em 0.5em;
+}
 
 .fill {
     position: absolute;
