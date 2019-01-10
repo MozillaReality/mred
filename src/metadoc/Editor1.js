@@ -1,30 +1,56 @@
 import React, {Component} from 'react'
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
+import TreeItemProvider, {SERVER_URL, TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import PropSheet from '../PropSheet'
 import TreeTable from '../TreeTable'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {GET_JSON, POST_JSON, setQuery} from '../utils'
 
 const {DocGraph, SET_PROPERTY} = require("syncing_protocol");
 
 export default class MetadocEditor extends  TreeItemProvider {
     constructor() {
         super()
-        this.syncdoc = new DocGraph()
+        this.graphListeners = []
+        this.setDocGraph(new DocGraph())
+        this.onGraphChange(this.handleGraphChange)
         this.root = this.makeEmptyRoot()
+    }
 
+    getGraph() {
+        return this.syncdoc
+    }
 
-        this.syncdoc.onChange((op)=>{
-            // console.log("the doc has changed",op)
-            if(op.type === SET_PROPERTY) {
-                this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,op)
-            }
-        })
+    onGraphChange = (cb) => {
+        this.graphListeners.push(cb)
+        if(this.syncdoc) this.syncdoc.onChange(cb)
+    }
+
+    handleGraphChange = (op) => {
+        if(op.type === SET_PROPERTY) {
+            this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,op)
+        }
+    }
+
+    getSceneRoot() {
+        return this.root
+    }
+
+    setDocGraph(graph) {
+        if(this.syncdoc) {
+            this.graphListeners.forEach(cb => this.syncdoc.offChange(cb))
+        }
+        this.syncdoc = graph
+        this.docid = this.genID('doc')
+        if(this.syncdoc) {
+            this.graphListeners.forEach(cb => this.syncdoc.onChange(cb))
+        }
     }
 
     makeEmptyRoot() {
         const CH = this.syncdoc.createArray()
         const root = this.syncdoc.createObject()
+        this.syncdoc.createProperty(root,'type','root')
         this.syncdoc.createProperty(root,'title','root')
         this.syncdoc.createProperty(root,'children',CH)
 
@@ -41,7 +67,11 @@ export default class MetadocEditor extends  TreeItemProvider {
     }
 
     getRootList() {
-        return this.syncdoc.getPropertyValue(this.root,'children')
+        if (this.syncdoc.hasPropertyValue(this.root, 'children')) {
+            return this.syncdoc.getPropertyValue(this.root, 'children')
+        } else {
+            return null
+        }
     }
 
     getDocType = () => "metadoc"
@@ -49,9 +79,7 @@ export default class MetadocEditor extends  TreeItemProvider {
     getTitle = () => "MetaDoc"
 
     getRendererForItem = (item) => {
-        // console.log("get renderer for item",item)
-        // const props = this.syncdoc.getPropertiesForObject(item)
-        // console.log("props",props)
+        if(!this.syncdoc.getObjectById(item)) return <div>???</div>
         const title = this.syncdoc.getPropertyValue(item,'title')
         return <div>{title}</div>
     }
@@ -60,7 +88,6 @@ export default class MetadocEditor extends  TreeItemProvider {
 
     hasChildren = (item) => item && this.syncdoc.hasPropertyValue(item,'children')
     getChildren = (item) => {
-        console.log("getting children for",item)
         const CH = this.syncdoc.getPropertyValue(item,'children')
         const len = this.syncdoc.getArrayLength(CH)
         const ch = []
@@ -135,12 +162,74 @@ export default class MetadocEditor extends  TreeItemProvider {
         })
     }
 
+    getDocHistory() {
+        return this.syncdoc.getHistory()
+    }
+
+    save = () => {
+        const payload_obj = {
+            history:this.getDocHistory(),
+            type:this.getDocType(),
+            id:this.getDocId()
+        }
+        console.log("doing a save",payload_obj)
+        const payload_string = JSON.stringify(payload_obj)
+        return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
+            console.log("Success result is",res)
+            setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
+            this.fire(TREE_ITEM_PROVIDER.SAVED,true)
+        }).catch((e)=> console.log("error",e))
+    }
+
+    loadDoc(docid) {
+        GET_JSON(SERVER_URL+docid).then((payload)=>{
+            console.log("got the payload",payload)
+            this.setDocGraph(new DocGraph())
+            payload.history.forEach(op => {
+                // console.log("loading",op)
+                this.syncdoc.process(op)
+            })
+            this.root = this.syncdoc.getObjectByProperty('type','root')
+            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
+            SelectionManager.clearSelection()
+            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
+            console.log(this.getGraph().dumpGraph())
+        }).catch((e)=>{
+            console.log("missing doc. do nothing",e)
+            // this.setDocument(this.makeEmptyRoot(),this.genID('doc'))
+            // setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
+        })
+    }
+
+    reloadDocument() {
+        GET_JSON(SERVER_URL+this.docid).then((payload)=>{
+            if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
+            console.log("got the payload",payload)
+            this.setDocGraph(new DocGraph())
+            payload.history.forEach(op => {
+                // console.log("loading",op)
+                this.syncdoc.process(op)
+            })
+            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
+            SelectionManager.clearSelection()
+            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
+            console.log(this.getGraph().dumpGraph())
+        }).catch((e)=>{
+            console.log("couldn't reload the doc",e)
+        })
+
+    }
+
 }
 
 
 class MetadocApp extends Component {
     constructor(props) {
         super(props)
+    }
+
+    canvasSelected = (rect) => {
+        SelectionManager.setSelection(rect)
     }
 
     render() {
@@ -162,7 +251,10 @@ class MetadocApp extends Component {
 
 
             <Panel center middle scroll>
-                <MetadocCanvas graph={prov.syncdoc} list={prov.getRootList()}/>
+                <MetadocCanvas
+                    prov={prov}
+                    onSelect={this.canvasSelected}
+                />
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
@@ -184,7 +276,7 @@ export class MetadocCanvas extends Component {
             scale:1,
             selection:null
         }
-        props.graph.onChange((e) => {
+        props.prov.onGraphChange((e) => {
             if (this.props.list === -1) return
             this.redraw()
         })
@@ -192,7 +284,6 @@ export class MetadocCanvas extends Component {
 
     componentDidMount() {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
-            console.log("new selection is",sel)
             this.setState({selection:sel})
         })
     }
@@ -222,14 +313,16 @@ export class MetadocCanvas extends Component {
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
         c.scale(this.state.scale, this.state.scale)
-        const list = this.props.list
-        const len = this.props.graph.getArrayLength(list)
+        const list = this.props.prov.getRootList()
+        if(!list) return
+        const graph = this.props.prov.getGraph()
+        const len = graph.getArrayLength(list)
         for (let i = 0; i < len; i++) {
-            const objid = this.props.graph.getElementAt(list, i)
-            const x = this.props.graph.getPropertyValue(objid, 'x')
-            const y = this.props.graph.getPropertyValue(objid, 'y')
-            const w = this.props.graph.getPropertyValue(objid, 'width')
-            const h = this.props.graph.getPropertyValue(objid, 'height')
+            const objid = graph.getElementAt(list, i)
+            const x = graph.getPropertyValue(objid, 'x')
+            const y = graph.getPropertyValue(objid, 'y')
+            const w = graph.getPropertyValue(objid, 'width')
+            const h = graph.getPropertyValue(objid, 'height')
             // console.log(objid,x,y,w,h)
             c.fillStyle = 'gray'
             if (sel === objid) {
@@ -241,10 +334,11 @@ export class MetadocCanvas extends Component {
     }
 
     isInside(pt,objid) {
-        const x = this.props.graph.getPropertyValue(objid, 'x')
-        const y = this.props.graph.getPropertyValue(objid, 'y')
-        const w = this.props.graph.getPropertyValue(objid, 'width')
-        const h = this.props.graph.getPropertyValue(objid, 'height')
+        const graph = this.props.prov.getGraph()
+        const x = graph.getPropertyValue(objid, 'x')
+        const y = graph.getPropertyValue(objid, 'y')
+        const w = graph.getPropertyValue(objid, 'width')
+        const h = graph.getPropertyValue(objid, 'height')
         if(pt.x < x) return false
         if(pt.x > x + w) return false
         if(pt.y < y) return false
@@ -256,15 +350,16 @@ export class MetadocCanvas extends Component {
     onClick = (e) => {
         const pt = this.toCanvas(e)
         const rect = this.findRect(pt)
-        // if(rect) this.props.onSelect(rect)
+        if(rect) this.props.onSelect(rect)
     }
 
     findRect(pt) {
-        const list = this.props.list
-        if(list <= 0) return null
-        const len = this.props.graph.getArrayLength(list)
+        const graph = this.props.prov.getGraph()
+        const list = this.props.prov.getRootList()
+        if(!list) return null
+        const len = graph.getArrayLength(list)
         for (let i = 0; i < len; i++) {
-            const objid = this.props.graph.getElementAt(list, i)
+            const objid = graph.getElementAt(list, i)
             if(this.isInside(pt,objid)) return objid
         }
         return null
@@ -285,8 +380,9 @@ export class MetadocCanvas extends Component {
     mouseMove = (e) => {
         if(!this.state.pressed) return
         const pt = this.toCanvas(e)
-        this.props.graph.setProperty(this.state.rect,'x',pt.x)
-        this.props.graph.setProperty(this.state.rect,'y',pt.y)
+        const graph = this.props.prov.getGraph()
+        graph.setProperty(this.state.rect,'x',pt.x)
+        graph.setProperty(this.state.rect,'y',pt.y)
     }
     mouseUp = (e) => {
         this.setState({pressed:false})
