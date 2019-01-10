@@ -1,33 +1,29 @@
 import React, {Component} from 'react'
 import './App.css'
-import {PopupManager} from "appy-comps"
-import PropSheet from './PropSheet'
-import TreeTable from "./TreeTable"
-import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
-import {PopupContainer, HBox, VBox, HToggleGroup} from "appy-comps"
+import {PopupContainer, PopupManager, VBox} from "appy-comps"
 
 import SVGEditor from "./svg/SVGEditor"
 import HypercardEditor from "./h2d/HypercardEditor"
 import Hypercard3DEditor from "./h3d/Hypercard3DEditor"
 import FamilyTree from "./familytree/FamilyTree"
 import TextureEditor from "./texture/TextureEditor"
-import {toQueryString} from './utils'
-import {MenuPopup} from './GridEditorApp'
 import GLTFInspector from './gltfinspector/GLTFInspector'
+import MetadocEditor from "./metadoc/Editor1"
 
 export default class App extends Component {
     constructor(props) {
         super(props)
         this.providers = {}
-        this.addProvider(new Hypercard3DEditor())
-        this.addProvider(new HypercardEditor())
-        this.addProvider(new SVGEditor())
-        this.addProvider(new FamilyTree())
-        this.addProvider(new TextureEditor())
-        this.addProvider(new GLTFInspector())
+        // this.addProvider(new Hypercard3DEditor())
+        // this.addProvider(new HypercardEditor())
+        // this.addProvider(new SVGEditor())
+        // this.addProvider(new FamilyTree())
+        // this.addProvider(new TextureEditor())
+        // this.addProvider(new GLTFInspector())
+        this.addProvider(new MetadocEditor())
         this.state = {
-            provider: this.providers.familytree,
-            providerName: 'familytree',
+            provider: this.providers.metadoc,
+            providerName: 'metadoc',
             // selectedTool: this.providers.svg.getTools()[0]
         }
     }
@@ -36,7 +32,7 @@ export default class App extends Component {
     }
 
     componentDidMount() {
-        let prov = 'hypercard-3d'
+        let prov = 'metadoc'
         if(this.props.options.doctype) prov = this.props.options.doctype
         this.switchProvider(prov)
     }
