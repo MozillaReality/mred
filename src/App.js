@@ -2,12 +2,6 @@ import React, {Component} from 'react'
 import './App.css'
 import {PopupContainer, PopupManager, VBox} from "appy-comps"
 
-import SVGEditor from "./svg/SVGEditor"
-import HypercardEditor from "./h2d/HypercardEditor"
-import Hypercard3DEditor from "./h3d/Hypercard3DEditor"
-import FamilyTree from "./familytree/FamilyTree"
-import TextureEditor from "./texture/TextureEditor"
-import GLTFInspector from './gltfinspector/GLTFInspector'
 import MetadocEditor from "./metadoc/Editor1"
 
 export default class App extends Component {
