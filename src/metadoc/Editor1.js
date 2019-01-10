@@ -141,6 +141,8 @@ export default class MetadocEditor extends  TreeItemProvider {
         const props = this.syncdoc.getPropertiesForObject(item)
         if(props) {
             props.forEach(key => {
+                if(key === 'type') return
+                if(key === 'children') return
                 const value = this.syncdoc.getPropertyValue(item,key)
                 if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
                 console.log("unknown property",key)
@@ -232,6 +234,17 @@ class MetadocApp extends Component {
         SelectionManager.setSelection(rect)
     }
 
+    addBlock = () => {
+        const graph = this.props.provider.getGraph()
+        const rect1 = graph.createObject()
+        graph.createProperty(rect1,'title','first rect')
+        graph.createProperty(rect1,'x',100)
+        graph.createProperty(rect1,'y',100)
+        graph.createProperty(rect1,'width',100)
+        graph.createProperty(rect1,'height',100)
+        graph.insertElement(this.props.provider.getRootList(),0,rect1)
+    }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -241,7 +254,7 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                tools
+                <button onClick={this.addBlock}>add</button>
             </Toolbar>
 
 

@@ -54,6 +54,7 @@ class PropEditor extends Component {
         }
     }
     shouldComponentUpdate(nextProps, nextState) {
+        if(this.state.value !== nextState.value) return true
         if(this.props.def.getKey() === nextProps.def.getKey()) {
             if(this.props.def.getValue() === nextProps.def.getValue()) {
                 return false
@@ -128,10 +129,10 @@ class PropEditor extends Component {
         if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
         if (prop.isLocked()) return <i>{prop.getValue()}</i>
         if (prop.isType('string'))  return <StringEditor value={this.state.value}
-                                                         onChange={this.changed}
-                                                         onBlur={this.commit}
-                                                         def={prop} obj={obj}
-                                                         provider={this.props.provider}/>
+                                 onChange={this.changed}
+                                 onBlur={this.commit}
+                                 def={prop} obj={obj}
+                                 provider={this.props.provider}/>
         if (prop.isType('number'))  {
             let step = 1
             if(prop.hasHints()) {
