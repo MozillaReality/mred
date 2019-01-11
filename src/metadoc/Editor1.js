@@ -7,61 +7,89 @@ import TreeTable from '../TreeTable'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {GET_JSON, POST_JSON, setQuery} from '../utils'
 
-const {DocGraph, SET_PROPERTY} = require("syncing_protocol");
+const {DocGraph, CommandGenerator,
+    SET_PROPERTY, CREATE_PROPERTY, DELETE_PROPERTY,
+    CREATE_OBJECT, DELETE_OBJECT,
+    INSERT_ELEMENT, DELETE_ELEMENT
+
+
+} = require("syncing_protocol");
 
 class EventCoalescer {
     constructor(graph) {
         this.graph = graph
         this.listeners = []
+        this.rawlisteners = []
         this.paused = false
         this.buffer = []
-        this.graph.onChange(op => {
-            if(op.type === SET_PROPERTY && this.paused) {
-                this.buffer.push(op)
-            } else {
-                this.fire(op)
-            }
-        })
+        this.first = {}
+        this.last = {}
     }
     pause() {
         this.paused = true
     }
     unpause() {
         this.paused = false
-        const b = {}
-        this.buffer.forEach(op => {
-            if(op.type === SET_PROPERTY) {
-                if(!b[op.object]) b[op.object] = {}
-                b[op.object][op.name] = op
-            }
-        })
         this.buffer = []
-        console.log("need to send out set property updates",b)
-        Object.keys(b).forEach((key) =>{
-            Object.keys(b[key]).forEach(name=>{
-                const op = b[key][name]
+        // console.log("need to send out set property updates",this.last)
+        // console.log('the originals are',this.first)
+        Object.keys(this.last).forEach((key) =>{
+            Object.keys(this.last[key]).forEach(name=>{
+                const op = this.last[key][name]
+                // console.log("sending",short(op))
+                op.prevValue = this.first[key][name].value
                 this.fire(op)
+                this.graph.process(op)
             })
         })
 
+        this.first = {}
+        this.last = {}
+
+        // console.log(this.graph.dumpGraph())
+        // this.graph.getHistory().forEach(h => console.log(h.type,h.name,h.value))
     }
-    onChange(cb) {
-        this.listeners.push(cb)
-    }
-    fire(op) {
-        this.listeners.forEach(cb => cb(op))
-    }
+    onChange    = cb => this.listeners.push(cb)
+    onRawChange = cb => this.rawlisteners.push(cb)
+    fire        = op => this.listeners.forEach(cb => cb(op))
+    fireRaw     = op => this.rawlisteners.forEach(cb => cb(op))
+
     getPropertiesForObject(obj) {
         return this.graph.getPropertiesForObject(obj)
     }
     getPropertyValue(obj,key) {
-        return this.graph.getPropertyValue(obj,key)
+        // console.log("checking",this.paused,obj,key)
+        if(this.paused && this.last[obj] && this.last[obj][key]) {
+            // console.log("returning the raw property values",this.last[obj][key])
+            return this.last[obj][key].value
+        } else {
+            return this.graph.getPropertyValue(obj, key)
+        }
+    }
+    getArrayLength(obj) {
+        return this.graph.getArrayLength(obj)
+    }
+    getElementAt(obj,index) {
+        return this.graph.getElementAt(obj,index)
     }
     getHostId() {
         return this.graph.getHostId()
     }
+    bufferOp(op) {
+        if(!this.first[op.object]) this.first[op.object] = {}
+        if(!this.first[op.object][op.name]) this.first[op.object][op.name] = op
+        if(!this.last[op.object]) this.last[op.object] = {}
+        this.last[op.object][op.name] = op
+        this.buffer.push(op)
+        this.fireRaw(op)
+    }
     process(op) {
-        return this.graph.process(op)
+        if(op.type === SET_PROPERTY && this.paused) {
+            this.bufferOp(op)
+        } else {
+            this.fire(op)
+            this.graph.process(op)
+        }
     }
 }
 
@@ -123,7 +151,7 @@ class PubnubSyncWrapper {
     }
     handleGraphChange = (e) => {
         console.log("graph changed",e)
-        const host = this.provider.getGraph().getHostId()
+        const host = this.provider.getDataGraph().getHostId()
         if(e.host !== host) return
         if(this.paused) return this.buffer.push(e)
         this.sendMessage(e)
@@ -135,7 +163,7 @@ class PubnubSyncWrapper {
             channel:this.calculateChannelName(),
             message: {
                 type:'GET_HISTORY',
-                host: this.provider.getGraph().getHostId()
+                host: this.provider.getDataGraph().getHostId()
             }
         })
     }
@@ -178,7 +206,7 @@ class PubnubSyncWrapper {
 
     handleMessage = (evt) => {
         if(this.paused) return
-        const graph = this.provider.getGraph()
+        const graph = this.provider.getDataGraph()
         // console.log('PN_REMOTE',evt)
         if(evt.message.type === 'GET_HISTORY') {
             // console.log("got a history request",evt.message.host, graph.getHostId())
@@ -205,31 +233,162 @@ class PubnubSyncWrapper {
     }
 }
 
+function short(op) {
+    let str = op.type + ' '
+    if(op.name) {
+        str += op.name + "=" + op.value + " prev = " + op.prevValue
+    }
+    return str
+}
+
+class UndoQueue {
+    constructor(graph) {
+        this.graph = graph
+        this.history = []
+        this.current = -1
+    }
+
+    submit(op) {
+        // console.log("UNDOREDO: ",short(op))
+        this.history.push(op)
+        this.current = this.history.length-1
+    }
+    canUndo() {
+        return this.current >= 0
+    }
+    canRedo() {
+        return this.current < this.history.length-1
+    }
+    undo() {
+        const last = this.history[this.current]
+        this.current--
+        // console.log("undoing",short(last))
+        // this.history.forEach(op => console.log(short(op)))
+        if(last.type === SET_PROPERTY) {
+            if(!last.prevValue){
+                console.warn("undoing set property without a previous value!",last)
+            }
+            const op = {
+                type: SET_PROPERTY,
+                host: this.graph.getHostId(),
+                timestamp: Date.now(),
+                object: last.object,
+                name: last.name,
+                value: last.prevValue,
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === CREATE_PROPERTY) {
+            const op = {
+                type: DELETE_PROPERTY,
+                host: this.graph.getHostId(),
+                timestamp: Date.now(),
+                object: last.object,
+                name: last.name,
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === CREATE_OBJECT) {
+            const op = {
+                type: DELETE_OBJECT,
+                host: this.graph.getHostId(),
+                timestamp: Date.now(),
+                id: last.id,
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === INSERT_ELEMENT) {
+            const op = {
+                type: DELETE_ELEMENT,
+                host: this.graph.getHostId(),
+                timestamp: Date.now(),
+                array: last.array,
+                entry: last.entryid
+            }
+            this.graph.process(op)
+            return
+        }
+        throw new Error(`undo for type not supported: ${last.type}`)
+    }
+    redo() {
+        this.current++
+        const last = this.history[this.current]
+        // console.log("redoin",this.current,last.type,last.name,'=',last.value)
+        if(last.type === SET_PROPERTY) {
+            const op = {
+                type: last.type,
+                host: last.host,
+                timestamp: Date.now(),
+                object: last.object,
+                name: last.name,
+                value: last.value
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === CREATE_PROPERTY) {
+            const op = {
+                type: last.type,
+                host: last.host,
+                timestamp: Date.now(),
+                object: last.object,
+                name: last.name,
+                value: last.value
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === CREATE_OBJECT) {
+            const op = {
+                type: last.type,
+                host: last.host,
+                timestamp: Date.now(),
+                id: last.id,
+            }
+            this.graph.process(op)
+            return
+        }
+        if(last.type === INSERT_ELEMENT) {
+            console.log("redoing",last)
+            const op = {
+                type: last.type,
+                host: last.host,
+                timestamp: Date.now(),
+                array: last.array,
+                value: last.value,
+                entryid: this.graph.makeGUID(),
+                prev: -1,
+            }
+            this.graph.process(op)
+            return
+        }
+        throw new Error(`redo for type not supported: ${last.type}`)
+    }
+
+    dump() {
+        return this.history.map((op,i) => i+" " + op.type + " " + op.name + " => " + op.value)
+    }
+}
+
 
 
 export default class MetadocEditor extends  TreeItemProvider {
     constructor() {
         super()
-        this.graphListeners = []
-        this.setDocGraph(new DocGraph())
-        this.onGraphChange(this.handleGraphChange)
-        this.connected = false
-    }
+        this.datalisteners = []
+        this.rawlisteners = []
 
-    getGraph() {
-        return this.syncdoc
+        const doc = new DocGraph()
+        this.makeEmptyRoot(doc)
+        this.setupDocFlow(doc,this.genID('doc'))
     }
+    onRawChange = cb => this.rawlisteners.push(cb)
 
-    onGraphChange = (cb) => {
-        this.graphListeners.push(cb)
-        if(this.syncdoc) this.syncdoc.onChange(cb)
-    }
-
-    handleGraphChange = (op) => {
-        if(op.type === SET_PROPERTY) {
-            this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,op)
-        }
-    }
+    getRawGraph = () => this.coalescer
+    getDataGraph = () => this.syncdoc
 
     getSceneRoot() {
         return this.root
@@ -247,28 +406,27 @@ export default class MetadocEditor extends  TreeItemProvider {
         }
     }
 
-    makeEmptyRoot() {
-        const CH = this.syncdoc.createArray()
-        const root = this.syncdoc.createObject()
-        this.syncdoc.createProperty(root,'type','root')
-        this.syncdoc.createProperty(root,'title','root')
-        this.syncdoc.createProperty(root,'children',CH)
+    makeEmptyRoot(syncdoc) {
+        const CH = syncdoc.createArray()
+        const root = syncdoc.createObject()
+        syncdoc.createProperty(root,'type','root')
+        syncdoc.createProperty(root,'title','root')
+        syncdoc.createProperty(root,'children',CH)
 
 
-        const d = this.syncdoc
-        const rect1 = this.syncdoc.createObject()
+        const d = syncdoc
+        const rect1 = syncdoc.createObject()
         d.createProperty(rect1,'title','first rect')
         d.createProperty(rect1,'x',100)
         d.createProperty(rect1,'y',100)
         d.createProperty(rect1,'width',100)
         d.createProperty(rect1,'height',100)
-        this.syncdoc.insertElement(CH,0,rect1)
-        return root
+        syncdoc.insertElement(CH,0,rect1)
     }
 
     getRootList() {
-        if (this.syncdoc.hasPropertyValue(this.root, 'children')) {
-            return this.syncdoc.getPropertyValue(this.root, 'children')
+        if (this.getDataGraph().hasPropertyValue(this.root, 'children')) {
+            return this.getDataGraph().getPropertyValue(this.root, 'children')
         } else {
             return null
         }
@@ -279,20 +437,20 @@ export default class MetadocEditor extends  TreeItemProvider {
     getTitle = () => "MetaDoc"
 
     getRendererForItem = (item) => {
-        if(!this.syncdoc.getObjectById(item)) return <div>???</div>
-        const title = this.syncdoc.getPropertyValue(item,'title')
+        if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
+        const title = this.getDataGraph().getPropertyValue(item,'title')
         return <div>{title}</div>
     }
 
     isExpanded = (item) => true
 
-    hasChildren = (item) => item && this.syncdoc.hasPropertyValue(item,'children')
+    hasChildren = (item) => item && this.getDataGraph().hasPropertyValue(item,'children')
     getChildren = (item) => {
-        const CH = this.syncdoc.getPropertyValue(item,'children')
-        const len = this.syncdoc.getArrayLength(CH)
+        const CH = this.getDataGraph().getPropertyValue(item,'children')
+        const len = this.getDataGraph().getArrayLength(CH)
         const ch = []
         for(let i=0; i<len; i++) {
-            ch.push(this.syncdoc.getElementAt(CH,i))
+            ch.push(this.getDataGraph().getElementAt(CH,i))
         }
         return ch
     }
@@ -384,58 +542,59 @@ export default class MetadocEditor extends  TreeItemProvider {
     loadDoc(docid) {
         GET_JSON(SERVER_URL+docid).then((payload)=>{
             console.log("got the payload",payload)
-            if(this.pubnub) this.pubnub.shutdown()
-            this.pubnub = null
-            this.setDocGraph(new DocGraph(),docid)
-            payload.history.forEach(op => {
-                // console.log("loading",op)
-                this.syncdoc.process(op)
-            })
-            this.root = this.syncdoc.getObjectByProperty('type','root')
-            this.throttle = new EventCoalescer(this.syncdoc)
-            this.pubnub = new PubnubSyncWrapper(this,this.throttle)
-            this.pubnub.unpause()
-            this.pubnub.start()
-            this.connected = true
-            this.fire("CONNECTED",this.connected)
-            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
-            SelectionManager.clearSelection()
-            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
-            console.log(this.getGraph().dumpGraph())
+            const doc = this.makeDocFromServerHistory(payload.history)
+            this.setupDocFlow(doc,docid)
         }).catch((e)=>{
             console.log("missing doc. create a new doc",e)
-            this.setDocGraph(new DocGraph())
-            this.root = this.makeEmptyRoot()
-
-
-            this.throttle = new EventCoalescer(this.syncdoc)
-            this.pubnub = new PubnubSyncWrapper(this,this.throttle)
-            this.pubnub.unpause()
-            this.pubnub.start()
-            this.connected = true
-            this.fire("CONNECTED",this.connected)
-            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
-            SelectionManager.clearSelection()
-            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
-
-            // this.setDocument(this.makeEmptyRoot(),this.genID('doc'))
-            setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
+            const doc = new DocGraph()
+            this.makeEmptyRoot(doc)
+            this.setupDocFlow(doc,this.genID('doc'))
         })
+    }
+
+    setupDocFlow(doc,docid) {
+        if(this.pubnub) this.pubnub.shutdown()
+        this.pubnub = null
+
+
+        this.syncdoc = doc
+        this.cmd = new CommandGenerator(this.syncdoc)
+        this.root = this.syncdoc.getObjectByProperty('type','root')
+        this.docid = docid
+        this.undoqueue = new UndoQueue(doc)
+        this.coalescer = new EventCoalescer(this.syncdoc) //sends calls on to sync doc, and fires change event
+        this.coalescer.onChange((op) => {
+            this.undoqueue.submit(op)
+        })
+        this.coalescer.onRawChange(op => {
+            this.rawlisteners.forEach(cb => cb(op))
+        })
+        this.syncdoc.onChange(op => {
+            this.rawlisteners.forEach(cb => cb(op))
+        })
+        this.syncdoc.onChange((op)=>{
+            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
+            this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, { provider:this });
+        })
+        this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
+
+        this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
+        SelectionManager.clearSelection()
+
+
+        this.pubnub = new PubnubSyncWrapper(this,this.syncdoc)
+        this.pubnub.unpause()
+        this.pubnub.start()
+        this.connected = true
+        this.fire("CONNECTED",this.connected)
     }
 
     reloadDocument() {
         GET_JSON(SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             console.log("got the payload",payload)
-            this.setDocGraph(new DocGraph(),this.docid)
-            payload.history.forEach(op => {
-                // console.log("loading",op)
-                this.syncdoc.process(op)
-            })
-            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
-            SelectionManager.clearSelection()
-            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
-            console.log(this.getGraph().dumpGraph())
+            const doc = this.makeDocFromServerHistory(payload.history)
+            this.setupDocFlow(doc,this.docid)
         }).catch((e)=>{
             console.log("couldn't reload the doc",e)
         })
@@ -457,10 +616,29 @@ export default class MetadocEditor extends  TreeItemProvider {
     isConnected = () => this.connected
 
     pauseQueue() {
-        this.throttle.pause()
+        this.coalescer.pause()
     }
     unpauseQueue() {
-        this.throttle.unpause()
+        this.coalescer.unpause()
+    }
+
+    performUndo = () => {
+        if(this.undoqueue.canUndo()) this.undoqueue.undo()
+    }
+    performRedo = () => {
+        if(this.undoqueue.canRedo()) this.undoqueue.redo()
+    }
+
+    makeDocFromServerHistory(history) {
+        const doc = new DocGraph()
+        console.log(history)
+
+        history.forEach(op => {
+            console.log("loading",short(op))
+            doc.process(op)
+        })
+
+        return doc
     }
 }
 
@@ -486,7 +664,7 @@ class MetadocApp extends Component {
     }
 
     addBlock = () => {
-        const graph = this.props.provider.getGraph()
+        const graph = this.props.provider.getDataGraph()
         const rect1 = graph.createObject()
         graph.createProperty(rect1,'title','first rect')
         graph.createProperty(rect1,'x',100)
@@ -512,6 +690,8 @@ class MetadocApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
                 <button onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
+                <button onClick={prov.performUndo}>undo</button>
+                <button onClick={prov.performRedo}>redo</button>
             </Toolbar>
 
 
@@ -541,7 +721,7 @@ export class MetadocCanvas extends Component {
             scale:1,
             selection:null
         }
-        props.prov.onGraphChange((e) => {
+        props.prov.onRawChange(e => {
             if (this.props.list === -1) return
             this.redraw()
         })
@@ -550,6 +730,9 @@ export class MetadocCanvas extends Component {
     componentDidMount() {
         this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel)=> {
             this.setState({selection:sel})
+        })
+        this.props.prov.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,()=>{
+            this.redraw()
         })
     }
 
@@ -580,7 +763,7 @@ export class MetadocCanvas extends Component {
         c.scale(this.state.scale, this.state.scale)
         const list = this.props.prov.getRootList()
         if(!list) return
-        const graph = this.props.prov.getGraph()
+        const graph = this.props.prov.getRawGraph()
         const len = graph.getArrayLength(list)
         for (let i = 0; i < len; i++) {
             const objid = graph.getElementAt(list, i)
@@ -599,7 +782,7 @@ export class MetadocCanvas extends Component {
     }
 
     isInside(pt,objid) {
-        const graph = this.props.prov.getGraph()
+        const graph = this.props.prov.getRawGraph()
         const x = graph.getPropertyValue(objid, 'x')
         const y = graph.getPropertyValue(objid, 'y')
         const w = graph.getPropertyValue(objid, 'width')
@@ -619,7 +802,7 @@ export class MetadocCanvas extends Component {
     }
 
     findRect(pt) {
-        const graph = this.props.prov.getGraph()
+        const graph = this.props.prov.getRawGraph()
         const list = this.props.prov.getRootList()
         if(!list) return null
         const len = graph.getArrayLength(list)
@@ -645,9 +828,9 @@ export class MetadocCanvas extends Component {
     mouseMove = (e) => {
         if(!this.state.pressed) return
         const pt = this.toCanvas(e)
-        const graph = this.props.prov.getGraph()
-        graph.setProperty(this.state.rect,'x',pt.x)
-        graph.setProperty(this.state.rect,'y',pt.y)
+        const graph = this.props.prov.getRawGraph()
+        graph.process(this.props.prov.cmd.setProperty(this.state.rect,'x',pt.x))
+        graph.process(this.props.prov.cmd.setProperty(this.state.rect,'y',pt.y))
     }
     mouseUp = (e) => {
         this.setState({pressed:false})
