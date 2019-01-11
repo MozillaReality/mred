@@ -9,12 +9,68 @@ import {GET_JSON, POST_JSON, setQuery} from '../utils'
 
 const {DocGraph, SET_PROPERTY} = require("syncing_protocol");
 
+class EventCoalescer {
+    constructor(graph) {
+        this.graph = graph
+        this.listeners = []
+        this.paused = false
+        this.buffer = []
+        this.graph.onChange(op => {
+            if(op.type === SET_PROPERTY && this.paused) {
+                this.buffer.push(op)
+            } else {
+                this.fire(op)
+            }
+        })
+    }
+    pause() {
+        this.paused = true
+    }
+    unpause() {
+        this.paused = false
+        const b = {}
+        this.buffer.forEach(op => {
+            if(op.type === SET_PROPERTY) {
+                if(!b[op.object]) b[op.object] = {}
+                b[op.object][op.name] = op
+            }
+        })
+        this.buffer = []
+        console.log("need to send out set property updates",b)
+        Object.keys(b).forEach((key) =>{
+            Object.keys(b[key]).forEach(name=>{
+                const op = b[key][name]
+                this.fire(op)
+            })
+        })
+
+    }
+    onChange(cb) {
+        this.listeners.push(cb)
+    }
+    fire(op) {
+        this.listeners.forEach(cb => cb(op))
+    }
+    getPropertiesForObject(obj) {
+        return this.graph.getPropertiesForObject(obj)
+    }
+    getPropertyValue(obj,key) {
+        return this.graph.getPropertyValue(obj,key)
+    }
+    getHostId() {
+        return this.graph.getHostId()
+    }
+    process(op) {
+        return this.graph.process(op)
+    }
+}
+
 class PubnubSyncWrapper {
-    constructor(provider) {
+    constructor(provider, graph) {
         this.paused = false
         this.buffer = []
         this.provider = provider
-        this.provider.onGraphChange(this.handleGraphChange)
+        graph.onChange(this.handleGraphChange)
 
         const settings = {
             publishKey:'pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd',
@@ -48,7 +104,7 @@ class PubnubSyncWrapper {
         this.buffer.forEach(op => this.sendMessage(op))
         this.buffer = []
         //now request history from the network for anything we missed
-        this.sendHistoryRequest()
+        // this.sendHistoryRequest()
     }
     shutdown() {
         this.pubnub.unsubscribe({channels:[this.calculateChannelName()]})
@@ -335,20 +391,35 @@ export default class MetadocEditor extends  TreeItemProvider {
                 // console.log("loading",op)
                 this.syncdoc.process(op)
             })
-            this.pubnub = new PubnubSyncWrapper(this)
+            this.root = this.syncdoc.getObjectByProperty('type','root')
+            this.throttle = new EventCoalescer(this.syncdoc)
+            this.pubnub = new PubnubSyncWrapper(this,this.throttle)
             this.pubnub.unpause()
             this.pubnub.start()
             this.connected = true
             this.fire("CONNECTED",this.connected)
-            this.root = this.syncdoc.getObjectByProperty('type','root')
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
             SelectionManager.clearSelection()
             this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
             console.log(this.getGraph().dumpGraph())
         }).catch((e)=>{
-            console.log("missing doc. do nothing",e)
+            console.log("missing doc. create a new doc",e)
+            this.setDocGraph(new DocGraph())
+            this.root = this.makeEmptyRoot()
+
+
+            this.throttle = new EventCoalescer(this.syncdoc)
+            this.pubnub = new PubnubSyncWrapper(this,this.throttle)
+            this.pubnub.unpause()
+            this.pubnub.start()
+            this.connected = true
+            this.fire("CONNECTED",this.connected)
+            this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
+            SelectionManager.clearSelection()
+            this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
+
             // this.setDocument(this.makeEmptyRoot(),this.genID('doc'))
-            // setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
+            setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
         })
     }
 
@@ -384,6 +455,13 @@ export default class MetadocEditor extends  TreeItemProvider {
     }
 
     isConnected = () => this.connected
+
+    pauseQueue() {
+        this.throttle.pause()
+    }
+    unpauseQueue() {
+        this.throttle.unpause()
+    }
 }
 
 
@@ -553,7 +631,7 @@ export class MetadocCanvas extends Component {
     }
 
     mouseDown = (e) =>{
-        // this.props.onPauseQueue()
+        this.props.prov.pauseQueue()
         const pt = this.toCanvas(e)
         const rect = this.findRect(pt)
         if(rect) {
@@ -573,7 +651,7 @@ export class MetadocCanvas extends Component {
     }
     mouseUp = (e) => {
         this.setState({pressed:false})
-        // this.props.onUnpauseQueue()
+        this.props.prov.unpauseQueue()
     }
 
     render() {
