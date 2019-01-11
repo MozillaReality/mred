@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import PubNub from "pubnub"
 import TreeItemProvider, {SERVER_URL, TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import PropSheet from '../PropSheet'
@@ -8,13 +9,155 @@ import {GET_JSON, POST_JSON, setQuery} from '../utils'
 
 const {DocGraph, SET_PROPERTY} = require("syncing_protocol");
 
+class PubnubSyncWrapper {
+    constructor(provider) {
+        this.paused = false
+        this.buffer = []
+        this.provider = provider
+        this.provider.onGraphChange(this.handleGraphChange)
+
+        const settings = {
+            publishKey:'pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd',
+            subscribeKey:'sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733',
+        }
+
+        this.pubnub = new PubNub(settings)
+    }
+    calculateChannelName() {
+        return "metadoc-docupdate-"+this.provider.getDocId()
+    }
+    start() {
+        this.pubnub.addListener({
+            status:(e) => {
+                console.log(e)
+                if(e.operation === 'PNSubscribeOperation' && e.category === 'PNConnectedCategory') {
+                    this.sendHistoryRequest()
+                }
+            },
+            message:this.handleMessage,
+        })
+
+        this.pubnub.subscribe({channels:[this.calculateChannelName()]})
+    }
+    pause() {
+        this.paused = true
+    }
+    unpause() {
+        this.paused = false
+        console.log("we need to send the waiting messages", this.buffer)
+        this.buffer.forEach(op => this.sendMessage(op))
+        this.buffer = []
+        //now request history from the network for anything we missed
+        this.sendHistoryRequest()
+    }
+    shutdown() {
+        this.pubnub.unsubscribe({channels:[this.calculateChannelName()]})
+        this.pubnub.stop()
+    }
+
+    sendMessage(e) {
+        console.log("PN_SEND:",e)
+        this.pubnub.publish({
+            channel:this.calculateChannelName(),
+            message:e
+        },(status,response)=>{
+            // console.log("published",status,response)
+        })
+
+    }
+    handleGraphChange = (e) => {
+        console.log("graph changed",e)
+        const host = this.provider.getGraph().getHostId()
+        if(e.host !== host) return
+        if(this.paused) return this.buffer.push(e)
+        this.sendMessage(e)
+    }
+
+    sendHistoryRequest() {
+        console.log("sending a history request")
+        this.pubnub.publish({
+            channel:this.calculateChannelName(),
+            message: {
+                type:'GET_HISTORY',
+                host: this.provider.getGraph().getHostId()
+            }
+        })
+    }
+
+    handleGetHistory() {
+        console.log("need to send out the history")
+        const graph = this.provider.getGraph()
+        const hist = graph.getHistory().slice()
+        console.log(hist)
+        const chunkSize = 30
+        let count = 0
+        while(hist.length > 0) {
+            if(count>100){
+                console.log("breaking out. possible infinite loop")
+                break
+            }
+            count++
+            const chunk = hist.splice(0,chunkSize)
+            console.log("sending",chunk.length,chunk)
+            this.pubnub.publish({
+                channel:this.calculateChannelName(),
+                message: {
+                    type:'SEND_HISTORY',
+                    host: graph.getHostId(),
+                    history: chunk
+                }
+            },(status,response)=>{
+                console.log("published",status,response)
+            })
+        }
+
+    }
+
+    handleReceiveHistory(msg) {
+        console.log("got some history",msg.history.length)
+        msg.history.forEach(op=>this.provider.getGraph().process(op))
+    }
+
+
+
+    handleMessage = (evt) => {
+        if(this.paused) return
+        const graph = this.provider.getGraph()
+        // console.log('PN_REMOTE',evt)
+        if(evt.message.type === 'GET_HISTORY') {
+            // console.log("got a history request",evt.message.host, graph.getHostId())
+            if(evt.message.host !== graph.getHostId()) {
+                return this.handleGetHistory()
+            }
+            return
+        }
+        if(evt.message.type === 'SEND_HISTORY') {
+            if(evt.message.host !== graph.getHostId()) {
+                return this.handleReceiveHistory(evt.message)
+            }
+            return
+        }
+        const op = evt.message
+        if(!op.host) return console.log("received a message without a host",op)
+        if(!op.timestamp) return console.error("received a message without a timestamp",op)
+        if(op.host && op.host === graph.getHostId()) {
+            // console.log("SKIP: my own message came in. ignoring it")
+            return
+        }
+        console.log("REMOTE",op)
+        graph.process(op)
+    }
+}
+
+
+
 export default class MetadocEditor extends  TreeItemProvider {
     constructor() {
         super()
         this.graphListeners = []
         this.setDocGraph(new DocGraph())
         this.onGraphChange(this.handleGraphChange)
-        this.root = this.makeEmptyRoot()
+        this.connected = false
     }
 
     getGraph() {
@@ -36,12 +179,13 @@ export default class MetadocEditor extends  TreeItemProvider {
         return this.root
     }
 
-    setDocGraph(graph) {
+    setDocGraph(graph,docid) {
+        if(!docid) docid = this.genID('doc')
         if(this.syncdoc) {
             this.graphListeners.forEach(cb => this.syncdoc.offChange(cb))
         }
         this.syncdoc = graph
-        this.docid = this.genID('doc')
+        this.docid = docid
         if(this.syncdoc) {
             this.graphListeners.forEach(cb => this.syncdoc.onChange(cb))
         }
@@ -96,8 +240,6 @@ export default class MetadocEditor extends  TreeItemProvider {
         }
         return ch
     }
-
-
 
     getProperties(item) {
 
@@ -186,11 +328,18 @@ export default class MetadocEditor extends  TreeItemProvider {
     loadDoc(docid) {
         GET_JSON(SERVER_URL+docid).then((payload)=>{
             console.log("got the payload",payload)
-            this.setDocGraph(new DocGraph())
+            if(this.pubnub) this.pubnub.shutdown()
+            this.pubnub = null
+            this.setDocGraph(new DocGraph(),docid)
             payload.history.forEach(op => {
                 // console.log("loading",op)
                 this.syncdoc.process(op)
             })
+            this.pubnub = new PubnubSyncWrapper(this)
+            this.pubnub.unpause()
+            this.pubnub.start()
+            this.connected = true
+            this.fire("CONNECTED",this.connected)
             this.root = this.syncdoc.getObjectByProperty('type','root')
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
             SelectionManager.clearSelection()
@@ -207,7 +356,7 @@ export default class MetadocEditor extends  TreeItemProvider {
         GET_JSON(SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             console.log("got the payload",payload)
-            this.setDocGraph(new DocGraph())
+            this.setDocGraph(new DocGraph(),this.docid)
             payload.history.forEach(op => {
                 // console.log("loading",op)
                 this.syncdoc.process(op)
@@ -222,13 +371,37 @@ export default class MetadocEditor extends  TreeItemProvider {
 
     }
 
+    toggleConnected = () => {
+        this.connected = !this.connected
+        if(this.pubnub) {
+            if(this.connected) {
+                this.pubnub.unpause()
+            } else {
+                this.pubnub.pause()
+            }
+        }
+        this.fire("CONNECTED",this.connected)
+    }
+
+    isConnected = () => this.connected
 }
 
 
 class MetadocApp extends Component {
     constructor(props) {
         super(props)
+        this.state = {
+            connected:false
+        }
     }
+
+    componentDidMount() {
+        this.props.provider.on('CONNECTED',()=>{
+            console.log("connection status",this.props.provider.isConnected())
+            this.setState({connected: this.props.provider.isConnected()})
+        })
+    }
+
 
     canvasSelected = (rect) => {
         SelectionManager.setSelection(rect)
@@ -260,6 +433,7 @@ class MetadocApp extends Component {
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
+                <button onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>
 
 

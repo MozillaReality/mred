@@ -1,4 +1,4 @@
-import PubNub from 'pubnub'
+//import PubNub from 'pubnub'
 import {GET_JSON, POST_JSON, setQuery} from './utils'
 import Selection from './SelectionManager'
 
@@ -99,20 +99,20 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
-        this.pubnub = new PubNub({
-            // publishKey:"pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd",
-            subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
-        })
-        this.pubnub.addListener({
-            status: (status)=> console.log(status),
-            message: (msg) => {
-                console.log(msg)
-                if(msg.channel === this.docid) {
-                    console.log("got a message for my doc. reloading")
-                    this.reloadDocument()
-                }
-            }
-        })
+        // this.pubnub = new PubNub({
+//            // publishKey:"pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd",
+            // subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
+        // })
+    //     this.pubnub.addListener({
+    //         status: (status)=> console.log(status),
+    //         message: (msg) => {
+    //             console.log(msg)
+    //             if(msg.channel === this.docid) {
+    //                 console.log("got a message for my doc. reloading")
+    //                 this.reloadDocument()
+    //             }
+    //         }
+    //     })
     }
 
     on(type, cb) {
@@ -152,7 +152,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     setDocument(doc, docid) {
         this.root = doc
         this.docid = docid
-        this.pubnub.subscribe({channels: [docid]})
+        // this.pubnub.subscribe({channels: [docid]})
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, {
             provider:this
         });
