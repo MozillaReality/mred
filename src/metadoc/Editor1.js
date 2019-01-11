@@ -587,6 +587,9 @@ export default class MetadocEditor extends  TreeItemProvider {
         this.pubnub.start()
         this.connected = true
         this.fire("CONNECTED",this.connected)
+
+        setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
+
     }
 
     reloadDocument() {
