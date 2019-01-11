@@ -140,7 +140,7 @@ class PubnubSyncWrapper {
     }
 
     sendMessage(e) {
-        console.log("PN_SEND:",e)
+        console.log("PN_SEND:",short(e))
         this.pubnub.publish({
             channel:this.calculateChannelName(),
             message:e
@@ -150,7 +150,7 @@ class PubnubSyncWrapper {
 
     }
     handleGraphChange = (e) => {
-        console.log("graph changed",e)
+        // console.log("graph changed",e)
         const host = this.provider.getDataGraph().getHostId()
         if(e.host !== host) return
         if(this.paused) return this.buffer.push(e)
@@ -170,7 +170,7 @@ class PubnubSyncWrapper {
 
     handleGetHistory() {
         console.log("need to send out the history")
-        const graph = this.provider.getGraph()
+        const graph = this.provider.getDataGraph()
         const hist = graph.getHistory().slice()
         console.log(hist)
         const chunkSize = 30
@@ -199,7 +199,7 @@ class PubnubSyncWrapper {
 
     handleReceiveHistory(msg) {
         console.log("got some history",msg.history.length)
-        msg.history.forEach(op=>this.provider.getGraph().process(op))
+        msg.history.forEach(op=>this.provider.getDataGraph().process(op))
     }
 
 
@@ -740,8 +740,8 @@ export class MetadocCanvas extends Component {
         const rect = e.target.getBoundingClientRect()
         // console.log("clicked at",e.clientX,rect)
         return {
-            x: (e.clientX-rect.left)/this.state.scale,
-            y: (e.clientY-rect.top)/this.state.scale,
+            x: Math.floor((e.clientX-rect.left)/this.state.scale),
+            y: Math.floor((e.clientY-rect.top)/this.state.scale),
         }
     }
 
