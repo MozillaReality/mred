@@ -1,8 +1,8 @@
 import PubNub from "pubnub";
 function short(op) {
-    let str = op.type + ' '
+    let str = `${op.type} ${op.uuid} |  `
     if(op.name) {
-        str += op.name + "=" + op.value + " prev = " + op.prevValue
+        str += `${op.name} = ${op.value}  prev = ${op.prevValue}`
     }
     return str
 }
