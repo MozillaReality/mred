@@ -59,57 +59,55 @@ export default class MetadocEditor extends  TreeItemProvider {
     onRawChange = cb => this.rawlisteners.push(cb)
     getRawGraph = () => this.coalescer
     getDataGraph = () => this.syncdoc
-    getSceneRoot = () => this.root
+    getSceneRoot = () => this.getDataGraph().getObjectByProperty('type','root')
 
 
-    makeEmptyRoot(syncdoc) {
-        const CH = syncdoc.createArray()
-        const root = syncdoc.createObject()
-        syncdoc.createProperty(root,'type','root')
-        syncdoc.createProperty(root,'title','root')
-        syncdoc.createProperty(root,'children',CH)
+
+    makeEmptyRoot(doc) {
+        const CH = doc.createArray()
+        const root = doc.createObject()
+        doc.createProperty(root,'type','root')
+        doc.createProperty(root,'title','root')
+        doc.createProperty(root,'children',CH)
 
 
-        const d = syncdoc
-        const rect1 = syncdoc.createObject()
+        const d = doc
+        const rect1 = doc.createObject()
         d.createProperty(rect1,'title','first rect')
         d.createProperty(rect1,'x',100)
         d.createProperty(rect1,'y',100)
         d.createProperty(rect1,'width',100)
         d.createProperty(rect1,'height',100)
-        syncdoc.insertElement(CH,0,rect1)
+        doc.insertElement(CH,0,rect1)
     }
 
     getRootList() {
-        if (this.getDataGraph().hasPropertyValue(this.root, 'children')) {
-            return this.getDataGraph().getPropertyValue(this.root, 'children')
-        } else {
-            return null
-        }
+        const doc = this.getDataGraph()
+        const root = this.getSceneRoot()
+        if(doc.hasPropertyValue(root,'children')) return doc.getPropertyValue(root,'children')
+        return null
     }
 
     getRendererForItem = (item) => {
         if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
-        const title = this.getDataGraph().getPropertyValue(item,'title')
-        return <div>{title}</div>
+        return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
     }
 
     isExpanded = (item) => true
 
     hasChildren = (item) => item && this.getDataGraph().hasPropertyValue(item,'children')
     getChildren = (item) => {
-        const CH = this.getDataGraph().getPropertyValue(item,'children')
-        const len = this.getDataGraph().getArrayLength(CH)
+        const doc = this.getDataGraph()
+        const CH = doc.getPropertyValue(item,'children')
+        const len = doc.getArrayLength(CH)
         const ch = []
         for(let i=0; i<len; i++) {
-            ch.push(this.getDataGraph().getElementAt(CH,i))
+            ch.push(doc.getElementAt(CH,i))
         }
         return ch
     }
 
     getProperties(item) {
-
-
         function copyPropDef(def,value) {
             const out = {};
             Object.keys(def).forEach((key) => out[key] = def[key])
@@ -134,7 +132,7 @@ export default class MetadocEditor extends  TreeItemProvider {
     }
 
     setPropertyValue(item, def, value) {
-        this.syncdoc.setProperty(item,def.key,value)
+        this.getDataGraph().setProperty(item,def.key,value)
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
             provider: this,
             child:item,
@@ -151,10 +149,8 @@ export default class MetadocEditor extends  TreeItemProvider {
             type:this.getDocType(),
             id:this.getDocId()
         }
-        console.log("doing a save",payload_obj)
         const payload_string = JSON.stringify(payload_obj)
         return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
-            console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
         }).catch((e)=> console.log("error",e))
@@ -162,7 +158,6 @@ export default class MetadocEditor extends  TreeItemProvider {
 
     loadDoc(docid) {
         return GET_JSON(SERVER_URL+docid).then((payload)=>{
-            console.log("got the payload",payload)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,docid)
         }).catch((e)=>{
@@ -174,49 +169,38 @@ export default class MetadocEditor extends  TreeItemProvider {
     }
 
     setupDocFlow(doc,docid) {
+        //shut down old network connection
         if(this.pubnub) this.pubnub.shutdown()
         this.pubnub = null
 
-
         this.syncdoc = doc
         this.cmd = new CommandGenerator(this.syncdoc)
-        this.root = this.syncdoc.getObjectByProperty('type','root')
+        this.root = this.getSceneRoot()
         this.docid = docid
         this.undoqueue = new UndoQueue(doc)
         this.coalescer = new EventCoalescer(this.syncdoc) //sends calls on to sync doc, and fires change event
-        this.coalescer.onChange((op) => {
-            this.undoqueue.submit(op)
-        })
-        this.coalescer.onRawChange(op => {
-            this.rawlisteners.forEach(cb => cb(op))
-        })
-        this.syncdoc.onChange(op => {
-            this.rawlisteners.forEach(cb => cb(op))
-        })
+        this.coalescer.onChange((op) => this.undoqueue.submit(op))
+
+        this.coalescer.onRawChange(op =>this.rawlisteners.forEach(cb => cb(op)))
+        this.syncdoc.onChange(op => this.rawlisteners.forEach(cb => cb(op)))
         this.syncdoc.onChange((op)=>{
             this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
             this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, { provider:this });
         })
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, { provider:this });
-
         this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
         SelectionManager.clearSelection()
-
-
         this.pubnub = new PubnubSyncWrapper(this,this.syncdoc)
         this.pubnub.unpause()
         this.pubnub.start()
         this.connected = true
         this.fire("CONNECTED",this.connected)
-
         setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
-
     }
 
     reloadDocument() {
         return GET_JSON(SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
-            console.log("got the payload",payload)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)
         }).catch((e)=>{
@@ -266,9 +250,7 @@ class MetadocApp extends Component {
     }
 
     componentDidMount() {
-        this.props.provider.on('CONNECTED',()=>{
-            this.setState({connected: this.props.provider.isConnected()})
-        })
+        this.props.provider.on('CONNECTED',()=> this.setState({connected: this.props.provider.isConnected()}))
     }
 
 

@@ -46,7 +46,7 @@ export class PubnubSyncWrapper {
 
     unpause() {
         this.paused = false
-        console.log("we need to send the waiting messages", this.buffer)
+        // console.log("we need to send the waiting messages", this.buffer)
         this.buffer.forEach(op => this.sendMessage(op))
         this.buffer = []
         //now request history from the network for anything we missed
