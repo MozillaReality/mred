@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import TreeItemProvider, {SERVER_URL, TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
-import PropSheet from '../PropSheet'
+import PropSheet, {TYPES} from '../common/PropSheet'
 import TreeTable from '../TreeTable'
 import SelectionManager from '../SelectionManager'
 import {GET_JSON, POST_JSON, setQuery} from '../utils'
@@ -16,27 +16,27 @@ const PROP_DEFS = {
     title: {
         key:'title',
         name:'Title',
-        type:'string'
+        type:TYPES.STRING
     },
     x: {
         key:'x',
         name:'X',
-        type:'number',
+        type:TYPES.NUMBER
     },
     y: {
         key:'y',
         name:'Y',
-        type:'number',
+        type:TYPES.NUMBER
     },
     width: {
         key:'width',
         name:'Width',
-        type:'number',
+        type:TYPES.NUMBER
     },
     height: {
         key:'height',
         name:'Height',
-        type:'number',
+        type:TYPES.NUMBER
     },
 }
 

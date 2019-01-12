@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
-import PropSheet from '../PropSheet'
+import PropSheet from '../common/PropSheet'
 
 export default class FamilyTreeApp extends Component {
     addPerson = ()=> this.props.provider.addPerson(this.props.provider.makePerson('unnamed'))

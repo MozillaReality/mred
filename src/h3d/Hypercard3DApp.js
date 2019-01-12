@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import HypercardCanvas3D from './HypercardCanvas3D'
 import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
-import PropSheet from '../PropSheet'
+import PropSheet from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {PopupManager} from 'appy-comps'
 

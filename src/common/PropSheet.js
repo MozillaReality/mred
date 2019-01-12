@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {HBox, PopupManager, VBox} from 'appy-comps'
 
-import selMan, {SELECTION_MANAGER} from "./SelectionManager";
-import RGBColorPicker from "./RGBColorPicker";
-import HSLUVColorPicker from "./HSLUVColorPicker";
-import {TREE_ITEM_PROVIDER} from './TreeItemProvider'
+import selMan, {SELECTION_MANAGER} from "../SelectionManager";
+import HSLUVColorPicker from "../HSLUVColorPicker";
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {StringEditor} from "./StringEditor";
+import {EnumEditor} from "./EnumEditor";
+import {ArrayEditor} from "./ArrayEditor";
 
 const COLORS2 = {
     "black": 0x000000,
@@ -41,6 +43,13 @@ const COLORS2 = {
     "stinger": 0x8a6f30,
 }
 
+export const TYPES = {
+    STRING:'string',
+    NUMBER:'number',
+    BOOLEAN:'boolean',
+    ENUM:'enum',
+}
+
 class PropEditor extends Component {
     constructor(props) {
         super(props);
@@ -63,14 +72,14 @@ class PropEditor extends Component {
         return true
     }
     changed = (e) => {
-        if(this.props.def.isType('string')) {
+        if(this.props.def.isType(TYPES.STRING)) {
             this.setState({value:e.target.value})
             if(this.props.def.isLive()) {
                 this.props.def.setValue(e.target.value)
             }
         }
-        if(this.props.def.isType('number')) this.updateNum(e.target.value)
-        if(this.props.def.isType('boolean')) this.setState({value:e.target.checked})
+        if(this.props.def.isType(TYPES.NUMBER)) this.updateNum(e.target.value)
+        if(this.props.def.isType(TYPES.BOOLEAN)) this.setState({value:e.target.checked})
     }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
@@ -128,12 +137,12 @@ class PropEditor extends Component {
         const provider = this.props.provider
         if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
         if (prop.isLocked()) return <i>{prop.getValue()}</i>
-        if (prop.isType('string'))  return <StringEditor value={this.state.value}
+        if (prop.isType(TYPES.STRING))  return <StringEditor value={this.state.value}
                                  onChange={this.changed}
                                  onBlur={this.commit}
                                  def={prop} obj={obj}
                                  provider={this.props.provider}/>
-        if (prop.isType('number'))  {
+        if (prop.isType(TYPES.NUMBER))  {
             let step = 1
             if(prop.hasHints()) {
                 const hints = prop.getHints()
@@ -149,155 +158,13 @@ class PropEditor extends Component {
                           onBlur={this.commit}
                           step={step}/>
         }
-        if (prop.isType("boolean")) return <input type='checkbox'
+        if (prop.isType(TYPES.BOOLEAN)) return <input type='checkbox'
                                                   checked={this.state.value}
                                                   onChange={this.booleanChanged}/>
-        if (prop.isType('enum')) return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={prop} obj={obj} provider={this.props.provider}/>
+        if (prop.isType(TYPES.ENUM)) return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={prop} obj={obj} provider={this.props.provider}/>
         if (prop.isType('color')) return <button style={{ backgroundColor:this.state.value}} onClick={this.openColorEditor}>{this.state.value}</button>
         if (prop.isType('array')) return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={prop} obj={obj} provider={this.props.provider}/>
         return <b>{prop.getType()}:{prop.getValue()}</b>
-    }
-}
-
-class StringEditor extends Component {
-    render() {
-        const prop = this.props.def;
-        if(prop.hasHints()) {
-            const hints = prop.getHints()
-            if(hints.multiline) {
-                return <textarea value={this.props.value} onChange={this.props.onChange}/>
-            }
-        }
-        return <input type='string'
-                      value={this.props.value}
-                      onChange={this.props.onChange}
-                      onBlur={this.props.onBlur}
-        />
-    }
-}
-
-
-
-const EnumPicker = (props) => {
-    const Rend = props.renderer
-    const items = props.values.map(val=>
-        <HBox
-            key={val}
-            onClick={(e)=>props.onSelect(val)}>
-            <Rend value={val} def={props.def} obj={props.obj} provider={props.provider}/>
-        </HBox>
-            )
-    return <VBox className="popup-menu">{items}</VBox>
-}
-
-const DefaultEnumRenderer = (props) => {
-    let value = ""
-    if(typeof props.value !== 'undefined') {
-        value = props.value.toString()
-    }
-    return <span>{value}</span>
-}
-class EnumEditor extends Component {
-    calculateRenderer() {
-        const proxy = this.props.def
-        const obj = this.props.obj
-        if(!this.props.provider.getRendererForEnum) return DefaultEnumRenderer
-        const renderer = this.props.provider.getRendererForEnum(proxy.getKey(),obj)
-        if(!renderer) return DefaultEnumRenderer
-        return renderer
-    }
-    calculateValues() {
-        const vals = this.props.provider.getValuesForEnum(this.props.def.getKey(),this.props.obj)
-        if(!vals) {
-            console.log(`no values for enum ${this.props.def.getKey()}`);
-            return []
-        }
-        return vals
-    }
-    open = (e) => {
-        PopupManager.show(<EnumPicker
-            values={this.calculateValues()}
-            renderer={this.calculateRenderer()}
-            onSelect={this.selectValue}
-            provider={this.props.provider}
-        />,e.target)
-    }
-    selectValue = (value) => {
-        PopupManager.hide()
-        this.props.onChange(value)
-    }
-    renderValue = (value) => {
-        const def = this.props.def
-        const obj = this.props.obj
-        const Rend = this.calculateRenderer()
-        return <Rend value={value} def={def} obj={obj} provider={this.props.provider}/>
-    }
-    render() {
-        return <button onClick={this.open}>{this.renderValue(this.props.value)}</button>
-    }
-}
-
-class ArrayEditor extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            showEditor:false,
-            value:""
-        }
-
-    }
-    calculateRenderer() {
-        const def = this.props.def
-        const obj = this.props.obj
-        if(!this.props.provider.getRendererForEnum) return DefaultEnumRenderer
-        const renderer = this.props.provider.getRendererForEnum(def.key,obj)
-        if(!renderer) return DefaultEnumRenderer
-        return renderer
-    }
-    addValue = ()=>{
-        this.setState({showEditor:true})
-    }
-    enumChanged = (value) => {
-        const arr = this.props.value.slice();
-        arr.push(value)
-        this.props.onChange(arr)
-    }
-
-    render() {
-        const def = this.props.def
-        const obj = this.props.obj
-        let value = this.props.value
-        if(!value) value = []
-        return <div>
-            {this.renderValues()}
-            <button onClick={this.addValue} className="fa fa-plus"/>
-            {this.renderEditor()}
-        </div>
-    }
-    deleteItem(val) {
-        let arr = this.props.value.slice()
-        arr = arr.filter((v)=>v!==val)
-        this.props.onChange(arr)
-    }
-    renderValues() {
-        const Renderer = this.calculateRenderer()
-        return <VBox>{this.props.value.map((val,i)=>{
-            return <div key={i}>
-                <button className="fa fa-minus" onClick={()=>this.deleteItem(val)}/>
-                <Renderer value={val} provider={this.props.provider}/>
-            </div>
-        })}</VBox>
-    }
-    renderEditor() {
-        if(!this.state.showEditor) return ""
-        const def = this.props.def
-        const obj = this.props.obj
-        return <EnumEditor value={this.state.value}
-                           onChange={this.enumChanged}
-                           def={def}
-                           obj={obj}
-                           provider={this.props.provider}/>
-
     }
 }
 
@@ -340,7 +207,7 @@ export default class PropSheet extends Component {
     componentDidMount() {
         this.h2 = () => this.setState({selection:selMan.getSelection()})
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
-        this.hand = (selection) => this.setState({selection:selMan.getSelection()})
+        this.hand = (s) => this.setState({selection:selMan.getSelection()})
         selMan.on(SELECTION_MANAGER.CHANGED, this.hand)
     }
     componentWillUnmount() {
@@ -409,13 +276,11 @@ class MultiPropProxy {
     isCustom() { return this.first().isCustom() }
     hasHints() { return this.first().hasHints() }
     getHints() { return this.first().getHints() }
-    isLocked() {
-        return this.first().isLocked()
-    }
+    isLocked() { return this.first().isLocked() }
     getType()  { return this.first().getType()  }
     isType(s)  { return this.first().isType(s)  }
-    isLive() { return this.first().isLive() }
-    getKey()   { return this.key }
+    isLive()   { return this.first().isLive()   }
+    getKey()   { return this.key                }
     setValue(v) {
         this.subs.forEach((s)=> s.setValue(v))
     }

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
 import CanvasSVG from './CanvasSVG'
-import PropSheet from '../PropSheet'
+import PropSheet from '../common/PropSheet'
 import Selection from '../SelectionManager'
 import {PopupManager} from 'appy-comps'
 

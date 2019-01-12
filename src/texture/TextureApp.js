@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import {PopupManager, VBox} from 'appy-comps'
 import TextureEditorCanvas from './TextureEditorCanvas'
-import PropSheet from '../PropSheet'
+import PropSheet from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 
 export default class TextureApp extends Component {

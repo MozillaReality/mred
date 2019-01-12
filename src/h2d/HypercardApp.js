@@ -3,7 +3,7 @@ import GridEditorApp, {Panel, Spacer, Toolbar, ToggleButton} from '../GridEditor
 import HypercardCanvas from './HypercardCanvas'
 import {GET_JSON, toQueryString} from '../utils'
 import Selection from '../SelectionManager'
-import PropSheet from '../PropSheet'
+import PropSheet from '../common/PropSheet'
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {HBox, PopupManager, VBox} from 'appy-comps'
 import InputManager from '../common/InputManager'
