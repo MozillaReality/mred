@@ -3,6 +3,7 @@ import './App.css'
 import {PopupContainer, PopupManager, VBox} from "appy-comps"
 
 import MetadocEditor from "./metadoc/Editor1"
+import VREditor from './vr/VREditor'
 
 export default class App extends Component {
     constructor(props) {
@@ -14,10 +15,11 @@ export default class App extends Component {
         // this.addProvider(new FamilyTree())
         // this.addProvider(new TextureEditor())
         // this.addProvider(new GLTFInspector())
+        this.addProvider(new VREditor())
         this.addProvider(new MetadocEditor())
         this.state = {
             provider: this.providers.metadoc,
-            providerName: 'metadoc',
+            providerName: 'vr',
             // selectedTool: this.providers.svg.getTools()[0]
         }
     }
@@ -26,7 +28,7 @@ export default class App extends Component {
     }
 
     componentDidMount() {
-        let prov = 'metadoc'
+        let prov = 'vr'
         if(this.props.options.doctype) prov = this.props.options.doctype
         this.switchProvider(prov)
     }
