@@ -14,7 +14,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-scripts": "2.0.3",
-    "three": "^0.89.0",
+    "three": "^0.100.0",
     "three-gltf2-loader": "^1.2.0"
   },
   "scripts": {
