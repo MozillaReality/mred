@@ -186,6 +186,7 @@ class VREditorApp extends Component {
 
 
             <Toolbar center top>
+                <button onClick={()=>prov.save()}>save</button>
             </Toolbar>
 
 
