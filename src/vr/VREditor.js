@@ -6,6 +6,7 @@ import PropSheet, {TYPES} from '../common/PropSheet'
 import GridEditorApp from '../GridEditorApp'
 import * as THREE from 'three'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 
 const PROP_DEFS = {
@@ -46,46 +47,67 @@ const PROP_DEFS = {
     },
 }
 
+function createGraphObjectFromObject(graph,json) {
+    const objid = graph.createObject()
+    Object.keys(json).forEach(key=>{
+        const value = json[key]
+        graph.createProperty(objid,key,value)
+    })
+    return objid
+}
 
-const {DocGraph, CommandGenerator, SET_PROPERTY} = require("syncing_protocol");
+function fetchGraphObject(graph, child) {
+    const obj = {}
+    graph.getPropertiesForObject(child).forEach(key => {
+        obj[key] = graph.getPropertyValue(child,key)
+    })
+    return obj
+}
+
+function propToArray(doc, CH) {
+    const len = doc.getArrayLength(CH)
+    const ch = []
+    for (let i = 0; i < len; i++) {
+        ch.push(doc.getElementAt(CH, i))
+    }
+    return ch
+}
+
+const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 export default class VREditor extends  SyncGraphProvider {
     getDocType() { return "vr" }
     getApp = () => <VREditorApp provider={this}/>
     getTitle = () => "VR Builder"
     makeEmptyRoot(doc) {
         const CH = doc.createArray()
-        const root = doc.createObject()
-        doc.createProperty(root,'type','root')
-        doc.createProperty(root,'title','root')
+        const root = createGraphObjectFromObject(doc,{
+            type:'root',
+            title:'root',
+        })
         doc.createProperty(root,'children',CH)
 
 
-        const scene1 = doc.createObject()
-        doc.createProperty(scene1,'type','scene')
-        doc.createProperty(scene1,'title','Scene 1')
+        const scene1 = createGraphObjectFromObject(doc,{
+            type:'scene',
+            title:'Scene 1',
+        })
         doc.createProperty(scene1,'children',doc.createArray())
         doc.insertElement(CH,0,scene1)
 
-        const obj1 = doc.createObject()
-        doc.createProperty(obj1,'type','cube')
-        doc.createProperty(obj1,'title','cube 1')
-        doc.createProperty(obj1,'width',1)
-        doc.createProperty(obj1,'height',1)
-        doc.createProperty(obj1,'depth',1)
-        doc.createProperty(obj1,'tx',0)
-        doc.createProperty(obj1,'ty',1.5)
-        doc.createProperty(obj1,'tz',-3)
-        doc.createProperty(obj1,'parent',scene1)
+        const obj1 = createGraphObjectFromObject(doc,{
+            type:'cube',
+            title:'cube 1',
+            width:1, height:1, depth:1,
+            tx:0, ty:1.5, tz:-3,
+            parent:scene1,
+        })
         doc.insertElement(doc.getPropertyValue(scene1,'children'),0,obj1)
     }
-
-
 
     getRendererForItem = (item) => {
         if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
         return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
     }
-
 
     getProperties(item) {
         function copyPropDef(def,value) {
@@ -102,6 +124,7 @@ export default class VREditor extends  SyncGraphProvider {
             props.forEach(key => {
                 if(key === 'type') return
                 if(key === 'children') return
+                if(key === 'parent') return
                 const value = this.syncdoc.getPropertyValue(item,key)
                 if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
                 console.log("unknown property",key)
@@ -111,13 +134,15 @@ export default class VREditor extends  SyncGraphProvider {
         return defs
     }
 
-
     getSelectedScene() {
         const sel = SelectionManager.getSelection()
-        console.log("selection is",sel)
-        if(sel === null) return -1
+        if(sel === null) {
+            const root = this.getSceneRoot()
+            const graph = this.getDataGraph()
+            const ch = graph.getPropertyValue(root,'children')
+            return graph.getElementAt(ch,0)
+        }
         const type = this.getDataGraph().getPropertyValue(sel,'type')
-        console.log("type is",type)
         if(type === 'scene') {
             return sel
         }
@@ -127,7 +152,6 @@ export default class VREditor extends  SyncGraphProvider {
 
         return -1
     }
-
 }
 
 class VREditorApp extends Component {
@@ -140,19 +164,28 @@ class VREditorApp extends Component {
             <Toolbar left bottom>
                 <button onClick={()=>{
                     const graph = this.props.provider.getDataGraph()
-                    const obj = graph.createObject()
-                    graph.createProperty(obj,'type','rect')
-                    graph.createProperty(obj,'title','cube2')
-                    graph.createProperty(obj,'width',1)
-                    graph.createProperty(obj,'height',1)
-                    graph.createProperty(obj,'depth',1)
-                    graph.createProperty(obj,'tx',1)
-                    graph.createProperty(obj,'ty',1.5)
-                    graph.createProperty(obj,'tz',-3)
+                    const obj = createGraphObjectFromObject(graph,{
+                        type:'cube',
+                        title:'cube2',
+                        width:1, height:1, depth:1,
+                        tx:0, ty:1.5, tz:-3
+                    })
                     const scene1 = this.props.provider.getSelectedScene()
+                    graph.createProperty(obj,'parent',scene1)
                     graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
                     SelectionManager.setSelection(obj)
-                }}>add</button>
+                }}>+ cube</button>
+                <button onClick={()=>{
+                    const graph = this.props.provider.getDataGraph()
+                    const scene = createGraphObjectFromObject(graph,{
+                        type:'scene',
+                        title:'Scene 2',
+                    })
+                    graph.createProperty(scene,'children',graph.createArray())
+                    const root = this.props.provider.getSceneRoot()
+                    const ch = graph.getPropertyValue(root,'children')
+                    graph.insertElement(ch,0,scene)
+                }}>+ scene</button>
             </Toolbar>
 
 
@@ -172,13 +205,16 @@ class VREditorApp extends Component {
 
         </GridEditorApp>
     }
-
 }
+
 
 class VRCanvas extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
+        this.state = {
+            scene:-1
+        }
     }
     componentDidMount() {
         const canvas = this.canvas
@@ -202,27 +238,48 @@ class VRCanvas extends Component {
         this.scene.add( light );
 
 
-        // const cube = new THREE.Mesh(
-        //     new THREE.BoxGeometry(1,1,1),
-        //     new THREE.MeshLambertMaterial({color:'white'})
-        // )
-        // cube.position.z = -5
-        // cube.position.y = 1.5
-        // cube.userData.clickable = true
-        // this.scene.add(cube)
-
 
         this.renderer.setAnimationLoop(()=>{
             // cube.rotation.y  += 0.01
             this.renderer.render(this.scene,this.camera)
         })
 
-
-
         this.props.provider.onRawChange(op => this.updateScene(op))
+        this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, ()=>{
+            console.log("totally new document!")
+            //nuke all the old stuff
+            if(this.sceneWrapper) {
+                this.scene.remove(this.sceneWrapper)
+                this.sceneWrapper = null
+            }
+            this.obj_node_map = {}
+            this.setState({scene:-1})
+            //make new stuff
+            const hist = this.props.provider.getDocHistory()
+            console.log("==== replaying history")
+            hist.forEach(op => this.updateScene(op))
+        })
 
         SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
-            console.log("new selection is",SelectionManager.getSelection())
+            // console.log("new selection is",SelectionManager.getSelection())
+            /*
+            const scene = this.props.provider.getSelectedScene()
+            console.log('checking for the scene',scene)
+            if(this.findNode(scene) === null || this.findNode(scene) === undefined) {
+                console.log("scene isn't in here yet.")
+                const scene_node = this.populateNode(scene)
+                // this.insertNodeMapping(scene,this.sceneWrapper)
+                this.setState({scene:scene})
+            }
+            if(this.state.scene !== scene) {
+                console.log("scene changed. must nuke it all")
+                this.scene.remove(this.sceneWrapper)
+                this.sceneWrapper = this.findNode(scene)
+                console.log("new scene is",scene,this.sceneWrapper)
+                this.scene.add(this.sceneWrapper)
+                this.setState({scene:scene})
+            }
+            */
         })
 
         window.addEventListener( 'resize', ()=>{
@@ -233,45 +290,90 @@ class VRCanvas extends Component {
 
     }
 
+    setCurrentSceneId(sceneid) {
+        if(this.sceneWrapper) {
+            this.scene.remove(this.sceneWrapper)
+            this.sceneWrapper = null
+        }
+        this.setState({scene:sceneid})
+        this.sceneWrapper = this.findNode(sceneid)
+        this.scene.add(this.sceneWrapper)
+    }
+
     insertNodeMapping(id,node) {
+        if(typeof id !== 'string') throw new Error("cannot map an object to an object. invalid call in insertNodeMapping")
         this.obj_node_map[id] = node
+        node.userData.graphid = id
     }
     findNode(id) {
+        if(!this.obj_node_map[id]) console.warn("could not find node for id",id)
         return this.obj_node_map[id]
     }
 
     updateScene(op) {
-        console.log("got a change",op)
-        if(op.type === 'INSERT_ELEMENT') {
-            const obj = op.value
-            console.log("inserted an element. add to the scene",obj)
-            const graph = this.props.provider.getDataGraph()
-            const w = graph.getPropertyValue(obj,'width')
-            const h = graph.getPropertyValue(obj,'height')
-            const d = graph.getPropertyValue(obj,'depth')
-            const x = graph.getPropertyValue(obj,'tx')
-            const y = graph.getPropertyValue(obj,'ty')
-            const z = graph.getPropertyValue(obj,'tz')
-            console.log(w,h,d,x,y,z)
-            const cube = new THREE.Mesh(
-                new THREE.BoxGeometry(w,h,d),
-                new THREE.MeshLambertMaterial({color:'white'})
-            )
-            cube.position.set(x,y,z)
-            console.log("adding a cube",cube)
-            this.scene.add(cube)
-            this.insertNodeMapping(obj,cube)
+        const graph = this.props.provider.getDataGraph()
+        if(op.type === INSERT_ELEMENT) {
+            console.log('running',op.type)
+            const objid = op.value
+            const obj = fetchGraphObject(graph,objid)
+            if(obj.type === 'scene') {
+                const scene = this.populateNode(objid)
+                this.setCurrentSceneId(objid)
+                return
+            }
+            if(obj.type === 'cube') {
+                const cube = this.populateNode(objid)
+                this.sceneWrapper.add(cube)
+                return
+            }
+            console.warn("unknown object type",obj)
+            return
         }
         if(op.type === SET_PROPERTY) {
-            console.log("finding object",op.object)
+            console.log('running',op.type)
             const node = this.findNode(op.object)
-            if(op.name === 'tx') node.position.x = parseFloat(op.value)
-            if(op.name === 'ty') node.position.y = parseFloat(op.value)
-            if(op.name === 'tz') node.position.z = parseFloat(op.value)
+            if(node) {
+                if (op.name === 'tx') node.position.x = parseFloat(op.value)
+                if (op.name === 'ty') node.position.y = parseFloat(op.value)
+                if (op.name === 'tz') node.position.z = parseFloat(op.value)
+            } else {
+                console.log("could not find the node for object id:",op)
+            }
+            return
         }
+        console.log('skipping',op.type)
     }
 
     render() {
         return <canvas ref={c => this.canvas = c} width={600} height={400}></canvas>
+    }
+
+    populateNode(nodeid) {
+        const graph = this.props.provider.getDataGraph()
+        const obj = fetchGraphObject(graph,nodeid)
+        if(obj.type === 'cube') {
+            const cube = new THREE.Mesh(
+                new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
+                new THREE.MeshLambertMaterial({color:'white'})
+            )
+            cube.position.set(obj.tx,obj.ty,obj.tz)
+            this.insertNodeMapping(nodeid,cube)
+            return cube
+        }
+        if(obj.type === 'scene') {
+            const scene = new THREE.Group()
+            this.insertNodeMapping(nodeid,scene)
+            /*
+            //recurse
+            const ch2 = propToArray(graph, graph.getPropertyValue(nodeid,'children'))
+            ch2.forEach((cch => {
+                // console.log("inserting child",cch)
+                scene.add(this.populateNode(cch))
+            }))
+            */
+            return scene
+        }
+
+        console.warn("cannot populate node for type",obj.type)
     }
 }
