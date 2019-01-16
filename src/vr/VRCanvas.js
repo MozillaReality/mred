@@ -2,6 +2,9 @@ import React, {Component} from 'react'
 import * as THREE from 'three'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import TransformControls from './TransformControls.js'
+
+
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
 function fetchGraphObject(graph, child) {
@@ -46,6 +49,22 @@ export class VRCanvas extends Component {
         this.camera.position.z = 0
         this.scene.add(this.camera)
 
+        this.controls = new TransformControls(this.camera, this.renderer.domElement)
+        this.controls.addEventListener('change',(e)=>{
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const node = this.findNode(sel)
+                const prov = this.props.provider
+                prov.quick_setPropertyValue(sel,'tx',node.position.x)
+                prov.quick_setPropertyValue(sel,'ty',node.position.y)
+                prov.quick_setPropertyValue(sel,'tz',node.position.z)
+            }
+        })
+        this.controls.addEventListener('dragging-changed',(e)=>{
+            console.log("dragging changed",e)
+        })
+        this.scene.add(this.controls)
+
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
         light.position.set(1, 1, 1).normalize();
@@ -74,7 +93,17 @@ export class VRCanvas extends Component {
         })
 
         SelectionManager.on(SELECTION_MANAGER.CHANGED, () => {
-            // console.log("new selection is",SelectionManager.getSelection())
+            const sel = SelectionManager.getSelection()
+            console.log("new selection is",sel)
+            if(sel === null) return
+            const graph = this.props.provider.getDataGraph()
+            const obj = fetchGraphObject(graph,sel)
+            console.log(obj)
+            const node = this.findNode(sel)
+            console.log(node)
+            if(node) {
+                this.controls.attach(node)
+            }
             /*
             const scene = this.props.provider.getSelectedScene()
             console.log('checking for the scene',scene)

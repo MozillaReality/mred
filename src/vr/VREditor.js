@@ -5,6 +5,7 @@ import TreeTable from '../TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
@@ -134,6 +135,19 @@ export default class VREditor extends  SyncGraphProvider {
 
         return -1
     }
+
+    quick_setPropertyValue(item, key, value) {
+        const ov = this.getDataGraph().getPropertyValue(item,key)
+        this.getDataGraph().setProperty(item,key,value)
+        this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
+            provider: this,
+            child:item,
+            propKey:key,
+            oldValue:ov,
+            newValue:value
+        })
+    }
+
 }
 
 class VREditorApp extends Component {
