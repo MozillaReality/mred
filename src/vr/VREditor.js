@@ -148,6 +148,8 @@ export default class VREditor extends  SyncGraphProvider {
         })
     }
 
+    preview = () => window.open( `./?mode=preview&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+
 }
 
 class VREditorApp extends Component {
@@ -187,6 +189,7 @@ class VREditorApp extends Component {
 
             <Toolbar center top>
                 <button onClick={()=>prov.save()}>save</button>
+                <button onClick={()=>prov.preview()}>preview</button>
             </Toolbar>
 
 
