@@ -86,7 +86,7 @@ export default class VREditor extends  SyncGraphProvider {
             type:'cube',
             title:'cube 1',
             width:1, height:1, depth:1,
-            tx:0, ty:1.5, tz:-3,
+            tx:0, ty:1.5, tz:-5,
             parent:scene1,
         })
         doc.insertElement(doc.getPropertyValue(scene1,'children'),0,obj1)
