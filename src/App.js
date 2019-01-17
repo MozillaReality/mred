@@ -16,9 +16,9 @@ export default class App extends Component {
         // this.addProvider(new TextureEditor())
         // this.addProvider(new GLTFInspector())
         this.addProvider(new VREditor(props.options))
-        this.addProvider(new MetadocEditor(props.options))
+        // this.addProvider(new MetadocEditor(props.options))
         this.state = {
-            provider: this.providers.metadoc,
+            provider: this.providers.vr,
             providerName: 'vr',
             // selectedTool: this.providers.svg.getTools()[0]
         }

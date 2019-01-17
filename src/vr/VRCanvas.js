@@ -41,7 +41,7 @@ export class VRCanvas extends Component {
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
         // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
-        // this.renderer.gammaOutput = true
+        // this.renderer.gammaOutput = tr ue
 
         this.scene.background = new THREE.Color(0xff00ff);
         this.camera.position.y = 1.5

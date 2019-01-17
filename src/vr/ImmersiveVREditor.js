@@ -8,7 +8,19 @@ import {POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, Pointer} from 'webxr-boilerp
 import VRStats from "webxr-boilerplate/vrstats"
 // enter and exit VR
 import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import TransformControls from './TransformControls'
+import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 
+const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
+
+function fetchGraphObject(graph, child) {
+    const obj = {}
+    graph.getPropertiesForObject(child).forEach(key => {
+        obj[key] = graph.getPropertyValue(child,key)
+    })
+    return obj
+}
 
 
 export default class ImmersiveVREditor extends Component {
@@ -40,8 +52,6 @@ export default class ImmersiveVREditor extends Component {
         //update the pointer and stats, if configured
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
-        //rotate the cube on every tick
-        if(this.cube) this.cube.rotation.y += 0.002
         this.renderer.render( this.scene, this.camera );
     }
 
@@ -71,30 +81,6 @@ export default class ImmersiveVREditor extends Component {
             this.renderer.setSize( window.innerWidth, window.innerHeight );
         }, false );
 
-        // THREE.DefaultLoadingManager.onStart = (url, loaded, total) => {
-        //     console.log(`loading ${url}.  loaded ${loaded} of ${total}`)
-        // }
-        // THREE.DefaultLoadingManager.onLoad = () => {
-        //     console.log(`loading complete`)
-        //     $("#loading-indicator").style.display = 'none'
-        //     $("#enter-button").style.display = 'block'
-        //     $("#enter-button").removeAttribute('disabled')
-        // }
-        // THREE.DefaultLoadingManager.onProgress = (url, loaded, total) => {
-        //     console.log(`prog ${url}.  loaded ${loaded} of ${total}`)
-        //     $("#progress").setAttribute('value',100*(loaded/total))
-        // }
-        // THREE.DefaultLoadingManager.onError = (url) => {
-        //     console.log(`error loading ${url}`)
-        // }
-        //
-        // if(!WAIT_FOR_LOAD) {
-        //     $("#loading-indicator").style.display = 'none'
-        //     $("#enter-button").style.display = 'block'
-        //     $("#enter-button").removeAttribute('disabled')
-        // }
-
-
 
         on($("#enter-button"),'click',()=>{
             $("#overlay").style.display = 'none'
@@ -116,7 +102,24 @@ export default class ImmersiveVREditor extends Component {
             $("#enter-button").removeAttribute('disabled')
         }
 
+        this.props.provider.onRawChange(this.updateScene.bind(this))
+        this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.documentSwapped.bind(this))
+        SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged.bind(this))
 
+        this.loadScene()
+    }
+
+    selectionChanged() {
+        const sel = SelectionManager.getSelection()
+        if (sel === null) return
+        const graph = this.props.provider.getDataGraph()
+        const obj = fetchGraphObject(graph, sel)
+        console.log(obj)
+        const node = this.findNode(sel)
+        console.log(node)
+        if (node) {
+            this.controls.attach(node)
+        }
     }
 
 
@@ -124,23 +127,12 @@ export default class ImmersiveVREditor extends Component {
         const $ = (sel) => document.querySelector(sel)
         const on = (elem, type, cb) => elem.addEventListener(type,cb)
         this.scene.background = new THREE.Color( 0xcccccc );
-        //create a cube
-        this.cube = new THREE.Mesh(
-            new THREE.BoxGeometry(1,1,1),
-            new THREE.MeshLambertMaterial({color:'yellow'})
-        )
-        //camera is at z=0, so move the cube back so we can see it
-        this.cube.position.z = -5
-        //move cube up to camera height (~1.5m)
-        this.cube.position.y = 1.5
-        //make it clickable
-        this.cube.userData.clickable = true
-        this.scene.add(this.cube)
-
         //a standard light
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
+
+        this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
 
 
@@ -183,21 +175,122 @@ export default class ImmersiveVREditor extends Component {
         this.pointer.controller1.add(stick)
 
 
-        const cube = this.cube
-        //change cube to red BG when clicking
-        on(cube,POINTER_CLICK,()=>{
-            console.log("clicking on the cube")
-            cube.material.color.set(0xff0000)
+        this.controls = new TransformControls(this.camera, this.renderer.domElement)
+        this.controls.addEventListener('change',(e)=>{
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const node = this.findNode(sel)
+                const prov = this.props.provider
+                prov.quick_setPropertyValue(sel,'tx',node.position.x)
+                prov.quick_setPropertyValue(sel,'ty',node.position.y)
+                prov.quick_setPropertyValue(sel,'tz',node.position.z)
+            }
         })
-        //change cube to green BG when hovering over it
-        on(cube,POINTER_ENTER,()=>{
-            // console.log("entering the cube")
-            cube.material.color.set(0x00ff00)
-        })
-        on(cube,POINTER_EXIT,()=>{
-            // console.log('exiting the cube')
-            cube.material.color.set(0xffffff)
-        })
+        this.scene.add(this.controls)
+
 
     }
+
+
+    updateScene(op) {
+        const graph = this.props.provider.getDataGraph()
+        if (op.type === INSERT_ELEMENT) {
+            console.log('running', op.type)
+            const objid = op.value
+            const obj = fetchGraphObject(graph, objid)
+            if (obj.type === 'scene') {
+                const scene = this.populateNode(objid)
+                this.setCurrentSceneId(objid)
+                return
+            }
+            if (obj.type === 'cube') {
+                const cube = this.populateNode(objid)
+                this.sceneWrapper.add(cube)
+                return
+            }
+            console.warn("unknown object type", obj)
+            return
+        }
+        if (op.type === SET_PROPERTY) {
+            console.log('running', op.type)
+            const node = this.findNode(op.object)
+            if (node) {
+                if (op.name === 'tx') node.position.x = parseFloat(op.value)
+                if (op.name === 'ty') node.position.y = parseFloat(op.value)
+                if (op.name === 'tz') node.position.z = parseFloat(op.value)
+            } else {
+                console.log("could not find the node for object id:", op)
+            }
+            return
+        }
+        console.log('skipping', op.type)
+    }
+    documentSwapped() {
+        console.log("totally new document!")
+        //nuke all the old stuff
+        if (this.sceneWrapper) {
+            this.scene.remove(this.sceneWrapper)
+            this.sceneWrapper = null
+        }
+        this.obj_node_map = {}
+        this.setState({scene: -1})
+        //make new stuff
+        const hist = this.props.provider.getDocHistory()
+        console.log("==== replaying history")
+        hist.forEach(op => this.updateScene(op))
+    }
+
+    setCurrentSceneId(sceneid) {
+        if (this.sceneWrapper) {
+            this.scene.remove(this.sceneWrapper)
+            this.sceneWrapper = null
+        }
+        this.setState({scene: sceneid})
+        this.sceneWrapper = this.findNode(sceneid)
+        this.scene.add(this.sceneWrapper)
+    }
+
+    loadScene() {
+        console.log("loading the final scene")
+        const graph = this.props.provider.getDataGraph()
+        console.log("history is",this.props.provider.getDocHistory())
+    }
+
+    insertNodeMapping(id, node) {
+        if (typeof id !== 'string') throw new Error("cannot map an object to an object. invalid call in insertNodeMapping")
+        this.obj_node_map[id] = node
+        node.userData.graphid = id
+    }
+
+    findNode(id) {
+        if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
+        return this.obj_node_map[id]
+    }
+
+    populateNode(nodeid) {
+        const graph = this.props.provider.getDataGraph()
+        const obj = fetchGraphObject(graph, nodeid)
+        if (obj.type === 'cube') {
+            const cube = new THREE.Mesh(
+                new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
+                new THREE.MeshLambertMaterial({color: 'red'})
+            )
+            cube.userData.clickable = true
+            cube.addEventListener('click',(e)=>{
+                console.log('clicked on it',cube.userData.graphid)
+                SelectionManager.setSelection(cube.userData.graphid)
+            })
+            cube.position.set(obj.tx, obj.ty, obj.tz)
+            this.insertNodeMapping(nodeid, cube)
+            return cube
+        }
+        if (obj.type === 'scene') {
+            const scene = new THREE.Group()
+            this.insertNodeMapping(nodeid, scene)
+            return scene
+        }
+
+        console.warn("cannot populate node for type", obj.type)
+    }
+
 }
