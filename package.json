@@ -15,7 +15,8 @@
     "react-dom": "^16.2.0",
     "react-scripts": "2.0.3",
     "three": "^0.100.0",
-    "three-gltf2-loader": "^1.2.0"
+    "three-gltf2-loader": "^1.2.0",
+    "webxr-boilerplate": "^0.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

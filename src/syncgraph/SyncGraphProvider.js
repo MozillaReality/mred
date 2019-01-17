@@ -7,7 +7,7 @@ import {PubnubSyncWrapper} from '../metadoc/PubnubSyncWrapper'
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
-export default class MetadocEditor extends  TreeItemProvider {
+export default class SyncGraphProvider extends  TreeItemProvider {
     constructor(options) {
         super()
         this.options = options || {}
