@@ -96,7 +96,7 @@ class TreeItemProviderInterface {
 export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor() {
         super()
-        console.log('created a tree item Provider')
+        // console.log('created a tree item Provider')
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null

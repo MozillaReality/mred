@@ -15,8 +15,8 @@ export default class App extends Component {
         // this.addProvider(new FamilyTree())
         // this.addProvider(new TextureEditor())
         // this.addProvider(new GLTFInspector())
-        this.addProvider(new VREditor())
-        this.addProvider(new MetadocEditor())
+        this.addProvider(new VREditor(props.options))
+        this.addProvider(new MetadocEditor(props.options))
         this.state = {
             provider: this.providers.metadoc,
             providerName: 'vr',

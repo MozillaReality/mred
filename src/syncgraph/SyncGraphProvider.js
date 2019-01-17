@@ -8,8 +8,10 @@ import {PubnubSyncWrapper} from '../metadoc/PubnubSyncWrapper'
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
 export default class MetadocEditor extends  TreeItemProvider {
-    constructor() {
+    constructor(options) {
         super()
+        this.options = options || {}
+        this.mode = options.mode || 'edit'
         this.datalisteners = []
         this.rawlisteners = []
 
@@ -63,7 +65,7 @@ export default class MetadocEditor extends  TreeItemProvider {
         }
         const payload_string = JSON.stringify(payload_obj)
         return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
-            setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
+            setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
         }).catch((e)=> console.log("error",e))
     }
@@ -108,7 +110,7 @@ export default class MetadocEditor extends  TreeItemProvider {
         this.connected = true
         this.fire("CONNECTED",this.connected)
         this.fire(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,{provider:this})
-        setQuery({mode:'edit',doc:this.getDocId(), doctype:this.getDocType()})
+        setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
     }
 
     reloadDocument() {

@@ -6,6 +6,7 @@ import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import ImmersiveVREditor from './ImmersiveVREditor'
 
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
@@ -59,7 +60,11 @@ function createGraphObjectFromObject(graph,json) {
 
 export default class VREditor extends  SyncGraphProvider {
     getDocType() { return "vr" }
-    getApp = () => <VREditorApp provider={this}/>
+    getApp = () => {
+        if(this.mode === 'edit') return <VREditorApp provider={this}/>
+        if(this.mode === 'vredit') return <ImmersiveVREditor provider={this}/>
+        throw new Error("unknown mode " +this.mode)
+    }
     getTitle = () => "VR Builder"
     makeEmptyRoot(doc) {
         const CH = doc.createArray()
@@ -148,7 +153,7 @@ export default class VREditor extends  SyncGraphProvider {
         })
     }
 
-    preview = () => window.open( `./?mode=preview&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+    preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
 }
 
