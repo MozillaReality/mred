@@ -4,13 +4,22 @@ import * as THREE from 'three'
 import './VREditor.css'
 
 // for pointer (mouse, controller, touch) support
-import {POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, Pointer} from 'webxr-boilerplate/pointer'
+import {
+    POINTER_CLICK,
+    POINTER_ENTER,
+    POINTER_EXIT,
+    POINTER_MOVE,
+    Pointer,
+    POINTER_PRESS,
+    POINTER_RELEASE
+} from 'webxr-boilerplate/pointer'
 import VRStats from "webxr-boilerplate/vrstats"
 // enter and exit VR
 import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import TransformControls from './TransformControls'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {DoubleSide} from 'three'
 
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
@@ -118,7 +127,7 @@ export default class ImmersiveVREditor extends Component {
         const node = this.findNode(sel)
         console.log(node)
         if (node) {
-            this.controls.attach(node)
+            this.controls.attach(node, this.pointer)
         }
     }
 
@@ -175,20 +184,8 @@ export default class ImmersiveVREditor extends Component {
         this.pointer.controller1.add(stick)
 
 
-        this.controls = new TransformControls(this.camera, this.renderer.domElement)
-        this.controls.addEventListener('change',(e)=>{
-            const sel = SelectionManager.getSelection()
-            if(sel) {
-                const node = this.findNode(sel)
-                const prov = this.props.provider
-                prov.quick_setPropertyValue(sel,'tx',node.position.x)
-                prov.quick_setPropertyValue(sel,'ty',node.position.y)
-                prov.quick_setPropertyValue(sel,'tz',node.position.z)
-            }
-        })
+        this.controls = new TranslateControl()
         this.scene.add(this.controls)
-
-
     }
 
 
@@ -293,4 +290,86 @@ export default class ImmersiveVREditor extends Component {
         console.warn("cannot populate node for type", obj.type)
     }
 
+}
+
+
+class TranslateControl extends THREE.Group {
+    constructor() {
+        super()
+        this.makePlane()
+        this.makeArrow()
+        this.makeInputGrabber()
+        this.visible = false
+    }
+    makePlane() {
+        this.plane = new THREE.Mesh(
+            new THREE.PlaneBufferGeometry(10,10,10,10),
+            new THREE.MeshBasicMaterial({visible:true, wireframe:true, side: THREE.DoubleSide})
+        )
+        this.plane.userData.draggable = true
+        this.plane.visible = false
+        this.add(this.plane)
+    }
+    makeArrow() {
+        this.arrow = new THREE.Mesh(
+            new THREE.CylinderBufferGeometry(0.05,0.05,5),
+            new THREE.MeshLambertMaterial({color:'yellow'})
+        )
+        this.arrow.rotation.z = 90*Math.PI/180
+        this.add(this.arrow)
+    }
+    makeInputGrabber() {
+        this.input = new THREE.Mesh(
+            new THREE.CylinderBufferGeometry(0.1,0.1,5),
+            new THREE.MeshLambertMaterial({color:'green', visible: false})
+        )
+        this.input.rotation.z = 90*Math.PI/180
+        this.input.userData.clickable = true
+        this.add(this.input)
+    }
+
+    attach(target, pointer) {
+        this.target = target
+        this.pointer = pointer
+        console.log("attaching to target",target)
+        this.position.copy(target.position)
+        console.log("start position is",this.position)
+        this.visible = true
+        this.input.addEventListener(POINTER_ENTER,this.startHover)
+        this.input.addEventListener(POINTER_EXIT,this.endHover)
+        this.input.addEventListener(POINTER_PRESS,this.beginDrag)
+    }
+
+    startHover = () => {
+        this.arrow.material.color.set(0xffffff)
+    }
+    endHover = () => {
+        this.arrow.material.color.set(0xffff00)
+    }
+
+
+    beginDrag = (e) => {
+        this.startPoint = this.position.clone()
+        this.startPoint.x = e.intersection.point.x
+        this.oldFilter = this.pointer.intersectionFilter
+        this.pointer.intersectionFilter = (obj) => obj.userData.draggable
+        this.startPosition = this.target.position.clone()
+        this.plane.visible = true
+        this.plane.addEventListener(POINTER_MOVE,this.updateDrag)
+        this.plane.addEventListener(POINTER_RELEASE,this.endDrag)
+    }
+    updateDrag = (e) => {
+        this.endPoint = e.intersection.point.clone()
+        //neutralize y and z
+        this.endPoint.y = this.startPoint.y
+        this.endPoint.z = this.startPoint.z
+        const diff = this.endPoint.clone().sub(this.startPoint)
+        const fpoint = this.startPosition.clone().add(diff)
+        this.target.position.copy(fpoint)
+        this.position.copy(fpoint)
+    }
+    endDrag = (e) => {
+        this.pointer.intersectionFilter = this.oldFilter
+        this.plane.visible = false
+    }
 }
