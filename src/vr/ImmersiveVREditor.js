@@ -32,6 +32,9 @@ function fetchGraphObject(graph, child) {
 }
 
 
+const on = (elem,type,cb) => elem.addEventListener(type,cb)
+const off = (elem,type,cb) => elem.removeEventListener(type,cb)
+
 export default class ImmersiveVREditor extends Component {
 
 
@@ -186,6 +189,16 @@ export default class ImmersiveVREditor extends Component {
 
         this.controls = new TranslateControl()
         this.scene.add(this.controls)
+        on(this.controls,'change',(e)=>{
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const node = this.findNode(sel)
+                const prov = this.props.provider
+                prov.quick_setPropertyValue(sel,'tx',node.position.x)
+                prov.quick_setPropertyValue(sel,'ty',node.position.y)
+                prov.quick_setPropertyValue(sel,'tz',node.position.z)
+            }
+        })
     }
 
 
@@ -296,26 +309,57 @@ export default class ImmersiveVREditor extends Component {
 class TranslateControl extends THREE.Group {
     constructor() {
         super()
+        this.handles = []
+        this.handles.push(new TranslationArrow('X',this))
+        this.handles.push(new TranslationArrow('Y',this))
+        this.handles.push(new TranslationArrow('Z',this))
+        this.handles.forEach(h => this.add(h))
+        this.visible = false
+    }
+    attach(target, pointer) {
+        this.target = target
+        this.pointer = pointer
+        this.position.copy(target.position)
+        this.visible = true
+        this.handles.forEach(h => h.attach())
+    }
+}
+
+class TranslationArrow extends THREE.Group {
+    constructor(axis, control) {
+        super()
+        this.axis = axis
+        this.control = control
         this.makePlane()
         this.makeArrow()
         this.makeInputGrabber()
-        this.visible = false
     }
     makePlane() {
         this.plane = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(10,10,10,10),
             new THREE.MeshBasicMaterial({visible:true, wireframe:true, side: THREE.DoubleSide})
         )
+        if(this.axis === 'Z') {
+            this.plane.rotation.y = 90*Math.PI/180
+        }
         this.plane.userData.draggable = true
         this.plane.visible = false
         this.add(this.plane)
     }
     makeArrow() {
         this.arrow = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.05,0.05,5),
+            new THREE.CylinderBufferGeometry(0.02,0.02,5),
             new THREE.MeshLambertMaterial({color:'yellow'})
         )
-        this.arrow.rotation.z = 90*Math.PI/180
+        if(this.axis === 'X') {
+            this.arrow.rotation.z = 90 * Math.PI / 180
+        }
+        if(this.axis === 'Y') {
+            this.arrow.rotation.z = 0 * Math.PI / 180
+        }
+        if(this.axis === 'Z') {
+            this.arrow.rotation.x = 90 * Math.PI / 180
+        }
         this.add(this.arrow)
     }
     makeInputGrabber() {
@@ -323,37 +367,35 @@ class TranslateControl extends THREE.Group {
             new THREE.CylinderBufferGeometry(0.1,0.1,5),
             new THREE.MeshLambertMaterial({color:'green', visible: false})
         )
-        this.input.rotation.z = 90*Math.PI/180
+        if(this.axis === 'X') {
+            this.input.rotation.z = 90 * Math.PI / 180
+        }
+        if(this.axis === 'Y') {
+            this.input.rotation.z = 0 * Math.PI / 180
+        }
+        if(this.axis === 'Z') {
+            this.input.rotation.x = 90 * Math.PI / 180
+        }
         this.input.userData.clickable = true
         this.add(this.input)
     }
-
-    attach(target, pointer) {
-        this.target = target
-        this.pointer = pointer
-        console.log("attaching to target",target)
-        this.position.copy(target.position)
-        console.log("start position is",this.position)
-        this.visible = true
+    attach() {
         this.input.addEventListener(POINTER_ENTER,this.startHover)
         this.input.addEventListener(POINTER_EXIT,this.endHover)
         this.input.addEventListener(POINTER_PRESS,this.beginDrag)
     }
 
-    startHover = () => {
-        this.arrow.material.color.set(0xffffff)
-    }
-    endHover = () => {
-        this.arrow.material.color.set(0xffff00)
-    }
-
+    startHover = () => this.arrow.material.color.set(0xffffff)
+    endHover   = () => this.arrow.material.color.set(0xffff00)
 
     beginDrag = (e) => {
-        this.startPoint = this.position.clone()
+        this.startPoint = this.parent.position.clone()
         this.startPoint.x = e.intersection.point.x
-        this.oldFilter = this.pointer.intersectionFilter
-        this.pointer.intersectionFilter = (obj) => obj.userData.draggable
-        this.startPosition = this.target.position.clone()
+        this.startPoint.y = e.intersection.point.y
+        this.startPoint.z = e.intersection.point.z
+        this.oldFilter = this.parent.pointer.intersectionFilter
+        this.parent.pointer.intersectionFilter = (obj) => obj.userData.draggable
+        this.startPosition = this.parent.target.position.clone()
         this.plane.visible = true
         this.plane.addEventListener(POINTER_MOVE,this.updateDrag)
         this.plane.addEventListener(POINTER_RELEASE,this.endDrag)
@@ -361,15 +403,28 @@ class TranslateControl extends THREE.Group {
     updateDrag = (e) => {
         this.endPoint = e.intersection.point.clone()
         //neutralize y and z
-        this.endPoint.y = this.startPoint.y
-        this.endPoint.z = this.startPoint.z
+        if(this.axis === 'X') {
+            this.endPoint.y = this.startPoint.y
+            this.endPoint.z = this.startPoint.z
+        }
+        if(this.axis === 'Y') {
+            this.endPoint.x = this.startPoint.x
+            this.endPoint.z = this.startPoint.z
+        }
+        if(this.axis === 'Z') {
+            this.endPoint.x = this.startPoint.x
+            this.endPoint.y = this.startPoint.y
+        }
         const diff = this.endPoint.clone().sub(this.startPoint)
-        const fpoint = this.startPosition.clone().add(diff)
-        this.target.position.copy(fpoint)
-        this.position.copy(fpoint)
+        const finalPoint = this.startPosition.clone().add(diff)
+        this.parent.target.position.copy(finalPoint)
+        this.parent.position.copy(finalPoint)
     }
     endDrag = (e) => {
-        this.pointer.intersectionFilter = this.oldFilter
+        this.plane.removeEventListener(POINTER_MOVE,this.updateDrag)
+        this.plane.removeEventListener(POINTER_RELEASE,this.endDrag)
+        this.parent.pointer.intersectionFilter = this.oldFilter
         this.plane.visible = false
+        this.parent.dispatchEvent({type:'change',start:this.startPosition.clone(),end:this.parent.position.clone()})
     }
 }
