@@ -5,6 +5,7 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
+import BoxAccessor from './BoxAccessor'
 
 const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
@@ -160,13 +161,15 @@ export class VRCanvas extends Component {
             console.log('running', op.type)
             const node = this.findNode(op.object)
             if (node) {
-                if (op.name === 'tx') node.position.x = parseFloat(op.value)
-                if (op.name === 'ty') node.position.y = parseFloat(op.value)
-                if (op.name === 'tz') node.position.z = parseFloat(op.value)
-                if (op.name === 'defaultFloor') {
-                    const acc = new SceneAccessor(node)
-                    acc.setDefaultFloor(op.value)
+                const obj = fetchGraphObject(graph, op.object)
+                if(obj.type === 'scene') {
+                    if (op.name === 'defaultFloor') {
+                        const acc = new SceneAccessor(node)
+                        acc.setDefaultFloor(op.value)
+                        return
+                    }
                 }
+                if(obj.type === 'cube') return new BoxAccessor(node, obj).updateProperty(op)
             } else {
                 console.log("could not find the node for object id:", op)
             }
