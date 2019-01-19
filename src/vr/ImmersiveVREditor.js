@@ -336,7 +336,7 @@ class TranslationArrow extends THREE.Group {
     }
     makePlane() {
         this.plane = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry(10,10,10,10),
+            new THREE.PlaneBufferGeometry(100,100,100,100),
             new THREE.MeshBasicMaterial({visible:true, wireframe:true, side: THREE.DoubleSide})
         )
         if(this.axis === 'Z') {
@@ -351,15 +351,9 @@ class TranslationArrow extends THREE.Group {
             new THREE.CylinderBufferGeometry(0.02,0.02,5),
             new THREE.MeshLambertMaterial({color:'yellow'})
         )
-        if(this.axis === 'X') {
-            this.arrow.rotation.z = 90 * Math.PI / 180
-        }
-        if(this.axis === 'Y') {
-            this.arrow.rotation.z = 0 * Math.PI / 180
-        }
-        if(this.axis === 'Z') {
-            this.arrow.rotation.x = 90 * Math.PI / 180
-        }
+        if(this.axis === 'X') this.arrow.rotation.z = 90  * Math.PI / 180
+        if(this.axis === 'Y') this.arrow.rotation.z = 180 * Math.PI / 180
+        if(this.axis === 'Z') this.arrow.rotation.x = 90  * Math.PI / 180
         this.add(this.arrow)
     }
     makeInputGrabber() {
@@ -367,22 +361,21 @@ class TranslationArrow extends THREE.Group {
             new THREE.CylinderBufferGeometry(0.1,0.1,5),
             new THREE.MeshLambertMaterial({color:'green', visible: false})
         )
-        if(this.axis === 'X') {
-            this.input.rotation.z = 90 * Math.PI / 180
-        }
-        if(this.axis === 'Y') {
-            this.input.rotation.z = 0 * Math.PI / 180
-        }
-        if(this.axis === 'Z') {
-            this.input.rotation.x = 90 * Math.PI / 180
-        }
+        if(this.axis === 'X') this.input.rotation.z = 90  * Math.PI / 180
+        if(this.axis === 'Y') this.input.rotation.z = 180 * Math.PI / 180
+        if(this.axis === 'Z') this.input.rotation.x = 90  * Math.PI / 180
         this.input.userData.clickable = true
         this.add(this.input)
     }
     attach() {
-        this.input.addEventListener(POINTER_ENTER,this.startHover)
-        this.input.addEventListener(POINTER_EXIT,this.endHover)
-        this.input.addEventListener(POINTER_PRESS,this.beginDrag)
+        on(this.input,POINTER_ENTER,this.startHover)
+        on(this.input,POINTER_EXIT,this.endHover)
+        on(this.input,POINTER_PRESS,this.beginDrag)
+    }
+    detach() {
+        off(this.input,POINTER_ENTER,this.startHover)
+        off(this.input,POINTER_EXIT,this.endHover)
+        off(this.input,POINTER_PRESS,this.beginDrag)
     }
 
     startHover = () => this.arrow.material.color.set(0xffffff)
@@ -390,15 +383,13 @@ class TranslationArrow extends THREE.Group {
 
     beginDrag = (e) => {
         this.startPoint = this.parent.position.clone()
-        this.startPoint.x = e.intersection.point.x
-        this.startPoint.y = e.intersection.point.y
-        this.startPoint.z = e.intersection.point.z
+        this.startPoint.copy(e.intersection.point)
         this.oldFilter = this.parent.pointer.intersectionFilter
         this.parent.pointer.intersectionFilter = (obj) => obj.userData.draggable
         this.startPosition = this.parent.target.position.clone()
         this.plane.visible = true
-        this.plane.addEventListener(POINTER_MOVE,this.updateDrag)
-        this.plane.addEventListener(POINTER_RELEASE,this.endDrag)
+        on(this.plane,POINTER_MOVE,this.updateDrag)
+        on(this.plane,POINTER_RELEASE,this.endDrag)
     }
     updateDrag = (e) => {
         this.endPoint = e.intersection.point.clone()
@@ -421,8 +412,8 @@ class TranslationArrow extends THREE.Group {
         this.parent.position.copy(finalPoint)
     }
     endDrag = (e) => {
-        this.plane.removeEventListener(POINTER_MOVE,this.updateDrag)
-        this.plane.removeEventListener(POINTER_RELEASE,this.endDrag)
+        off(this.plane,POINTER_MOVE,this.updateDrag)
+        off(this.plane,POINTER_RELEASE,this.endDrag)
         this.parent.pointer.intersectionFilter = this.oldFilter
         this.plane.visible = false
         this.parent.dispatchEvent({type:'change',start:this.startPosition.clone(),end:this.parent.position.clone()})
