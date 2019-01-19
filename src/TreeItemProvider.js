@@ -1,4 +1,3 @@
-//import PubNub from 'pubnub'
 import {GET_JSON, POST_JSON, setQuery} from './utils'
 import Selection from './SelectionManager'
 
@@ -96,24 +95,9 @@ class TreeItemProviderInterface {
 export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor() {
         super()
-        // console.log('created a tree item Provider')
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
-        // this.pubnub = new PubNub({
-//            // publishKey:"pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd",
-            // subscribeKey:"sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733"
-        // })
-    //     this.pubnub.addListener({
-    //         status: (status)=> console.log(status),
-    //         message: (msg) => {
-    //             console.log(msg)
-    //             if(msg.channel === this.docid) {
-    //                 console.log("got a message for my doc. reloading")
-    //                 this.reloadDocument()
-    //             }
-    //         }
-    //     })
     }
 
     on(type, cb) {
@@ -153,7 +137,6 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     setDocument(doc, docid) {
         this.root = doc
         this.docid = docid
-        // this.pubnub.subscribe({channels: [docid]})
         this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, {
             provider:this
         });
@@ -164,7 +147,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
 
     save = () => {
-        console.log("saving",this.getSceneRoot())
+        console.info("saving",this.getSceneRoot())
         const payload_obj = {
             doc:this.getSceneRoot(),
             type:this.getDocType(),
@@ -174,7 +157,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             if(key === 'parent') return undefined
             return value
         })
-        console.log("doc is",payload_string)
+        console.info("doc is",payload_string)
         return POST_JSON(SERVER_URL+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
@@ -188,7 +171,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
         }).catch((e)=>{
-            console.log("missing doc",e)
+            console.warn("missing doc",e)
             this.setDocument(this.makeEmptyRoot(),this.genID('doc'))
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
         })
@@ -204,7 +187,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             console.log("set new selection to ", newsel)
             Selection.setSelection(newsel)
         }).catch((e)=>{
-            console.log("couldn't reload the doc",e)
+            console.warn("couldn't reload the doc",e)
         })
 
     }
@@ -229,7 +212,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         return new Promise((res,rej)=>{
             const fd = new FormData()
             fd.append('file',file)
-            console.log("filesize is",file.size);
+            console.info("filesize is",file.size);
             const xml = new XMLHttpRequest()
             xml.onreadystatechange = () => console.log(`ready state = ${xml.readyState} status ${xml.status}`)
             xml.addEventListener('progress',(e)=>console.log(`progress`))
@@ -237,7 +220,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             xml.addEventListener('error',(e)=>console.log(`error`))
             xml.addEventListener('abort',(e)=>console.log(`abort`))
             const url = SERVER_URL_ASSETS+file.name;
-            console.log("uploading to ", url)
+            console.info("uploading to ", url)
             xml.responseType = 'json'
             xml.open('POST',url)
             xml.send(file)
