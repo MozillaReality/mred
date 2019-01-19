@@ -7,9 +7,7 @@ import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
-
-const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
-
+import {createGraphObjectFromObject} from '../syncgraph/utils'
 const PROP_DEFS = {
     title: {
         key:'title',
@@ -51,15 +49,6 @@ const PROP_DEFS = {
         name:'Default Floor',
         type:TYPES.BOOLEAN
     }
-}
-
-function createGraphObjectFromObject(graph,json) {
-    const objid = graph.createObject()
-    Object.keys(json).forEach(key=>{
-        const value = json[key]
-        graph.createProperty(objid,key,value)
-    })
-    return objid
 }
 
 

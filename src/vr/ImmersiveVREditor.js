@@ -18,16 +18,9 @@ import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {SceneAccessor} from './SceneAccessor'
+import {fetchGraphObject} from '../syncgraph/utils'
 
-const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
-
-function fetchGraphObject(graph, child) {
-    const obj = {}
-    graph.getPropertiesForObject(child).forEach(key => {
-        obj[key] = graph.getPropertyValue(child,key)
-    })
-    return obj
-}
+const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)

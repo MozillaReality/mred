@@ -4,26 +4,9 @@ import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {SceneAccessor} from './SceneAccessor'
+import {fetchGraphObject} from '../syncgraph/utils'
 
-
-const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
-
-function fetchGraphObject(graph, child) {
-    const obj = {}
-    graph.getPropertiesForObject(child).forEach(key => {
-        obj[key] = graph.getPropertyValue(child,key)
-    })
-    return obj
-}
-
-function propToArray(doc, CH) {
-    const len = doc.getArrayLength(CH)
-    const ch = []
-    for (let i = 0; i < len; i++) {
-        ch.push(doc.getElementAt(CH, i))
-    }
-    return ch
-}
+const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
 export class VRCanvas extends Component {
     constructor(props) {
@@ -40,9 +23,9 @@ export class VRCanvas extends Component {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
-        // this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
-        // this.renderer.gammaOutput = tr ue
+        this.renderer.gammaOutput = true
 
         this.scene.background = new THREE.Color(0xff00ff);
         this.camera.position.y = 1.5
@@ -213,14 +196,6 @@ export class VRCanvas extends Component {
             const acc = new SceneAccessor(scene)
             acc.setDefaultFloor(obj.defaultFloor)
             this.insertNodeMapping(nodeid, scene)
-            /*
-            //recurse
-            const ch2 = propToArray(graph, graph.getPropertyValue(nodeid,'children'))
-            ch2.forEach((cch => {
-                // console.log("inserting child",cch)
-                scene.add(this.populateNode(cch))
-            }))
-            */
             return scene
         }
 
