@@ -2,14 +2,13 @@ import React, {Component} from 'react'
 import * as THREE from 'three'
 
 import './VREditor.css'
-
 // for pointer (mouse, controller, touch) support
 import {
+    Pointer,
     POINTER_CLICK,
     POINTER_ENTER,
     POINTER_EXIT,
     POINTER_MOVE,
-    Pointer,
     POINTER_PRESS,
     POINTER_RELEASE
 } from 'webxr-boilerplate/pointer'
@@ -17,9 +16,8 @@ import VRStats from "webxr-boilerplate/vrstats"
 // enter and exit VR
 import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import TransformControls from './TransformControls'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
-import {DoubleSide} from 'three'
+import {SceneAccessor} from './SceneAccessor'
 
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
@@ -305,6 +303,8 @@ export default class ImmersiveVREditor extends Component {
         }
         if (obj.type === 'scene') {
             const scene = new THREE.Group()
+            const acc = new SceneAccessor(scene)
+            acc.setDefaultFloor(obj.defaultFloor)
             this.insertNodeMapping(nodeid, scene)
             return scene
         }
@@ -363,7 +363,7 @@ class TranslationArrow extends THREE.Group {
     }
     makeArrow() {
         this.arrow = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.02,0.02,5),
+            new THREE.CylinderBufferGeometry(0.02,0.02,4),
             new THREE.MeshLambertMaterial({color:'yellow'})
         )
         if(this.axis === 'X') this.arrow.rotation.z = 90  * Math.PI / 180
@@ -373,7 +373,7 @@ class TranslationArrow extends THREE.Group {
     }
     makeInputGrabber() {
         this.input = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.1,0.1,5),
+            new THREE.CylinderBufferGeometry(0.1,0.1,4),
             new THREE.MeshLambertMaterial({color:'green', visible: false})
         )
         if(this.axis === 'X') this.input.rotation.z = 90  * Math.PI / 180

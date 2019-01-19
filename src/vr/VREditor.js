@@ -46,6 +46,11 @@ const PROP_DEFS = {
         name:'TZ',
         type:TYPES.NUMBER,
     },
+    defaultFloor: {
+        key:'defaultFloor',
+        name:'Default Floor',
+        type:TYPES.BOOLEAN
+    }
 }
 
 function createGraphObjectFromObject(graph,json) {
@@ -78,6 +83,7 @@ export default class VREditor extends  SyncGraphProvider {
         const scene1 = createGraphObjectFromObject(doc,{
             type:'scene',
             title:'Scene 1',
+            defaultFloor: true,
         })
         doc.createProperty(scene1,'children',doc.createArray())
         doc.insertElement(CH,0,scene1)
@@ -183,6 +189,7 @@ class VREditorApp extends Component {
                     const scene = createGraphObjectFromObject(graph,{
                         type:'scene',
                         title:'Scene 2',
+                        defaultFloor:true,
                     })
                     graph.createProperty(scene,'children',graph.createArray())
                     const root = this.props.provider.getSceneRoot()

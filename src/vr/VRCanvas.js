@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
+import {SceneAccessor} from './SceneAccessor'
 
 
 const {DocGraph, CommandGenerator, SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
@@ -179,6 +180,10 @@ export class VRCanvas extends Component {
                 if (op.name === 'tx') node.position.x = parseFloat(op.value)
                 if (op.name === 'ty') node.position.y = parseFloat(op.value)
                 if (op.name === 'tz') node.position.z = parseFloat(op.value)
+                if (op.name === 'defaultFloor') {
+                    const acc = new SceneAccessor(node)
+                    acc.setDefaultFloor(op.value)
+                }
             } else {
                 console.log("could not find the node for object id:", op)
             }
@@ -205,6 +210,8 @@ export class VRCanvas extends Component {
         }
         if (obj.type === 'scene') {
             const scene = new THREE.Group()
+            const acc = new SceneAccessor(scene)
+            acc.setDefaultFloor(obj.defaultFloor)
             this.insertNodeMapping(nodeid, scene)
             /*
             //recurse
