@@ -22,4 +22,8 @@ export class SceneAccessor {
             }
         }
     }
+
+    getFloor() {
+        return this.scene.parts.floor
+    }
 }

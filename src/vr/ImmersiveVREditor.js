@@ -206,6 +206,15 @@ export default class ImmersiveVREditor extends Component {
                 prov.quick_setPropertyValue(sel,'tz',node.position.z)
             }
         })
+
+
+        this.navcursor = new THREE.Mesh(
+            new THREE.RingBufferGeometry(0.2,0.3,32),
+            new THREE.MeshLambertMaterial({color:'yellow'})
+        )
+        this.navcursor.rotation.x = -90 * Math.PI/180
+        this.navcursor.position.y = 0.1
+        this.scene.add(this.navcursor)
     }
 
 
@@ -265,6 +274,16 @@ export default class ImmersiveVREditor extends Component {
         this.setState({scene: sceneid})
         this.sceneWrapper = this.findNode(sceneid)
         this.scene.add(this.sceneWrapper)
+        const floor = new SceneAccessor(this.sceneWrapper).getFloor()
+        floor.userData.clickable = true
+        on(floor,POINTER_MOVE,(e)=>{
+            this.navcursor.position.x = e.point.x
+            this.navcursor.position.z = e.point.z
+        })
+        on(floor,POINTER_CLICK,(e)=>{
+            this.sceneWrapper.position.x = -e.point.x
+            this.sceneWrapper.position.z = -e.point.z
+        })
     }
 
     loadScene() {
