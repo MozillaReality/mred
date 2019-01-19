@@ -117,17 +117,26 @@ export default class ImmersiveVREditor extends Component {
         this.props.provider.onRawChange(this.updateScene.bind(this))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.documentSwapped.bind(this))
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged.bind(this))
+        //clear selection when click on the bg
+        on(this.pointer,POINTER_CLICK,()=> SelectionManager.clearSelection())
 
         this.loadScene()
     }
 
     selectionChanged() {
         const sel = SelectionManager.getSelection()
-        if (sel === null) return
+        if (sel === null) {
+            this.controls.detach(this.selectedNode)
+            return
+        }
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, sel)
         console.log(obj)
         const node = this.findNode(sel)
+        if(this.selectedNode !== node) {
+            this.controls.detach(this.selectedNode)
+        }
+        this.selectedNode = node
         console.log(node)
         if (node) {
             this.controls.attach(node, this.pointer)
@@ -321,6 +330,12 @@ class TranslateControl extends THREE.Group {
         this.pointer = pointer
         this.position.copy(target.position)
         this.visible = true
+        this.handles.forEach(h => h.attach())
+    }
+    detach() {
+        this.target = null
+        this.pointer = null
+        this.visible = false
         this.handles.forEach(h => h.attach())
     }
 }
