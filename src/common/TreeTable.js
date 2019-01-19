@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import selMan, {SELECTION_MANAGER} from "./SelectionManager";
-import {TREE_ITEM_PROVIDER} from './TreeItemProvider';
+import selMan, {SELECTION_MANAGER} from "../SelectionManager";
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
 import {PopupManager} from "appy-comps";
-import {makePoint} from './utils'
 
 
 const ContextMenu = (props) => {
@@ -38,32 +37,6 @@ class TreeTableItem extends Component {
         e.stopPropagation()
         this.props.provider.toggleItemCollapsed(this.props.node);
     }
-    startDrag = (e,item) => {
-        e.preventDefault()
-        e.stopPropagation()
-        const l1 = (e) => {
-            let target = this.findTreeNodeAtElement(e.target)
-            if(target) {
-                const node = this.props.provider.findNodeById(target.getAttribute("data-nodeid"))
-                selMan.setDropTarget(node)
-            }
-        }
-        const l2 = (e) => {
-            window.document.removeEventListener('mousemove',l1)
-            window.document.removeEventListener('mouseup',l2)
-            if(!selMan.getDropTarget()) return console.log("no drop target")
-            const prov = this.props.provider
-            const snode =   item
-            const tnode =   selMan.getDropTarget()
-            const tparent = prov.findParent(prov.getSceneRoot(),tnode)
-            prov.deleteChild(snode)
-            prov.insertNodeBefore(tparent,tnode,snode)
-            selMan.setDropTarget(null)
-        }
-        window.document.addEventListener('mousemove',l1)
-        window.document.addEventListener('mouseup',l2)
-
-    }
     render() {
         let cls = "tree-node";
         const node = this.props.node
@@ -84,14 +57,12 @@ class TreeTableItem extends Component {
             arrow = <span className="fa fa-fw borderless"/>
         }
 
-        let dragHandle = <button className="fa fa-bars drag-handle" onMouseDown={(e)=>this.startDrag(e,node)}/>
         return <div className={cls} onClick={this.onSelect} onContextMenu={this.onContextMenu} data-nodeid={node.id}>
             <span style={{
                 width:this.props.depth*1+'em'
             }}></span>
             {arrow}
             {prov.getRendererForItem(node)}
-            {dragHandle}
         </div>
     }
 }

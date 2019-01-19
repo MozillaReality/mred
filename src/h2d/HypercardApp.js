@@ -9,7 +9,7 @@ import {HBox, PopupManager, VBox} from 'appy-comps'
 import InputManager from '../common/InputManager'
 import UndoManager from '../common/UndoManager'
 import {BLOCK_STYLES} from './HypercardEditor'
-import TreeTable from '../TreeTable'
+import TreeTable from '../common/TreeTable'
 
 export default class HypercardApp extends Component {
     constructor(props) {

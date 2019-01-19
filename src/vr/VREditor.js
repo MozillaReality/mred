@@ -1,7 +1,7 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
-import TreeTable from '../TreeTable'
+import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
 import PropSheet, {TYPES} from '../common/PropSheet'
-import TreeTable from '../TreeTable'
+import TreeTable from '../common/TreeTable'
 import SelectionManager from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'

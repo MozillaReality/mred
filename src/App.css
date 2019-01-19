@@ -135,6 +135,7 @@ button {
     white-space: nowrap;
     display: flex;
     flex-direction: row;
+    align-items: baseline;
     padding: 0.25em;
 }
 
