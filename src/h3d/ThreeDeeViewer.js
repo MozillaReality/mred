@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
-import GLTFLoader from '../GLTFLoader'
+import GLTFLoader from '../gltfinspector/GLTFLoader'
 import OrbitalControls from './OrbitControls'
 
 export  default class ThreeDeeViewer extends Component {
