@@ -8,6 +8,8 @@ import VREditor from './vr/VREditor'
 export default class App extends Component {
     constructor(props) {
         super(props)
+
+        this.providers = ['vr','metadoc']
     }
 
     getApp() {
@@ -33,7 +35,7 @@ export default class App extends Component {
     showProviderList = (e) => {
         PopupManager.show(
             <VBox>
-                {Object.keys(this.providers).map((name)=>{
+                {this.providers.map((name)=>{
                     return <button key={name} onClick={()=>this.openNewProvider(name)}>{name}</button>
                 })}
             </VBox>,
@@ -44,12 +46,12 @@ export default class App extends Component {
         console.log("======== rendering top level app")
         return (
             <VBox fill>
-                {/*<button*/}
-                    {/*style={{position:'absolute',zIndex: 10,}}*/}
-                    {/*onClick={this.showProviderList}*/}
-                    {/*>*/}
-                    {/*<img src="icon.png" height="20" style={{padding:'0em'}}/>*/}
-                {/*</button>*/}
+                <button
+                    style={{position:'absolute',zIndex: 10,}}
+                    onClick={this.showProviderList}
+                    >
+                    <img src="icon.png" height="20" style={{padding:'0em'}}/>
+                </button>
                 <div style={{position: 'relative', flex: '1'}}>{this.getApp()}</div>
                 <PopupContainer/>
             </VBox>
