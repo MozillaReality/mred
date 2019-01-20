@@ -84,7 +84,6 @@ export class MetadocCanvas extends Component {
         return true
     }
 
-
     onClick = (e) => {
         const pt = this.toCanvas(e)
         const rect = this.findRect(pt)

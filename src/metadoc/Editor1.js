@@ -160,6 +160,19 @@ class MetadocApp extends Component {
         graph.insertElement(layer.children,0,rect1)
     }
 
+    addLayer = () => {
+        const graph = this.props.provider.getDataGraph()
+        const page = this.props.provider.getSelectedPage()
+        const layer = createGraphObjectFromObject(graph,{
+            type:'layer',
+            title:'new layer',
+            parent:page.id,
+        })
+        const layer_children = graph.createArray()
+        graph.createProperty(layer,'children',layer_children)
+        graph.insertElement(page.children,0,layer)
+    }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -169,7 +182,8 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                <button onClick={this.addBlock}>add</button>
+                <button onClick={this.addBlock}>+ rect</button>
+                <button onClick={this.addLayer}>+ layer</button>
             </Toolbar>
 
 
