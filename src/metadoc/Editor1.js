@@ -135,7 +135,8 @@ class MetadocApp extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            connected:false
+            connected:false,
+            zoom: 0,
         }
     }
 
@@ -173,6 +174,9 @@ class MetadocApp extends Component {
         graph.insertElement(page.children,0,layer)
     }
 
+    zoomIn  = () => this.setState({zoom:this.state.zoom+1})
+    zoomOut = () => this.setState({zoom:this.state.zoom-1})
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -192,6 +196,8 @@ class MetadocApp extends Component {
                 <button onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
                 <button onClick={prov.performUndo}>undo</button>
                 <button onClick={prov.performRedo}>redo</button>
+                <button onClick={this.zoomIn}>zoom +</button>
+                <button onClick={this.zoomOut}>zoom -</button>
             </Toolbar>
 
 
@@ -199,6 +205,7 @@ class MetadocApp extends Component {
                 <MetadocCanvas
                     prov={prov}
                     onSelect={this.canvasSelected}
+                    scale={Math.pow(2,this.state.zoom)}
                 />
             </Panel>
 

@@ -8,7 +8,6 @@ export class MetadocCanvas extends Component {
         super(props);
         this.state = {
             pressed: false,
-            scale: 1,
             selection: null
         }
         props.prov.onRawChange(e => {
@@ -30,8 +29,8 @@ export class MetadocCanvas extends Component {
         const rect = e.target.getBoundingClientRect()
         // console.log("clicked at",e.clientX,rect)
         return {
-            x: Math.floor((e.clientX - rect.left) / this.state.scale),
-            y: Math.floor((e.clientY - rect.top) / this.state.scale),
+            x: Math.floor((e.clientX - rect.left) / this.props.scale),
+            y: Math.floor((e.clientY - rect.top) / this.props.scale),
         }
     }
 
@@ -41,12 +40,12 @@ export class MetadocCanvas extends Component {
     }
 
     redraw() {
-        console.log("===== redrawing canvas")
+        console.log("===== redrawing canvas with scale",this.props.scale)
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'blue'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
-        c.scale(this.state.scale, this.state.scale)
+        c.scale(this.props.scale, this.props.scale)
         const list = this.props.prov.getRootList()
         if (!list) return
         const graph = this.props.prov.getRawGraph()
@@ -124,7 +123,6 @@ export class MetadocCanvas extends Component {
 
     render() {
         return <div className="panel">
-            <h3>Canvas</h3>
             <canvas style={{border: '1px solid red'}}
                     width={500} height={300} ref={(e) => this.canvas = e}
                     onClick={this.onClick}
