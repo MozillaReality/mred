@@ -24,7 +24,7 @@ export class VRCanvas extends Component {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
-        this.renderer.setPixelRatio( window.devicePixelRatio );
+        // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
 
@@ -176,6 +176,9 @@ export class VRCanvas extends Component {
             return
         }
         console.log('skipping', op.type)
+    }
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return false
     }
 
     render() {

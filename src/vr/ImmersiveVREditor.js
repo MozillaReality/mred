@@ -21,6 +21,10 @@ const off = (elem,type,cb) => elem.removeEventListener(type,cb)
 
 export default class ImmersiveVREditor extends Component {
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return false
+    }
+
 
     render() {
         return <div>
