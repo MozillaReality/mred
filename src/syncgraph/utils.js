@@ -7,15 +7,16 @@ export function createGraphObjectFromObject(graph, json) {
     return objid
 }
 
-export function fetchGraphObject(graph, child) {
+export function fetchGraphObject(graph, objid) {
     const obj = {}
-    graph.getPropertiesForObject(child).forEach(key => {
-        obj[key] = graph.getPropertyValue(child, key)
+    graph.getPropertiesForObject(objid).forEach(key => {
+        obj[key] = graph.getPropertyValue(objid, key)
     })
+    obj.id = objid
     return obj
 }
 
-function propToArray(doc, CH) {
+export function propToArray(doc, CH) {
     const len = doc.getArrayLength(CH)
     const ch = []
     for (let i = 0; i < len; i++) {

@@ -5,6 +5,8 @@ import TreeTable from '../common/TreeTable'
 import SelectionManager from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
+import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+
 const PROP_DEFS = {
     title: {
         key:'title',
@@ -40,21 +42,37 @@ export default class MetadocEditor extends  SyncGraphProvider {
     getTitle = () => "MetaDoc"
 
     makeEmptyRoot(doc) {
-        const CH = doc.createArray()
-        const root = doc.createObject()
-        doc.createProperty(root,'type','root')
-        doc.createProperty(root,'title','root')
-        doc.createProperty(root,'children',CH)
+        //create root and children
+        const root_children = doc.createArray()
+        const root = createGraphObjectFromObject(doc,{ type:'root', title:'root' })
+        doc.createProperty(root,'children',root_children)
 
 
-        const d = doc
-        const rect1 = doc.createObject()
-        d.createProperty(rect1,'title','first rect')
-        d.createProperty(rect1,'x',100)
-        d.createProperty(rect1,'y',100)
-        d.createProperty(rect1,'width',100)
-        d.createProperty(rect1,'height',100)
-        doc.insertElement(CH,0,rect1)
+        //create page and children
+        const page = createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root})
+        const page_children = doc.createArray()
+        doc.createProperty(page,'children',page_children)
+
+        //create layer and children
+        const layer = createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page})
+        const layer_children = doc.createArray()
+        doc.createProperty(layer,'children',layer_children)
+
+
+        //create rect
+        const rect1 = createGraphObjectFromObject(doc,{
+            type:'rect',
+            title:'first rect',
+            x:100,
+            y:100,
+            width:100,
+            height:100,
+            parent: layer,
+        })
+        //connect it all together
+        doc.insertElement(layer_children,0,rect1)
+        doc.insertElement(page_children,0,layer)
+        doc.insertElement(root_children,0,page)
     }
 
     getRendererForItem = (item) => {
@@ -77,6 +95,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
             props.forEach(key => {
                 if(key === 'type') return
                 if(key === 'children') return
+                if(key === 'parent') return
                 const value = this.syncdoc.getPropertyValue(item,key)
                 if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
                 console.log("unknown property",key)
@@ -86,6 +105,28 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return defs
     }
 
+    getSelectedPage() {
+        let sel = SelectionManager.getSelection()
+        if(!sel) return null
+        while(true) {
+            const type = this.getDataGraph().getPropertyValue(sel, 'type')
+            if(type === 'root') return null
+            if(type === 'page') return fetchGraphObject(this.getDataGraph(),sel)
+            sel = this.getDataGraph().getPropertyValue(sel,'parent')
+        }
+    }
+
+    getSelectedLayer() {
+        let sel = SelectionManager.getSelection()
+        if(!sel) return null
+        while(true) {
+            const type = this.getDataGraph().getPropertyValue(sel, 'type')
+            if(type === 'root') return null
+            if(type === 'layer') return fetchGraphObject(this.getDataGraph(),sel)
+            sel = this.getDataGraph().getPropertyValue(sel,'parent')
+        }
+        console.log(fetchGraphObject(this.getDataGraph(),sel))
+    }
 
 }
 
@@ -102,18 +143,21 @@ class MetadocApp extends Component {
         this.props.provider.on('CONNECTED',()=> this.setState({connected: this.props.provider.isConnected()}))
     }
 
-
     canvasSelected = (rect) => SelectionManager.setSelection(rect)
 
     addBlock = () => {
         const graph = this.props.provider.getDataGraph()
-        const rect1 = graph.createObject()
-        graph.createProperty(rect1,'title','first rect')
-        graph.createProperty(rect1,'x',100)
-        graph.createProperty(rect1,'y',100)
-        graph.createProperty(rect1,'width',100)
-        graph.createProperty(rect1,'height',100)
-        graph.insertElement(this.props.provider.getRootList(),0,rect1)
+        const layer = this.props.provider.getSelectedLayer()
+        const rect1 = createGraphObjectFromObject(graph,{
+            type:'rect',
+            title:'second rect',
+            x: 100,
+            y: 100,
+            width: 100,
+            height: 100,
+            parent:layer.id,
+        })
+        graph.insertElement(layer.children,0,rect1)
     }
 
     render() {

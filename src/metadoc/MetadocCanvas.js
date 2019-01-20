@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
+import {createGraphObjectFromObject, fetchGraphObject, propToArray} from "../syncgraph/utils";
 
 export class MetadocCanvas extends Component {
     constructor(props) {
@@ -40,10 +41,7 @@ export class MetadocCanvas extends Component {
     }
 
     redraw() {
-        let sel = -1
-        if (this.state.selection) {
-            sel = this.state.selection.getSelection()
-        }
+        console.log("===== redrawing canvas")
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'blue'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
@@ -52,21 +50,25 @@ export class MetadocCanvas extends Component {
         const list = this.props.prov.getRootList()
         if (!list) return
         const graph = this.props.prov.getRawGraph()
-        const len = graph.getArrayLength(list)
-        for (let i = 0; i < len; i++) {
-            const objid = graph.getElementAt(list, i)
-            const x = graph.getPropertyValue(objid, 'x')
-            const y = graph.getPropertyValue(objid, 'y')
-            const w = graph.getPropertyValue(objid, 'width')
-            const h = graph.getPropertyValue(objid, 'height')
-            // console.log(objid,x,y,w,h)
-            c.fillStyle = 'gray'
-            if (sel === objid) {
-                c.fillStyle = 'red'
-            }
-            c.fillRect(x, y, w, h)
-        }
+        const page = this.props.prov.getSelectedPage()
+        this.drawPage(c,graph,page)
         c.restore()
+    }
+
+    drawPage(c,g,page) {
+        propToArray(g,page.children).forEach(id => this.drawLayer(c,g,fetchGraphObject(g,id)))
+    }
+
+    drawLayer(c,g,layer) {
+        propToArray(g,layer.children).forEach(id => this.drawShape(c,g,fetchGraphObject(g,id)))
+    }
+
+    drawShape(c,g,shape) {
+        if(shape.type === 'rect') {
+            c.fillStyle = 'gray'
+            if (SelectionManager.getSelection() === shape.id) c.fillStyle = 'red'
+            c.fillRect(shape.x, shape.y, shape.width, shape.height)
+        }
     }
 
     isInside(pt, objid) {
@@ -90,15 +92,11 @@ export class MetadocCanvas extends Component {
     }
 
     findRect(pt) {
-        const graph = this.props.prov.getRawGraph()
-        const list = this.props.prov.getRootList()
-        if (!list) return null
-        const len = graph.getArrayLength(list)
-        for (let i = 0; i < len; i++) {
-            const objid = graph.getElementAt(list, i)
-            if (this.isInside(pt, objid)) return objid
-        }
-        return null
+        const prov = this.props.prov
+        const layer = prov.getSelectedLayer()
+        if (!layer) return null
+        const graph = prov.getRawGraph()
+        return propToArray(graph,layer.children).find((ch)=> this.isInside(pt,ch))
     }
 
     mouseDown = (e) => {

@@ -12,6 +12,7 @@ const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 export class VRCanvas extends Component {
     constructor(props) {
         super(props)
+        console.info("CREATED VR Canvas")
         this.obj_node_map = {}
         this.state = {
             scene: -1
