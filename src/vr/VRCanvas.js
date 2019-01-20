@@ -20,6 +20,7 @@ export class VRCanvas extends Component {
     }
 
     componentDidMount() {
+        console.log('mounting the canvas',this.props.provider.getDataGraph())
         const canvas = this.canvas
 
         this.scene = new THREE.Scene();
@@ -116,6 +117,7 @@ export class VRCanvas extends Component {
             this.renderer.setSize(this.canvas.width, this.canvas.height);
         }, false);
 
+        this.props.provider.getDocHistory().forEach(op => this.updateScene(op))
     }
 
     setCurrentSceneId(sceneid) {
