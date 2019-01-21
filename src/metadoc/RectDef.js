@@ -49,4 +49,9 @@ export default class RectDef {
         if (pt.y > shape.y + shape.h) return false
         return true
     }
+
+    toSVGString(obj) {
+        return `<rect x="${obj.x}" y="${obj.y}" width="${obj.width}" height="${obj.height}" fill="${obj.fillColor}"/>`
+    }
+
 }

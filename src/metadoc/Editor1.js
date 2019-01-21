@@ -236,6 +236,32 @@ export default class MetadocEditor extends  SyncGraphProvider {
         }
     }
 
+    exportSVG = () => {
+        const page = this.getSelectedPage()
+
+        const svg = this.renderSVGWrapper(this.renderSVGChildren(page))
+        const link = document.createElement('a');
+        link.href = 'data:image/svg+xml,'+encodeURIComponent(svg)
+        link.download = 'test.svg'
+        document.body.appendChild(link)
+        link.click()
+    }
+    renderSVGWrapper(str) {
+        return `<svg id="svg-canvas" viewBox="0 0 1000 1000" 
+                xmlns="http://www.w3.org/2000/svg" 
+                xmlnsXlink="http://www.w3.org/1999/xlink">
+                ${str}</svg>`
+    }
+    renderSVGChildren(obj) {
+        if(obj.type === 'page') return propToArray(this.getDataGraph(),obj.children)
+            .map((layer) => `<g>${this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),layer))}</g>`).join("")
+
+        if(obj.type === 'layer') return propToArray(this.getDataGraph(),obj.children)
+            .map(shape => this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),shape))).join("")
+        if(SHAPE_DEFS[obj.type]) return SHAPE_DEFS[obj.type].toSVGString(obj)
+        return "";
+    }
+
 }
 
 
@@ -344,6 +370,7 @@ class MetadocApp extends Component {
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
+                <button className="fa fa-download" onClick={prov.exportSVG}/>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
                 <button className="fa fa-search-plus" onClick={this.zoomIn}/>

@@ -29,4 +29,9 @@ export default class CircleDef {
         return false
     }
 
+
+    toSVGString(obj) {
+        return `<circle cx="${obj.x}" cy="${obj.y}" r="${obj.radius}" fill="${obj.fillColor}"/>`
+    }
+
 }
