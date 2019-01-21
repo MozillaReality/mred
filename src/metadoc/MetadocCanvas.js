@@ -50,7 +50,7 @@ export class MetadocCanvas extends Component {
         if (!list) return
         const graph = this.props.prov.getRawGraph()
         const page = this.props.prov.getSelectedPage()
-        this.drawPage(c,graph,page)
+        if(page) this.drawPage(c,graph,page)
         c.restore()
     }
 

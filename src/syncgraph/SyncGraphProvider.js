@@ -18,6 +18,7 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         const doc = new DocGraph()
         this.makeEmptyRoot(doc)
         this.setupDocFlow(doc,this.genID('doc'))
+        if(options.doc) this.loadDoc(options.doc)
     }
     getDocHistory = () => this.getDataGraph().getHistory()
     onRawChange = cb => this.rawlisteners.push(cb)
@@ -65,6 +66,7 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         }
         const payload_string = JSON.stringify(payload_obj)
         return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
+            console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
         }).catch((e)=> console.log("error",e))
