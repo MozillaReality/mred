@@ -2,8 +2,7 @@ import React, {Component} from "react";
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {createGraphObjectFromObject, fetchGraphObject, propToArray} from "../syncgraph/utils";
-import RectDef from "./RectDef";
-import CircleDef from "./CircleDef";
+
 
 export class MetadocCanvas extends Component {
     constructor(props) {
@@ -65,12 +64,8 @@ export class MetadocCanvas extends Component {
     }
 
     drawShape(c,g,shape) {
-        if(shape.type === 'rect') {
-            new RectDef().draw(c,g,shape,SelectionManager.getSelection() === shape.id)
-        }
-        if(shape.type === 'circle') {
-            new CircleDef().draw(c,g,shape, SelectionManager.getSelection() === shape.id)
-        }
+        const def = this.props.prov.getShapeDef(shape.type)
+        if(def) def.draw(c,g,shape,SelectionManager.getSelection() === shape.id)
         if(shape.type === 'text') {
             c.fillStyle = 'black'
             c.font = 'normal 30px sans-serif'
@@ -86,8 +81,8 @@ export class MetadocCanvas extends Component {
     isInside(pt, objid) {
         const graph = this.props.prov.getRawGraph()
         const shape = fetchGraphObject(graph,objid)
-        if(shape.type === 'rect') return new RectDef().isInside(pt,shape)
-        if(shape.type === 'circle') return new CircleDef().isInside(pt,shape)
+        const def = this.props.prov.getShapeDef(shape.type)
+        if(def) return def.isInside(pt,shape)
         if(shape.type === 'text') {
             const c = this.canvas.getContext('2d')
             c.font = 'normal 30px sans-serif'
@@ -120,12 +115,12 @@ export class MetadocCanvas extends Component {
     mouseDown = (e) => {
         this.props.prov.pauseQueue()
         const pt = this.toCanvas(e)
-        const rect = this.findShape(pt)
-        if (rect) {
+        const shape = this.findShape(pt)
+        if (shape) {
             this.setState({
                 pressed: true,
                 start: pt,
-                rect: rect,
+                rect: shape,
             })
         }
     }

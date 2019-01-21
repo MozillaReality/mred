@@ -63,6 +63,11 @@ const PROP_DEFS = {
     }
 }
 
+const SHAPE_DEFS = {
+    rect: new RectDef(),
+    circle: new CircleDef()
+}
+
 
 export default class MetadocEditor extends  SyncGraphProvider {
     getDocType() { return "metadoc" }
@@ -89,7 +94,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
         //create rect
         const rlayer = fetchGraphObject(doc,layer)
-        const rect1 = new RectDef().make(doc,rlayer)
+        const rect1 = SHAPE_DEFS.rect.make(doc,rlayer)
         //connect it all together
         doc.insertElement(layer_children,0,rect1)
         doc.insertElement(page_children,0,layer)
@@ -126,6 +131,9 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return defs
     }
 
+    getShapeDef(type) {
+        return SHAPE_DEFS[type]
+    }
     getSelectedRoot() {
         return fetchGraphObject(this.getDataGraph(),this.getSceneRoot())
     }
@@ -158,9 +166,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         let sel = SelectionManager.getSelection()
         if(!sel) return null
         const type = this.getDataGraph().getPropertyValue(sel, 'type')
-        if(type === 'rect' || type === 'circle') {
-            return fetchGraphObject(this.getDataGraph(),sel)
-        }
+        if(SHAPE_DEFS[type]) return fetchGraphObject(this.getDataGraph(),sel)
         return null
     }
 
@@ -192,16 +198,16 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
-        const rect = new RectDef().make(graph,layer)
-        graph.insertElement(layer.children,0,rect)
+        const shape = SHAPE_DEFS.rect.make(graph,layer)
+        graph.insertElement(layer.children,0,shape)
     }
 
     addCircle = () => {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
-        const circle = new CircleDef().make(graph,layer)
-        graph.insertElement(layer.children,0,circle)
+        const shape = SHAPE_DEFS.circle.make(graph,layer)
+        graph.insertElement(layer.children,0,shape)
     }
 
     deleteSelection = () => {
