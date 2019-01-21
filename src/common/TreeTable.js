@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
 import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
-import {PopupManager} from "appy-comps";
+import {PopupManager, VBox} from "appy-comps";
 
 
 const ContextMenu = (props) => {
-    return <ul className="popup-menu">
+    return <VBox className={"popup-menu"}>
         {props.menu.map((item,i)=>{
-            return <li key={i} onClick={()=>{
+            return <button key={i} onClick={()=>{
                 PopupManager.hide()
-                item.fun()
+                if(item.fun) item.fun()
             }}
-            >{item.title}</li>
+            ><i className={'fa fa-'+item.icon}/> {item.title}</button>
         })}
-    </ul>
+    </VBox>
 }
 
 class TreeTableItem extends Component {

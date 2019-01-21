@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import TreeTable from '../common/TreeTable'
 import SelectionManager from '../SelectionManager'
@@ -68,6 +68,13 @@ const SHAPE_DEFS = {
     circle: new CircleDef()
 }
 
+const ICONS = {
+    page:'file',
+    layer:'sticky-note',
+    rect:'square',
+    circle:'circle',
+    text:'font',
+}
 
 export default class MetadocEditor extends  SyncGraphProvider {
     getDocType() { return "metadoc" }
@@ -103,7 +110,10 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     getRendererForItem = (item) => {
         if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
-        return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
+        const type = this.getDataGraph().getPropertyValue(item,'type')
+        const title = this.getDataGraph().getPropertyValue(item,'title')
+        if(ICONS[type]) return <div><i className={`fa fa-${ICONS[type]}`}></i> {title}</div>
+        return <div>{title}</div>
     }
 
     getProperties(item) {
@@ -182,12 +192,12 @@ export default class MetadocEditor extends  SyncGraphProvider {
             },
             {
                 title:'rect',
-                icon:'plus',
+                icon:ICONS.rect,
                 fun: this.addRect
             },
             {
                 title:'circle',
-                icon:'plus',
+                icon:ICONS.circle,
                 fun: this.addCircle
             }
         ]
@@ -249,27 +259,27 @@ class MetadocApp extends Component {
         const acts = [
             {
                 title: 'page',
-                icon: 'square',
+                icon: ICONS.page,
                 fun: () => this.addPage()
             },
             {
                 title: 'layer',
-                icon: 'square',
+                icon: ICONS.layer,
                 fun: () => this.addLayer()
             },
             {
                 title: 'rect',
-                icon: 'square',
+                icon: ICONS.rect,
                 fun: () => this.props.provider.addRect()
             },
             {
                 title: 'circle',
-                icon: 'circle',
+                icon: ICONS.circle,
                 fun: () => this.props.provider.addCircle()
             },
             {
                 title: 'text',
-                icon: 'text',
+                icon: ICONS.text,
                 fun: () => this.addText()
             },
         ]
@@ -327,18 +337,19 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                <button onClick={this.showAddPopup}>+</button>
-                <button onClick={this.props.provider.deleteSelection}>x</button>
+                <button className="fa fa-plus" onClick={this.showAddPopup}/>
+                <button className="fa fa-close" onClick={this.props.provider.deleteSelection}/>
             </Toolbar>
 
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
-                <button onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
-                <button onClick={prov.performUndo}>undo</button>
-                <button onClick={prov.performRedo}>redo</button>
-                <button onClick={this.zoomIn}>zoom +</button>
-                <button onClick={this.zoomOut}>zoom -</button>
+                <button className="fa fa-undo" onClick={prov.performUndo}/>
+                <button className="fa fa-repeat" onClick={prov.performRedo}/>
+                <button className="fa fa-search-plus" onClick={this.zoomIn}/>
+                <button className="fa fa-search-minus"  onClick={this.zoomOut}/>
+                <Spacer/>
+                <button className="fa fa-superpowers" onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>
 
 

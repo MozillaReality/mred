@@ -50,7 +50,7 @@ export const ToggleButton = (props) => {
 }
 
 export const MenuPopup = (props) => {
-    return <VBox>
+    return <VBox className={"popup-menu"}>
         {props.actions.map((act,i)=>{
             return <button  key={i} onClick={()=>{
                 PopupManager.hide();
