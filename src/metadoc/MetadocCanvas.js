@@ -42,7 +42,7 @@ export class MetadocCanvas extends Component {
     redraw() {
         console.log("===== redrawing canvas with scale",this.props.scale)
         const c = this.canvas.getContext('2d')
-        c.fillStyle = 'blue'
+        c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
         c.scale(this.props.scale, this.props.scale)
@@ -75,6 +75,16 @@ export class MetadocCanvas extends Component {
             c.arc(shape.x, shape.y, shape.radius, 0, Math.PI*2)
             c.fill()
         }
+        if(shape.type === 'text') {
+            c.fillStyle = 'black'
+            c.font = 'normal 30px sans-serif'
+            c.fillText(shape.text,shape.x,shape.y)
+            if (SelectionManager.getSelection() === shape.id) {
+                c.strokeStyle = 'red'
+                const metrics = c.measureText(shape.text)
+                c.strokeRect(shape.x,shape.y-30,metrics.width,30)
+            }
+        }
     }
 
     isInside(pt, objid) {
@@ -90,6 +100,18 @@ export class MetadocCanvas extends Component {
         if(shape.type === 'circle') {
             if(Math.pow(shape.x-pt.x,2) + Math.pow(shape.y - pt.y,2) < Math.pow(shape.radius,2)) return true
             return false
+        }
+        if(shape.type === 'text') {
+            const c = this.canvas.getContext('2d')
+            c.font = 'normal 30px sans-serif'
+            const metrics = c.measureText(shape.text)
+            const w = metrics.width
+            const h = 30
+            if (pt.x < shape.x) return false
+            if (pt.x > shape.x + w) return false
+            if (pt.y < shape.y - h) return false
+            if (pt.y > shape.y) return false
+            return true
         }
         return false
     }

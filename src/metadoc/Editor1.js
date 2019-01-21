@@ -37,6 +37,11 @@ const PROP_DEFS = {
         key:'radius',
         name:'Radius',
         type:TYPES.NUMBER
+    },
+    text: {
+        key:'text',
+        name:'text',
+        type:TYPES.STRING
     }
 }
 
@@ -193,6 +198,21 @@ class MetadocApp extends Component {
         graph.insertElement(layer.children,0,circle)
     }
 
+    addText = () => {
+        const graph = this.props.provider.getDataGraph()
+        const layer = this.props.provider.getSelectedLayer()
+        if(!layer) return
+        const text = createGraphObjectFromObject(graph,{
+            type:'text',
+            title:'text',
+            text:'title text',
+            x: 100,
+            y: 100,
+            parent:layer.id,
+        })
+        graph.insertElement(layer.children,0,text)
+    }
+
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})
     zoomOut = () => this.setState({zoom:this.state.zoom-1})
 
@@ -205,9 +225,10 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                <button onClick={this.addLayer}>+ layer</button>
-                <button onClick={this.addRect}>+ rect</button>
-                <button onClick={this.addCircle}>+ circle</button>
+                <button onClick={this.addLayer}>+ L</button>
+                <button onClick={this.addRect}>+ R</button>
+                <button onClick={this.addCircle}>+ C</button>
+                <button onClick={this.addText}>+ T</button>
             </Toolbar>
 
 
