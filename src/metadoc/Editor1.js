@@ -115,6 +115,9 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return defs
     }
 
+    getSelectedRoot() {
+        return fetchGraphObject(this.getDataGraph(),this.getSceneRoot())
+    }
     getSelectedPage() {
         let sel = SelectionManager.getSelection()
         if(!sel) return null
@@ -156,6 +159,34 @@ class MetadocApp extends Component {
 
     canvasSelected = (rect) => SelectionManager.setSelection(rect)
 
+    addPage = () => {
+        const graph = this.props.provider.getDataGraph()
+        const root = this.props.provider.getSelectedRoot()
+        const page = createGraphObjectFromObject(graph,{
+            type:'page',
+            title:'new page',
+            parent:root.id,
+        })
+        const page_children = graph.createArray()
+        graph.createProperty(page,'children',page_children)
+        console.log("root is",root)
+        graph.insertElement(root.children,0,page)
+    }
+
+
+    addLayer = () => {
+        const graph = this.props.provider.getDataGraph()
+        const page = this.props.provider.getSelectedPage()
+        const layer = createGraphObjectFromObject(graph,{
+            type:'layer',
+            title:'new layer',
+            parent:page.id,
+        })
+        const layer_children = graph.createArray()
+        graph.createProperty(layer,'children',layer_children)
+        graph.insertElement(page.children,0,layer)
+    }
+
     addRect = () => {
         const graph = this.props.provider.getDataGraph()
         const layer = this.props.provider.getSelectedLayer()
@@ -169,19 +200,6 @@ class MetadocApp extends Component {
             parent:layer.id,
         })
         graph.insertElement(layer.children,0,rect1)
-    }
-
-    addLayer = () => {
-        const graph = this.props.provider.getDataGraph()
-        const page = this.props.provider.getSelectedPage()
-        const layer = createGraphObjectFromObject(graph,{
-            type:'layer',
-            title:'new layer',
-            parent:page.id,
-        })
-        const layer_children = graph.createArray()
-        graph.createProperty(layer,'children',layer_children)
-        graph.insertElement(page.children,0,layer)
     }
 
     addCircle = () => {
@@ -225,6 +243,7 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
+                <button onClick={this.addPage}>+ P</button>
                 <button onClick={this.addLayer}>+ L</button>
                 <button onClick={this.addRect}>+ R</button>
                 <button onClick={this.addCircle}>+ C</button>
