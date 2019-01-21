@@ -48,6 +48,7 @@ export const TYPES = {
     NUMBER:'number',
     BOOLEAN:'boolean',
     ENUM:'enum',
+    COLOR:'color',
 }
 
 class PropEditor extends Component {
@@ -96,7 +97,7 @@ class PropEditor extends Component {
         }
         this.setState({value:v})
         if(!isNaN(parseFloat(v))) {
-            def.setValue(v)
+            def.setValue(parseFloat(v))
         }
     }
     numberKeyDown = (e) => {
@@ -162,7 +163,7 @@ class PropEditor extends Component {
                                                   checked={this.state.value}
                                                   onChange={this.booleanChanged}/>
         if (prop.isType(TYPES.ENUM)) return <EnumEditor value={this.state.value} onChange={this.enumChanged} def={prop} obj={obj} provider={this.props.provider}/>
-        if (prop.isType('color')) return <button style={{ backgroundColor:this.state.value}} onClick={this.openColorEditor}>{this.state.value}</button>
+        if (prop.isType(TYPES.COLOR)) return <button style={{ backgroundColor:this.state.value}} onClick={this.openColorEditor}>{this.state.value}</button>
         if (prop.isType('array')) return <ArrayEditor value={this.state.value} onChange={this.arrayChanged} def={prop} obj={obj} provider={this.props.provider}/>
         return <b>{prop.getType()}:{prop.getValue()}</b>
     }

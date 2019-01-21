@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {createGraphObjectFromObject, fetchGraphObject, propToArray} from "../syncgraph/utils";
+import RectDef from "./RectDef";
 
 export class MetadocCanvas extends Component {
     constructor(props) {
@@ -40,7 +41,7 @@ export class MetadocCanvas extends Component {
     }
 
     redraw() {
-        console.log("===== redrawing canvas with scale",this.props.scale)
+        // console.log("===== redrawing canvas with scale",this.props.scale)
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
@@ -64,9 +65,7 @@ export class MetadocCanvas extends Component {
 
     drawShape(c,g,shape) {
         if(shape.type === 'rect') {
-            c.fillStyle = 'gray'
-            if (SelectionManager.getSelection() === shape.id) c.fillStyle = 'red'
-            c.fillRect(shape.x, shape.y, shape.width, shape.height)
+            new RectDef().draw(c,g,shape,SelectionManager.getSelection() === shape.id)
         }
         if(shape.type === 'circle') {
             c.fillStyle = 'gray'
@@ -90,13 +89,7 @@ export class MetadocCanvas extends Component {
     isInside(pt, objid) {
         const graph = this.props.prov.getRawGraph()
         const shape = fetchGraphObject(graph,objid)
-        if(shape.type === 'rect') {
-            if (pt.x < shape.x) return false
-            if (pt.x > shape.x + shape.w) return false
-            if (pt.y < shape.y) return false
-            if (pt.y > shape.y + shape.h) return false
-            return true
-        }
+        if(shape.type === 'rect') return new RectDef().isInside(pt,shape)
         if(shape.type === 'circle') {
             if(Math.pow(shape.x-pt.x,2) + Math.pow(shape.y - pt.y,2) < Math.pow(shape.radius,2)) return true
             return false

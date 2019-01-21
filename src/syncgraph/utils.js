@@ -24,3 +24,8 @@ export function propToArray(doc, CH) {
     }
     return ch
 }
+
+export function indexOf(graph, array, target) {
+    const arr = propToArray(graph,array)
+    return arr.findIndex(e => e === target)
+}

@@ -1,11 +1,13 @@
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import TreeTable from '../common/TreeTable'
 import SelectionManager from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
-import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject, indexOf, propToArray} from "../syncgraph/utils";
+import {PopupManager} from "appy-comps";
+import RectDef from "./RectDef";
 
 const PROP_DEFS = {
     title: {
@@ -22,6 +24,21 @@ const PROP_DEFS = {
         key:'y',
         name:'Y',
         type:TYPES.NUMBER
+    },
+    rx: {
+        key:'rx',
+        name:'RX',
+        type:TYPES.NUMBER
+    },
+    ry: {
+        key:'ry',
+        name:'RY',
+        type:TYPES.NUMBER
+    },
+    fillColor: {
+        key:'fillColor',
+        name:'color',
+        type:TYPES.COLOR,
     },
     width: {
         key:'width',
@@ -70,15 +87,8 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
 
         //create rect
-        const rect1 = createGraphObjectFromObject(doc,{
-            type:'rect',
-            title:'first rect',
-            x:100,
-            y:100,
-            width:100,
-            height:100,
-            parent: layer,
-        })
+        const rlayer = fetchGraphObject(doc,layer)
+        const rect1 = new RectDef().makeRect(doc,rlayer)
         //connect it all together
         doc.insertElement(layer_children,0,rect1)
         doc.insertElement(page_children,0,layer)
@@ -126,6 +136,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
             if(type === 'root') return null
             if(type === 'page') return fetchGraphObject(this.getDataGraph(),sel)
             sel = this.getDataGraph().getPropertyValue(sel,'parent')
+            if(!sel) break
         }
     }
 
@@ -137,8 +148,62 @@ export default class MetadocEditor extends  SyncGraphProvider {
             if(type === 'root') return null
             if(type === 'layer') return fetchGraphObject(this.getDataGraph(),sel)
             sel = this.getDataGraph().getPropertyValue(sel,'parent')
+            if(!sel) break
         }
         console.log(fetchGraphObject(this.getDataGraph(),sel))
+    }
+
+    getSelectedShape() {
+        let sel = SelectionManager.getSelection()
+        if(!sel) return null
+        const type = this.getDataGraph().getPropertyValue(sel, 'type')
+        if(type === 'rect' || type === 'circle') {
+            return fetchGraphObject(this.getDataGraph(),sel)
+        }
+        return null
+    }
+
+    calculateContextMenu(item) {
+        const cmds =  [
+            {
+                title:'delete',
+                icon:'close',
+                fun: () => {
+                    console.log("deleting")
+                    this.deleteSelection()
+                }
+            },
+            {
+                title:'rect',
+                icon:'plus',
+                fun: this.addRect
+            }
+        ]
+        return cmds
+    }
+
+    addRect = () => {
+        const graph = this.getDataGraph()
+        const layer = this.getSelectedLayer()
+        if(!layer) return console.error("no layer!")
+        const rect = new RectDef().makeRect(graph,layer)
+        graph.insertElement(layer.children,0,rect)
+    }
+
+    deleteSelection = () => {
+        const graph = this.getDataGraph()
+        const layer = this.getSelectedLayer()
+        const shape = this.getSelectedShape()
+        if(!shape) return
+        console.log("deleting the selection",shape)
+        const n = indexOf(graph,layer.children,shape.id)
+        console.log('the index is',n)
+        if(n >= 0) {
+            graph.removeElement(layer.children, n)
+            SelectionManager.clearSelection()
+        } else {
+            console.error("could not find index for child",shape,'in children',layer.children)
+        }
     }
 
 }
@@ -159,6 +224,37 @@ class MetadocApp extends Component {
 
     canvasSelected = (rect) => SelectionManager.setSelection(rect)
 
+
+    showAddPopup = (e) => {
+        const acts = [
+            {
+                title: 'page',
+                icon: 'square',
+                fun: () => this.addPage()
+            },
+            {
+                title: 'layer',
+                icon: 'square',
+                fun: () => this.addLayer()
+            },
+            {
+                title: 'rect',
+                icon: 'square',
+                fun: () => this.props.provider.addRect()
+            },
+            {
+                title: 'circle',
+                icon: 'circle',
+                fun: () => this.addCircle()
+            },
+            {
+                title: 'text',
+                icon: 'text',
+                fun: () => this.addText()
+            },
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+    }
     addPage = () => {
         const graph = this.props.provider.getDataGraph()
         const root = this.props.provider.getSelectedRoot()
@@ -172,8 +268,6 @@ class MetadocApp extends Component {
         console.log("root is",root)
         graph.insertElement(root.children,0,page)
     }
-
-
     addLayer = () => {
         const graph = this.props.provider.getDataGraph()
         const page = this.props.provider.getSelectedPage()
@@ -186,22 +280,6 @@ class MetadocApp extends Component {
         graph.createProperty(layer,'children',layer_children)
         graph.insertElement(page.children,0,layer)
     }
-
-    addRect = () => {
-        const graph = this.props.provider.getDataGraph()
-        const layer = this.props.provider.getSelectedLayer()
-        const rect1 = createGraphObjectFromObject(graph,{
-            type:'rect',
-            title:'second rect',
-            x: 100,
-            y: 100,
-            width: 100,
-            height: 100,
-            parent:layer.id,
-        })
-        graph.insertElement(layer.children,0,rect1)
-    }
-
     addCircle = () => {
         const graph = this.props.provider.getDataGraph()
         const layer = this.props.provider.getSelectedLayer()
@@ -215,7 +293,6 @@ class MetadocApp extends Component {
         })
         graph.insertElement(layer.children,0,circle)
     }
-
     addText = () => {
         const graph = this.props.provider.getDataGraph()
         const layer = this.props.provider.getSelectedLayer()
@@ -243,11 +320,8 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                <button onClick={this.addPage}>+ P</button>
-                <button onClick={this.addLayer}>+ L</button>
-                <button onClick={this.addRect}>+ R</button>
-                <button onClick={this.addCircle}>+ C</button>
-                <button onClick={this.addText}>+ T</button>
+                <button onClick={this.showAddPopup}>+</button>
+                <button onClick={this.props.provider.deleteSelection}>x</button>
             </Toolbar>
 
 
