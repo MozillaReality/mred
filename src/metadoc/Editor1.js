@@ -33,6 +33,11 @@ const PROP_DEFS = {
         name:'Height',
         type:TYPES.NUMBER
     },
+    radius: {
+        key:'radius',
+        name:'Radius',
+        type:TYPES.NUMBER
+    }
 }
 
 
@@ -146,7 +151,7 @@ class MetadocApp extends Component {
 
     canvasSelected = (rect) => SelectionManager.setSelection(rect)
 
-    addBlock = () => {
+    addRect = () => {
         const graph = this.props.provider.getDataGraph()
         const layer = this.props.provider.getSelectedLayer()
         const rect1 = createGraphObjectFromObject(graph,{
@@ -174,6 +179,20 @@ class MetadocApp extends Component {
         graph.insertElement(page.children,0,layer)
     }
 
+    addCircle = () => {
+        const graph = this.props.provider.getDataGraph()
+        const layer = this.props.provider.getSelectedLayer()
+        const circle = createGraphObjectFromObject(graph,{
+            type:'circle',
+            title:'circle',
+            x: 100,
+            y: 100,
+            radius: 50,
+            parent:layer.id,
+        })
+        graph.insertElement(layer.children,0,circle)
+    }
+
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})
     zoomOut = () => this.setState({zoom:this.state.zoom-1})
 
@@ -186,8 +205,9 @@ class MetadocApp extends Component {
             </Panel>
 
             <Toolbar left bottom>
-                <button onClick={this.addBlock}>+ rect</button>
                 <button onClick={this.addLayer}>+ layer</button>
+                <button onClick={this.addRect}>+ rect</button>
+                <button onClick={this.addCircle}>+ circle</button>
             </Toolbar>
 
 

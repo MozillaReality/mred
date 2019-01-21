@@ -68,28 +68,39 @@ export class MetadocCanvas extends Component {
             if (SelectionManager.getSelection() === shape.id) c.fillStyle = 'red'
             c.fillRect(shape.x, shape.y, shape.width, shape.height)
         }
+        if(shape.type === 'circle') {
+            c.fillStyle = 'gray'
+            if (SelectionManager.getSelection() === shape.id) c.fillStyle = 'red'
+            c.beginPath()
+            c.arc(shape.x, shape.y, shape.radius, 0, Math.PI*2)
+            c.fill()
+        }
     }
 
     isInside(pt, objid) {
         const graph = this.props.prov.getRawGraph()
-        const x = graph.getPropertyValue(objid, 'x')
-        const y = graph.getPropertyValue(objid, 'y')
-        const w = graph.getPropertyValue(objid, 'width')
-        const h = graph.getPropertyValue(objid, 'height')
-        if (pt.x < x) return false
-        if (pt.x > x + w) return false
-        if (pt.y < y) return false
-        if (pt.y > y + h) return false
-        return true
+        const shape = fetchGraphObject(graph,objid)
+        if(shape.type === 'rect') {
+            if (pt.x < shape.x) return false
+            if (pt.x > shape.x + shape.w) return false
+            if (pt.y < shape.y) return false
+            if (pt.y > shape.y + shape.h) return false
+            return true
+        }
+        if(shape.type === 'circle') {
+            if(Math.pow(shape.x-pt.x,2) + Math.pow(shape.y - pt.y,2) < Math.pow(shape.radius,2)) return true
+            return false
+        }
+        return false
     }
 
     onClick = (e) => {
         const pt = this.toCanvas(e)
-        const rect = this.findRect(pt)
-        if (rect) this.props.onSelect(rect)
+        const shape = this.findShape(pt)
+        if (shape) this.props.onSelect(shape)
     }
 
-    findRect(pt) {
+    findShape(pt) {
         const prov = this.props.prov
         const layer = prov.getSelectedLayer()
         if (!layer) return null
@@ -100,7 +111,7 @@ export class MetadocCanvas extends Component {
     mouseDown = (e) => {
         this.props.prov.pauseQueue()
         const pt = this.toCanvas(e)
-        const rect = this.findRect(pt)
+        const rect = this.findShape(pt)
         if (rect) {
             this.setState({
                 pressed: true,
