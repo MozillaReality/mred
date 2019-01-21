@@ -9,7 +9,8 @@ export class MetadocCanvas extends Component {
         super(props);
         this.state = {
             pressed: false,
-            selection: null
+            selection: null,
+            shape:null,
         }
         props.prov.onRawChange(e => {
             if (this.props.list === -1) return
@@ -120,7 +121,7 @@ export class MetadocCanvas extends Component {
             this.setState({
                 pressed: true,
                 start: pt,
-                rect: shape,
+                shape: shape,
             })
         }
     }
@@ -128,8 +129,8 @@ export class MetadocCanvas extends Component {
         if (!this.state.pressed) return
         const pt = this.toCanvas(e)
         const graph = this.props.prov.getRawGraph()
-        graph.process(this.props.prov.cmd.setProperty(this.state.rect, 'x', pt.x))
-        graph.process(this.props.prov.cmd.setProperty(this.state.rect, 'y', pt.y))
+        graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'x', pt.x))
+        graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'y', pt.y))
     }
     mouseUp = (e) => {
         this.setState({pressed: false})
