@@ -8,6 +8,9 @@ import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {createGraphObjectFromObject} from '../syncgraph/utils'
+const stdhints = {
+    incrementValue:0.1,
+}
 const PROP_DEFS = {
     title: {
         key:'title',
@@ -18,31 +21,37 @@ const PROP_DEFS = {
         key:'width',
         name:'Width',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     height: {
         key:'height',
         name:'Height',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     depth: {
         key:'depth',
         name:'Depth',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     tx: {
         key:'tx',
         name:'TX',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     ty: {
         key:'ty',
         name:'TY',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     tz: {
         key:'tz',
         name:'TZ',
         type:TYPES.NUMBER,
+        hints: stdhints
     },
     defaultFloor: {
         key:'defaultFloor',
