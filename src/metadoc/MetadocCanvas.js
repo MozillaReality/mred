@@ -3,6 +3,7 @@ import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {createGraphObjectFromObject, fetchGraphObject, propToArray} from "../syncgraph/utils";
 import RectDef from "./RectDef";
+import CircleDef from "./CircleDef";
 
 export class MetadocCanvas extends Component {
     constructor(props) {
@@ -68,11 +69,7 @@ export class MetadocCanvas extends Component {
             new RectDef().draw(c,g,shape,SelectionManager.getSelection() === shape.id)
         }
         if(shape.type === 'circle') {
-            c.fillStyle = 'gray'
-            if (SelectionManager.getSelection() === shape.id) c.fillStyle = 'red'
-            c.beginPath()
-            c.arc(shape.x, shape.y, shape.radius, 0, Math.PI*2)
-            c.fill()
+            new CircleDef().draw(c,g,shape, SelectionManager.getSelection() === shape.id)
         }
         if(shape.type === 'text') {
             c.fillStyle = 'black'
@@ -90,10 +87,7 @@ export class MetadocCanvas extends Component {
         const graph = this.props.prov.getRawGraph()
         const shape = fetchGraphObject(graph,objid)
         if(shape.type === 'rect') return new RectDef().isInside(pt,shape)
-        if(shape.type === 'circle') {
-            if(Math.pow(shape.x-pt.x,2) + Math.pow(shape.y - pt.y,2) < Math.pow(shape.radius,2)) return true
-            return false
-        }
+        if(shape.type === 'circle') return new CircleDef().isInside(pt,shape)
         if(shape.type === 'text') {
             const c = this.canvas.getContext('2d')
             c.font = 'normal 30px sans-serif'

@@ -8,6 +8,7 @@ import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import {createGraphObjectFromObject, fetchGraphObject, indexOf, propToArray} from "../syncgraph/utils";
 import {PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
+import CircleDef from "./CircleDef";
 
 const PROP_DEFS = {
     title: {
@@ -88,7 +89,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
         //create rect
         const rlayer = fetchGraphObject(doc,layer)
-        const rect1 = new RectDef().makeRect(doc,rlayer)
+        const rect1 = new RectDef().make(doc,rlayer)
         //connect it all together
         doc.insertElement(layer_children,0,rect1)
         doc.insertElement(page_children,0,layer)
@@ -177,6 +178,11 @@ export default class MetadocEditor extends  SyncGraphProvider {
                 title:'rect',
                 icon:'plus',
                 fun: this.addRect
+            },
+            {
+                title:'circle',
+                icon:'plus',
+                fun: this.addCircle
             }
         ]
         return cmds
@@ -186,8 +192,16 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
-        const rect = new RectDef().makeRect(graph,layer)
+        const rect = new RectDef().make(graph,layer)
         graph.insertElement(layer.children,0,rect)
+    }
+
+    addCircle = () => {
+        const graph = this.getDataGraph()
+        const layer = this.getSelectedLayer()
+        if(!layer) return console.error("no layer!")
+        const circle = new CircleDef().make(graph,layer)
+        graph.insertElement(layer.children,0,circle)
     }
 
     deleteSelection = () => {
@@ -245,7 +259,7 @@ class MetadocApp extends Component {
             {
                 title: 'circle',
                 icon: 'circle',
-                fun: () => this.addCircle()
+                fun: () => this.props.provider.addCircle()
             },
             {
                 title: 'text',
@@ -279,19 +293,6 @@ class MetadocApp extends Component {
         const layer_children = graph.createArray()
         graph.createProperty(layer,'children',layer_children)
         graph.insertElement(page.children,0,layer)
-    }
-    addCircle = () => {
-        const graph = this.props.provider.getDataGraph()
-        const layer = this.props.provider.getSelectedLayer()
-        const circle = createGraphObjectFromObject(graph,{
-            type:'circle',
-            title:'circle',
-            x: 100,
-            y: 100,
-            radius: 50,
-            parent:layer.id,
-        })
-        graph.insertElement(layer.children,0,circle)
     }
     addText = () => {
         const graph = this.props.provider.getDataGraph()

@@ -1,10 +1,8 @@
 import {createGraphObjectFromObject} from "../syncgraph/utils";
-import SelectionManager from "../SelectionManager";
 
 export default class RectDef {
-    makeRect(graph,layer) {
-        console.log("making a rect from layer",layer)
-        const rect1 = createGraphObjectFromObject(graph,{
+    make(graph,layer) {
+        return createGraphObjectFromObject(graph,{
             type:'rect',
             title:'second rect',
             x: 100,
@@ -16,11 +14,9 @@ export default class RectDef {
             fillColor: '#ff00ff',
             parent:layer.id,
         })
-        return rect1
     }
 
     draw(c,g,shape,selected) {
-        console.log("drawing",shape)
         c.fillStyle = 'gray'
         c.fillStyle = shape.fillColor
         if (selected) c.fillStyle = 'red'
@@ -41,7 +37,6 @@ export default class RectDef {
             c.quadraticCurveTo(c0.x,c0.y, c0.x+shape.rx,c0.y)
             c.closePath()
             c.fill()
-            console.warn("we should be drawing it round")
         } else {
             c.fillRect(shape.x, shape.y, shape.width, shape.height)
         }
