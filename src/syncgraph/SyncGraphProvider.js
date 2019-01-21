@@ -14,6 +14,7 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         this.mode = options.mode || 'edit'
         this.datalisteners = []
         this.rawlisteners = []
+        this.expanded = {}
 
         const doc = new DocGraph()
         this.makeEmptyRoot(doc)
@@ -39,7 +40,15 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         }
         return ch
     }
-    isExpanded = (item) => true
+    isExpanded = (item) => {
+        if (typeof this.expanded[item] === 'undefined') this.expanded[item] = true;
+        return this.expanded[item]
+    }
+    toggleItemCollapsed(item) {
+        const current = this.isExpanded(item);
+        this.expanded[item] = !current;
+        this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
+    }
 
 
 
