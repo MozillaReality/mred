@@ -236,8 +236,8 @@ export default class ImmersiveVREditor extends Component {
             this.navcursor.position.z = e.point.z
         })
         on(floor,POINTER_CLICK,(e)=>{
-            this.sceneWrapper.position.x = -e.point.x
-            this.sceneWrapper.position.z = -e.point.z
+            this.sceneWrapper.position.x -= e.point.x
+            this.sceneWrapper.position.z -= e.point.z + 3
         })
     }
 
