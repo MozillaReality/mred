@@ -271,8 +271,8 @@ export default class ImmersiveVREditor extends Component {
             this.navcursor.position.z = e.point.z
         })
         on(floor,POINTER_CLICK,(e)=>{
-            this.sceneWrapper.position.x = -e.point.x
-            this.sceneWrapper.position.z = -e.point.z
+            this.sceneWrapper.position.x -= e.point.x
+            this.sceneWrapper.position.z -= e.point.z + 3
         })
     }
 
@@ -302,10 +302,7 @@ export default class ImmersiveVREditor extends Component {
                 new THREE.MeshLambertMaterial({color: 'red'})
             )
             cube.userData.clickable = true
-            cube.addEventListener('click',(e)=>{
-                console.log('clicked on it',cube.userData.graphid)
-                SelectionManager.setSelection(cube.userData.graphid)
-            })
+            cube.addEventListener('click',(e)=> SelectionManager.setSelection(cube.userData.graphid))
             cube.position.set(obj.tx, obj.ty, obj.tz)
             this.insertNodeMapping(nodeid, cube)
             return cube
