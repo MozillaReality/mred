@@ -187,10 +187,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
             {
                 title:'delete',
                 icon:'close',
-                fun: () => {
-                    console.log("deleting")
-                    this.deleteSelection()
-                }
+                fun: this.deleteSelection
             },
             {
                 title:'rect',
@@ -211,38 +208,23 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return cmds
     }
 
-    addRect = () => {
+    addShape = (def) => {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
-        const shape = SHAPE_DEFS.rect.make(graph,layer)
+        const shape = def.make(graph,layer)
         graph.insertElement(layer.children,0,shape)
     }
-
-    addCircle = () => {
-        const graph = this.getDataGraph()
-        const layer = this.getSelectedLayer()
-        if(!layer) return console.error("no layer!")
-        const shape = SHAPE_DEFS.circle.make(graph,layer)
-        graph.insertElement(layer.children,0,shape)
-    }
-
-    addText = () => {
-        const graph = this.getDataGraph()
-        const layer = this.getSelectedLayer()
-        if(!layer) return
-        const shape = SHAPE_DEFS.text.make(graph,layer)
-        graph.insertElement(layer.children,0,shape)
-    }
+    addRect   = () => this.addShape(this.getShapeDef('rect'))
+    addCircle = () => this.addShape(this.getShapeDef('circle'))
+    addText   = () => this.addShape(this.getShapeDef('text'))
 
     deleteSelection = () => {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
         const shape = this.getSelectedShape()
         if(!shape) return
-        console.log("deleting the selection",shape)
         const n = indexOf(graph,layer.children,shape.id)
-        console.log('the index is',n)
         if(n >= 0) {
             graph.removeElement(layer.children, n)
             SelectionManager.clearSelection()
