@@ -10,6 +10,7 @@ import {PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
 import CircleDef from "./CircleDef";
 import TextDef from "./TextDef";
+import InputManager from "../common/InputManager";
 
 const PROP_DEFS = {
     title: {
@@ -268,9 +269,18 @@ class MetadocApp extends Component {
             connected:false,
             zoom: 0,
         }
+
+        this.im = new InputManager()
+        this.im.addKeyBinding({ id:'save',  key:InputManager.KEYS.S, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({ id:'undo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({ id:'redo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
+        this.im.addListener('save',this.props.provider.save)
+        this.im.addListener('undo',this.props.provider.performUndo)
+        this.im.addListener('redo',this.props.provider.performRedo)
     }
 
     componentDidMount() {
+        this.im.attachKeyEvents(document)
         this.props.provider.on('CONNECTED',()=> this.setState({connected: this.props.provider.isConnected()}))
     }
 
