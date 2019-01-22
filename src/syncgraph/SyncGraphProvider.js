@@ -4,6 +4,7 @@ import {UndoQueue} from '../metadoc/UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
 import {PubnubSyncWrapper} from '../metadoc/PubnubSyncWrapper'
+import {propToArray} from "./utils";
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
@@ -26,19 +27,11 @@ export default class SyncGraphProvider extends  TreeItemProvider {
     getRawGraph = () => this.coalescer
     getDataGraph = () => this.syncdoc
     getSceneRoot = () => this.getDataGraph().getObjectByProperty('type','root')
-
     getRootList = () => this.getDataGraph().getPropertyValue(this.getSceneRoot(),'children')
-
     hasChildren = (item) => item && this.getDataGraph().hasPropertyValue(item,'children')
     getChildren = (item) => {
         const doc = this.getDataGraph()
-        const CH = doc.getPropertyValue(item,'children')
-        const len = doc.getArrayLength(CH)
-        const ch = []
-        for(let i=0; i<len; i++) {
-            ch.push(doc.getElementAt(CH,i))
-        }
-        return ch
+        return propToArray(doc,doc.getPropertyValue(item,'children'))
     }
     isExpanded = (item) => {
         if (typeof this.expanded[item] === 'undefined') this.expanded[item] = true;
@@ -49,8 +42,6 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         this.expanded[item] = !current;
         this.fire(TREE_ITEM_PROVIDER.EXPANDED_CHANGED,item);
     }
-
-
 
     setPropertyValue(item, def, value) {
         this.getDataGraph().setProperty(item,def.key,value)
@@ -63,10 +54,6 @@ export default class SyncGraphProvider extends  TreeItemProvider {
         })
     }
 
-
-
-
-    // =================== doc stuff ==========================
     save = () => {
         const payload_obj = {
             history:this.getDocHistory(),
