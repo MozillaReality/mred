@@ -1,4 +1,6 @@
-import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE, Pointer} from '../boilerplate/pointer.js'
+import * as THREE from 'three'
+
+import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE, Pointer} from 'webxr-boilerplate/pointer'
 
 const $ = (sel) => document.querySelector(sel)
 const on = (elem, type, cb) => elem.addEventListener(type,cb)
@@ -8,6 +10,8 @@ export default class Panel2D extends THREE.Object3D {
     constructor(scene,camera) {
         super()
 
+        if(!scene) throw new Error("cannot pass empty scene to Panel2D()")
+        if(!camera) throw new Error("cannot pass empty camera to Panel2D()")
         this.type = 'panel2d'
         this.listeners = {}
         this.scene = scene

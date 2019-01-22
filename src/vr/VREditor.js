@@ -7,7 +7,7 @@ import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
-import {createGraphObjectFromObject} from '../syncgraph/utils'
+import {createGraphObjectFromObject, fetchGraphObject, indexOf} from '../syncgraph/utils'
 import BoxAccessor from "./BoxAccessor";
 const stdhints = {
     incrementValue:0.1,
@@ -155,22 +155,40 @@ export default class VREditor extends  SyncGraphProvider {
 
     preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
-}
-
-class VREditorApp extends Component {
     addCube = () => {
-        const graph = this.props.provider.getDataGraph()
+        const graph = this.getDataGraph()
         const obj = createGraphObjectFromObject(graph,{
             type:'cube',
-            title:'cube2',
+            title:'cubex',
             width:1, height:1, depth:1,
             tx:0, ty:1.5, tz:-3
         })
-        const scene1 = this.props.provider.getSelectedScene()
+        const scene1 = this.getSelectedScene()
         graph.createProperty(obj,'parent',scene1)
         graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
         SelectionManager.setSelection(obj)
     }
+
+    deleteObject = () => {
+        const objid = SelectionManager.getSelection()
+        if(!objid) return
+        console.log('selection is',objid)
+        const graph = this.getDataGraph()
+        const obj = fetchGraphObject(graph,objid)
+        const parent = fetchGraphObject(graph,obj.parent)
+        console.log('have to remove',obj,'from',parent)
+        const n = indexOf(graph,parent.children,obj.id)
+        console.log("index is",n)
+        if(n >= 0) {
+            graph.removeElement(parent.children, n)
+            SelectionManager.clearSelection()
+        } else {
+            console.error("could not find index for child",obj,'in children',parent.children)
+        }
+    }
+}
+
+class VREditorApp extends Component {
 
     addScene = () => {
         const graph = this.props.provider.getDataGraph()
@@ -191,7 +209,7 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button className={"fa fa-plus"} onClick={this.addCube}>cube</button>
+                <button className={"fa fa-plus"} onClick={prov.addCube}>cube</button>
                 <button className="fa fa-plus" onClick={this.addScene}>scene</button>
             </Toolbar>
 

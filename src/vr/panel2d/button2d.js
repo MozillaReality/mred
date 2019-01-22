@@ -1,7 +1,10 @@
-import {POINTER_ENTER, POINTER_EXIT} from '../boilerplate/pointer.js'
+import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE, Pointer} from 'webxr-boilerplate/pointer'
+import Component2D from "./component2d";
 
-export default class Button2D {
+
+export default class Button2D extends Component2D {
     constructor() {
+        super()
         this.type = 'button'
         this.text = 'foo'
         this.x = 0
@@ -9,11 +12,9 @@ export default class Button2D {
         this.fsize = 20
         this.w = this.text.length*this.fsize
         this.h = 20
-        this.listeners = {}
         this.normalBg = 'white'
         this.hoverBg = 'red'
         this.bg = this.normalBg
-
         this.on(POINTER_ENTER,()=>{
             this.bg = this.hoverBg
             this.fire('changed',{type:'changed',target:this})
@@ -35,11 +36,6 @@ export default class Button2D {
         ctx.strokeStyle = 'black'
         ctx.strokeRect(this.x,this.y,this.w,this.h)
     }
-    addEventListener(type,cb) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].push(cb)
-        return this
-    }
     contains(pt) {
         if(pt.x < this.x) return false
         if(pt.x > this.x + this.w) return false
@@ -52,22 +48,6 @@ export default class Button2D {
         if(pt.x > 0 + this.w) return null
         if(pt.y < 0) return null
         if(pt.y > 0 + this.h) return null
-        return this
-    }
-    fire(type,payload) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].forEach(cb => cb(payload))
-    }
-    set(key,value) {
-        this[key] = value
-        this.fire('changed',{type:'changed',target:this})
-        return this
-    }
-    get(key) {
-        return this[key]
-    }
-    on(type,cb) {
-        this.addEventListener(type,cb)
         return this
     }
 }

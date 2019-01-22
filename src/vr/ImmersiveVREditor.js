@@ -12,8 +12,11 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
 import {TranslateControl} from './TranslateControl'
+import panel2d from "./panel2d/panel2d";
+import button2d from "./panel2d/button2d";
+import group2d from "./panel2d/group2d";
 
-const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
+const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
 const $ = (sel) => document.querySelector(sel)
@@ -172,6 +175,23 @@ export default class ImmersiveVREditor extends Component {
         this.navcursor.rotation.x = toRad(-90)
         this.navcursor.position.y = 0.1
         this.scene.add(this.navcursor)
+
+
+        this.tools = new panel2d(this.scene,this.camera)
+        this.tools.position.set(-1,1,-3)
+        this.scene.add(this.tools)
+
+
+
+        this.tools.add(new button2d()
+            .setAll({ x:5, y:5, text:'add box'})
+            .on(POINTER_CLICK, this.props.provider.addCube))
+        this.tools.add(new button2d()
+            .setAll({ x:5, y:5+30, text:'delete'})
+            .on(POINTER_CLICK, this.props.provider.deleteObject))
+
+        this.tools.redraw()
+
     }
 
 
@@ -201,6 +221,17 @@ export default class ImmersiveVREditor extends Component {
                 if (op.name === 'tz') node.position.z = parseFloat(op.value)
             } else {
                 console.log("could not find the node for object id:", op)
+            }
+            return
+        }
+        if(op.type === DELETE_ELEMENT) {
+            console.log("processing delerte",op)
+            const node = this.findNode(op.value)
+            console.log("the node iss",node)
+            const obj = fetchGraphObject(graph,op.value)
+            console.log('the objcect is',obj)
+            if(obj.type === 'cube') {
+                this.sceneWrapper.remove(node)
             }
             return
         }

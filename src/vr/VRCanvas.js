@@ -7,7 +7,7 @@ import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
 import BoxAccessor from './BoxAccessor'
 
-const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
+const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 export class VRCanvas extends Component {
     constructor(props) {
@@ -142,6 +142,20 @@ export class VRCanvas extends Component {
             } else {
                 console.log("could not find the node for object id:", op)
             }
+            return
+        }
+        if (op.type === DELETE_ELEMENT) {
+            console.log("doing delete")
+            const node = this.findNode(op.value)
+            console.log("removing the node",node)
+            if(node) {
+                const obj = fetchGraphObject(graph,op.value)
+                console.log('the objcect is',obj)
+                if(obj.type === 'cube') {
+                    this.sceneWrapper.remove(node)
+                }
+            }
+
             return
         }
         console.log('skipping', op.type)
