@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {HBox, PopupManager, VBox} from 'appy-comps'
+import {PopupManager} from 'appy-comps'
 
 import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import HSLUVColorPicker from "../HSLUVColorPicker";
