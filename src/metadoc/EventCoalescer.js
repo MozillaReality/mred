@@ -42,10 +42,11 @@ export class EventCoalescer {
     onRawChange = cb => this.rawlisteners.push(cb)
     fire = op => this.listeners.forEach(cb => cb(op))
     fireRaw = op => this.rawlisteners.forEach(cb => cb(op))
+    getPropertiesForObject = (obj) => this.graph.getPropertiesForObject(obj)
+    getArrayLength = (obj) => this.graph.getArrayLength(obj)
+    getElementAt = (obj, index) => this.graph.getElementAt(obj, index)
+    getHostId = () => this.graph.getHostId()
 
-    getPropertiesForObject(obj) {
-        return this.graph.getPropertiesForObject(obj)
-    }
 
     getPropertyValue(obj, key) {
         // console.log("checking",this.paused,obj,key)
@@ -55,18 +56,6 @@ export class EventCoalescer {
         } else {
             return this.graph.getPropertyValue(obj, key)
         }
-    }
-
-    getArrayLength(obj) {
-        return this.graph.getArrayLength(obj)
-    }
-
-    getElementAt(obj, index) {
-        return this.graph.getElementAt(obj, index)
-    }
-
-    getHostId() {
-        return this.graph.getHostId()
     }
 
     bufferOp(op) {

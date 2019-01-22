@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
-import {createGraphObjectFromObject, fetchGraphObject, propToArray} from "../syncgraph/utils";
+import {fetchGraphObject, propToArray} from "../syncgraph/utils";
 
 
 export class MetadocCanvas extends Component {
@@ -19,17 +19,12 @@ export class MetadocCanvas extends Component {
     }
 
     componentDidMount() {
-        this.sel_listener = SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel) => {
-            this.setState({selection: sel})
-        })
-        this.props.prov.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, () => {
-            this.redraw()
-        })
+        SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel) =>  this.setState({selection: sel}))
+        this.props.prov.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, () =>   this.redraw())
     }
 
     toCanvas(e) {
         const rect = e.target.getBoundingClientRect()
-        // console.log("clicked at",e.clientX,rect)
         return {
             x: Math.floor((e.clientX - rect.left) / this.props.scale),
             y: Math.floor((e.clientY - rect.top) / this.props.scale),
@@ -42,14 +37,11 @@ export class MetadocCanvas extends Component {
     }
 
     redraw() {
-        // console.log("===== redrawing canvas with scale",this.props.scale)
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
         c.scale(this.props.scale, this.props.scale)
-        const list = this.props.prov.getRootList()
-        if (!list) return
         const graph = this.props.prov.getRawGraph()
         const page = this.props.prov.getSelectedPage()
         if(page) this.drawPage(c,graph,page)
@@ -67,35 +59,13 @@ export class MetadocCanvas extends Component {
     drawShape(c,g,shape) {
         const def = this.props.prov.getShapeDef(shape.type)
         if(def) def.draw(c,g,shape,SelectionManager.getSelection() === shape.id)
-        if(shape.type === 'text') {
-            c.fillStyle = 'black'
-            c.font = 'normal 30px sans-serif'
-            c.fillText(shape.text,shape.x,shape.y)
-            if (SelectionManager.getSelection() === shape.id) {
-                c.strokeStyle = 'red'
-                const metrics = c.measureText(shape.text)
-                c.strokeRect(shape.x,shape.y-30,metrics.width,30)
-            }
-        }
     }
 
     isInside(pt, objid) {
         const graph = this.props.prov.getRawGraph()
         const shape = fetchGraphObject(graph,objid)
         const def = this.props.prov.getShapeDef(shape.type)
-        if(def) return def.isInside(pt,shape)
-        if(shape.type === 'text') {
-            const c = this.canvas.getContext('2d')
-            c.font = 'normal 30px sans-serif'
-            const metrics = c.measureText(shape.text)
-            const w = metrics.width
-            const h = 30
-            if (pt.x < shape.x) return false
-            if (pt.x > shape.x + w) return false
-            if (pt.y < shape.y - h) return false
-            if (pt.y > shape.y) return false
-            return true
-        }
+        if(def) return def.isInside(pt,shape,this.canvas)
         return false
     }
 

@@ -9,6 +9,7 @@ import {createGraphObjectFromObject, fetchGraphObject, indexOf, propToArray} fro
 import {PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
 import CircleDef from "./CircleDef";
+import TextDef from "./TextDef";
 
 const PROP_DEFS = {
     title: {
@@ -65,7 +66,8 @@ const PROP_DEFS = {
 
 const SHAPE_DEFS = {
     rect: new RectDef(),
-    circle: new CircleDef()
+    circle: new CircleDef(),
+    text: new TextDef(),
 }
 
 const ICONS = {
@@ -199,6 +201,11 @@ export default class MetadocEditor extends  SyncGraphProvider {
                 title:'circle',
                 icon:ICONS.circle,
                 fun: this.addCircle
+            },
+            {
+                title:'text',
+                icon:ICONS.text,
+                fun: this.addText
             }
         ]
         return cmds
@@ -217,6 +224,14 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
         const shape = SHAPE_DEFS.circle.make(graph,layer)
+        graph.insertElement(layer.children,0,shape)
+    }
+
+    addText = () => {
+        const graph = this.getDataGraph()
+        const layer = this.getSelectedLayer()
+        if(!layer) return
+        const shape = SHAPE_DEFS.text.make(graph,layer)
         graph.insertElement(layer.children,0,shape)
     }
 
@@ -255,7 +270,6 @@ export default class MetadocEditor extends  SyncGraphProvider {
     renderSVGChildren(obj) {
         if(obj.type === 'page') return propToArray(this.getDataGraph(),obj.children)
             .map((layer) => `<g>${this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),layer))}</g>`).join("")
-
         if(obj.type === 'layer') return propToArray(this.getDataGraph(),obj.children)
             .map(shape => this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),shape))).join("")
         if(SHAPE_DEFS[obj.type]) return SHAPE_DEFS[obj.type].toSVGString(obj)
@@ -306,7 +320,7 @@ class MetadocApp extends Component {
             {
                 title: 'text',
                 icon: ICONS.text,
-                fun: () => this.addText()
+                fun: () => this.props.provider.addText()
             },
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
@@ -335,20 +349,6 @@ class MetadocApp extends Component {
         const layer_children = graph.createArray()
         graph.createProperty(layer,'children',layer_children)
         graph.insertElement(page.children,0,layer)
-    }
-    addText = () => {
-        const graph = this.props.provider.getDataGraph()
-        const layer = this.props.provider.getSelectedLayer()
-        if(!layer) return
-        const text = createGraphObjectFromObject(graph,{
-            type:'text',
-            title:'text',
-            text:'title text',
-            x: 100,
-            y: 100,
-            parent:layer.id,
-        })
-        graph.insertElement(layer.children,0,text)
     }
 
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})
