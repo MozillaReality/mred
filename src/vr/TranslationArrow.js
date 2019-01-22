@@ -4,6 +4,7 @@ import {POINTER_ENTER, POINTER_EXIT, POINTER_MOVE, POINTER_PRESS, POINTER_RELEAS
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
 const off = (elem,type,cb) => elem.removeEventListener(type,cb)
+const toRad = (degrees) => degrees*Math.PI/180
 
 export default class TranslationArrow extends THREE.Group {
     constructor(axis, control) {
@@ -20,9 +21,7 @@ export default class TranslationArrow extends THREE.Group {
             new THREE.PlaneBufferGeometry(100, 100, 100, 100),
             new THREE.MeshBasicMaterial({visible: true, wireframe: true, side: THREE.DoubleSide})
         )
-        if (this.axis === 'Z') {
-            this.plane.rotation.y = 90 * Math.PI / 180
-        }
+        if (this.axis === 'Z') this.plane.rotation.y = toRad(90)
         this.plane.userData.draggable = true
         this.plane.visible = false
         this.add(this.plane)
@@ -33,9 +32,9 @@ export default class TranslationArrow extends THREE.Group {
             new THREE.CylinderBufferGeometry(0.02, 0.02, 4),
             new THREE.MeshLambertMaterial({color: 'yellow'})
         )
-        if (this.axis === 'X') this.arrow.rotation.z = 90 * Math.PI / 180
-        if (this.axis === 'Y') this.arrow.rotation.z = 180 * Math.PI / 180
-        if (this.axis === 'Z') this.arrow.rotation.x = 90 * Math.PI / 180
+        if (this.axis === 'X') this.arrow.rotation.z = toRad(90)
+        if (this.axis === 'Y') this.arrow.rotation.z = toRad(180)
+        if (this.axis === 'Z') this.arrow.rotation.x = toRad(90)
         this.add(this.arrow)
     }
 
@@ -44,9 +43,9 @@ export default class TranslationArrow extends THREE.Group {
             new THREE.CylinderBufferGeometry(0.1, 0.1, 4),
             new THREE.MeshLambertMaterial({color: 'green', visible: false})
         )
-        if (this.axis === 'X') this.input.rotation.z = 90 * Math.PI / 180
-        if (this.axis === 'Y') this.input.rotation.z = 180 * Math.PI / 180
-        if (this.axis === 'Z') this.input.rotation.x = 90 * Math.PI / 180
+        if (this.axis === 'X') this.input.rotation.z = toRad(90)
+        if (this.axis === 'Y') this.input.rotation.z = toRad(180)
+        if (this.axis === 'Z') this.input.rotation.x = toRad(90)
         this.input.userData.clickable = true
         this.add(this.input)
     }

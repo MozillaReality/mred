@@ -8,6 +8,7 @@ import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {createGraphObjectFromObject} from '../syncgraph/utils'
+import BoxAccessor from "./BoxAccessor";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -135,13 +136,8 @@ export default class VREditor extends  SyncGraphProvider {
             return graph.getElementAt(ch,0)
         }
         const type = this.getDataGraph().getPropertyValue(sel,'type')
-        if(type === 'scene') {
-            return sel
-        }
-        if(type === 'cube') {
-            return this.getDataGraph().getPropertyValue(sel,'parent')
-        }
-
+        if(type === 'scene') return sel
+        if(type === 'cube')  return this.getDataGraph().getPropertyValue(sel,'parent')
         return -1
     }
 
@@ -162,6 +158,32 @@ export default class VREditor extends  SyncGraphProvider {
 }
 
 class VREditorApp extends Component {
+    addCube = () => {
+        const graph = this.props.provider.getDataGraph()
+        const obj = createGraphObjectFromObject(graph,{
+            type:'cube',
+            title:'cube2',
+            width:1, height:1, depth:1,
+            tx:0, ty:1.5, tz:-3
+        })
+        const scene1 = this.props.provider.getSelectedScene()
+        graph.createProperty(obj,'parent',scene1)
+        graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
+        SelectionManager.setSelection(obj)
+    }
+
+    addScene = () => {
+        const graph = this.props.provider.getDataGraph()
+        const scene = createGraphObjectFromObject(graph,{
+            type:'scene',
+            title:'Scene 2',
+            defaultFloor:true,
+        })
+        graph.createProperty(scene,'children',graph.createArray())
+        const root = this.props.provider.getSceneRoot()
+        const ch = graph.getPropertyValue(root,'children')
+        graph.insertElement(ch,0,scene)
+    }
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -169,31 +191,8 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button onClick={()=>{
-                    const graph = this.props.provider.getDataGraph()
-                    const obj = createGraphObjectFromObject(graph,{
-                        type:'cube',
-                        title:'cube2',
-                        width:1, height:1, depth:1,
-                        tx:0, ty:1.5, tz:-3
-                    })
-                    const scene1 = this.props.provider.getSelectedScene()
-                    graph.createProperty(obj,'parent',scene1)
-                    graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
-                    SelectionManager.setSelection(obj)
-                }}>+ cube</button>
-                <button onClick={()=>{
-                    const graph = this.props.provider.getDataGraph()
-                    const scene = createGraphObjectFromObject(graph,{
-                        type:'scene',
-                        title:'Scene 2',
-                        defaultFloor:true,
-                    })
-                    graph.createProperty(scene,'children',graph.createArray())
-                    const root = this.props.provider.getSceneRoot()
-                    const ch = graph.getPropertyValue(root,'children')
-                    graph.insertElement(ch,0,scene)
-                }}>+ scene</button>
+                <button className={"fa fa-plus"} onClick={this.addCube}>cube</button>
+                <button className="fa fa-plus" onClick={this.addScene}>scene</button>
             </Toolbar>
 
 

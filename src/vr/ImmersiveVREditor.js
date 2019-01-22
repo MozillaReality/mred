@@ -16,8 +16,10 @@ import {TranslateControl} from './TranslateControl'
 const {SET_PROPERTY, INSERT_ELEMENT} = require("syncing_protocol");
 
 
+const $ = (sel) => document.querySelector(sel)
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
 const off = (elem,type,cb) => elem.removeEventListener(type,cb)
+const toRad = (degrees) => degrees*Math.PI/180
 
 export default class ImmersiveVREditor extends Component {
 
@@ -54,7 +56,6 @@ export default class ImmersiveVREditor extends Component {
         if(this.stats) this.stats.update(time)
         this.renderer.render( this.scene, this.camera );
     }
-
 
     initScene() {
 
@@ -113,62 +114,30 @@ export default class ImmersiveVREditor extends Component {
 
     selectionChanged() {
         const sel = SelectionManager.getSelection()
-        if (sel === null) {
-            this.controls.detach(this.selectedNode)
-            return
-        }
-        const graph = this.props.provider.getDataGraph()
-        const obj = fetchGraphObject(graph, sel)
-        console.log(obj)
+        if (sel === null) return this.controls.detach(this.selectedNode)
         const node = this.findNode(sel)
-        if(this.selectedNode !== node) {
-            this.controls.detach(this.selectedNode)
-        }
+        if(this.selectedNode !== node) this.controls.detach(this.selectedNode)
         this.selectedNode = node
-        console.log(node)
-        if (node) {
-            this.controls.attach(node, this.pointer)
-        }
+        if (this.selectedNode) this.controls.attach(this.selectedNode, this.pointer)
     }
 
-
     initContent() {
-        const $ = (sel) => document.querySelector(sel)
-        const on = (elem, type, cb) => elem.addEventListener(type,cb)
         this.scene.background = new THREE.Color( 0xcccccc );
-        //a standard light
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
-
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
-
-
-
-
 
         // enable stats visible inside VR
         this.stats = new VRStats(this.renderer)
-        //this.stats.position.x = 0
-        // this.stats.position.y = -1
         this.camera.add(this.stats)
         this.scene.add(this.camera)
 
         //class which handles mouse and VR controller
         this.pointer = new Pointer(this.scene,this.renderer,this.camera, {
-
-            //Pointer searches everything in the scene by default
-            //override this to match just certain things
             intersectionFilter: ((o) => o.userData.clickable),
-
-            //make the camera pan when moving the mouse. good for simulating head turning on desktop
             cameraFollowMouse:false,
-
-            // set to true to move the controller node forward and tilt with the mouse.
-            // good for testing VR controls on desktop
             mouseSimulatesController:false,
-
-            //turn this off if you provide your own pointer model
             enableLaser: true,
         })
 
@@ -178,7 +147,6 @@ export default class ImmersiveVREditor extends Component {
             new THREE.CylinderBufferGeometry(0.1,0.1,STICK_HEIGHT),
             new THREE.MeshLambertMaterial({color:'aqua'})
         )
-        const toRad = (degrees) => degrees*Math.PI/180
         stick.position.z = -STICK_HEIGHT/2;
         stick.rotation.x = toRad(-90)
         this.pointer.controller1.add(stick)
@@ -197,12 +165,11 @@ export default class ImmersiveVREditor extends Component {
             }
         })
 
-
         this.navcursor = new THREE.Mesh(
             new THREE.RingBufferGeometry(0.2,0.3,32),
             new THREE.MeshLambertMaterial({color:'yellow'})
         )
-        this.navcursor.rotation.x = -90 * Math.PI/180
+        this.navcursor.rotation.x = toRad(-90)
         this.navcursor.position.y = 0.1
         this.scene.add(this.navcursor)
     }
@@ -211,7 +178,6 @@ export default class ImmersiveVREditor extends Component {
     updateScene(op) {
         const graph = this.props.provider.getDataGraph()
         if (op.type === INSERT_ELEMENT) {
-            console.log('running', op.type)
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
             if (obj.type === 'scene') {
@@ -228,7 +194,6 @@ export default class ImmersiveVREditor extends Component {
             return
         }
         if (op.type === SET_PROPERTY) {
-            console.log('running', op.type)
             const node = this.findNode(op.object)
             if (node) {
                 if (op.name === 'tx') node.position.x = parseFloat(op.value)
@@ -278,8 +243,8 @@ export default class ImmersiveVREditor extends Component {
 
     loadScene() {
         console.log("loading the final scene")
-        const graph = this.props.provider.getDataGraph()
-        console.log("history is",this.props.provider.getDocHistory())
+        // const graph = this.props.provider.getDataGraph()
+        // console.log("history is",this.props.provider.getDocHistory())
     }
 
     insertNodeMapping(id, node) {
@@ -302,10 +267,7 @@ export default class ImmersiveVREditor extends Component {
                 new THREE.MeshLambertMaterial({color: 'red'})
             )
             cube.userData.clickable = true
-            cube.addEventListener('click',(e)=>{
-                console.log('clicked on it',cube.userData.graphid)
-                SelectionManager.setSelection(cube.userData.graphid)
-            })
+            on(cube,POINTER_CLICK,e =>SelectionManager.setSelection(cube.userData.graphid))
             cube.position.set(obj.tx, obj.ty, obj.tz)
             this.insertNodeMapping(nodeid, cube)
             return cube
@@ -317,7 +279,6 @@ export default class ImmersiveVREditor extends Component {
             this.insertNodeMapping(nodeid, scene)
             return scene
         }
-
         console.warn("cannot populate node for type", obj.type)
     }
 

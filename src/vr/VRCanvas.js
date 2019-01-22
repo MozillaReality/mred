@@ -47,25 +47,16 @@ export class VRCanvas extends Component {
                 prov.quick_setPropertyValue(sel,'tz',node.position.z)
             }
         })
-        this.controls.addEventListener('dragging-changed',(e)=>{
-            console.log("dragging changed",e)
-        })
         this.scene.add(this.controls)
-
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
         light.position.set(1, 1, 1).normalize();
         this.scene.add(light);
 
-
-        this.renderer.setAnimationLoop(() => {
-            // cube.rotation.y  += 0.01
-            this.renderer.render(this.scene, this.camera)
-        })
+        this.renderer.setAnimationLoop(() => this.renderer.render(this.scene, this.camera))
 
         this.props.provider.onRawChange(op => this.updateScene(op))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, () => {
-            console.log("totally new document!")
             //nuke all the old stuff
             if (this.sceneWrapper) {
                 this.scene.remove(this.sceneWrapper)
@@ -75,40 +66,15 @@ export class VRCanvas extends Component {
             this.setState({scene: -1})
             //make new stuff
             const hist = this.props.provider.getDocHistory()
-            console.log("==== replaying history")
             hist.forEach(op => this.updateScene(op))
         })
 
         SelectionManager.on(SELECTION_MANAGER.CHANGED, () => {
             const sel = SelectionManager.getSelection()
-            console.log("new selection is",sel)
-            if(sel === null) return
-            const graph = this.props.provider.getDataGraph()
-            const obj = fetchGraphObject(graph,sel)
-            console.log(obj)
+            if(!sel) return
             const node = this.findNode(sel)
-            console.log(node)
-            if(node) {
-                this.controls.attach(node)
-            }
-            /*
-            const scene = this.props.provider.getSelectedScene()
-            console.log('checking for the scene',scene)
-            if(this.findNode(scene) === null || this.findNode(scene) === undefined) {
-                console.log("scene isn't in here yet.")
-                const scene_node = this.populateNode(scene)
-                // this.insertNodeMapping(scene,this.sceneWrapper)
-                this.setState({scene:scene})
-            }
-            if(this.state.scene !== scene) {
-                console.log("scene changed. must nuke it all")
-                this.scene.remove(this.sceneWrapper)
-                this.sceneWrapper = this.findNode(scene)
-                console.log("new scene is",scene,this.sceneWrapper)
-                this.scene.add(this.sceneWrapper)
-                this.setState({scene:scene})
-            }
-            */
+            if(!node) return
+            this.controls.attach(node)
         })
 
         window.addEventListener('resize', () => {
