@@ -114,7 +114,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
         const type = this.getDataGraph().getPropertyValue(item,'type')
         const title = this.getDataGraph().getPropertyValue(item,'title')
-        if(ICONS[type]) return <div><i className={`fa fa-${ICONS[type]}`}></i> {title}</div>
+        if(ICONS[type]) return <div><i className={`fa fa-${ICONS[type]}`}/> {title}</div>
         return <div>{title}</div>
     }
 
@@ -317,7 +317,6 @@ class MetadocApp extends Component {
         })
         const page_children = graph.createArray()
         graph.createProperty(page,'children',page_children)
-        console.log("root is",root)
         graph.insertElement(root.children,0,page)
     }
     addLayer = () => {
@@ -346,9 +345,8 @@ class MetadocApp extends Component {
 
             <Toolbar left bottom>
                 <button className="fa fa-plus" onClick={this.showAddPopup}/>
-                <button className="fa fa-close" onClick={this.props.provider.deleteSelection}/>
+                <button className="fa fa-close" onClick={prov.deleteSelection}/>
             </Toolbar>
-
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
@@ -361,17 +359,11 @@ class MetadocApp extends Component {
                 <button className="fa fa-superpowers" onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>
 
-
             <Panel center middle scroll>
-                <MetadocCanvas
-                    prov={prov}
-                    onSelect={this.canvasSelected}
-                    scale={Math.pow(2,this.state.zoom)}
-                />
+                <MetadocCanvas prov={prov} onSelect={this.canvasSelected} scale={Math.pow(2,this.state.zoom)}/>
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
-
 
             <Toolbar right top/>
             <Toolbar right bottom/>
