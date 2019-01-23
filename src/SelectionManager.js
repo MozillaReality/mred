@@ -46,8 +46,10 @@ class SelectionManager {
         return this.selected
     }
     setDropTarget(node) {
-        this.dropTarget = node;
-        this.fire(SELECTION_MANAGER.DROP_TARGET_CHANGED,this.dropTarget)
+        if(this.dropTarget !== node) {
+            this.dropTarget = node;
+            this.fire(SELECTION_MANAGER.DROP_TARGET_CHANGED, this.dropTarget)
+        }
     }
     getDropTarget() {
         return this.dropTarget

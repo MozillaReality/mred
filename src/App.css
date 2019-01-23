@@ -281,7 +281,7 @@ g.selected > rect.selection {
 
 .tree-node.drop-target {
     border: 5px solid red;
-    border-width: 3px 0 0px 0;
+    border-width: 0px 0 3px 0;
 }
 
 

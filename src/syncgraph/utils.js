@@ -32,5 +32,5 @@ export function indexOf(graph, array, target) {
 
 export function insertAsFirstChild(graph, parent, child) {
     const ch = graph.getPropertyValue(parent,'children')
-    graph.insertElement(ch,0,child)
+    graph.insertAfter(ch,null,child)
 }

@@ -208,7 +208,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
         const shape = def.make(graph,layer)
-        insertAsFirstChild(graph,layer,shape)
+        insertAsFirstChild(graph,layer.id,shape)
     }
     addRect   = () => this.addShape(this.getShapeDef('rect'))
     addCircle = () => this.addShape(this.getShapeDef('circle'))
@@ -320,7 +320,7 @@ class MetadocApp extends Component {
             parent:root.id,
             children: graph.createArray()
         })
-        insertAsFirstChild(graph,root,page)
+        insertAsFirstChild(graph,root.id,page)
     }
     addLayer = () => {
         const graph = this.props.provider.getDataGraph()
@@ -331,7 +331,7 @@ class MetadocApp extends Component {
             parent:page.id,
             chidlren:graph.createArray()
         })
-        insertAsFirstChild(graph,page,layer)
+        insertAsFirstChild(graph,page.id,layer)
     }
 
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})
