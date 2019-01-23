@@ -9,6 +9,7 @@ import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {createGraphObjectFromObject, fetchGraphObject, indexOf} from '../syncgraph/utils'
 import BoxAccessor from "./BoxAccessor";
+import CubeDef from "./CubeDef";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -87,14 +88,8 @@ export default class VREditor extends  SyncGraphProvider {
         doc.createProperty(scene1,'children',doc.createArray())
         doc.insertElement(CH,0,scene1)
 
-        const obj1 = createGraphObjectFromObject(doc,{
-            type:'cube',
-            title:'cube 1',
-            width:1, height:1, depth:1,
-            tx:0, ty:1.5, tz:-5,
-            parent:scene1,
-        })
-        doc.insertElement(doc.getPropertyValue(scene1,'children'),0,obj1)
+        const obj = new CubeDef().make(doc,scene1)
+        doc.insertElement(doc.getPropertyValue(scene1,'children'),0,obj)
     }
 
     getRendererForItem = (item) => {
@@ -157,14 +152,8 @@ export default class VREditor extends  SyncGraphProvider {
 
     addCube = () => {
         const graph = this.getDataGraph()
-        const obj = createGraphObjectFromObject(graph,{
-            type:'cube',
-            title:'cubex',
-            width:1, height:1, depth:1,
-            tx:0, ty:1.5, tz:-3
-        })
         const scene1 = this.getSelectedScene()
-        graph.createProperty(obj,'parent',scene1)
+        const obj = new CubeDef().make(graph,scene1)
         graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
         SelectionManager.setSelection(obj)
     }
