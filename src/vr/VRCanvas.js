@@ -6,6 +6,8 @@ import TransformControls from './TransformControls.js'
 import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
 import BoxAccessor from './BoxAccessor'
+import CubeDef from "./CubeDef"
+import SceneDef from "./SceneDef"
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -172,18 +174,12 @@ export class VRCanvas extends Component {
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, nodeid)
         if (obj.type === 'cube') {
-            const cube = new THREE.Mesh(
-                new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
-                new THREE.MeshLambertMaterial({color: 'white'})
-            )
-            cube.position.set(obj.tx, obj.ty, obj.tz)
+            const cube = new CubeDef().makeNode(obj)
             this.insertNodeMapping(nodeid, cube)
             return cube
         }
         if (obj.type === 'scene') {
-            const scene = new THREE.Group()
-            const acc = new SceneAccessor(scene)
-            acc.setDefaultFloor(obj.defaultFloor)
+            const scene = new SceneDef().makeNode(obj)
             this.insertNodeMapping(nodeid, scene)
             return scene
         }

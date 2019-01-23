@@ -8,8 +8,8 @@ import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {createGraphObjectFromObject, fetchGraphObject, indexOf} from '../syncgraph/utils'
-import BoxAccessor from "./BoxAccessor";
 import CubeDef from "./CubeDef";
+import SceneDef from "./SceneDef";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -79,13 +79,7 @@ export default class VREditor extends  SyncGraphProvider {
         })
         doc.createProperty(root,'children',CH)
 
-
-        const scene1 = createGraphObjectFromObject(doc,{
-            type:'scene',
-            title:'Scene 1',
-            defaultFloor: true,
-        })
-        doc.createProperty(scene1,'children',doc.createArray())
+        const scene1 = new SceneDef().make(doc)
         doc.insertElement(CH,0,scene1)
 
         const obj = new CubeDef().make(doc,scene1)
@@ -181,12 +175,7 @@ class VREditorApp extends Component {
 
     addScene = () => {
         const graph = this.props.provider.getDataGraph()
-        const scene = createGraphObjectFromObject(graph,{
-            type:'scene',
-            title:'Scene 2',
-            defaultFloor:true,
-        })
-        graph.createProperty(scene,'children',graph.createArray())
+        const scene = new SceneDef().make(graph)
         const root = this.props.provider.getSceneRoot()
         const ch = graph.getPropertyValue(root,'children')
         graph.insertElement(ch,0,scene)

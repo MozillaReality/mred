@@ -15,6 +15,8 @@ import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d";
+import CubeDef from "./CubeDef"
+import SceneDef from "./SceneDef"
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -293,20 +295,12 @@ export default class ImmersiveVREditor extends Component {
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, nodeid)
         if (obj.type === 'cube') {
-            const cube = new THREE.Mesh(
-                new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
-                new THREE.MeshLambertMaterial({color: 'red'})
-            )
-            cube.userData.clickable = true
-            on(cube,POINTER_CLICK,e =>SelectionManager.setSelection(cube.userData.graphid))
-            cube.position.set(obj.tx, obj.ty, obj.tz)
+            const cube = new CubeDef().makeNode(obj)
             this.insertNodeMapping(nodeid, cube)
             return cube
         }
         if (obj.type === 'scene') {
-            const scene = new THREE.Group()
-            const acc = new SceneAccessor(scene)
-            acc.setDefaultFloor(obj.defaultFloor)
+            const scene = new SceneDef().makeNode(obj)
             this.insertNodeMapping(nodeid, scene)
             return scene
         }
