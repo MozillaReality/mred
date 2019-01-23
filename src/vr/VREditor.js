@@ -7,7 +7,7 @@ import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
-import {createGraphObjectFromObject, fetchGraphObject, indexOf} from '../syncgraph/utils'
+import {createGraphObjectFromObject, fetchGraphObject, indexOf, insertAsFirstChild} from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 const stdhints = {
@@ -72,18 +72,15 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getTitle = () => "VR Builder"
     makeEmptyRoot(doc) {
-        const CH = doc.createArray()
         const root = createGraphObjectFromObject(doc,{
             type:'root',
             title:'root',
+            children:doc.createArray()
         })
-        doc.createProperty(root,'children',CH)
-
         const scene1 = new SceneDef().make(doc)
-        doc.insertElement(CH,0,scene1)
-
+        insertAsFirstChild(doc,root,scene1)
         const obj = new CubeDef().make(doc,scene1)
-        doc.insertElement(doc.getPropertyValue(scene1,'children'),0,obj)
+        insertAsFirstChild(doc,scene1,obj)
     }
 
     getRendererForItem = (item) => {
@@ -148,7 +145,7 @@ export default class VREditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         const scene1 = this.getSelectedScene()
         const obj = new CubeDef().make(graph,scene1)
-        graph.insertElement(graph.getPropertyValue(scene1,'children'),0,obj)
+        insertAsFirstChild(graph,scene1,obj)
         SelectionManager.setSelection(obj)
     }
 
@@ -177,8 +174,7 @@ class VREditorApp extends Component {
         const graph = this.props.provider.getDataGraph()
         const scene = new SceneDef().make(graph)
         const root = this.props.provider.getSceneRoot()
-        const ch = graph.getPropertyValue(root,'children')
-        graph.insertElement(ch,0,scene)
+        insertAsFirstChild(graph,root,scene)
     }
     render() {
         const prov = this.props.provider

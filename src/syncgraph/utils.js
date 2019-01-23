@@ -29,3 +29,8 @@ export function indexOf(graph, array, target) {
     const arr = propToArray(graph,array)
     return arr.findIndex(e => e === target)
 }
+
+export function insertAsFirstChild(graph, parent, child) {
+    const ch = graph.getPropertyValue(parent,'children')
+    graph.insertElement(ch,0,child)
+}

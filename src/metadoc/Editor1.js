@@ -5,7 +5,13 @@ import TreeTable from '../common/TreeTable'
 import SelectionManager from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
-import {createGraphObjectFromObject, fetchGraphObject, indexOf, propToArray} from "../syncgraph/utils";
+import {
+    createGraphObjectFromObject,
+    fetchGraphObject,
+    indexOf,
+    insertAsFirstChild,
+    propToArray
+} from "../syncgraph/utils";
 import {PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
 import CircleDef from "./CircleDef";
@@ -86,29 +92,17 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     makeEmptyRoot(doc) {
         //create root and children
-        const root_children = doc.createArray()
-        const root = createGraphObjectFromObject(doc,{ type:'root', title:'root' })
-        doc.createProperty(root,'children',root_children)
-
-
+        const root = createGraphObjectFromObject(doc,{ type:'root', title:'root', children: doc.createArray()})
         //create page and children
-        const page = createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root})
-        const page_children = doc.createArray()
-        doc.createProperty(page,'children',page_children)
-
+        const page = createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root, children: doc.createArray()})
         //create layer and children
-        const layer = createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page})
-        const layer_children = doc.createArray()
-        doc.createProperty(layer,'children',layer_children)
-
-
+        const layer = createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page, children: doc.createArray()})
         //create rect
-        const rlayer = fetchGraphObject(doc,layer)
-        const rect1 = SHAPE_DEFS.rect.make(doc,rlayer)
+        const rect1 = SHAPE_DEFS.rect.make(doc,fetchGraphObject(doc,layer))
         //connect it all together
-        doc.insertElement(layer_children,0,rect1)
-        doc.insertElement(page_children,0,layer)
-        doc.insertElement(root_children,0,page)
+        insertAsFirstChild(doc,layer,rect1)
+        insertAsFirstChild(doc,page,layer)
+        insertAsFirstChild(doc,root,page)
     }
 
     getRendererForItem = (item) => {
@@ -214,7 +208,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
         const shape = def.make(graph,layer)
-        graph.insertElement(layer.children,0,shape)
+        insertAsFirstChild(graph,layer,shape)
     }
     addRect   = () => this.addShape(this.getShapeDef('rect'))
     addCircle = () => this.addShape(this.getShapeDef('circle'))
@@ -324,10 +318,9 @@ class MetadocApp extends Component {
             type:'page',
             title:'new page',
             parent:root.id,
+            children: graph.createArray()
         })
-        const page_children = graph.createArray()
-        graph.createProperty(page,'children',page_children)
-        graph.insertElement(root.children,0,page)
+        insertAsFirstChild(graph,root,page)
     }
     addLayer = () => {
         const graph = this.props.provider.getDataGraph()
@@ -336,10 +329,9 @@ class MetadocApp extends Component {
             type:'layer',
             title:'new layer',
             parent:page.id,
+            chidlren:graph.createArray()
         })
-        const layer_children = graph.createArray()
-        graph.createProperty(layer,'children',layer_children)
-        graph.insertElement(page.children,0,layer)
+        insertAsFirstChild(graph,page,layer)
     }
 
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})
