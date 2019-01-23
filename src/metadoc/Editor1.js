@@ -329,7 +329,7 @@ class MetadocApp extends Component {
             type:'layer',
             title:'new layer',
             parent:page.id,
-            chidlren:graph.createArray()
+            children:graph.createArray()
         })
         insertAsFirstChild(graph,page.id,layer)
     }
