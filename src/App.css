@@ -284,6 +284,10 @@ g.selected > rect.selection {
     border-width: 0px 0 3px 0;
 }
 
+.tree-node.drop-target.drop-parent {
+    border: 3px solid blue;
+}
+
 
 .node-box {
     background-color: white;

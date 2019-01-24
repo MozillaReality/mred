@@ -54,6 +54,12 @@ class SelectionManager {
     getDropTarget() {
         return this.dropTarget
     }
+    setDropType(type) {
+        this.dropType = type
+    }
+    getDropType() {
+        return this.dropType
+    }
 }
 
 export default new SelectionManager();

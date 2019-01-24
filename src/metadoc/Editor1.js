@@ -253,6 +253,27 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return "";
     }
 
+    canAddChild(parent,child) {
+        const p = fetchGraphObject(this.getDataGraph(),parent)
+        const c = fetchGraphObject(this.getDataGraph(),child)
+        if(p.type === 'layer' && isShapeType(c.type)) return true
+        if(p.type === 'page' && c.type === 'layer') return true
+        return false
+    }
+    canBeSibling(src,tgt) {
+        const s = fetchGraphObject(this.getDataGraph(),src)
+        const t = fetchGraphObject(this.getDataGraph(),tgt)
+        if(s.type === 'layer' && t.type === 'layer') return true
+        if(isShapeType(s.type) && isShapeType(t.type)) return true
+        return false
+    }
+}
+
+function isShapeType(type) {
+    if(type === 'rect') return true
+    if(type === 'circle') return true
+    if(type === 'text') return true
+    return false
 }
 
 

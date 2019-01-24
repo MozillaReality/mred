@@ -47,13 +47,17 @@ class TreeTableItem extends Component {
     onDragEnd = (e) => {
         this.props.onDragEnd(e,this.props.node)
     }
+    onDrop = (e) => {
+        this.props.onDrop(e,this.props.node)
+    }
     render() {
         let cls = "tree-node";
         const node = this.props.node
-        if (selMan.isSelected(node)) {
-            cls += " selected"
+        if (selMan.isSelected(node)) cls += " selected"
+        if (selMan.getDropTarget() === node) {
+            cls += " drop-target"
+            if(selMan.getDropType() === 'parent') cls += " drop-parent"
         }
-        if (selMan.getDropTarget() === node) cls += " drop-target"
         let arrow = "";
         const prov = this.props.provider
         if (prov.hasChildren(node)) {
@@ -67,13 +71,18 @@ class TreeTableItem extends Component {
             arrow = <span className="fa fa-fw borderless"/>
         }
 
-        return <div className={cls} onClick={this.onSelect} onContextMenu={this.onContextMenu} data-nodeid={node.id}>
-            <span className={"drag"}
+        return <div className={cls}
+                    onClick={this.onSelect}
+                    onContextMenu={this.onContextMenu}
+                    data-nodeid={node.id}
+                    onDragOver={this.onDragOver}
+                    onDrop={this.onDrop}
+        >
+            <span className={"drag fa fa-bars"}
                   draggable
                   onDragStart={this.onDragStart}
-                  onDragOver={this.onDragOver}
                   onDragEnd={this.onDragEnd}
-            >ham</span>
+            />
             <span style={{
                 width:this.props.depth*1+'em'
             }}></span>
@@ -119,30 +128,67 @@ export default class TreeTable extends Component {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/html", e.target.parentNode);
         e.dataTransfer.setDragImage(e.target.parentNode, 20, 20);
+        e.dataTransfer.dropEffect = 'move'
         this.setState({dragTarget:item})
     }
     onDragOver = (e,item) => {
-        selMan.setDropTarget(item)
+        e.preventDefault()
+        const prov = this.props.provider
+        if(prov.canAddChild(item,this.state.dragTarget)) {
+            //use the rop target as a parent
+            selMan.setDropTarget(item)
+            selMan.setDropType('parent')
+            return
+        } else if(prov.canBeSibling(item,this.state.dragTarget)) {
+            //use the drop target as a sibling
+            selMan.setDropType('sibling')
+            selMan.setDropTarget(item)
+        } else {
+            //no valid target
+            selMan.setDropType(null)
+            selMan.setDropTarget(null)
+        }
     }
     onDragEnd = (e,item) => {
-        console.log('end',  item, this.state.dragTarget, this.state.dropTarget)
-        console.log('remove',this.state.dragTarget,'from its parent')
-        console.log("add",this.state.dragTarget,'to the new parent before',this.state.dropTarget)
+        if(!this.state.dropTarget){
+            console.log("no possible drop. canceling")
+            this.setState({dragTarget:null})
+            return
+        }
+
+        // console.log('end',  item, this.state.dragTarget, this.state.dropTarget)
+        // console.log('remove',this.state.dragTarget,'from its parent')
+        // console.log("add",this.state.dragTarget,'to the new parent before',this.state.dropTarget)
         const graph = this.props.provider.getDataGraph()
         const src = fetchGraphObject(graph,this.state.dragTarget)
         const dst = fetchGraphObject(graph,this.state.dropTarget)
-        console.log("moving around",src,dst)
+        // console.log("moving around",src,dst)
+
+        //remove from old location
         const parent = fetchGraphObject(graph,src.parent)
-        console.log('parent is',parent)
+        // console.log('parent is',parent)
         const oldIndex = indexOf(graph,parent.children,src.id)
-        console.log("old index is",oldIndex)
+        // console.log("old index is",oldIndex)
         graph.removeElement(parent.children,oldIndex)
-        // const newIndex = indexOf(graph,parent.children,dst.id)
-        // console.log("new index is", newIndex)
-        console.log("moving to be after",src.title,dst.title)
-        graph.insertAfter(parent.children,dst.id,src.id)
+
+        const dt = selMan.getDropType()
+        // console.log("drop type is",dt)
+        if(dt === 'parent') {
+            // console.log('move ',src,'to be a child of', dst)
+            graph.insertAfter(dst.children,null,src.id)
+            return
+        } else {
+            // console.log("moving to be after",src.title,dst.title)
+            const parent2 = fetchGraphObject(graph,dst.parent)
+            graph.insertAfter(parent2.children,dst.id,src.id)
+        }
         this.setState({dragTarget:null})
         selMan.setDropTarget(null)
+    }
+    onDrop = (e,item) => {
+        // console.log("the drop is happening",item)
+        var data = e.dataTransfer.getData("text/html");
+        // console.log('the dropped data is',data)
     }
     render() {
         if(!this.state.root) return <ul>no root yet</ul>
@@ -158,6 +204,7 @@ export default class TreeTable extends Component {
                                       onDragStart={this.onDragStart}
                                       onDragOver={this.onDragOver}
                                       onDragEnd={this.onDragEnd}
+                                      onDrop={this.onDrop}
                 />
             })}
         </ul>
