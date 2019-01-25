@@ -150,37 +150,38 @@ export default class TreeTable extends Component {
         }
     }
     onDragEnd = (e,item) => {
+        //if no valid drop target
         if(!this.state.dropTarget){
-            console.log("no possible drop. canceling")
             this.setState({dragTarget:null})
             return
         }
 
-        // console.log('end',  item, this.state.dragTarget, this.state.dropTarget)
-        // console.log('remove',this.state.dragTarget,'from its parent')
-        // console.log("add",this.state.dragTarget,'to the new parent before',this.state.dropTarget)
         const graph = this.props.provider.getDataGraph()
         const src = fetchGraphObject(graph,this.state.dragTarget)
         const dst = fetchGraphObject(graph,this.state.dropTarget)
-        // console.log("moving around",src,dst)
 
-        //remove from old location
+
+        //can't drop onto self
+        if(dst.id === src.id) {
+            this.setState({dragTarget:null})
+            selMan.setDropTarget(null)
+            return
+        }
+
+
+            //remove from old location
         const parent = fetchGraphObject(graph,src.parent)
-        // console.log('parent is',parent)
         const oldIndex = indexOf(graph,parent.children,src.id)
-        // console.log("old index is",oldIndex)
         graph.removeElement(parent.children,oldIndex)
 
         const dt = selMan.getDropType()
-        // console.log("drop type is",dt)
         if(dt === 'parent') {
-            // console.log('move ',src,'to be a child of', dst)
             graph.insertAfter(dst.children,null,src.id)
-            return
+            graph.setProperty(src.id,'parent',dst.id)
         } else {
-            // console.log("moving to be after",src.title,dst.title)
             const parent2 = fetchGraphObject(graph,dst.parent)
-            graph.insertAfter(parent2.children,dst.id,src.id)
+            graph.insertAfter(parent2.children, dst.id, src.id)
+            graph.setProperty(src.id, 'parent', parent2.id)
         }
         this.setState({dragTarget:null})
         selMan.setDropTarget(null)
