@@ -163,6 +163,40 @@ export default class VREditor extends  SyncGraphProvider {
         const parent = fetchGraphObject(graph,obj.parent)
         removeFromParent(graph,obj)
     }
+
+    calculateContextMenu(item) {
+        const cmds =  [
+            {
+                title:'delete',
+                icon:'close',
+                fun: this.deleteObject
+            },
+            {
+                title:'cube',
+                icon:'square',
+                fun: this.addCube
+            },
+            {
+                title:'scene',
+                icon:'file',
+                fun: this.addScene
+            },
+            {
+                title:'cut',
+                fun:this.cutSelection
+            },
+            {
+                title:'copy',
+                fun:this.copySelection
+            },
+            {
+                title:'paste',
+                fun:this.pasteSelection
+            },
+        ]
+        return cmds
+    }
+
 }
 
 class VREditorApp extends Component {
