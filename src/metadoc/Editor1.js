@@ -85,6 +85,37 @@ const ICONS = {
     text:'font',
 }
 
+
+function removeFromParent(graph,obj) {
+    const parent = fetchGraphObject(graph,obj.parent)
+    const n = indexOf(graph,parent.children,obj.id)
+    console.log("index is",n)
+    if(n >= 0) {
+        graph.removeElement(parent.children, n)
+    } else {
+        console.error("could not find index for child",obj,'in children',parent.children)
+    }
+}
+
+function cloneShape(graph,shape) {
+    const id = shape.id
+    const id2 = graph.createObject()
+    const props = graph.getPropertiesForObject(id)
+    props.forEach(key => {
+        console.log("making",key)
+        graph.createProperty(id2,key,graph.getPropertyValue(id,key))
+    })
+    const shape2 = fetchGraphObject(graph,id2)
+    return shape2
+}
+
+function isShapeType(type) {
+    if(type === 'rect') return true
+    if(type === 'circle') return true
+    if(type === 'text') return true
+    return false
+}
+
 export default class MetadocEditor extends  SyncGraphProvider {
     getDocType() { return "metadoc" }
     getApp = () => <MetadocApp provider={this}/>
@@ -198,7 +229,19 @@ export default class MetadocEditor extends  SyncGraphProvider {
                 title:'text',
                 icon:ICONS.text,
                 fun: this.addText
-            }
+            },
+            {
+                title:'cut',
+                fun:this.cutSelection
+            },
+            {
+                title:'copy',
+                fun:this.copySelection
+            },
+            {
+                title:'paste',
+                fun:this.pasteSelection
+            },
         ]
         return cmds
     }
@@ -219,13 +262,40 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const layer = this.getSelectedLayer()
         const shape = this.getSelectedShape()
         if(!shape) return
-        const n = indexOf(graph,layer.children,shape.id)
-        if(n >= 0) {
-            graph.removeElement(layer.children, n)
-            SelectionManager.clearSelection()
-        } else {
-            console.error("could not find index for child",shape,'in children',layer.children)
-        }
+        removeFromParent(graph,shape)
+        SelectionManager.clearSelection()
+    }
+    cutSelection = () => {
+        const graph = this.getDataGraph()
+        let sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = fetchGraphObject(graph,sel)
+        SelectionManager.setClipboard(obj.id)
+        removeFromParent(graph,obj)
+        SelectionManager.clearSelection()
+    }
+    copySelection = () => {
+        const graph = this.getDataGraph()
+        let sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = fetchGraphObject(graph,sel)
+        SelectionManager.setClipboard(obj.id)
+    }
+    pasteSelection = () => {
+        const graph = this.getDataGraph()
+        const shapeid = SelectionManager.getClipboard()
+        const obj1 = fetchGraphObject(graph,shapeid)
+
+        let parent = null
+        if(isShapeType(obj1.type)) parent = this.getSelectedLayer()
+        if(obj1.type === 'layer') parent = this.getSelectedPage()
+        if(obj1.type === 'page') parent = fetchGraphObject(graph,this.getSceneRoot())
+        if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
+
+        const obj2 = cloneShape(graph,obj1)
+        graph.setProperty(obj2.id, 'parent', parent.id)
+        insertAsFirstChild(graph, parent.id, obj2.id)
+        return
     }
 
     exportSVG = () => {
@@ -258,23 +328,19 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const c = fetchGraphObject(this.getDataGraph(),child)
         if(p.type === 'layer' && isShapeType(c.type)) return true
         if(p.type === 'page' && c.type === 'layer') return true
+        if(p.type === 'root' && c.type === 'page') return true
         return false
     }
     canBeSibling(src,tgt) {
         const s = fetchGraphObject(this.getDataGraph(),src)
         const t = fetchGraphObject(this.getDataGraph(),tgt)
         if(s.type === 'layer' && t.type === 'layer') return true
+        if(s.type === 'page' && t.type === 'page') return true
         if(isShapeType(s.type) && isShapeType(t.type)) return true
         return false
     }
 }
 
-function isShapeType(type) {
-    if(type === 'rect') return true
-    if(type === 'circle') return true
-    if(type === 'text') return true
-    return false
-}
 
 
 class MetadocApp extends Component {
@@ -292,6 +358,14 @@ class MetadocApp extends Component {
         this.im.addListener('save',this.props.provider.save)
         this.im.addListener('undo',this.props.provider.performUndo)
         this.im.addListener('redo',this.props.provider.performRedo)
+
+        this.im.addKeyBinding({id:'cut', key:InputManager.KEYS.X, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id:'copy', key:InputManager.KEYS.C, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id:'paste', key:InputManager.KEYS.V, modifiers:[InputManager.MODIFIERS.COMMAND]})
+
+        this.im.addListener('cut',this.props.provider.cutSelection)
+        this.im.addListener('copy',this.props.provider.copySelection)
+        this.im.addListener('paste',this.props.provider.pasteSelection)
     }
 
     componentDidMount() {
@@ -377,7 +451,11 @@ class MetadocApp extends Component {
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
                 <button className="fa fa-search-plus" onClick={this.zoomIn}/>
-                <button className="fa fa-search-minus"  onClick={this.zoomOut}/>
+                <button className="fa fa-search-minus" onClick={this.zoomOut}/>
+                <Spacer/>
+                <button className="fa fa-cut" onClick={prov.cutSelection}/>
+                <button className="fa fa-copy" onClick={prov.copySelection}/>
+                <button className="fa fa-paste" onClick={prov.pasteSelection}/>
                 <Spacer/>
                 <button className="fa fa-superpowers" onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>
