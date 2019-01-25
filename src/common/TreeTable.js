@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
 import {PopupManager, VBox} from "appy-comps";
-import {fetchGraphObject, indexOf} from "../syncgraph/utils";
+import {fetchGraphObject, indexOf, removeFromParent} from "../syncgraph/utils";
 
 
 const ContextMenu = (props) => {
@@ -169,10 +169,8 @@ export default class TreeTable extends Component {
         }
 
 
-            //remove from old location
-        const parent = fetchGraphObject(graph,src.parent)
-        const oldIndex = indexOf(graph,parent.children,src.id)
-        graph.removeElement(parent.children,oldIndex)
+        //remove from old location
+        removeFromParent(graph,src)
 
         const dt = selMan.getDropType()
         if(dt === 'parent') {

@@ -7,7 +7,13 @@ import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
-import {createGraphObjectFromObject, fetchGraphObject, indexOf, insertAsFirstChild} from '../syncgraph/utils'
+import {
+    createGraphObjectFromObject,
+    fetchGraphObject,
+    indexOf,
+    insertAsFirstChild,
+    removeFromParent
+} from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 const stdhints = {
@@ -152,19 +158,10 @@ export default class VREditor extends  SyncGraphProvider {
     deleteObject = () => {
         const objid = SelectionManager.getSelection()
         if(!objid) return
-        console.log('selection is',objid)
         const graph = this.getDataGraph()
         const obj = fetchGraphObject(graph,objid)
         const parent = fetchGraphObject(graph,obj.parent)
-        console.log('have to remove',obj,'from',parent)
-        const n = indexOf(graph,parent.children,obj.id)
-        console.log("index is",n)
-        if(n >= 0) {
-            graph.removeElement(parent.children, n)
-            SelectionManager.clearSelection()
-        } else {
-            console.error("could not find index for child",obj,'in children',parent.children)
-        }
+        removeFromParent(graph,obj)
     }
 }
 

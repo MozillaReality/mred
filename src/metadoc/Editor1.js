@@ -8,9 +8,9 @@ import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import {
     createGraphObjectFromObject,
     fetchGraphObject,
-    indexOf,
     insertAsFirstChild,
-    propToArray
+    propToArray,
+    removeFromParent
 } from "../syncgraph/utils";
 import {PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
@@ -85,17 +85,6 @@ const ICONS = {
     text:'font',
 }
 
-
-function removeFromParent(graph,obj) {
-    const parent = fetchGraphObject(graph,obj.parent)
-    const n = indexOf(graph,parent.children,obj.id)
-    console.log("index is",n)
-    if(n >= 0) {
-        graph.removeElement(parent.children, n)
-    } else {
-        console.error("could not find index for child",obj,'in children',parent.children)
-    }
-}
 
 function cloneShape(graph,shape) {
     const id = shape.id

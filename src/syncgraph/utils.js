@@ -34,3 +34,13 @@ export function insertAsFirstChild(graph, parent, child) {
     const ch = graph.getPropertyValue(parent,'children')
     graph.insertAfter(ch,null,child)
 }
+
+export function removeFromParent(graph, obj) {
+    const parent = fetchGraphObject(graph, obj.parent)
+    const n = indexOf(graph, parent.children, obj.id)
+    if (n >= 0) {
+        graph.removeElement(parent.children, n)
+    } else {
+        console.error("could not find index for child", obj, 'in children', parent.children)
+    }
+}
