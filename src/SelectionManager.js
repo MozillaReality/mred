@@ -10,6 +10,7 @@ class SelectionManager {
         this.listeners = {};
         this.selected = [];
         this.dropTarget = null;
+        this.clip = null
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = [];
@@ -59,6 +60,13 @@ class SelectionManager {
     }
     getDropType() {
         return this.dropType
+    }
+
+    setClipboard(clip) {
+        this.clip = clip
+    }
+    getClipboard() {
+        return this.clip
     }
 }
 

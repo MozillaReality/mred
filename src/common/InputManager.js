@@ -3,6 +3,9 @@ export default class InputManager {
     static KEYS = {
         S:83,
         Z:90,
+        C:67,
+        V:86,
+        X:88,
         LEFT_ARROW:37,
         RIGHT_ARROW:39,
     }
