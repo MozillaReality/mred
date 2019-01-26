@@ -78,12 +78,12 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getTitle = () => "VR Builder"
     makeEmptyRoot(doc) {
-        const root = createGraphObjectFromObject(doc,{
+        const root = fetchGraphObject(doc,createGraphObjectFromObject(doc,{
             type:'root',
             title:'root',
             children:doc.createArray()
-        })
-        const scene1 = new SceneDef().make(doc)
+        }))
+        const scene1 = new SceneDef().make(doc,root)
         insertAsFirstChild(doc,root,scene1)
         const obj = new CubeDef().make(doc,scene1)
         insertAsFirstChild(doc,scene1,obj)
@@ -125,11 +125,11 @@ export default class VREditor extends  SyncGraphProvider {
             const root = this.getSceneRoot()
             const graph = this.getDataGraph()
             const ch = graph.getPropertyValue(root,'children')
-            return graph.getElementAt(ch,0)
+            return fetchGraphObject(graph,graph.getElementAt(ch,0))
         }
         const type = this.getDataGraph().getPropertyValue(sel,'type')
-        if(type === 'scene') return sel
-        if(type === 'cube')  return this.getDataGraph().getPropertyValue(sel,'parent')
+        if(type === 'scene') return fetchGraphObject(this.getDataGraph(),sel)
+        if(type === 'cube')  return fetchGraphObject(this.getDataGraph(),this.getDataGraph().getPropertyValue(sel,'parent'))
         return -1
     }
 
@@ -147,11 +147,19 @@ export default class VREditor extends  SyncGraphProvider {
 
     preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
+    addScene = () => {
+        const graph = this.getDataGraph()
+        const root = fetchGraphObject(graph,this.getSceneRoot())
+        const scene = new SceneDef().make(graph,root)
+        insertAsFirstChild(graph,root,scene)
+        SelectionManager.setSelection(scene)
+    }
+
     addCube = () => {
         const graph = this.getDataGraph()
-        const scene1 = this.getSelectedScene()
-        const obj = new CubeDef().make(graph,scene1)
-        insertAsFirstChild(graph,scene1,obj)
+        const scene = this.getSelectedScene()
+        const obj = new CubeDef().make(graph,scene)
+        insertAsFirstChild(graph,scene,obj)
         SelectionManager.setSelection(obj)
     }
 
@@ -201,12 +209,6 @@ export default class VREditor extends  SyncGraphProvider {
 
 class VREditorApp extends Component {
 
-    addScene = () => {
-        const graph = this.props.provider.getDataGraph()
-        const scene = new SceneDef().make(graph)
-        const root = this.props.provider.getSceneRoot()
-        insertAsFirstChild(graph,root,scene)
-    }
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -215,7 +217,7 @@ class VREditorApp extends Component {
 
             <Toolbar left bottom>
                 <button className={"fa fa-plus"} onClick={prov.addCube}>cube</button>
-                <button className="fa fa-plus" onClick={this.addScene}>scene</button>
+                <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
             </Toolbar>
 
 

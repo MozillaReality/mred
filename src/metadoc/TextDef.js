@@ -1,9 +1,9 @@
-import {createGraphObjectFromObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 import SelectionManager from "../SelectionManager";
 
 export default class TextDef {
     make(graph,layer) {
-        const text = createGraphObjectFromObject(graph,{
+        const text = fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'text',
             title:'text',
             text:'title text',
@@ -11,7 +11,7 @@ export default class TextDef {
             y: 100,
             fillColor: '#ff00ff',
             parent:layer.id,
-        })
+        }))
         return text
     }
 

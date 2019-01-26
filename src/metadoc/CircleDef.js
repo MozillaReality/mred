@@ -1,8 +1,8 @@
-import {createGraphObjectFromObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 
 export default class CircleDef {
     make(graph,layer) {
-        return createGraphObjectFromObject(graph, {
+        return fetchGraphObject(graph,createGraphObjectFromObject(graph, {
             type: 'circle',
             title: 'circle',
             x: 100,
@@ -10,7 +10,7 @@ export default class CircleDef {
             radius: 50,
             fillColor: '#ffff00',
             parent: layer.id,
-        })
+        }))
     }
 
 

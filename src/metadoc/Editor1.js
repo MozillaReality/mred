@@ -112,13 +112,13 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     makeEmptyRoot(doc) {
         //create root and children
-        const root = createGraphObjectFromObject(doc,{ type:'root', title:'root', children: doc.createArray()})
+        const root = fetchGraphObject(doc,createGraphObjectFromObject(doc,{ type:'root', title:'root', children: doc.createArray()}))
         //create page and children
-        const page = createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root, children: doc.createArray()})
+        const page = fetchGraphObject(doc,createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root, children: doc.createArray()}))
         //create layer and children
-        const layer = createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page, children: doc.createArray()})
+        const layer = fetchGraphObject(doc,createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page, children: doc.createArray()}))
         //create rect
-        const rect1 = SHAPE_DEFS.rect.make(doc,fetchGraphObject(doc,layer))
+        const rect1 = SHAPE_DEFS.rect.make(doc,layer)
         //connect it all together
         insertAsFirstChild(doc,layer,rect1)
         insertAsFirstChild(doc,page,layer)
@@ -240,7 +240,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const layer = this.getSelectedLayer()
         if(!layer) return console.error("no layer!")
         const shape = def.make(graph,layer)
-        insertAsFirstChild(graph,layer.id,shape)
+        insertAsFirstChild(graph,layer,shape)
     }
     addRect   = () => this.addShape(this.getShapeDef('rect'))
     addCircle = () => this.addShape(this.getShapeDef('circle'))
@@ -283,7 +283,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
         const obj2 = cloneShape(graph,obj1)
         graph.setProperty(obj2.id, 'parent', parent.id)
-        insertAsFirstChild(graph, parent.id, obj2.id)
+        insertAsFirstChild(graph, parent, obj2)
         return
     }
 
@@ -398,24 +398,24 @@ class MetadocApp extends Component {
     addPage = () => {
         const graph = this.props.provider.getDataGraph()
         const root = this.props.provider.getSelectedRoot()
-        const page = createGraphObjectFromObject(graph,{
+        const page = fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'page',
             title:'new page',
             parent:root.id,
             children: graph.createArray()
-        })
-        insertAsFirstChild(graph,root.id,page)
+        }))
+        insertAsFirstChild(graph,root,page)
     }
     addLayer = () => {
         const graph = this.props.provider.getDataGraph()
         const page = this.props.provider.getSelectedPage()
-        const layer = createGraphObjectFromObject(graph,{
+        const layer = fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'layer',
             title:'new layer',
             parent:page.id,
             children:graph.createArray()
-        })
-        insertAsFirstChild(graph,page.id,layer)
+        }))
+        insertAsFirstChild(graph,page,layer)
     }
 
     zoomIn  = () => this.setState({zoom:this.state.zoom+1})

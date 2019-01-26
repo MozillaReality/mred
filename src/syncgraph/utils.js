@@ -31,8 +31,9 @@ export function indexOf(graph, array, target) {
 }
 
 export function insertAsFirstChild(graph, parent, child) {
-    const ch = graph.getPropertyValue(parent,'children')
-    graph.insertAfter(ch,null,child)
+    graph.setProperty(child.id,'parent',parent.id)
+    const ch = graph.getPropertyValue(parent.id,'children')
+    graph.insertAfter(ch,null,child.id)
 }
 
 export function removeFromParent(graph, obj) {

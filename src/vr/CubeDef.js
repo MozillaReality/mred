@@ -1,4 +1,4 @@
-import {createGraphObjectFromObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
@@ -7,13 +7,14 @@ const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
 export default class CubeDef {
     make(graph, scene) {
-        return createGraphObjectFromObject(graph,{
+        if(!scene.id) throw new Error("can't create scene w/ missing parent")
+        return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'cube',
             title:'first cube',
             width:1, height:1, depth:1,
             tx:0, ty:1.5, tz:-5,
-            parent:scene
-        })
+            parent:scene.id
+        }))
     }
     makeNode(obj) {
         const node = new THREE.Mesh(

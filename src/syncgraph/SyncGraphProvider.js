@@ -27,7 +27,6 @@ export default class SyncGraphProvider extends  TreeItemProvider {
     getRawGraph = () => this.coalescer
     getDataGraph = () => this.syncdoc
     getSceneRoot = () => this.getDataGraph().getObjectByProperty('type','root')
-    getRootList = () => this.getDataGraph().getPropertyValue(this.getSceneRoot(),'children')
     hasChildren = (item) => item && this.getDataGraph().hasPropertyValue(item,'children')
     getChildren = (item) => {
         const doc = this.getDataGraph()

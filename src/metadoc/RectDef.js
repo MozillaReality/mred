@@ -1,8 +1,8 @@
-import {createGraphObjectFromObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 
 export default class RectDef {
     make(graph,layer) {
-        return createGraphObjectFromObject(graph,{
+        return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'rect',
             title:'second rect',
             x: 100,
@@ -13,7 +13,7 @@ export default class RectDef {
             height: 100,
             fillColor: '#ff00ff',
             parent:layer.id,
-        })
+        }))
     }
 
     draw(c,g,shape,selected) {
