@@ -120,16 +120,16 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     getSelectedScene() {
+        const graph = this.getDataGraph()
         const sel = SelectionManager.getSelection()
         if(sel === null) {
             const root = this.getSceneRoot()
-            const graph = this.getDataGraph()
             const ch = graph.getPropertyValue(root,'children')
             return fetchGraphObject(graph,graph.getElementAt(ch,0))
         }
         const type = this.getDataGraph().getPropertyValue(sel,'type')
-        if(type === 'scene') return fetchGraphObject(this.getDataGraph(),sel)
-        if(type === 'cube')  return fetchGraphObject(this.getDataGraph(),this.getDataGraph().getPropertyValue(sel,'parent'))
+        if(type === 'scene') return fetchGraphObject(graph,sel)
+        if(type === 'cube')  return fetchGraphObject(graph,graph.getPropertyValue(sel,'parent'))
         return -1
     }
 
@@ -152,7 +152,7 @@ export default class VREditor extends  SyncGraphProvider {
         const root = fetchGraphObject(graph,this.getSceneRoot())
         const scene = new SceneDef().make(graph,root)
         insertAsFirstChild(graph,root,scene)
-        SelectionManager.setSelection(scene)
+        SelectionManager.setSelection(scene.id)
     }
 
     addCube = () => {
@@ -160,7 +160,7 @@ export default class VREditor extends  SyncGraphProvider {
         const scene = this.getSelectedScene()
         const obj = new CubeDef().make(graph,scene)
         insertAsFirstChild(graph,scene,obj)
-        SelectionManager.setSelection(obj)
+        SelectionManager.setSelection(obj.id)
     }
 
     deleteObject = () => {
