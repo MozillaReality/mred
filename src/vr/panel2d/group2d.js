@@ -1,15 +1,16 @@
-export default class Group2D {
+import Component2D from "./component2d";
+
+export default class Group2D extends Component2D {
     constructor() {
+        super()
+        this.type = 'group'
         this.x = 0
         this.y = 0
         this.w = 100
         this.h = 100
-        this.listeners = {}
-        this.bg = 'white'
+        this.bg = 'gray'
         this.visible = true
         this.comps = []
-        this.redrawHandler = (e) => this.fire('changed',e)
-        this.childProps = {}
         this.padding = 5
         this.border = 1
 
@@ -31,11 +32,7 @@ export default class Group2D {
         this.comps.forEach(comp => comp.draw(ctx))
         ctx.restore()
     }
-    addEventListener(type,cb) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].push(cb)
-        return this
-    }
+
     contains(pt) {
         if(pt.x < this.x) return false
         if(pt.x > this.x + this.w) return false
@@ -52,37 +49,16 @@ export default class Group2D {
         }
         return null
     }
-    fire(type,e) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].forEach(cb => cb(e))
-    }
-    set(key,value) {
-        this[key] = value
-        this.fire('changed',{type:'changed',target:this})
-        return this
-    }
+
     childSet(key,value) {
         this.childProps[key] = value
         this.comps.forEach(ch=>ch.set(key,value))
         return this
     }
-    get(key) {
-        return this[key]
-    }
-
-    on(type,cb) {
-        this.addEventListener(type,cb)
-        return this
-    }
 
     add(comp) {
         this.comps.push(comp)
-        comp.addEventListener('changed',this.redrawHandler)
-        Object.keys(this.childProps).forEach(key => {
-            comp.set(key,this.childProps[key])
-        })
-    }
-    addAll(all) {
-        all.forEach(c => this.add(c))
+        this.fire('changed',{type:'changed',target:this})
+        return this
     }
 }

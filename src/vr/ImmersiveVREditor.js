@@ -14,16 +14,17 @@ import {fetchGraphObject} from '../syncgraph/utils'
 import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
+import group2d from "./panel2d/group2d"
 import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
 import SphereDef from "./SphereDef";
+import {on} from "../utils"
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
+const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
 
-// const $ = (sel) => document.querySelector(sel)
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
-// const off = (elem,type,cb) => elem.removeEventListener(type,cb)
+
 const toRad = (degrees) => degrees*Math.PI/180
 
 
@@ -210,6 +211,25 @@ export default class ImmersiveVREditor extends Component {
         this.tools.add(new button2d()
             .setAll({ x:5, y:5+30+30+30, text:'save'})
             .on(POINTER_CLICK, this.props.provider.save))
+
+        const rowLayout = (panel)=>{
+            let x = 0
+            panel.comps.forEach((c)=>{
+                c.x=x
+                c.y=0
+                x += c.w+panel.padding
+            })
+        }
+
+        const color_group = new group2d().setAll({ x:5, y:5+30+30+30+30, w:235, h:35, layout:rowLayout})
+        SIMPLE_COLORS.forEach(c => {
+            color_group.add(new button2d()
+                .setAll({text:' ', normalBg:c })
+                .on(POINTER_CLICK,()=>this.props.provider.setColor(c))
+            )
+        })
+
+        this.tools.add(color_group)
 
         this.tools.redraw()
 

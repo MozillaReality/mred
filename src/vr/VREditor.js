@@ -83,6 +83,8 @@ const PROP_DEFS = {
     }
 }
 
+const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
+
 function is3DObjectType(type) {
     if(type === 'cube') return true
     if(type === 'sphere') return true
@@ -287,7 +289,7 @@ export default class VREditor extends  SyncGraphProvider {
     createCustomEditor(item,def,provider, value, onChange) {
         if(def.key === PROP_DEFS.color.key) return <HBox>
             {
-                ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
+                SIMPLE_COLORS
                     .map(c => <button
                         key={c}
                         onClick={()=>onChange(c)}
@@ -296,6 +298,13 @@ export default class VREditor extends  SyncGraphProvider {
             }
         </HBox>
         return <i>no custom editor for {def.key}</i>
+    }
+
+    setColor = (color) => {
+        const objid = SelectionManager.getSelection()
+        if(!objid) return
+        const graph = this.getDataGraph()
+        graph.setProperty(objid,'color',color)
     }
 }
 
