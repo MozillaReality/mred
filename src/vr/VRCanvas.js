@@ -65,6 +65,7 @@ export class VRCanvas extends Component {
             }
         })
         this.scene.add(this.controls)
+        this.raycaster = new THREE.Raycaster();
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
         light.position.set(1, 1, 1).normalize();
@@ -169,7 +170,7 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <canvas ref={c => this.canvas = c} width={600} height={400}></canvas>
+        return <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
     }
 
     populateNode(nodeid) {
@@ -212,4 +213,22 @@ export class VRCanvas extends Component {
     getCurrentSceneWrapper() {
         return this.scenes.find(sc => sc.visible)
     }
+
+    clickedCanvas = (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const pointer = {
+            x: ( e.clientX - rect.left ) / rect.width * 2 - 1,
+            y: - ( e.clientY - rect.top ) / rect.height * 2 + 1,
+        }
+
+        this.raycaster.setFromCamera(pointer, this.camera);
+        const intersect = this.raycaster.intersectObjects(this.getCurrentSceneWrapper().children, true)
+        if(intersect && intersect.length >= 1) {
+            const obj = intersect[0].object
+            SelectionManager.setSelection(obj.userData.graphid)
+        } else {
+            SelectionManager.clearSelection()
+        }
+    }
+
 }
