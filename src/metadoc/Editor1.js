@@ -151,9 +151,13 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     createCustomEditor(item,def,provider, value, onChange) {
         if(def.key === PROP_DEFS.fillColor.key) return <HBox>
-            <button onClick={()=>onChange('#ff0000')}>red</button>
-            <button onClick={()=>onChange('#00ff00')}>green</button>
-            <button onClick={()=>onChange('#0000ff')}>blue</button>
+            {
+                ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
+                    .map(c => <button
+                        onClick={()=>onChange(c)}
+                        style={{color:c, padding:'1px', margin:0, borderWidth:0,}}
+                        className={"fa fa-square"}/> )
+            }
         </HBox>
         return <i>no custom editor for {def.key}</i>
     }
