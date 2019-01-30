@@ -5,7 +5,6 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
-import BoxAccessor from './BoxAccessor'
 import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
 import SphereDef from "./SphereDef";
@@ -146,7 +145,7 @@ export class VRCanvas extends Component {
                         return
                     }
                 }
-                if(obj.type === 'cube') return new BoxAccessor(node, obj).updateProperty(op)
+                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op)
             } else {
                 console.log("could not find the node for object id:", op)
             }
@@ -177,10 +176,10 @@ export class VRCanvas extends Component {
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, nodeid)
         if (is3DObjectType(obj.type)) {
-            const cube = get3DObjectDef(obj.type).makeNode(obj)
-            this.insertNodeMapping(nodeid, cube)
-            this.getCurrentSceneWrapper().add(cube)
-            return cube
+            const obj3d = get3DObjectDef(obj.type).makeNode(obj)
+            this.insertNodeMapping(nodeid, obj3d)
+            this.getCurrentSceneWrapper().add(obj3d)
+            return obj3d
         }
         if (obj.type === 'scene') {
             const scene = new SceneDef().makeNode(obj)

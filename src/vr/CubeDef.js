@@ -2,6 +2,7 @@ import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils"
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
+import BoxAccessor from "./BoxAccessor";
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
@@ -25,5 +26,8 @@ export default class CubeDef {
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         return node
+    }
+    updateProperty(node, obj, op) {
+        return new BoxAccessor(node, obj).updateProperty(op)
     }
 }

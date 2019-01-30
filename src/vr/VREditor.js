@@ -77,6 +77,12 @@ const PROP_DEFS = {
     }
 }
 
+function is3DObjectType(type) {
+    if(type === 'cube') return true
+    if(type === 'sphere') return true
+    return false
+}
+
 
 export default class VREditor extends  SyncGraphProvider {
     getDocType() { return "vr" }
@@ -138,7 +144,7 @@ export default class VREditor extends  SyncGraphProvider {
         }
         const type = this.getDataGraph().getPropertyValue(sel,'type')
         if(type === 'scene') return fetchGraphObject(graph,sel)
-        if(type === 'cube')  return fetchGraphObject(graph,graph.getPropertyValue(sel,'parent'))
+        if(is3DObjectType(type))  return fetchGraphObject(graph,graph.getPropertyValue(sel,'parent'))
         return -1
     }
 
@@ -249,7 +255,7 @@ export default class VREditor extends  SyncGraphProvider {
         const obj1 = fetchGraphObject(graph,shapeid)
 
         let parent = null
-        if(obj1.type === 'cube') parent = this.getSelectedScene()
+        if(is3DObjectType(obj1.type)) parent = this.getSelectedScene()
         if(obj1.type === 'scene') parent = fetchGraphObject(graph,this.getSceneRoot())
         if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
 
@@ -262,13 +268,13 @@ export default class VREditor extends  SyncGraphProvider {
     canAddChild(parent,child) {
         const p = fetchGraphObject(this.getDataGraph(),parent)
         const c = fetchGraphObject(this.getDataGraph(),child)
-        if(p.type === 'scene' && c.type === 'cube') return true
+        if(p.type === 'scene' && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
         const s = fetchGraphObject(this.getDataGraph(),src)
         const t = fetchGraphObject(this.getDataGraph(),tgt)
-        if(s.type === 'cube' && t.type === 'cube') return true
+        if(is3DObjectType(s.type) && is3DObjectType(t.type)) return true
         return false
     }
 
