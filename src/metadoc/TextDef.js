@@ -1,5 +1,4 @@
 import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
-import SelectionManager from "../SelectionManager";
 
 export default class TextDef {
     make(graph,layer) {

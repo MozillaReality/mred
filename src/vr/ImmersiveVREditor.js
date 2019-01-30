@@ -14,16 +14,15 @@ import {fetchGraphObject} from '../syncgraph/utils'
 import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
-import group2d from "./panel2d/group2d";
 import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
-const $ = (sel) => document.querySelector(sel)
+// const $ = (sel) => document.querySelector(sel)
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
-const off = (elem,type,cb) => elem.removeEventListener(type,cb)
+// const off = (elem,type,cb) => elem.removeEventListener(type,cb)
 const toRad = (degrees) => degrees*Math.PI/180
 
 export default class ImmersiveVREditor extends Component {
@@ -203,7 +202,7 @@ export default class ImmersiveVREditor extends Component {
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
             if (obj.type === 'scene') {
-                const scene = this.populateNode(objid)
+                this.populateNode(objid)
                 this.setCurrentSceneId(objid)
                 return
             }

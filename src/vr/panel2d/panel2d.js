@@ -1,10 +1,10 @@
 import * as THREE from 'three'
 
-import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE, Pointer} from 'webxr-boilerplate/pointer'
+import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE} from 'webxr-boilerplate/pointer'
 
-const $ = (sel) => document.querySelector(sel)
+// const $ = (sel) => document.querySelector(sel)
 const on = (elem, type, cb) => elem.addEventListener(type,cb)
-const toRad = (deg) => deg * Math.PI/180
+// const toRad = (deg) => deg * Math.PI/180
 
 export default class Panel2D extends THREE.Object3D {
     constructor(scene,camera) {

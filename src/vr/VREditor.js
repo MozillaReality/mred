@@ -11,7 +11,6 @@ import {
     cloneShape,
     createGraphObjectFromObject,
     fetchGraphObject,
-    indexOf,
     insertAsFirstChild,
     removeFromParent
 } from '../syncgraph/utils'
@@ -191,7 +190,6 @@ export default class VREditor extends  SyncGraphProvider {
         if(!objid) return
         const graph = this.getDataGraph()
         const obj = fetchGraphObject(graph,objid)
-        const parent = fetchGraphObject(graph,obj.parent)
         removeFromParent(graph,obj)
     }
 

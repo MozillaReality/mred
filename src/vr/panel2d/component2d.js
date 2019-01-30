@@ -1,5 +1,3 @@
-import {POINTER_RELEASE, POINTER_CLICK, POINTER_ENTER, POINTER_EXIT, POINTER_PRESS, POINTER_MOVE, Pointer} from 'webxr-boilerplate/pointer'
-
 export default class Component2D {
     constructor() {
         this.listeners = {}
