@@ -2,24 +2,23 @@ import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils"
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
+import {on} from "../utils";
 
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
-
-export default class CubeDef {
+export default class SphereDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't create cube w/ missing parent")
+        if(!scene.id) throw new Error("can't create sphere w/ missing parent")
         return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
-            type:'cube',
-            title:'first cube',
-            width:1, height:1, depth:1,
+            type:'sphere',
+            title:'a sphere',
+            radius: 0.5,
             tx:0, ty:1.5, tz:-5,
             parent:scene.id
         }))
     }
     makeNode(obj) {
         const node = new THREE.Mesh(
-            new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
-            new THREE.MeshLambertMaterial({color: 'red'})
+            new THREE.SphereBufferGeometry(obj.radius),
+            new THREE.MeshLambertMaterial({color: 'green'})
         )
         node.userData.clickable = true
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))

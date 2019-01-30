@@ -18,6 +18,7 @@ import {
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
+import SphereDef from "./SphereDef";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -42,6 +43,12 @@ const PROP_DEFS = {
     depth: {
         key:'depth',
         name:'Depth',
+        type:TYPES.NUMBER,
+        hints: stdhints
+    },
+    radius: {
+        key:'radius',
+        name:'Radius',
         type:TYPES.NUMBER,
         hints: stdhints
     },
@@ -165,6 +172,14 @@ export default class VREditor extends  SyncGraphProvider {
         SelectionManager.setSelection(obj.id)
     }
 
+    addSphere = () => {
+        const graph = this.getDataGraph()
+        const scene = this.getSelectedScene()
+        const obj = new SphereDef().make(graph,scene)
+        insertAsFirstChild(graph,scene,obj)
+        SelectionManager.setSelection(obj.id)
+    }
+
     deleteObject = () => {
         const objid = SelectionManager.getSelection()
         if(!objid) return
@@ -185,6 +200,11 @@ export default class VREditor extends  SyncGraphProvider {
                 title:'cube',
                 icon:'square',
                 fun: this.addCube
+            },
+            {
+                title:'sphere',
+                icon:'circle',
+                fun: this.addSphere
             },
             {
                 title:'scene',
@@ -289,6 +309,7 @@ class VREditorApp extends Component {
 
             <Toolbar left bottom>
                 <button className={"fa fa-plus"} onClick={prov.addCube}>cube</button>
+                <button className={"fa fa-plus"} onClick={prov.addSphere}>sphere</button>
                 <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
             </Toolbar>
 

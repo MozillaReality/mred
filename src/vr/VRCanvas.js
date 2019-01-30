@@ -8,8 +8,23 @@ import {fetchGraphObject} from '../syncgraph/utils'
 import BoxAccessor from './BoxAccessor'
 import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
+import SphereDef from "./SphereDef";
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
+
+function is3DObjectType(type) {
+    if(type === 'cube') return true
+    if(type === 'sphere') return true
+    return false
+}
+
+function get3DObjectDef(type) {
+    console.log("type is",type)
+    if(type === 'cube') return new CubeDef()
+    if(type === 'sphere') return new SphereDef()
+    throw new Error(`unknown 3d object type ${type}`)
+    return null
+}
 
 export class VRCanvas extends Component {
     constructor(props) {
@@ -120,9 +135,9 @@ export class VRCanvas extends Component {
                 this.setCurrentSceneId(objid)
                 return
             }
-            if (obj.type === 'cube') {
-                const cube = this.populateNode(objid)
-                this.sceneWrapper.add(cube)
+            if (is3DObjectType(obj.type)) {
+                const obj3d = this.populateNode(objid)
+                this.sceneWrapper.add(obj3d)
                 return
             }
             console.warn("unknown object type", obj)
@@ -172,8 +187,8 @@ export class VRCanvas extends Component {
     populateNode(nodeid) {
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, nodeid)
-        if (obj.type === 'cube') {
-            const cube = new CubeDef().makeNode(obj)
+        if (is3DObjectType(obj.type)) {
+            const cube = get3DObjectDef(obj.type).makeNode(obj)
             this.insertNodeMapping(nodeid, cube)
             return cube
         }
