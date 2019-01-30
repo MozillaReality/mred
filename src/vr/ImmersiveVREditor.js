@@ -26,6 +26,19 @@ const on = (elem,type,cb) => elem.addEventListener(type,cb)
 // const off = (elem,type,cb) => elem.removeEventListener(type,cb)
 const toRad = (degrees) => degrees*Math.PI/180
 
+
+function is3DObjectType(type) {
+    if(type === 'cube') return true
+    if(type === 'sphere') return true
+    return false
+}
+function get3DObjectDef(type) {
+    console.log("type is",type)
+    if(type === 'cube') return new CubeDef()
+    if(type === 'sphere') return new SphereDef()
+    throw new Error(`unknown 3d object type ${type}`)
+}
+
 export default class ImmersiveVREditor extends Component {
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -229,9 +242,8 @@ export default class ImmersiveVREditor extends Component {
         if (op.type === SET_PROPERTY) {
             const node = this.findNode(op.object)
             if (node) {
-                if (op.name === 'tx') node.position.x = parseFloat(op.value)
-                if (op.name === 'ty') node.position.y = parseFloat(op.value)
-                if (op.name === 'tz') node.position.z = parseFloat(op.value)
+                const obj = fetchGraphObject(graph, op.object)
+                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op)
             } else {
                 console.log("could not find the node for object id:", op)
             }
