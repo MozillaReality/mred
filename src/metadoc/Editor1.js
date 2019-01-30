@@ -13,7 +13,7 @@ import {
     propToArray,
     removeFromParent
 } from "../syncgraph/utils";
-import {PopupManager} from "appy-comps";
+import {HBox, PopupManager} from "appy-comps";
 import RectDef from "./RectDef";
 import CircleDef from "./CircleDef";
 import TextDef from "./TextDef";
@@ -49,6 +49,7 @@ const PROP_DEFS = {
         key:'fillColor',
         name:'color',
         type:TYPES.COLOR,
+        custom:true,
     },
     width: {
         key:'width',
@@ -147,6 +148,16 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
         return defs
     }
+
+    createCustomEditor(item,def,provider, value, onChange) {
+        if(def.key === PROP_DEFS.fillColor.key) return <HBox>
+            <button onClick={()=>onChange('#ff0000')}>red</button>
+            <button onClick={()=>onChange('#00ff00')}>green</button>
+            <button onClick={()=>onChange('#0000ff')}>blue</button>
+        </HBox>
+        return <i>no custom editor for {def.key}</i>
+    }
+
 
     getShapeDef(type) {
         return SHAPE_DEFS[type]

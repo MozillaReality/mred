@@ -19,7 +19,6 @@ export default class RectDef {
     draw(c,g,shape,selected) {
         c.fillStyle = 'gray'
         c.fillStyle = shape.fillColor
-        if (selected) c.fillStyle = 'red'
         if(shape.rx > 0 || shape.ry > 0) {
             const c0 = {x:shape.x,y:shape.y}
             const c1 = {x:shape.x+shape.width, y:shape.y}
@@ -40,6 +39,12 @@ export default class RectDef {
         } else {
             c.fillRect(shape.x, shape.y, shape.width, shape.height)
         }
+
+        if (selected) {
+            c.strokeStyle = 'red'
+            c.strokeRect(shape.x,shape.y,shape.width, shape.height)
+        }
+
     }
 
     isInside(pt,shape) {

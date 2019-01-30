@@ -17,11 +17,13 @@ export default class CircleDef {
     draw(c,g,shape,selected) {
         c.fillStyle = 'gray'
         c.fillStyle = shape.fillColor
-        if (selected) c.fillStyle = 'red'
         c.beginPath()
         c.arc(shape.x, shape.y, shape.radius, 0, Math.PI*2)
         c.fill()
-
+        if (selected) {
+            c.strokeStyle = 'red'
+            c.strokeRect(shape.x-shape.radius,shape.y-shape.radius,shape.radius*2, shape.radius*2)
+        }
     }
 
     isInside(pt,shape) {

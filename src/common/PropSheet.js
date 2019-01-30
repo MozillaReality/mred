@@ -82,6 +82,9 @@ class PropEditor extends Component {
         if(this.props.def.isType(TYPES.NUMBER)) this.updateNum(e.target.value)
         if(this.props.def.isType(TYPES.BOOLEAN)) this.setState({value:e.target.checked})
     }
+    customChanged = value => {
+        if(this.props.def.isType(TYPES.COLOR)) return this.colorChanged(value)
+    }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
     }
@@ -136,7 +139,7 @@ class PropEditor extends Component {
         const prop = this.props.def;
         const obj = selMan.getSelection();
         const provider = this.props.provider
-        if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider)
+        if (prop.isCustom()) return this.props.provider.createCustomEditor(this.props.item, prop, provider, this.state.value, this.customChanged)
         if (prop.isLocked()) return <i>{prop.getValue()}</i>
         if (prop.isType(TYPES.STRING))  return <StringEditor value={this.state.value}
                                  onChange={this.changed}
