@@ -16,6 +16,7 @@ import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
 import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
+import SphereDef from "./SphereDef";
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -188,8 +189,14 @@ export default class ImmersiveVREditor extends Component {
             .setAll({ x:5, y:5, text:'add box'})
             .on(POINTER_CLICK, this.props.provider.addCube))
         this.tools.add(new button2d()
-            .setAll({ x:5, y:5+30, text:'delete'})
+            .setAll({ x:5, y:5+30, text:'add sphere'})
+            .on(POINTER_CLICK, this.props.provider.addSphere))
+        this.tools.add(new button2d()
+            .setAll({ x:5, y:5+30+30, text:'delete'})
             .on(POINTER_CLICK, this.props.provider.deleteObject))
+        this.tools.add(new button2d()
+            .setAll({ x:5, y:5+30+30+30, text:'save'})
+            .on(POINTER_CLICK, this.props.provider.save))
 
         this.tools.redraw()
 
@@ -209,6 +216,11 @@ export default class ImmersiveVREditor extends Component {
             if (obj.type === 'cube') {
                 const cube = this.populateNode(objid)
                 this.sceneWrapper.add(cube)
+                return
+            }
+            if (obj.type === 'sphere') {
+                const sphere = this.populateNode(objid)
+                this.sceneWrapper.add(sphere)
                 return
             }
             console.warn("unknown object type", obj)
@@ -297,6 +309,11 @@ export default class ImmersiveVREditor extends Component {
             const cube = new CubeDef().makeNode(obj)
             this.insertNodeMapping(nodeid, cube)
             return cube
+        }
+        if (obj.type === 'sphere') {
+            const sphere = new SphereDef().makeNode(obj)
+            this.insertNodeMapping(nodeid, sphere)
+            return sphere
         }
         if (obj.type === 'scene') {
             const scene = new SceneDef().makeNode(obj)
