@@ -31,6 +31,7 @@ export class VRCanvas extends Component {
         super(props)
         console.info("CREATED VR Canvas")
         this.obj_node_map = {}
+        this.scenes = []
         this.state = {
             scene: -1
         }
@@ -75,10 +76,8 @@ export class VRCanvas extends Component {
         this.props.provider.onRawChange(op => this.updateScene(op))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, () => {
             //nuke all the old stuff
-            if (this.sceneWrapper) {
-                this.scene.remove(this.sceneWrapper)
-                this.sceneWrapper = null
-            }
+            this.scenes.forEach(sc => this.scene.remove(sc))
+            this.scenes = []
             this.obj_node_map = {}
             this.setState({scene: -1})
             //make new stuff
@@ -87,11 +86,21 @@ export class VRCanvas extends Component {
         })
 
         SelectionManager.on(SELECTION_MANAGER.CHANGED, () => {
+            this.controls.detach()
             const sel = SelectionManager.getSelection()
             if(!sel) return
-            const node = this.findNode(sel)
-            if(!node) return
-            this.controls.attach(node)
+            const graph = this.props.provider.getDataGraph()
+            const obj = fetchGraphObject(graph, sel)
+
+            if(obj.type === 'scene') return this.setCurrentSceneWrapper(this.findNode(sel))
+
+            if(is3DObjectType(obj.type)) {
+                this.setCurrentSceneWrapper(this.findNode(obj.parent))
+                const node = this.findNode(sel)
+                if (!node) return
+                this.controls.attach(node)
+            }
+
         })
 
         window.addEventListener('resize', () => {
@@ -101,16 +110,6 @@ export class VRCanvas extends Component {
         }, false);
 
         this.props.provider.getDocHistory().forEach(op => this.updateScene(op))
-    }
-
-    setCurrentSceneId(sceneid) {
-        if (this.sceneWrapper) {
-            this.scene.remove(this.sceneWrapper)
-            this.sceneWrapper = null
-        }
-        this.setState({scene: sceneid})
-        this.sceneWrapper = this.findNode(sceneid)
-        this.scene.add(this.sceneWrapper)
     }
 
     insertNodeMapping(id, node) {
@@ -130,16 +129,8 @@ export class VRCanvas extends Component {
             console.log('running', op.type)
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
-            if (obj.type === 'scene') {
-                const scene = this.populateNode(objid)
-                this.setCurrentSceneId(objid)
-                return
-            }
-            if (is3DObjectType(obj.type)) {
-                const obj3d = this.populateNode(objid)
-                this.sceneWrapper.add(obj3d)
-                return
-            }
+            if (obj.type === 'scene') return this.populateNode(objid)
+            if (is3DObjectType(obj.type)) return this.populateNode(objid)
             console.warn("unknown object type", obj)
             return
         }
@@ -168,9 +159,7 @@ export class VRCanvas extends Component {
             if(node) {
                 const obj = fetchGraphObject(graph,op.value)
                 this.controls.detach()
-                if(obj.type === 'cube') {
-                    this.sceneWrapper.remove(node)
-                }
+                if(is3DObjectType(obj.type)) this.getCurrentSceneWrapper().remove(node)
             }
             return
         }
@@ -190,14 +179,38 @@ export class VRCanvas extends Component {
         if (is3DObjectType(obj.type)) {
             const cube = get3DObjectDef(obj.type).makeNode(obj)
             this.insertNodeMapping(nodeid, cube)
+            this.getCurrentSceneWrapper().add(cube)
             return cube
         }
         if (obj.type === 'scene') {
             const scene = new SceneDef().makeNode(obj)
             this.insertNodeMapping(nodeid, scene)
+            this.addSceneWrapper(scene)
+            this.setCurrentSceneWrapper(scene)
             return scene
         }
 
         console.warn("cannot populate node for type", obj.type)
+    }
+
+
+    addSceneWrapper(scene) {
+        this.scenes.push(scene)
+        this.scene.add(scene)
+    }
+
+    setCurrentSceneWrapper(scene) {
+        this.scenes.forEach(sc => {
+            if(sc === scene) {
+                console.log("made scene",sc)
+                sc.visible = true
+            } else {
+                sc.visible = false
+            }
+        })
+    }
+
+    getCurrentSceneWrapper() {
+        return this.scenes.find(sc => sc.visible)
     }
 }
