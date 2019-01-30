@@ -174,12 +174,12 @@ export default class TreeTable extends Component {
 
         const dt = selMan.getDropType()
         if(dt === 'parent') {
-            graph.insertAfter(dst.children,null,src.id)
             graph.setProperty(src.id,'parent',dst.id)
+            graph.insertAfter(dst.children,null,src.id)
         } else {
             const parent2 = fetchGraphObject(graph,dst.parent)
-            graph.insertAfter(parent2.children, dst.id, src.id)
             graph.setProperty(src.id, 'parent', parent2.id)
+            graph.insertAfter(parent2.children, dst.id, src.id)
         }
         this.setState({dragTarget:null})
         selMan.setDropTarget(null)

@@ -22,7 +22,6 @@ function get3DObjectDef(type) {
     if(type === 'cube') return new CubeDef()
     if(type === 'sphere') return new SphereDef()
     throw new Error(`unknown 3d object type ${type}`)
-    return null
 }
 
 export class VRCanvas extends Component {
@@ -58,6 +57,7 @@ export class VRCanvas extends Component {
             const sel = SelectionManager.getSelection()
             if(sel) {
                 const node = this.findNode(sel)
+                if(!node) return
                 const prov = this.props.provider
                 prov.quick_setPropertyValue(sel,'tx',node.position.x)
                 prov.quick_setPropertyValue(sel,'ty',node.position.y)
@@ -117,6 +117,10 @@ export class VRCanvas extends Component {
         this.obj_node_map[id] = node
         node.userData.graphid = id
     }
+    removeNodeMapping(id,node) {
+        delete this.obj_node_map[id]
+        delete node.userData.graphid
+    }
 
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
@@ -126,16 +130,16 @@ export class VRCanvas extends Component {
     updateScene(op) {
         const graph = this.props.provider.getDataGraph()
         if (op.type === INSERT_ELEMENT) {
-            console.log('running', op.type)
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
+            console.log('inserting element', op.value, obj.type)
             if (obj.type === 'scene') return this.populateNode(objid)
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
             console.warn("unknown object type", obj)
             return
         }
         if (op.type === SET_PROPERTY) {
-            console.log('running', op.type)
+            console.log('setting property', op.object, op.name, '=',op.value)
             const node = this.findNode(op.object)
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)
@@ -153,13 +157,17 @@ export class VRCanvas extends Component {
             return
         }
         if (op.type === DELETE_ELEMENT) {
-            console.log("doing delete")
+            this.controls.detach()
+            console.log("doing delete for object", op.value)
             const node = this.findNode(op.value)
             console.log("removing the node",node)
             if(node) {
+                this.removeNodeMapping(op.value,node)
                 const obj = fetchGraphObject(graph,op.value)
-                this.controls.detach()
-                if(is3DObjectType(obj.type)) this.getCurrentSceneWrapper().remove(node)
+                if(is3DObjectType(obj.type)) {
+                    node.parent.remove(node)
+                    // this.dumpScenes()
+                }
             }
             return
         }
@@ -179,7 +187,8 @@ export class VRCanvas extends Component {
         if (is3DObjectType(obj.type)) {
             const obj3d = get3DObjectDef(obj.type).makeNode(obj)
             this.insertNodeMapping(nodeid, obj3d)
-            this.getCurrentSceneWrapper().add(obj3d)
+            const parent = this.findNode(obj.parent)
+            parent.add(obj3d)
             return obj3d
         }
         if (obj.type === 'scene') {
@@ -202,12 +211,27 @@ export class VRCanvas extends Component {
     setCurrentSceneWrapper(scene) {
         this.scenes.forEach(sc => {
             if(sc === scene) {
-                console.log("made scene",sc)
                 sc.visible = true
             } else {
                 sc.visible = false
             }
         })
+        // this.dumpScenes()
+    }
+
+    dumpScenes() {
+        this.scenes.forEach(sc => {
+            console.log("scene")
+            this.dump(sc,'')
+        })
+    }
+    dump(sc,inset) {
+        console.log(inset+"",sc.type,sc.id,  'vis', sc.visible)
+        if(sc.type === 'Mesh') console.log(inset+'  ',sc.geometry.type)
+        // console.log(sc)
+        if(sc.children) {
+            sc.children.forEach((ch) => this.dump(ch, inset + '  '))
+        }
     }
 
     getCurrentSceneWrapper() {
