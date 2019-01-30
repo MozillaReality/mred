@@ -318,6 +318,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         if(isShapeType(s.type) && isShapeType(t.type)) return true
         return false
     }
+    newView = () => window.open( `./?mode=metadoc&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 }
 
 
@@ -436,6 +437,7 @@ class MetadocApp extends Component {
                 <button className="fa fa-copy" onClick={prov.copySelection}/>
                 <button className="fa fa-paste" onClick={prov.pasteSelection}/>
                 <Spacer/>
+                <button className="fa fa-plus" onClick={prov.newView}> view</button>
                 <button className="fa fa-superpowers" onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>
 
