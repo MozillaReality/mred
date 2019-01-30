@@ -14,13 +14,14 @@ export default class CubeDef {
             title:'first cube',
             width:1, height:1, depth:1,
             tx:0, ty:1.5, tz:-5,
+            color:'#00ff00',
             parent:scene.id
         }))
     }
     makeNode(obj) {
         const node = new THREE.Mesh(
             new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
-            new THREE.MeshLambertMaterial({color: 'red'})
+            new THREE.MeshLambertMaterial({color: obj.color})
         )
         node.userData.clickable = true
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
@@ -28,6 +29,12 @@ export default class CubeDef {
         return node
     }
     updateProperty(node, obj, op) {
+        if(op.name === 'color') {
+            let color = op.value
+            if(color.indexOf('#') === 0) color = color.substring(1)
+            node.material.color.set(parseInt(color,16))
+            return
+        }
         return new BoxAccessor(node, obj).updateProperty(op)
     }
 }

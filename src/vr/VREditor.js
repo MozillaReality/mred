@@ -18,6 +18,7 @@ import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import SphereDef from "./SphereDef";
+import {HBox} from "appy-comps";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -68,6 +69,12 @@ const PROP_DEFS = {
         name:'TZ',
         type:TYPES.NUMBER,
         hints: stdhints
+    },
+    color: {
+        key:'color',
+        name:'Color',
+        type:TYPES.COLOR,
+        custom:true,
     },
     defaultFloor: {
         key:'defaultFloor',
@@ -277,6 +284,19 @@ export default class VREditor extends  SyncGraphProvider {
         return false
     }
 
+    createCustomEditor(item,def,provider, value, onChange) {
+        if(def.key === PROP_DEFS.color.key) return <HBox>
+            {
+                ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
+                    .map(c => <button
+                        key={c}
+                        onClick={()=>onChange(c)}
+                        style={{color:c, padding:'1px', margin:0, borderWidth:0,}}
+                        className={"fa fa-square"}/> )
+            }
+        </HBox>
+        return <i>no custom editor for {def.key}</i>
+    }
 }
 
 class VREditorApp extends Component {

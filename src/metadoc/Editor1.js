@@ -154,6 +154,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
             {
                 ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
                     .map(c => <button
+                        key={c}
                         onClick={()=>onChange(c)}
                         style={{color:c, padding:'1px', margin:0, borderWidth:0,}}
                         className={"fa fa-square"}/> )
