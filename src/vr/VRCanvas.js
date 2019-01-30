@@ -18,7 +18,6 @@ function is3DObjectType(type) {
 }
 
 function get3DObjectDef(type) {
-    console.log("type is",type)
     if(type === 'cube') return new CubeDef()
     if(type === 'sphere') return new SphereDef()
     throw new Error(`unknown 3d object type ${type}`)
@@ -63,6 +62,12 @@ export class VRCanvas extends Component {
                 prov.quick_setPropertyValue(sel,'ty',node.position.y)
                 prov.quick_setPropertyValue(sel,'tz',node.position.z)
             }
+        })
+        this.controls.addEventListener('mouseDown',(e)=>{
+            this.props.provider.pauseQueue()
+        })
+        this.controls.addEventListener('mouseUp',(e)=>{
+            this.props.provider.unpauseQueue()
         })
         this.scene.add(this.controls)
         this.raycaster = new THREE.Raycaster();
@@ -139,7 +144,7 @@ export class VRCanvas extends Component {
             return
         }
         if (op.type === SET_PROPERTY) {
-            console.log('setting property', op.object, op.name, '=',op.value)
+            // console.log('setting property', op.object, op.name, '=',op.value)
             const node = this.findNode(op.object)
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)

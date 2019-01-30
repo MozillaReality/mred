@@ -34,7 +34,6 @@ function is3DObjectType(type) {
     return false
 }
 function get3DObjectDef(type) {
-    console.log("type is",type)
     if(type === 'cube') return new CubeDef()
     if(type === 'sphere') return new SphereDef()
     throw new Error(`unknown 3d object type ${type}`)
