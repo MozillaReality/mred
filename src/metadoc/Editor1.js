@@ -6,6 +6,7 @@ import SelectionManager from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import {
+    cloneShape,
     createGraphObjectFromObject,
     fetchGraphObject,
     insertAsFirstChild,
@@ -86,17 +87,6 @@ const ICONS = {
 }
 
 
-function cloneShape(graph,shape) {
-    const id = shape.id
-    const id2 = graph.createObject()
-    const props = graph.getPropertiesForObject(id)
-    props.forEach(key => {
-        console.log("making",key)
-        graph.createProperty(id2,key,graph.getPropertyValue(id,key))
-    })
-    const shape2 = fetchGraphObject(graph,id2)
-    return shape2
-}
 
 function isShapeType(type) {
     if(type === 'rect') return true

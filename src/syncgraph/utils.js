@@ -45,3 +45,15 @@ export function removeFromParent(graph, obj) {
         console.error("could not find index for child", obj, 'in children', parent.children)
     }
 }
+
+
+export function cloneShape(graph,shape) {
+    const id = shape.id
+    const id2 = graph.createObject()
+    const props = graph.getPropertiesForObject(id)
+    props.forEach(key => {
+        graph.createProperty(id2,key,graph.getPropertyValue(id,key))
+    })
+    const shape2 = fetchGraphObject(graph,id2)
+    return shape2
+}

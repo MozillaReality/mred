@@ -152,12 +152,11 @@ export class VRCanvas extends Component {
             console.log("removing the node",node)
             if(node) {
                 const obj = fetchGraphObject(graph,op.value)
-                console.log('the objcect is',obj)
+                this.controls.detach()
                 if(obj.type === 'cube') {
                     this.sceneWrapper.remove(node)
                 }
             }
-
             return
         }
         console.log('skipping', op.type)

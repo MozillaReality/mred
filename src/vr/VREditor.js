@@ -8,6 +8,7 @@ import {VRCanvas} from './VRCanvas'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
+    cloneShape,
     createGraphObjectFromObject,
     fetchGraphObject,
     indexOf,
@@ -16,6 +17,7 @@ import {
 } from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
+import InputManager from "../common/InputManager";
 const stdhints = {
     incrementValue:0.1,
 }
@@ -205,6 +207,38 @@ export default class VREditor extends  SyncGraphProvider {
         return cmds
     }
 
+    cutSelection = () => {
+        const graph = this.getDataGraph()
+        let sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = fetchGraphObject(graph,sel)
+        SelectionManager.setClipboard(obj.id)
+        removeFromParent(graph,obj)
+        SelectionManager.clearSelection()
+    }
+    copySelection = () => {
+        const graph = this.getDataGraph()
+        let sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = fetchGraphObject(graph,sel)
+        SelectionManager.setClipboard(obj.id)
+    }
+    pasteSelection = () => {
+        const graph = this.getDataGraph()
+        const shapeid = SelectionManager.getClipboard()
+        const obj1 = fetchGraphObject(graph,shapeid)
+
+        let parent = null
+        if(obj1.type === 'cube') parent = this.getSelectedScene()
+        if(obj1.type === 'scene') parent = fetchGraphObject(graph,this.getSceneRoot())
+        if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
+
+        const obj2 = cloneShape(graph,obj1)
+        graph.setProperty(obj2.id, 'parent', parent.id)
+        insertAsFirstChild(graph, parent, obj2)
+        return
+    }
+
     canAddChild(parent,child) {
         const p = fetchGraphObject(this.getDataGraph(),parent)
         const c = fetchGraphObject(this.getDataGraph(),child)
@@ -221,6 +255,31 @@ export default class VREditor extends  SyncGraphProvider {
 }
 
 class VREditorApp extends Component {
+
+    constructor(props) {
+        super(props)
+
+        this.im = new InputManager()
+        this.im.addKeyBinding({ id:'save',  key:InputManager.KEYS.S, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({ id:'undo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({ id:'redo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
+        this.im.addListener('save',this.props.provider.save)
+        this.im.addListener('undo',this.props.provider.performUndo)
+        this.im.addListener('redo',this.props.provider.performRedo)
+
+        this.im.addKeyBinding({id:'cut', key:InputManager.KEYS.X, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id:'copy', key:InputManager.KEYS.C, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id:'paste', key:InputManager.KEYS.V, modifiers:[InputManager.MODIFIERS.COMMAND]})
+
+        this.im.addListener('cut',this.props.provider.cutSelection)
+        this.im.addListener('copy',this.props.provider.copySelection)
+        this.im.addListener('paste',this.props.provider.pasteSelection)
+
+    }
+
+    componentDidMount() {
+        this.im.attachKeyEvents(document)
+    }
 
     render() {
         const prov = this.props.provider
