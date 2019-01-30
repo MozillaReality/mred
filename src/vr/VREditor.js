@@ -191,6 +191,7 @@ export default class VREditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         const obj = fetchGraphObject(graph,objid)
         removeFromParent(graph,obj)
+        SelectionManager.clearSelection()
     }
 
     calculateContextMenu(item) {

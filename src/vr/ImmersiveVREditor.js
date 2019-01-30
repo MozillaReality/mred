@@ -246,6 +246,9 @@ export default class ImmersiveVREditor extends Component {
             if(obj.type === 'cube') {
                 this.sceneWrapper.remove(node)
             }
+            if(obj.type === 'sphere') {
+                this.sceneWrapper.remove(node)
+            }
             return
         }
         console.log('skipping', op.type)
