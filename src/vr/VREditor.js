@@ -158,7 +158,7 @@ export default class VREditor extends  SyncGraphProvider {
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
-        this.getDataGraph().setProperty(item,key,value)
+        this.getRawGraph().process(this.cmd.setProperty(item,key,value))
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
             provider: this,
             child:item,
