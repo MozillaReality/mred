@@ -36,6 +36,7 @@ export class UndoQueue {
             const op = {
                 type: SET_PROPERTY,
                 host: this.graph.getHostId(),
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 object: last.object,
                 name: last.name,
@@ -48,6 +49,7 @@ export class UndoQueue {
             const op = {
                 type: DELETE_PROPERTY,
                 host: this.graph.getHostId(),
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 object: last.object,
                 name: last.name,
@@ -59,6 +61,7 @@ export class UndoQueue {
             const op = {
                 type: DELETE_OBJECT,
                 host: this.graph.getHostId(),
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 id: last.id,
             }
@@ -69,6 +72,7 @@ export class UndoQueue {
             const op = {
                 type: DELETE_ELEMENT,
                 host: this.graph.getHostId(),
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 array: last.array,
                 entry: last.entryid
@@ -87,6 +91,7 @@ export class UndoQueue {
             const op = {
                 type: last.type,
                 host: last.host,
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 object: last.object,
                 name: last.name,
@@ -99,6 +104,7 @@ export class UndoQueue {
             const op = {
                 type: last.type,
                 host: last.host,
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 object: last.object,
                 name: last.name,
@@ -111,6 +117,7 @@ export class UndoQueue {
             const op = {
                 type: last.type,
                 host: last.host,
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 id: last.id,
             }
@@ -122,6 +129,7 @@ export class UndoQueue {
             const op = {
                 type: last.type,
                 host: last.host,
+                seq: this.graph.nextSeq(),
                 timestamp: Date.now(),
                 array: last.array,
                 value: last.value,
