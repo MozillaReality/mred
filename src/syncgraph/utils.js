@@ -1,10 +1,5 @@
 export function createGraphObjectFromObject(graph, json) {
-    const objid = graph.createObject()
-    Object.keys(json).forEach(key => {
-        const value = json[key]
-        graph.createProperty(objid, key, value)
-    })
-    return objid
+    return graph.createObject(json)
 }
 
 export function fetchGraphObject(graph, objid) {

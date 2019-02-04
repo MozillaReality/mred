@@ -103,11 +103,11 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     makeEmptyRoot(doc) {
         //create root and children
-        const root = fetchGraphObject(doc,createGraphObjectFromObject(doc,{ type:'root', title:'root', children: doc.createArray()}))
+        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children: doc.createArray()}))
         //create page and children
-        const page = fetchGraphObject(doc,createGraphObjectFromObject(doc, { type:'page', title:'page 1', parent: root, children: doc.createArray()}))
+        const page = fetchGraphObject(doc,doc.createObject({ type:'page', title:'page 1', parent: root, children: doc.createArray()}))
         //create layer and children
-        const layer = fetchGraphObject(doc,createGraphObjectFromObject(doc,{type:'layer',title:'layer 1', parent: page, children: doc.createArray()}))
+        const layer = fetchGraphObject(doc,doc.createObject({type:'layer',title:'layer 1', parent: page, children: doc.createArray()}))
         //create rect
         const rect1 = SHAPE_DEFS.rect.make(doc,layer)
         //connect it all together
