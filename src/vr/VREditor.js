@@ -158,7 +158,10 @@ export default class VREditor extends  SyncGraphProvider {
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
-        this.getRawGraph().process(this.cmd.setProperty(item,key,value))
+        const op = this.cmd.setProperty(item,key,value)
+        op.prevValue = ov
+        if(op.value === op.prevValue) return
+        this.getRawGraph().process(op)
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
             provider: this,
             child:item,
@@ -351,6 +354,8 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button onClick={()=>prov.save()}>save</button>
                 <button onClick={()=>prov.preview()}>preview</button>
+                <button className="fa fa-undo" onClick={prov.performUndo}/>
+                <button className="fa fa-repeat" onClick={prov.performRedo}/>
             </Toolbar>
 
 
