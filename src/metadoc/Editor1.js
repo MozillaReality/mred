@@ -305,6 +305,11 @@ export default class MetadocEditor extends  SyncGraphProvider {
                 fun: this.addText
             },
             {
+                title:'image',
+                icon: ICONS.image,
+                fun: this.addImage
+            },
+            {
                 title:'cut',
                 fun:this.cutSelection
             },
@@ -425,7 +430,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
             .map((layer) => `<g>${this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),layer))}</g>`).join("")
         if(obj.type === 'layer') return propToArray(this.getDataGraph(),obj.children)
             .map(shape => this.renderSVGChildren(fetchGraphObject(this.getDataGraph(),shape))).join("")
-        if(SHAPE_DEFS[obj.type]) return SHAPE_DEFS[obj.type].toSVGString(obj)
+        if(SHAPE_DEFS[obj.type]) return SHAPE_DEFS[obj.type].toSVGString(obj,this)
         return "";
     }
 

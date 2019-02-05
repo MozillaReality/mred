@@ -21,7 +21,7 @@ export default class TextDef {
         if (selected) {
             c.strokeStyle = 'red'
             const metrics = c.measureText(shape.text)
-            c.strokeRect(shape.x,shape.y-30,metrics.width,30)
+            c.strokeRect(shape.x+0.5,shape.y-30+0.5,metrics.width,30)
         }
     }
 
@@ -38,4 +38,11 @@ export default class TextDef {
         return true
 
     }
+    toSVGString(obj) {
+        return `<text x="${obj.x}" y="${obj.y}"
+                     fill="${obj.fillColor}" fontSize="${30}"
+                     fontFamily="${obj.fontFamily}"
+                >${obj.text}</text>`
+    }
+
 }

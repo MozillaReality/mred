@@ -22,7 +22,7 @@ export default class CircleDef {
         c.fill()
         if (selected) {
             c.strokeStyle = 'red'
-            c.strokeRect(shape.x-shape.radius,shape.y-shape.radius,shape.radius*2, shape.radius*2)
+            c.strokeRect(shape.x-shape.radius+0.5,shape.y-shape.radius+0.5,shape.radius*2, shape.radius*2)
         }
     }
 

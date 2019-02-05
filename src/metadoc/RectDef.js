@@ -42,7 +42,7 @@ export default class RectDef {
 
         if (selected) {
             c.strokeStyle = 'red'
-            c.strokeRect(shape.x,shape.y,shape.width, shape.height)
+            c.strokeRect(shape.x+0.5,shape.y+0.5,shape.width, shape.height)
         }
 
     }
