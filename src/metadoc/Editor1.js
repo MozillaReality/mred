@@ -19,7 +19,7 @@ import CircleDef from "./CircleDef";
 import TextDef from "./TextDef";
 import InputManager from "../common/InputManager";
 import ImageDef from './ImageDef'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 const PROP_DEFS = {
     title: {
@@ -323,6 +323,27 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const assets = fetchGraphObject(graph,this.getAssetsObject())
         insertAsLastChild(graph,assets,asset)
     }
+
+    addImageAssetFromFile = (file) => {
+        this.uploadFile(file).then((ans)=>{
+            console.log("uploaded file with answer",ans)
+            const url = SERVER_URL_ASSETS+ans.id
+            const graph = this.getDataGraph()
+            const asset = fetchGraphObject(graph,graph.createObject({
+                type:'asset',
+                subtype:'image',
+                format:file.type,
+                src:url,
+                width:100,
+                height:100,
+                title:file.name,
+                parent:0
+            }))
+            const assets = fetchGraphObject(graph,this.getAssetsObject())
+            insertAsLastChild(graph,assets,asset)
+        })
+    }
+
     deleteSelection = () => {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
@@ -412,18 +433,9 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return false
     }
     acceptDrop(e,tgt) {
-        const dataTransfer = e.dataTransfer
-        console.log("doing drop of external data")
-        // console.log("files are",dataTransfer.files)
-        // console.log("items are", dataTransfer.items)
-        // console.log("on to",tgt)
         const obj = fetchGraphObject(this.getDataGraph(),tgt)
         if(obj.type === 'assets') {
-            console.log("great. we can import an asset")
-            const files = listToArray(dataTransfer.files)
-            files.forEach(file => {
-                console.log("importing",file)
-            })
+            listToArray(e.dataTransfer.files).forEach(file => this.addImageAssetFromFile(file))
         }
     }
 
