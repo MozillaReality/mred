@@ -167,6 +167,16 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return <div>{title}</div>
     }
 
+    setPropertyValue(item, def, value) {
+        super.setPropertyValue(item,def,value)
+        if(def.key === PROP_DEFS.asset.key) {
+            const asset = fetchGraphObject(this.getDataGraph(),value)
+            super.setPropertyValue(item,{key:'width'},asset.width)
+            super.setPropertyValue(item,{key:'height'},asset.height)
+        }
+    }
+
+
     getProperties(item) {
         function copyPropDef(def,value) {
             const out = {};
