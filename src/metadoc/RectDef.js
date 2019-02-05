@@ -49,9 +49,9 @@ export default class RectDef {
 
     isInside(pt,shape) {
         if (pt.x < shape.x) return false
-        if (pt.x > shape.x + shape.w) return false
+        if (pt.x > shape.x + shape.width) return false
         if (pt.y < shape.y) return false
-        if (pt.y > shape.y + shape.h) return false
+        if (pt.y > shape.y + shape.height) return false
         return true
     }
 

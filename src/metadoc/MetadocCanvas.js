@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {fetchGraphObject, propToArray} from "../syncgraph/utils";
+import {makePoint} from '../utils'
 
 
 export class MetadocCanvas extends Component {
@@ -25,10 +26,9 @@ export class MetadocCanvas extends Component {
 
     toCanvas(e) {
         const rect = e.target.getBoundingClientRect()
-        return {
-            x: Math.floor((e.clientX - rect.left) / this.props.scale),
-            y: Math.floor((e.clientY - rect.top) / this.props.scale),
-        }
+        return makePoint(
+            Math.floor((e.clientX - rect.left) / this.props.scale),
+            Math.floor((e.clientY - rect.top) / this.props.scale))
     }
 
 
@@ -80,24 +80,31 @@ export class MetadocCanvas extends Component {
         const layer = prov.getSelectedLayer()
         if (!layer) return null
         const graph = prov.getRawGraph()
-        return propToArray(graph,layer.children).find((ch)=> this.isInside(pt,ch))
+        const arr = propToArray(graph,layer.children)
+        arr.reverse()
+        return arr.find((ch)=> this.isInside(pt,ch))
     }
 
     mouseDown = (e) => {
         this.props.prov.pauseQueue()
         const pt = this.toCanvas(e)
-        const shape = this.findShape(pt)
-        if (shape) {
+        const shapeid = this.findShape(pt)
+        if (shapeid) {
+            const shapeobj = fetchGraphObject(this.props.prov.getRawGraph(),shapeid)
             this.setState({
                 pressed: true,
+                initial: makePoint(shapeobj.x,shapeobj.y).minus(pt),
                 start: pt,
-                shape: shape,
+                shape: shapeid,
             })
+        } else {
+            const layer = this.props.prov.getSelectedLayer()
+            if(layer) SelectionManager.setSelection(layer.id)
         }
     }
     mouseMove = (e) => {
         if (!this.state.pressed) return
-        const pt = this.toCanvas(e)
+        const pt = this.toCanvas(e).add(this.state.initial)
         const graph = this.props.prov.getRawGraph()
         graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'x', pt.x))
         graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'y', pt.y))
