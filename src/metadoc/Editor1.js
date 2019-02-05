@@ -9,7 +9,7 @@ import {
     cloneShape,
     createGraphObjectFromObject,
     fetchGraphObject,
-    insertAsFirstChild, insertAsLastChild,
+    insertAsFirstChild, insertAsLastChild, listToArray,
     propToArray,
     removeFromParent
 } from "../syncgraph/utils";
@@ -405,6 +405,29 @@ export default class MetadocEditor extends  SyncGraphProvider {
         if(isShapeType(s.type) && isShapeType(t.type)) return true
         return false
     }
+    canAddExternalChild(parent,child) {
+        const pobj = fetchGraphObject(this.getDataGraph(),parent)
+        // console.log('parent is',pobj)
+        if(pobj.type === 'assets') return true
+        return false
+    }
+    acceptDrop(e,tgt) {
+        const dataTransfer = e.dataTransfer
+        console.log("doing drop of external data")
+        // console.log("files are",dataTransfer.files)
+        // console.log("items are", dataTransfer.items)
+        // console.log("on to",tgt)
+        const obj = fetchGraphObject(this.getDataGraph(),tgt)
+        if(obj.type === 'assets') {
+            console.log("great. we can import an asset")
+            const files = listToArray(dataTransfer.files)
+            files.forEach(file => {
+                console.log("importing",file)
+            })
+        }
+    }
+
+
     newView = () => window.open( `./?mode=metadoc&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
 

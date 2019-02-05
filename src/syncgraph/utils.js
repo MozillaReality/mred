@@ -1,3 +1,6 @@
+export function listToArray(list) {
+    return Array.prototype.slice.call(list)
+}
 export function createGraphObjectFromObject(graph, json) {
     return graph.createObject(json)
 }

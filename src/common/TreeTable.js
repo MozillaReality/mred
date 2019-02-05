@@ -101,7 +101,8 @@ export default class TreeTable extends Component {
             root:this.props.root,
             dropTarget:null,
             selection:null,
-            dragTarget:null
+            dragTarget:null,
+            internalDrag:false,
         }
     }
     componentDidMount() {
@@ -129,10 +130,20 @@ export default class TreeTable extends Component {
         e.dataTransfer.setData("text/html", e.target.parentNode);
         e.dataTransfer.setDragImage(e.target.parentNode, 20, 20);
         e.dataTransfer.dropEffect = 'move'
-        this.setState({dragTarget:item})
+        this.setState({dragTarget:item, internalDrag:true})
     }
     onDragOver = (e,item) => {
-        e.preventDefault()
+        if(!this.state.internalDrag) {
+            e.preventDefault()
+            if(this.props.provider.canAddExternalChild(item,e.dataTransfer)) {
+                selMan.setDropTarget(item)
+                selMan.setDropType('parent')
+            } else {
+                selMan.setDropType(null)
+                selMan.setDropTarget(null)
+            }
+            return
+        }
         const prov = this.props.provider
         if(prov.canAddChild(item,this.state.dragTarget)) {
             //use the rop target as a parent
@@ -150,9 +161,11 @@ export default class TreeTable extends Component {
         }
     }
     onDragEnd = (e,item) => {
-        //if no valid drop target
-        if(!this.state.dropTarget){
-            this.setState({dragTarget:null})
+        //handle external case
+        if(!this.state.internalDrag){
+            this.setState({dragTarget:null, internalDrag:false})
+            e.preventDefault()
+            e.stopPropagation()
             return
         }
 
@@ -163,7 +176,7 @@ export default class TreeTable extends Component {
 
         //can't drop onto self
         if(dst.id === src.id) {
-            this.setState({dragTarget:null})
+            this.setState({dragTarget:null, internalDrag:false})
             selMan.setDropTarget(null)
             return
         }
@@ -185,7 +198,12 @@ export default class TreeTable extends Component {
         selMan.setDropTarget(null)
     }
     onDrop = (e,item) => {
-        // console.log("the drop is happening",item)
+        if(!this.state.internalDrag) {
+            e.stopPropagation()
+            e.preventDefault()
+            this.props.provider.acceptDrop(e,item)
+            this.setState({internalDrag:false, dragTarget:null})
+        }
         var data = e.dataTransfer.getData("text/html");
         // console.log('the dropped data is',data)
     }
