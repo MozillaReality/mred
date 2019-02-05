@@ -9,7 +9,7 @@ import {
     cloneShape,
     createGraphObjectFromObject,
     fetchGraphObject,
-    insertAsFirstChild,
+    insertAsFirstChild, insertAsLastChild,
     propToArray,
     removeFromParent
 } from "../syncgraph/utils";
@@ -18,6 +18,7 @@ import RectDef from "./RectDef";
 import CircleDef from "./CircleDef";
 import TextDef from "./TextDef";
 import InputManager from "../common/InputManager";
+import ImageDef from './ImageDef'
 
 const PROP_DEFS = {
     title: {
@@ -70,13 +71,36 @@ const PROP_DEFS = {
         key:'text',
         name:'text',
         type:TYPES.STRING
-    }
+    },
+    src: {
+        key:'src',
+        name:'src',
+        type:TYPES.STRING,
+    },
+    asset: {
+        key:'asset',
+        name:'asset',
+        type:TYPES.ENUM,
+    },
+    subtype: {
+        key:'subtype',
+        name:'kind',
+        type:TYPES.STRING,
+        locked:true,
+    },
+    format: {
+        key:'format',
+        name:'format',
+        type:TYPES.STRING,
+        locked:true,
+    },
 }
 
 const SHAPE_DEFS = {
     rect: new RectDef(),
     circle: new CircleDef(),
     text: new TextDef(),
+    image: new ImageDef(),
 }
 
 const ICONS = {
@@ -85,6 +109,7 @@ const ICONS = {
     rect:'square',
     circle:'circle',
     text:'font',
+    image:'image'
 }
 
 
@@ -93,27 +118,44 @@ function isShapeType(type) {
     if(type === 'rect') return true
     if(type === 'circle') return true
     if(type === 'text') return true
+    if(type === 'image') return true
     return false
 }
 
+const EnumTitleRenderer = (props) => {
+    let value = "---"
+    if(props.value && props.provider) {
+        const graph = props.provider.getDataGraph()
+        value = graph.getPropertyValue(props.value,'title')
+    }
+    return <b>{value}</b>
+}
+
 export default class MetadocEditor extends  SyncGraphProvider {
+    constructor(options) {
+        super(options)
+        this.imagecache = {}
+    }
     getDocType() { return "metadoc" }
     getApp = () => <MetadocApp provider={this}/>
     getTitle = () => "MetaDoc"
 
     makeEmptyRoot(doc) {
         //create root and children
-        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children: doc.createArray()}))
+        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children: doc.createArray(), parent:0}))
         //create page and children
-        const page = fetchGraphObject(doc,doc.createObject({ type:'page', title:'page 1', parent: root, children: doc.createArray()}))
+        const page = fetchGraphObject(doc,doc.createObject({ type:'page', title:'page 1', children: doc.createArray(),parent:0}))
         //create layer and children
-        const layer = fetchGraphObject(doc,doc.createObject({type:'layer',title:'layer 1', parent: page, children: doc.createArray()}))
+        const layer = fetchGraphObject(doc,doc.createObject({type:'layer',title:'layer 1', children: doc.createArray(),parent:0}))
         //create rect
         const rect1 = SHAPE_DEFS.rect.make(doc,layer)
+        // create assets
+        const assets = fetchGraphObject(doc,doc.createObject({type:'assets',title:'Assets', children: doc.createArray(), parent:0}))
         //connect it all together
         insertAsFirstChild(doc,layer,rect1)
         insertAsFirstChild(doc,page,layer)
         insertAsFirstChild(doc,root,page)
+        insertAsLastChild(doc,root,assets)
     }
 
     getRendererForItem = (item) => {
@@ -162,6 +204,17 @@ export default class MetadocEditor extends  SyncGraphProvider {
         </HBox>
         return <i>no custom editor for {def.key}</i>
     }
+
+    getValuesForEnum(key,obj) {
+        if(key === PROP_DEFS.asset.key) {
+            const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(),'children')
+            return propToArray(this.getDataGraph(),children)
+        }
+    }
+    getRendererForEnum(key,obj) {
+        if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
+    }
+
 
 
     getShapeDef(type) {
@@ -251,7 +304,24 @@ export default class MetadocEditor extends  SyncGraphProvider {
     addRect   = () => this.addShape(this.getShapeDef('rect'))
     addCircle = () => this.addShape(this.getShapeDef('circle'))
     addText   = () => this.addShape(this.getShapeDef('text'))
+    addImage   = () => this.addShape(this.getShapeDef('image'))
 
+    addDummyImageAsset = () => {
+        console.log("adding a dummy image asset")
+        const graph = this.getDataGraph()
+        const asset = fetchGraphObject(graph,graph.createObject({
+            type:'asset',
+            subtype:'image',
+            format:'image/png',
+            src:'https://baconmockup.com/300/200/',
+            width:300,
+            height:200,
+            title:'an image',
+            parent:0,
+        }))
+        const assets = fetchGraphObject(graph,this.getAssetsObject())
+        insertAsLastChild(graph,assets,asset)
+    }
     deleteSelection = () => {
         const graph = this.getDataGraph()
         const layer = this.getSelectedLayer()
@@ -335,6 +405,22 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return false
     }
     newView = () => window.open( `./?mode=metadoc&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+
+
+    isImageCached(src) {
+        if(this.imagecache[src]) return this.imagecache[src].complete
+        return false
+    }
+    requestImageCache(src) {
+        this.imagecache[src] = new Image()
+        this.imagecache[src].onload = () => { }
+        this.imagecache[src].src = src
+    }
+    getCachedImage(src) {
+        return this.imagecache[src]
+    }
+
+    getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
 }
 
 
@@ -399,6 +485,11 @@ class MetadocApp extends Component {
                 icon: ICONS.text,
                 fun: () => this.props.provider.addText()
             },
+            {
+                title:'image',
+                icon: ICONS.image,
+                fun: () => this.props.provider.addImage()
+            },
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
@@ -439,6 +530,7 @@ class MetadocApp extends Component {
             <Toolbar left bottom>
                 <button className="fa fa-plus" onClick={this.showAddPopup}/>
                 <button className="fa fa-close" onClick={prov.deleteSelection}/>
+                <button className="fa fa-file-image-o" onClick={prov.addDummyImageAsset}/>
             </Toolbar>
 
             <Toolbar center top>

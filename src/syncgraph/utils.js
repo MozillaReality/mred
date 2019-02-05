@@ -31,6 +31,14 @@ export function insertAsFirstChild(graph, parent, child) {
     graph.insertAfter(ch,null,child.id)
 }
 
+export function insertAsLastChild(graph, parent, child) {
+    graph.setProperty(child.id,'parent',parent.id)
+    const ch = graph.getPropertyValue(parent.id,'children')
+    const len = graph.getArrayLength(ch)
+    const prev = graph.getElementAt(ch,len-1)
+    graph.insertAfter(ch,prev,child.id)
+}
+
 export function removeFromParent(graph, obj) {
     const parent = fetchGraphObject(graph, obj.parent)
     const n = indexOf(graph, parent.children, obj.id)

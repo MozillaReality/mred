@@ -58,7 +58,7 @@ export class MetadocCanvas extends Component {
 
     drawShape(c,g,shape) {
         const def = this.props.prov.getShapeDef(shape.type)
-        if(def) def.draw(c,g,shape,SelectionManager.getSelection() === shape.id)
+        if(def) def.draw(c,g,shape,SelectionManager.getSelection() === shape.id,this.props.prov)
     }
 
     isInside(pt, objid) {
