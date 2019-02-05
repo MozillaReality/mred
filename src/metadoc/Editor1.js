@@ -258,6 +258,21 @@ export default class MetadocEditor extends  SyncGraphProvider {
     }
 
     calculateContextMenu(item) {
+        const obj = fetchGraphObject(this.getDataGraph(),item)
+        if(obj.type === 'assets') {
+            return [{
+                title:'Add Image',
+                icon:'image',
+                fun:this.showAddImageAssetDialog
+            }]
+        }
+        if(obj.type === 'asset') {
+            return [{
+                title:'delete',
+                icon:'close',
+                fun: this.deleteSelectedAsset
+            }]
+        }
         const cmds =  [
             {
                 title:'delete',
@@ -307,23 +322,6 @@ export default class MetadocEditor extends  SyncGraphProvider {
     addText   = () => this.addShape(this.getShapeDef('text'))
     addImage   = () => this.addShape(this.getShapeDef('image'))
 
-    addDummyImageAsset = () => {
-        console.log("adding a dummy image asset")
-        const graph = this.getDataGraph()
-        const asset = fetchGraphObject(graph,graph.createObject({
-            type:'asset',
-            subtype:'image',
-            format:'image/png',
-            src:'https://baconmockup.com/300/200/',
-            width:300,
-            height:200,
-            title:'an image',
-            parent:0,
-        }))
-        const assets = fetchGraphObject(graph,this.getAssetsObject())
-        insertAsLastChild(graph,assets,asset)
-    }
-
     addImageAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
@@ -350,6 +348,13 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const shape = this.getSelectedShape()
         if(!shape) return
         removeFromParent(graph,shape)
+        SelectionManager.clearSelection()
+    }
+    deleteSelectedAsset = () => {
+        const graph = this.getDataGraph()
+        const sel = SelectionManager.getSelection()
+        const obj = fetchGraphObject(graph,sel)
+        removeFromParent(graph,obj)
         SelectionManager.clearSelection()
     }
     cutSelection = () => {
@@ -457,6 +462,10 @@ export default class MetadocEditor extends  SyncGraphProvider {
     }
 
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
+
+    showAddImageAssetDialog = () => {
+        console.log('showing a dialog')
+    }
 }
 
 
@@ -566,7 +575,7 @@ class MetadocApp extends Component {
             <Toolbar left bottom>
                 <button className="fa fa-plus" onClick={this.showAddPopup}/>
                 <button className="fa fa-close" onClick={prov.deleteSelection}/>
-                <button className="fa fa-file-image-o" onClick={prov.addDummyImageAsset}/>
+                <button className="fa fa-file-image-o" onClick={prov.showAddImageAssetDialog}/>
             </Toolbar>
 
             <Toolbar center top>

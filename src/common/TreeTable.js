@@ -29,7 +29,7 @@ class TreeTableItem extends Component {
         e.preventDefault()
         e.stopPropagation()
         if(this.props.provider.calculateContextMenu) {
-            const menu = this.props.provider.calculateContextMenu()
+            const menu = this.props.provider.calculateContextMenu(this.props.node)
             PopupManager.show(<ContextMenu menu={menu}/>,e.target)
         }
     }
