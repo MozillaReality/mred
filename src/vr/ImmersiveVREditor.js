@@ -171,7 +171,6 @@ export default class ImmersiveVREditor extends Component {
 
 
         this.controls = new TranslateControl()
-        this.scene.add(this.controls)
         on(this.controls,'change',(e)=>{
             const sel = SelectionManager.getSelection()
             if(sel) {
@@ -288,6 +287,7 @@ export default class ImmersiveVREditor extends Component {
         console.log("totally new document!")
         //nuke all the old stuff
         if (this.sceneWrapper) {
+            this.sceneWrapper.remove(this.controls)
             this.scene.remove(this.sceneWrapper)
             this.sceneWrapper = null
         }
@@ -302,11 +302,13 @@ export default class ImmersiveVREditor extends Component {
     setCurrentSceneId(sceneid) {
         if (this.sceneWrapper) {
             this.scene.remove(this.sceneWrapper)
+            this.scene.remove(this.controls)
             this.sceneWrapper = null
         }
         this.setState({scene: sceneid})
         this.sceneWrapper = this.findNode(sceneid)
         this.scene.add(this.sceneWrapper)
+        this.sceneWrapper.add(this.controls)
         const floor = new SceneAccessor(this.sceneWrapper).getFloor()
         floor.userData.clickable = true
         on(floor,POINTER_MOVE,(e)=>{
