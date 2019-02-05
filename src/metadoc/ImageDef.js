@@ -18,11 +18,11 @@ export default class ImageDef {
         if(shape.asset) {
             const src = g.getPropertyValue(shape.asset,'src')
             if(provider.isImageCached(src)) {
-                c.drawImage(provider.getCachedImage(src),shape.x,shape.y)
+                c.drawImage(provider.getCachedImage(src),shape.x,shape.y,shape.width,shape.height)
             } else {
                 provider.requestImageCache(src)
                 c.fillStyle = 'aqua'
-                c.fillRect(shape.x,shape.y,shape.w,shape.h)
+                c.fillRect(shape.x,shape.y,shape.width,shape.height)
             }
         }
         if (selected) {
