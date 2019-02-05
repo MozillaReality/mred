@@ -19,6 +19,7 @@ import CircleDef from "./CircleDef";
 import TextDef from "./TextDef";
 import InputManager from "../common/InputManager";
 import ImageDef from './ImageDef'
+import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 
 const PROP_DEFS = {
     title: {
@@ -413,7 +414,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
     }
     requestImageCache(src) {
         this.imagecache[src] = new Image()
-        this.imagecache[src].onload = () => { }
+        this.imagecache[src].onload = () => this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,{ provider: this })
         this.imagecache[src].src = src
     }
     getCachedImage(src) {
