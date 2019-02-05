@@ -339,6 +339,10 @@ export default class MetadocEditor extends  SyncGraphProvider {
             }))
             const assets = fetchGraphObject(graph,this.getAssetsObject())
             insertAsLastChild(graph,assets,asset)
+            this.requestImageCache(url).then(img => {
+                graph.setProperty(asset.id,'width',img.width)
+                graph.setProperty(asset.id,'height',img.height)
+            })
         })
     }
 
@@ -453,9 +457,15 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return false
     }
     requestImageCache(src) {
-        this.imagecache[src] = new Image()
-        this.imagecache[src].onload = () => this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,{ provider: this })
-        this.imagecache[src].src = src
+        const img = new Image()
+        this.imagecache[src] = img
+        return new Promise((res,rej) => {
+            img.src = src
+            img.onload = () => {
+                this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,{ provider: this })
+                res(img)
+            }
+        })
     }
     getCachedImage(src) {
         return this.imagecache[src]
