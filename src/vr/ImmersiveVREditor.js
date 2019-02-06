@@ -17,14 +17,12 @@ import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d"
 import SceneDef from "./SceneDef"
 import {on} from "../utils"
-import {get3DObjectDef, is3DObjectType} from './Common'
+import {get3DObjectDef, is3DObjectType, SIMPLE_COLORS, toRad} from './Common'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
-const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
 
 
-const toRad = (degrees) => degrees*Math.PI/180
 
 
 export default class ImmersiveVREditor extends Component {

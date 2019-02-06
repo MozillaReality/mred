@@ -123,3 +123,4 @@ export function get3DObjectDef(type) {
     throw new Error(`unknown 3d object type ${type}`)
 }
 
+export const toRad = (degrees) => degrees*Math.PI/180
