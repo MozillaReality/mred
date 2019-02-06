@@ -14,114 +14,18 @@ import {
     removeFromParent
 } from "../syncgraph/utils";
 import {HBox, PopupManager} from "appy-comps";
-import RectDef from "./RectDef";
-import CircleDef from "./CircleDef";
-import TextDef from "./TextDef";
 import InputManager from "../common/InputManager";
-import ImageDef from './ImageDef'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {
+    HORIZONTAL_ALIGNMENT,
+    ICONS,
+    isShapeType,
+    PROP_DEFS,
+    SHAPE_DEFS,
+    STANDARD_FONTS,
+    VERTICAL_ALIGNMENT
+} from "./Common";
 
-const PROP_DEFS = {
-    title: {
-        key:'title',
-        name:'Title',
-        type:TYPES.STRING
-    },
-    x: {
-        key:'x',
-        name:'X',
-        type:TYPES.NUMBER
-    },
-    y: {
-        key:'y',
-        name:'Y',
-        type:TYPES.NUMBER
-    },
-    rx: {
-        key:'rx',
-        name:'RX',
-        type:TYPES.NUMBER
-    },
-    ry: {
-        key:'ry',
-        name:'RY',
-        type:TYPES.NUMBER
-    },
-    fillColor: {
-        key:'fillColor',
-        name:'color',
-        type:TYPES.COLOR,
-        custom:true,
-    },
-    width: {
-        key:'width',
-        name:'Width',
-        type:TYPES.NUMBER
-    },
-    height: {
-        key:'height',
-        name:'Height',
-        type:TYPES.NUMBER
-    },
-    radius: {
-        key:'radius',
-        name:'Radius',
-        type:TYPES.NUMBER
-    },
-    text: {
-        key:'text',
-        name:'text',
-        type:TYPES.STRING
-    },
-    src: {
-        key:'src',
-        name:'src',
-        type:TYPES.STRING,
-    },
-    asset: {
-        key:'asset',
-        name:'asset',
-        type:TYPES.ENUM,
-    },
-    subtype: {
-        key:'subtype',
-        name:'kind',
-        type:TYPES.STRING,
-        locked:true,
-    },
-    format: {
-        key:'format',
-        name:'format',
-        type:TYPES.STRING,
-        locked:true,
-    },
-}
-
-const SHAPE_DEFS = {
-    rect: new RectDef(),
-    circle: new CircleDef(),
-    text: new TextDef(),
-    image: new ImageDef(),
-}
-
-const ICONS = {
-    page:'file',
-    layer:'sticky-note',
-    rect:'square',
-    circle:'circle',
-    text:'font',
-    image:'image'
-}
-
-
-
-function isShapeType(type) {
-    if(type === 'rect') return true
-    if(type === 'circle') return true
-    if(type === 'text') return true
-    if(type === 'image') return true
-    return false
-}
 
 const EnumTitleRenderer = (props) => {
     let value = "---"
@@ -220,6 +124,15 @@ export default class MetadocEditor extends  SyncGraphProvider {
         if(key === PROP_DEFS.asset.key) {
             const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(),'children')
             return propToArray(this.getDataGraph(),children)
+        }
+        if(key === PROP_DEFS.fontFamily.key) {
+            return Object.keys(STANDARD_FONTS).map(key => STANDARD_FONTS[key])
+        }
+        if(key === PROP_DEFS.verticalAlign.key) {
+            return Object.keys(VERTICAL_ALIGNMENT).map(key => VERTICAL_ALIGNMENT[key])
+        }
+        if(key === PROP_DEFS.horizontalAlign.key) {
+            return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
         }
     }
     getRendererForEnum(key,obj) {

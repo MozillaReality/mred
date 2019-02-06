@@ -6,7 +6,10 @@ export class StringEditor extends Component {
         if (prop.hasHints()) {
             const hints = prop.getHints()
             if (hints.multiline) {
-                return <textarea value={this.props.value} onChange={this.props.onChange}/>
+                return <textarea value={this.props.value}
+                                 onChange={this.props.onChange}
+                                 onBlur={this.props.onBlur}
+                />
             }
         }
         return <input type='string'

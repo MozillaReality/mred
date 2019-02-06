@@ -8,7 +8,7 @@ import {propToArray} from "./utils";
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
-export default class SyncGraphProvider extends  TreeItemProvider {
+export default class SyncGraphProvider extends TreeItemProvider {
     constructor(options) {
         super()
         this.options = options || {}
