@@ -31,42 +31,54 @@ export default class TextDef {
         c.fillStyle = shape.fillColor
         const size_px = shape.fontSize
         c.font = `normal ${size_px}px sans-serif`
-        const metrics = c.measureText(shape.text)
+        const lines = shape.text.split("\n").map(text => {
+            return {
+                text:text,
+                width: c.measureText(text).width,
+                height: size_px
+            }
+        })
+
+        let total_width = 0
+        let total_height = 0
         if(shape.autoFit) {
-            c.fillText(shape.text, shape.x, shape.y + shape.fontSize)
+            total_width = lines.reduce((max, line) => Math.max(max,line.width),0)
+            total_height = lines.reduce((total,line) => total + line.height,0)
         } else {
-            let xoff = 0
-            let yoff = 0
+            total_width = shape.width
+            total_height = shape.height
+        }
+        lines.forEach((line,i) => {
+            const lines_height = lines.length*size_px
+            line.xoff = 0
             if(shape.horizontalAlign === HORIZONTAL_ALIGNMENT.LEFT) {
-                xoff = 0
+                line.xoff = 0
             }
             if(shape.horizontalAlign === HORIZONTAL_ALIGNMENT.CENTER) {
-                xoff = (shape.width - metrics.width)/2
+                line.xoff = (total_width - line.width)/2
             }
             if(shape.horizontalAlign === HORIZONTAL_ALIGNMENT.RIGHT) {
-                xoff = shape.width - metrics.width
+                line.xoff = total_width - line.width
             }
             if(shape.verticalAlign === VERTICAL_ALIGNMENT.TOP) {
-                yoff = 0
+                line.yoff = 0
             }
             if(shape.verticalAlign === VERTICAL_ALIGNMENT.CENTER) {
-                yoff = (shape.height-size_px)/2
+                line.yoff = (total_height-lines_height)/2
             }
             if(shape.verticalAlign === VERTICAL_ALIGNMENT.BASELINE) {
-                yoff = shape.height-size_px
+                line.yoff = total_height - lines_height
             }
             if(shape.verticalAlign === VERTICAL_ALIGNMENT.BOTTOM) {
-                yoff = shape.height-size_px
+                line.yoff = total_height - lines_height
             }
-            c.fillText(shape.text, shape.x+xoff,  shape.y + yoff + size_px)
-        }
+            line.yoff += (i+1)*line.height
+        })
+
+        lines.forEach((line,i) => c.fillText(line.text,shape.x+line.xoff,shape.y+ line.yoff))
         if (selected) {
             c.strokeStyle = 'red'
-            if(shape.autoFit) {
-                c.strokeRect(shape.x + 0.5, shape.y + 0.5, metrics.width, size_px)
-            } else {
-                c.strokeRect(shape.x+0.5, shape.y+0.5, shape.width, shape.height)
-            }
+            c.strokeRect(shape.x + 0.5, shape.y + 0.5, total_width, total_height)
         }
     }
 
