@@ -2,15 +2,15 @@ import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
 import TreeTable from '../common/TreeTable'
-import PropSheet, {TYPES} from '../common/PropSheet'
+import PropSheet from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     cloneShape,
     fetchGraphObject,
-    insertAsFirstChild, insertAsLastChild,
+    insertAsFirstChild, insertAsLastChild, listToArray, propToArray,
     removeFromParent
 } from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
@@ -23,6 +23,10 @@ import PlaneDef from './PlaneDef'
 import {ICONS} from '../metadoc/Common'
 
 export default class VREditor extends  SyncGraphProvider {
+    constructor(options) {
+        super(options)
+        this.imagecache = {}
+    }
     getDocType() { return "vr" }
     getApp = () => {
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
@@ -74,6 +78,15 @@ export default class VREditor extends  SyncGraphProvider {
 
         return defs
     }
+    getValuesForEnum(key,obj) {
+        if (key === PROP_DEFS.asset.key) {
+            const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
+            return propToArray(this.getDataGraph(), children)
+        }
+    }
+    getRendererForEnum(key,obj) {
+        if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
+    }
 
     getSelectedScene() {
         const graph = this.getDataGraph()
@@ -88,6 +101,8 @@ export default class VREditor extends  SyncGraphProvider {
         if(is3DObjectType(type))  return fetchGraphObject(graph,graph.getPropertyValue(sel,'parent'))
         return -1
     }
+    getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
+
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
@@ -136,6 +151,30 @@ export default class VREditor extends  SyncGraphProvider {
         const obj = new PlaneDef().make(graph,scene)
         insertAsFirstChild(graph,scene,obj)
         SelectionManager.setSelection(obj.id)
+    }
+
+    addImageAssetFromFile = (file) => {
+        this.uploadFile(file).then((ans)=>{
+            console.log("uploaded file with answer",ans)
+            const url = SERVER_URL_ASSETS+ans.id
+            const graph = this.getDataGraph()
+            const asset = fetchGraphObject(graph,graph.createObject({
+                type:'asset',
+                subtype:'image',
+                format:file.type,
+                src:url,
+                width:100,
+                height:100,
+                title:file.name,
+                parent:0
+            }))
+            const assets = fetchGraphObject(graph,this.getAssetsObject())
+            insertAsLastChild(graph,assets,asset)
+            this.requestImageCache(url).then(img => {
+                graph.setProperty(asset.id,'width',img.width)
+                graph.setProperty(asset.id,'height',img.height)
+            })
+        })
     }
 
     deleteObject = () => {
@@ -234,6 +273,29 @@ export default class VREditor extends  SyncGraphProvider {
         if(is3DObjectType(s.type) && is3DObjectType(t.type)) return true
         return false
     }
+    canAddExternalChild(parent,child) {
+        const pobj = fetchGraphObject(this.getDataGraph(),parent)
+        if(pobj.type === 'assets') return true
+        return false
+    }
+    acceptDrop(e,tgt) {
+        const obj = fetchGraphObject(this.getDataGraph(),tgt)
+        if(obj.type === 'assets') {
+            listToArray(e.dataTransfer.files).forEach(file => this.addImageAssetFromFile(file))
+        }
+    }
+    requestImageCache(src) {
+        const img = new Image()
+        this.imagecache[src] = img
+        return new Promise((res,rej) => {
+            img.src = src
+            img.onload = () => {
+                this.fire(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED,{ provider: this })
+                res(img)
+            }
+        })
+    }
+
 
     createCustomEditor(item,def,provider, value, onChange) {
         if(def.key === PROP_DEFS.color.key) return <HBox>
@@ -339,3 +401,11 @@ class VREditorApp extends Component {
 }
 
 
+const EnumTitleRenderer = (props) => {
+    let value = "---"
+    if(props.value && props.provider) {
+        const graph = props.provider.getDataGraph()
+        value = graph.getPropertyValue(props.value,'title')
+    }
+    return <b>{value}</b>
+}

@@ -153,7 +153,7 @@ export class VRCanvas extends Component {
                         return
                     }
                 }
-                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op)
+                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
             }

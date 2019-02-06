@@ -80,10 +80,27 @@ export const PROP_DEFS = {
         name:'Default Floor',
         type:TYPES.BOOLEAN
     },
+    src: {
+        key:'src',
+        name:'src',
+        type:TYPES.STRING,
+    },
     asset: {
         key:'asset',
         name:'asset',
         type:TYPES.ENUM,
+    },
+    subtype: {
+        key:'subtype',
+        name:'kind',
+        type:TYPES.STRING,
+        locked:true,
+    },
+    format: {
+        key:'format',
+        name:'format',
+        type:TYPES.STRING,
+        locked:true,
     },
 }
 

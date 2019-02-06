@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
 import {on} from "../utils";
+import {PROP_DEFS} from './Common'
 
 export default class PlaneDef {
     make(graph, scene) {
@@ -31,7 +32,7 @@ export default class PlaneDef {
         return node
     }
 
-    updateProperty(node, obj, op) {
+    updateProperty(node, obj, op, provider) {
         if(op.name === 'color') {
             let color = op.value
             if(color.indexOf('#') === 0) color = color.substring(1)
@@ -47,6 +48,14 @@ export default class PlaneDef {
         if (op.name === 'rx') node.rotation.x = parseFloat(op.value)
         if (op.name === 'ry') node.rotation.y = parseFloat(op.value)
         if (op.name === 'rz') node.rotation.z = parseFloat(op.value)
+        if (op.name === PROP_DEFS.asset.key) {
+            const g = provider.getDataGraph()
+            const asset = fetchGraphObject(g,op.value)
+            if(asset) {
+                const tex = new THREE.TextureLoader().load(asset.src)
+                node.material = new THREE.MeshLambertMaterial({color:obj.color, side: THREE.DoubleSide, map:tex})
+            }
+        }
     }
 
 }
