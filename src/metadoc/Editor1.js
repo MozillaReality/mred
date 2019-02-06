@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import TreeTable from '../common/TreeTable'
-import SelectionManager from '../SelectionManager'
+import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import {
@@ -25,6 +25,7 @@ import {
     STANDARD_FONTS,
     VERTICAL_ALIGNMENT
 } from "./Common";
+import AssetView from './AssetView'
 
 
 const EnumTitleRenderer = (props) => {
@@ -414,6 +415,7 @@ class MetadocApp extends Component {
         this.state = {
             connected:false,
             zoom: 0,
+            mode:'canvas'
         }
 
         this.im = new InputManager()
@@ -436,6 +438,17 @@ class MetadocApp extends Component {
     componentDidMount() {
         this.im.attachKeyEvents(document)
         this.props.provider.on('CONNECTED',()=> this.setState({connected: this.props.provider.isConnected()}))
+        SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const item = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+                if(item.type === PROP_DEFS.asset.key) {
+                    this.setState({mode:'asset'})
+                    return
+                }
+            }
+            this.setState({mode:'canvas'})
+        })
     }
 
     canvasSelected = (rect) => SelectionManager.setSelection(rect)
@@ -533,7 +546,7 @@ class MetadocApp extends Component {
             </Toolbar>
 
             <Panel center middle scroll>
-                <MetadocCanvas prov={prov} onSelect={this.canvasSelected} scale={Math.pow(2,this.state.zoom)}/>
+                {this.renderCenterPane(this.state.mode)}
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
@@ -542,6 +555,15 @@ class MetadocApp extends Component {
             <Toolbar right bottom/>
 
         </GridEditorApp>
+    }
+
+    renderCenterPane(mode) {
+        if (mode === 'canvas') {
+            return <MetadocCanvas prov={this.props.provider} onSelect={this.canvasSelected} scale={Math.pow(2, this.state.zoom)}/>
+        } else {
+            const sel = SelectionManager.getSelection()
+            return <AssetView provider={this.props.provider} asset={sel}/>
+        }
     }
 }
 

@@ -19,9 +19,14 @@ export class MetadocCanvas extends Component {
         })
     }
 
+    selectionChanged = (sel) => this.setState({selection: sel})
     componentDidMount() {
-        SelectionManager.on(SELECTION_MANAGER.CHANGED, (sel) =>  this.setState({selection: sel}))
-        this.props.prov.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, () =>   this.redraw())
+        SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
+        this.props.prov.on(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.redraw)
+    }
+    componentWillUnmount() {
+        SelectionManager.off(SELECTION_MANAGER.CHANGED, this.selectionChanged)
+        this.props.prov.off(TREE_ITEM_PROVIDER.STRUCTURE_CHANGED, this.redraw)
     }
 
     toCanvas(e) {
@@ -36,7 +41,7 @@ export class MetadocCanvas extends Component {
         this.redraw()
     }
 
-    redraw() {
+    redraw = () => {
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
