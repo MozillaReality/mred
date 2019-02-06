@@ -139,6 +139,7 @@ export const ICONS = {
     rect:'square',
     circle:'circle',
     text:'font',
+    plane:'plane',
     image:'image'
 }
 

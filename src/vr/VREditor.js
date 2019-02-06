@@ -1,6 +1,6 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
@@ -17,79 +17,10 @@ import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import SphereDef from "./SphereDef";
-import {HBox} from "appy-comps";
-const stdhints = {
-    incrementValue:0.1,
-}
-const PROP_DEFS = {
-    title: {
-        key:'title',
-        name:'Title',
-        type:TYPES.STRING
-    },
-    width: {
-        key:'width',
-        name:'Width',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    height: {
-        key:'height',
-        name:'Height',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    depth: {
-        key:'depth',
-        name:'Depth',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    radius: {
-        key:'radius',
-        name:'Radius',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    tx: {
-        key:'tx',
-        name:'TX',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    ty: {
-        key:'ty',
-        name:'TY',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    tz: {
-        key:'tz',
-        name:'TZ',
-        type:TYPES.NUMBER,
-        hints: stdhints
-    },
-    color: {
-        key:'color',
-        name:'Color',
-        type:TYPES.COLOR,
-        custom:true,
-    },
-    defaultFloor: {
-        key:'defaultFloor',
-        name:'Default Floor',
-        type:TYPES.BOOLEAN
-    }
-}
-
-const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
-
-function is3DObjectType(type) {
-    if(type === 'cube') return true
-    if(type === 'sphere') return true
-    return false
-}
-
+import {HBox, PopupManager} from "appy-comps";
+import {is3DObjectType, PROP_DEFS, SIMPLE_COLORS} from './Common'
+import PlaneDef from './PlaneDef'
+import {ICONS} from '../metadoc/Common'
 
 export default class VREditor extends  SyncGraphProvider {
     getDocType() { return "vr" }
@@ -199,6 +130,14 @@ export default class VREditor extends  SyncGraphProvider {
         SelectionManager.setSelection(obj.id)
     }
 
+    addPlane = () => {
+        const graph = this.getDataGraph()
+        const scene = this.getSelectedScene()
+        const obj = new PlaneDef().make(graph,scene)
+        insertAsFirstChild(graph,scene,obj)
+        SelectionManager.setSelection(obj.id)
+    }
+
     deleteObject = () => {
         const objid = SelectionManager.getSelection()
         if(!objid) return
@@ -224,6 +163,11 @@ export default class VREditor extends  SyncGraphProvider {
                 title:'sphere',
                 icon:'circle',
                 fun: this.addSphere
+            },
+            {
+                title:'plane',
+                icon:'plane',
+                fun: this.addPlane
             },
             {
                 title:'scene',
@@ -340,6 +284,26 @@ class VREditorApp extends Component {
         this.im.attachKeyEvents(document)
     }
 
+    showAddPopup = (e) => {
+        const acts = [
+            {
+                title: 'cube',
+                icon: ICONS.rect,
+                fun: () => this.props.provider.addCube()
+            },
+            {
+                title: 'sphere',
+                icon: ICONS.circle,
+                fun: () => this.props.provider.addSphere()
+            },
+            {
+                title: 'plane',
+                icon: ICONS.plane,
+                fun: () => this.props.provider.addPlane()
+            },
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+    }
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -347,8 +311,7 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button className={"fa fa-plus"} onClick={prov.addCube}>cube</button>
-                <button className={"fa fa-plus"} onClick={prov.addSphere}>sphere</button>
+                <button className={"fa fa-plus"} onClick={this.showAddPopup}>obj</button>
                 <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
             </Toolbar>
 
