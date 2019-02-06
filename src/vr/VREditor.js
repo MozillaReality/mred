@@ -9,9 +9,8 @@ import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     cloneShape,
-    createGraphObjectFromObject,
     fetchGraphObject,
-    insertAsFirstChild,
+    insertAsFirstChild, insertAsLastChild,
     removeFromParent
 } from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
@@ -101,15 +100,18 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getTitle = () => "VR Builder"
     makeEmptyRoot(doc) {
-        const root = fetchGraphObject(doc,createGraphObjectFromObject(doc,{
-            type:'root',
-            title:'root',
-            children:doc.createArray()
-        }))
+        //make root
+        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children:doc.createArray() }))
+        //make scene
         const scene1 = new SceneDef().make(doc,root)
-        insertAsFirstChild(doc,root,scene1)
+        //make cube
         const obj = new CubeDef().make(doc,scene1)
+        //make assets
+        const assets = fetchGraphObject(doc,doc.createObject({type:'assets',title:'Assets', children: doc.createArray(), parent:0}))
+        //tie it all together
+        insertAsFirstChild(doc,root,scene1)
         insertAsFirstChild(doc,scene1,obj)
+        insertAsLastChild(doc,root,assets)
     }
 
     getRendererForItem = (item) => {

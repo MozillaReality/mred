@@ -39,8 +39,8 @@ export class ArrayEditor extends Component {
     }
 
     render() {
-        const def = this.props.def
-        const obj = this.props.obj
+        // const def = this.props.def
+        // const obj = this.props.obj
         let value = this.props.value
         if (!value) value = []
         return <div>

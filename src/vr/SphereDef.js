@@ -1,14 +1,13 @@
-import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
 import {on} from "../utils";
-import BoxAccessor from "./BoxAccessor";
 
 export default class SphereDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't create sphere w/ missing parent")
-        return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
+        return fetchGraphObject(graph,graph.createObject({
             type:'sphere',
             title:'a sphere',
             radius: 0.5,

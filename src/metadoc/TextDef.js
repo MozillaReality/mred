@@ -1,4 +1,4 @@
-import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../syncgraph/utils";
 import {FONT_STYLES, FONT_WEIGHTS, HORIZONTAL_ALIGNMENT, STANDARD_FONTS, VERTICAL_ALIGNMENT} from "./Common";
 
 export default class TextDef {

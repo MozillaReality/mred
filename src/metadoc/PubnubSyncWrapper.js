@@ -29,7 +29,7 @@ export class PubnubSyncWrapper {
     start() {
         this.pubnub.addListener({
             status: (e) => {
-                console.log(e)
+                // console.log(e)
                 if (e.operation === 'PNSubscribeOperation' && e.category === 'PNConnectedCategory') {
                     this.sendHistoryRequest()
                 }
@@ -78,7 +78,7 @@ export class PubnubSyncWrapper {
     }
 
     sendHistoryRequest() {
-        console.log("sending a history request")
+        // console.log("sending a history request")
         this.pubnub.publish({
             channel: this.calculateChannelName(),
             message: {
@@ -89,7 +89,7 @@ export class PubnubSyncWrapper {
     }
 
     handleGetHistory() {
-        console.log("need to send out the history")
+        // console.log("need to send out the history")
         const graph = this.provider.getDataGraph()
         const hist = graph.getHistory().slice()
         console.log(hist)

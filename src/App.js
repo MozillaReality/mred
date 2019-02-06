@@ -43,14 +43,13 @@ export default class App extends Component {
         )
     }
     render() {
-        console.log("======== rendering top level app")
         return (
             <VBox fill>
                 <button
                     style={{position:'absolute',zIndex: 10,}}
                     onClick={this.showProviderList}
                     >
-                    <img src="icon.png" height="20" style={{padding:'0em'}}/>
+                    <img src="icon.png" alt="switch apps" height="20" style={{padding:'0em'}}/>
                 </button>
                 <div style={{position: 'relative', flex: '1'}}>{this.getApp()}</div>
                 <PopupContainer/>

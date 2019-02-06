@@ -12,7 +12,7 @@ export default class AssetView extends Component {
     }
 
     renderAsset(asset) {
-        if(asset.subtype === 'image') return <img src={asset.src}/>
+        if(asset.subtype === 'image') return <img src={asset.src} alt={asset.title}/>
         return <div>unknown type</div>
     }
 }

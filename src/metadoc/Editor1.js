@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
-import PropSheet, {TYPES} from '../common/PropSheet'
+import PropSheet from '../common/PropSheet'
 import TreeTable from '../common/TreeTable'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {MetadocCanvas} from "./MetadocCanvas";
@@ -277,7 +277,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     deleteSelection = () => {
         const graph = this.getDataGraph()
-        const layer = this.getSelectedLayer()
+        // const layer = this.getSelectedLayer()
         const shape = this.getSelectedShape()
         if(!shape) return
         removeFromParent(graph,shape)

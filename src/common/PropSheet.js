@@ -8,7 +8,7 @@ import {StringEditor} from "./StringEditor";
 import {EnumEditor} from "./EnumEditor";
 import {ArrayEditor} from "./ArrayEditor";
 
-const COLORS2 = {
+/*const COLORS2 = {
     "black": 0x000000,
     "valhalla": 0x222034,
     "loulou": 0x45283c,
@@ -41,7 +41,7 @@ const COLORS2 = {
     "plum": 0xd77bba,
     "rainforest": 0x8f974a,
     "stinger": 0x8a6f30,
-}
+}*/
 
 export const TYPES = {
     STRING:'string',
@@ -172,7 +172,7 @@ class PropEditor extends Component {
     }
 }
 
-class PaletteColorPicker extends Component {
+/*class PaletteColorPicker extends Component {
     chooseColor(c) {
         this.props.onSelect(c);
     }
@@ -200,7 +200,7 @@ class PaletteColorPicker extends Component {
         </div>
     }
 }
-
+*/
 export default class PropSheet extends Component {
     constructor(props) {
         super(props)

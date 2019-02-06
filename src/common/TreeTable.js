@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
 import {PopupManager, VBox} from "appy-comps";
-import {fetchGraphObject, indexOf, removeFromParent} from "../syncgraph/utils";
+import {fetchGraphObject, removeFromParent} from "../syncgraph/utils";
 
 
 const ContextMenu = (props) => {
@@ -204,7 +204,7 @@ export default class TreeTable extends Component {
             this.props.provider.acceptDrop(e,item)
             this.setState({internalDrag:false, dragTarget:null})
         }
-        var data = e.dataTransfer.getData("text/html");
+        // var data = e.dataTransfer.getData("text/html");
         // console.log('the dropped data is',data)
     }
     render() {

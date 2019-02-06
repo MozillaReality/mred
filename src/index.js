@@ -5,7 +5,6 @@ import 'font-awesome/css/font-awesome.css'
 import App from './App';
 // import HypercardPreview3D from "./h3d/HypercardPreview3D"
 import {genAlphaID, parseOptions} from './utils'
-import ImmersiveVREditor from './vr/ImmersiveVREditor'
 // import HypercardPreview2D from './h2d/HypercardPreview2D'
 
 const default_options = {
