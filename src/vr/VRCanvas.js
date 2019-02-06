@@ -5,21 +5,12 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
-import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
-import SphereDef from "./SphereDef";
-import PlaneDef from './PlaneDef'
-import {is3DObjectType} from './Common'
+import {get3DObjectDef, is3DObjectType} from './Common'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
-function get3DObjectDef(type) {
-    if(type === 'cube') return new CubeDef()
-    if(type === 'sphere') return new SphereDef()
-    if(type === 'plane') return new PlaneDef()
-    throw new Error(`unknown 3d object type ${type}`)
-}
 
 export class VRCanvas extends Component {
     constructor(props) {

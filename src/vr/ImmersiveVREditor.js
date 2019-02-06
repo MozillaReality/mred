@@ -15,10 +15,9 @@ import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d"
-import CubeDef from "./CubeDef"
 import SceneDef from "./SceneDef"
-import SphereDef from "./SphereDef";
 import {on} from "../utils"
+import {get3DObjectDef, is3DObjectType} from './Common'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -27,17 +26,6 @@ const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000f
 
 const toRad = (degrees) => degrees*Math.PI/180
 
-
-function is3DObjectType(type) {
-    if(type === 'cube') return true
-    if(type === 'sphere') return true
-    return false
-}
-function get3DObjectDef(type) {
-    if(type === 'cube') return new CubeDef()
-    if(type === 'sphere') return new SphereDef()
-    throw new Error(`unknown 3d object type ${type}`)
-}
 
 export default class ImmersiveVREditor extends Component {
 
@@ -244,16 +232,7 @@ export default class ImmersiveVREditor extends Component {
                 this.setCurrentSceneId(objid)
                 return
             }
-            if (obj.type === 'cube') {
-                const cube = this.populateNode(objid)
-                this.sceneWrapper.add(cube)
-                return
-            }
-            if (obj.type === 'sphere') {
-                const sphere = this.populateNode(objid)
-                this.sceneWrapper.add(sphere)
-                return
-            }
+            if(is3DObjectType(obj.type)) return this.sceneWrapper.add(this.populateNode(objid))
             console.warn("unknown object type", obj)
             return
         }
@@ -261,7 +240,7 @@ export default class ImmersiveVREditor extends Component {
             const node = this.findNode(op.object)
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)
-                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op)
+                if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
             }
@@ -273,12 +252,7 @@ export default class ImmersiveVREditor extends Component {
             console.log("the node iss",node)
             const obj = fetchGraphObject(graph,op.value)
             console.log('the objcect is',obj)
-            if(obj.type === 'cube') {
-                this.sceneWrapper.remove(node)
-            }
-            if(obj.type === 'sphere') {
-                this.sceneWrapper.remove(node)
-            }
+            if(is3DObjectType(obj.type)) this.sceneWrapper.remove(node)
             return
         }
         console.log('skipping', op.type)
@@ -341,15 +315,10 @@ export default class ImmersiveVREditor extends Component {
     populateNode(nodeid) {
         const graph = this.props.provider.getDataGraph()
         const obj = fetchGraphObject(graph, nodeid)
-        if (obj.type === 'cube') {
-            const cube = new CubeDef().makeNode(obj)
-            this.insertNodeMapping(nodeid, cube)
-            return cube
-        }
-        if (obj.type === 'sphere') {
-            const sphere = new SphereDef().makeNode(obj)
-            this.insertNodeMapping(nodeid, sphere)
-            return sphere
+        if(is3DObjectType(obj.type)) {
+            const nodeobj = get3DObjectDef(obj.type).makeNode(obj)
+            this.insertNodeMapping(nodeid, nodeobj)
+            return nodeobj
         }
         if (obj.type === 'scene') {
             const scene = new SceneDef().makeNode(obj)
