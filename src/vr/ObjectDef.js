@@ -9,5 +9,13 @@ export default class ObjectDef {
         if (op.name === 'sx') node.scale.x = parseFloat(op.value)
         if (op.name === 'sy') node.scale.y = parseFloat(op.value)
         if (op.name === 'sz') node.scale.z = parseFloat(op.value)
+
+        if (op.name === 'color') {
+            let color = op.value
+            if(color.indexOf('#') === 0) color = color.substring(1)
+            node.material.color.set(parseInt(color,16))
+            return
+        }
+
     }
 }

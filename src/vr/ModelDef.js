@@ -40,13 +40,6 @@ export default class ModelDef extends ObjectDef {
     }
 
     updateProperty(node, obj, op, provider) {
-        if(op.name === 'color') {
-            let color = op.value
-            if(color.indexOf('#') === 0) color = color.substring(1)
-            node.material.color.set(parseInt(color,16))
-            return
-        }
-
         if (op.name === PROP_DEFS.asset.key) {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)

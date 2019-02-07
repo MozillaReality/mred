@@ -33,12 +33,6 @@ export default class SphereDef extends ObjectDef {
     }
 
     updateProperty(node, obj, op, provider) {
-        if (op.name === 'color') {
-            let color = op.value
-            if(color.indexOf('#') === 0) color = color.substring(1)
-            node.material.color.set(parseInt(color,16))
-            return
-        }
         if (op.name === 'radius') node.geometry = new THREE.SphereGeometry(op.value)
         return super.updateProperty(node,obj,op,provider)
     }

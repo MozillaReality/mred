@@ -2,7 +2,6 @@ import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils"
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
-import BoxAccessor from "./BoxAccessor";
 import ObjectDef from './ObjectDef'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
@@ -33,13 +32,14 @@ export default class CubeDef extends ObjectDef {
         node.scale.set(obj.sx,obj.sy,obj.sz)
         return node
     }
-    updateProperty(node, obj, op) {
-        if(op.name === 'color') {
-            let color = op.value
-            if(color.indexOf('#') === 0) color = color.substring(1)
-            node.material.color.set(parseInt(color,16))
+
+
+
+    updateProperty(node, obj, op, provider) {
+        if (op.name === 'width' || op.name === 'height' || op.name === 'depth') {
+            node.geometry = new THREE.BoxGeometry(obj.width, obj.height, obj.depth)
             return
         }
-        return new BoxAccessor(node, obj).updateProperty(op)
+        return super.updateProperty(node,obj,op,provider)
     }
 }
