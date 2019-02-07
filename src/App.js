@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import './App.css'
-import {PopupContainer, PopupManager, VBox} from "appy-comps"
+import {DialogContainer, PopupContainer, PopupManager, VBox} from "appy-comps"
 
 import MetadocEditor from "./metadoc/Editor1"
 import VREditor from './vr/VREditor'
@@ -52,6 +52,7 @@ export default class App extends Component {
                     <img src="icon.png" alt="switch apps" height="20" style={{padding:'0em'}}/>
                 </button>
                 <div style={{position: 'relative', flex: '1'}}>{this.getApp()}</div>
+                <DialogContainer/>
                 <PopupContainer/>
             </VBox>
         );

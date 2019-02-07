@@ -17,11 +17,12 @@ import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import SphereDef from "./SphereDef";
-import {HBox, PopupManager} from "appy-comps";
+import {Dialog, DialogManager, HBox, PopupManager, VBox} from "appy-comps";
 import {is3DObjectType, PROP_DEFS, SIMPLE_COLORS} from './Common'
 import PlaneDef from './PlaneDef'
 import {ICONS} from '../metadoc/Common'
 import ModelDef from './ModelDef'
+
 
 function isImageType(type) {
     if(!type) return false
@@ -233,7 +234,7 @@ export default class VREditor extends  SyncGraphProvider {
             })
         })
     }
-    addGLTFAssetFromFile = (file) => {
+    addGLBAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
             const url = SERVER_URL_ASSETS+ans.id
@@ -241,7 +242,7 @@ export default class VREditor extends  SyncGraphProvider {
             const asset = fetchGraphObject(graph,graph.createObject({
                 type:'asset',
                 subtype:'gltf',
-                format:file.type,
+                format:'model/gltf-binary',
                 src:url,
                 title:file.name,
                 parent:0
@@ -404,12 +405,105 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     showAddImageAssetDialog = () => {
-        console.log('showing a dialog')
+        DialogManager.show(<AddImageAssetDialog provider={this}/>)
     }
     showAddGLTFAssetDialog = () => {
-        console.log('showing a dialog')
+        DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
+    }
+    showAddGLBAssetDialog = () => {
+        DialogManager.show(<AddGLBAssetDialog provider={this}/>)
     }
 
+}
+
+class AddImageAssetDialog extends Component {
+    cancel = () => {
+        DialogManager.hide()
+    }
+    okay = () => {
+        DialogManager.hide()
+        listToArray(this.fileinput.files).forEach(file => {
+            this.props.provider.addImageAssetFromFile(file)
+        })
+    }
+    render() {
+        return <Dialog visible={true}>
+            <VBox>
+                <h3>add image to assets</h3>
+                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile}/>
+                <HBox>
+                    <button onClick={this.cancel}>cancel</button>
+                    <button onClick={this.okay}>okay</button>
+                </HBox>
+            </VBox>
+        </Dialog>
+    }
+
+    selectedFile = (e) => {
+        console.log("selected a file",e.target)
+    }
+}
+
+class AddGLTFAssetDialog extends Component {
+    cancel = () => {
+        DialogManager.hide()
+    }
+    okay = () => {
+        DialogManager.hide()
+        listToArray(this.fileinput.files).forEach(file => {
+            console.log("got the file",file)
+        })
+    }
+    render() {
+        return <Dialog visible={true}>
+            <VBox>
+                <h3>add GLTF file assets</h3>
+                <p>
+                    chose <b>the directory</b> containing the GLTF file
+                </p>
+                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile} multiple={true} webkitdirectory="true"/>
+                <HBox>
+                    <button onClick={this.cancel}>cancel</button>
+                    <button onClick={this.okay}>okay</button>
+                </HBox>
+            </VBox>
+        </Dialog>
+    }
+
+    selectedFile = (e) => {
+        console.log("selected a file",e.target)
+    }
+}
+
+class AddGLBAssetDialog extends Component {
+    cancel = () => {
+        DialogManager.hide()
+    }
+    okay = () => {
+        DialogManager.hide()
+        listToArray(this.fileinput.files).forEach(file => {
+            this.props.provider.addGLBAssetFromFile(file)
+        })
+    }
+    render() {
+        return <Dialog visible={true}>
+            <VBox>
+                <h3>add GLB to assets</h3>
+                <p>
+                    choose a GLB file
+                </p>
+                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile} multiple={true}/>
+                <HBox>
+                    <button onClick={this.cancel}>cancel</button>
+                    <button onClick={this.okay}>okay</button>
+                </HBox>
+            </VBox>
+        </Dialog>
+    }
+
+    selectedFile = (e) => {
+        console.log("selected a file",e.target)
+    }
 }
 
 class VREditorApp extends Component {
@@ -472,9 +566,14 @@ class VREditorApp extends Component {
                 fun: () => this.props.provider.showAddImageAssetDialog()
             },
             {
-                title: 'model',
+                title: 'GLTF model',
                 icon: ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
+            },
+            {
+                title: 'GLB model',
+                icon: ICONS.model,
+                fun: () => this.props.provider.showAddGLBAssetDialog()
             },
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
