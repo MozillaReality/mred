@@ -15,7 +15,8 @@ export default class PlaneDef {
             height: 3,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,
-            color:'#ff0000',
+            sx:1, sy:1, sz:1,
+            color:'#ffffff',
             asset:0,
             parent:scene.id
         }))
@@ -29,6 +30,7 @@ export default class PlaneDef {
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
+        node.scale.set(obj.sx,obj.sy,obj.sz)
         return node
     }
 
@@ -48,6 +50,9 @@ export default class PlaneDef {
         if (op.name === 'rx') node.rotation.x = parseFloat(op.value)
         if (op.name === 'ry') node.rotation.y = parseFloat(op.value)
         if (op.name === 'rz') node.rotation.z = parseFloat(op.value)
+        if (op.name === 'sx') node.scale.x = parseFloat(op.value)
+        if (op.name === 'sy') node.scale.y = parseFloat(op.value)
+        if (op.name === 'sz') node.scale.z = parseFloat(op.value)
         if (op.name === PROP_DEFS.asset.key) {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)

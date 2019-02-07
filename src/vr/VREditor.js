@@ -78,6 +78,16 @@ export default class VREditor extends  SyncGraphProvider {
 
         return defs
     }
+    setPropertyValue(item, def, value) {
+        super.setPropertyValue(item,def,value)
+        //size the plane to match the aspect ratio of the asset
+        if(def.key === PROP_DEFS.asset.key) {
+            const asset = fetchGraphObject(this.getDataGraph(),value)
+            const obj = fetchGraphObject(this.getDataGraph(),item)
+            let height = (asset.height/asset.width)*obj.width
+            super.setPropertyValue(item,{key:'height'},height)
+        }
+    }
     getValuesForEnum(key,obj) {
         if (key === PROP_DEFS.asset.key) {
             const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')

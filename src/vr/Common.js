@@ -72,6 +72,24 @@ export const PROP_DEFS = {
         type:TYPES.NUMBER,
         hints: stdhints
     },
+    sx: {
+        key:'sx',
+        name:'SX',
+        type:TYPES.NUMBER,
+        hints: stdhints
+    },
+    sy: {
+        key:'sy',
+        name:'SY',
+        type:TYPES.NUMBER,
+        hints: stdhints
+    },
+    sz: {
+        key:'sz',
+        name:'SZ',
+        type:TYPES.NUMBER,
+        hints: stdhints
+    },
     color: {
         key:'color',
         name:'Color',
