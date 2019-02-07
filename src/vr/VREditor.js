@@ -1,6 +1,6 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {MenuPopup, Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
@@ -407,6 +407,10 @@ class VREditorApp extends Component {
                 <button onClick={() => prov.preview()}>preview</button>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
+                <Spacer/>
+                <button className="fa fa-cut" onClick={prov.cutSelection}/>
+                <button className="fa fa-copy" onClick={prov.copySelection}/>
+                <button className="fa fa-paste" onClick={prov.pasteSelection}/>
             </Toolbar>
 
 
