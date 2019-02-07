@@ -140,7 +140,8 @@ export const ICONS = {
     circle:'circle',
     text:'font',
     plane:'plane',
-    image:'image'
+    image:'image',
+    model:'cube'
 }
 
 export const VERTICAL_ALIGNMENT = {

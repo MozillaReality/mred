@@ -2,6 +2,7 @@ import {TYPES} from '../common/PropSheet'
 import CubeDef from './CubeDef'
 import SphereDef from './SphereDef'
 import PlaneDef from './PlaneDef'
+import ModelDef from './ModelDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -131,6 +132,7 @@ export function is3DObjectType(type) {
     if(type === 'cube') return true
     if(type === 'sphere') return true
     if(type === 'plane') return true
+    if(type === 'model') return true
     return false
 }
 
@@ -138,6 +140,7 @@ export function get3DObjectDef(type) {
     if(type === 'cube') return new CubeDef()
     if(type === 'sphere') return new SphereDef()
     if(type === 'plane') return new PlaneDef()
+    if(type === 'model') return new ModelDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 

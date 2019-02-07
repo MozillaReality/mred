@@ -21,6 +21,26 @@ import {HBox, PopupManager} from "appy-comps";
 import {is3DObjectType, PROP_DEFS, SIMPLE_COLORS} from './Common'
 import PlaneDef from './PlaneDef'
 import {ICONS} from '../metadoc/Common'
+import ModelDef from './ModelDef'
+
+function isImageType(type) {
+    if(!type) return false
+    if(type.toLowerCase() === 'image/png') return true
+    if(type.toLowerCase() === 'image/jpeg') return true
+    return false;
+}
+
+function isGLTFFile(file) {
+    if(!file) return false
+    console.log("looking at the file",file,'type',file.type,'type')
+    if(!file.type || file.type === '' || file.type.length === 0) {
+        console.log("no mimetype. check extension")
+        if(file.name.toLowerCase().indexOf(".gltf")>0) return true
+        if(file.name.toLowerCase().indexOf(".glb")>0) return true
+    }
+    if(file.type.toLowerCase() === 'image/gltf') return true
+    return false;
+}
 
 export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
@@ -50,7 +70,14 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     getRendererForItem = (item) => {
-        if(!this.getDataGraph().getObjectById(item)) return <div>???</div>
+        const obj = fetchGraphObject(this.getDataGraph(),item)
+        if(!obj) return <div>???</div>
+        if(obj.type === 'plane') return <div><i className={"fa fa-"+ICONS.plane}> {obj.title}</i></div>
+        if(obj.type === 'cube') return <div><i className={"fa fa-"+ICONS.rect}> {obj.title}</i></div>
+        if(obj.type === 'sphere') return <div><i className={"fa fa-"+ICONS.circle}> {obj.title}</i></div>
+        if(obj.type === 'model') return <div><i className={"fa fa-"+ICONS.model}></i> {obj.title}</div>
+        if(obj.type === 'asset') return <div><i className={"fa fa-"+ICONS.page}></i> {obj.title}</div>
+        if(obj.type === 'scene') return <div><i className={"fa fa-"+ICONS.page}></i> {obj.title}</div>
         return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
     }
 
@@ -84,14 +111,26 @@ export default class VREditor extends  SyncGraphProvider {
         if(def.key === PROP_DEFS.asset.key) {
             const asset = fetchGraphObject(this.getDataGraph(),value)
             const obj = fetchGraphObject(this.getDataGraph(),item)
-            let height = (asset.height/asset.width)*obj.width
-            super.setPropertyValue(item,{key:'height'},height)
+            if(asset.subtype === 'image') {
+                let height = (asset.height / asset.width) * obj.width
+                super.setPropertyValue(item, {key: 'height'}, height)
+            }
+            if(asset.subtype === 'gltf') {
+                console.log("adjusting to a gtlf")
+            }
         }
     }
     getValuesForEnum(key,obj) {
         if (key === PROP_DEFS.asset.key) {
             const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
-            return propToArray(this.getDataGraph(), children)
+            const assets = propToArray(this.getDataGraph(), children).map(ch => fetchGraphObject(this.getDataGraph(),ch))
+            const realobj = fetchGraphObject(this.getDataGraph(),obj)
+            if(realobj.type === 'model') {
+                return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
+            }
+            if(realobj.type === 'plane') {
+                return assets.filter(a => a.subtype === 'image').map(a => a.id)
+            }
         }
     }
     getRendererForEnum(key,obj) {
@@ -163,6 +202,14 @@ export default class VREditor extends  SyncGraphProvider {
         SelectionManager.setSelection(obj.id)
     }
 
+    addModel = () => {
+        const graph = this.getDataGraph()
+        const scene = this.getSelectedScene()
+        const obj = new ModelDef().make(graph,scene)
+        insertAsFirstChild(graph,scene,obj)
+        SelectionManager.setSelection(obj.id)
+    }
+
     addImageAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
@@ -184,6 +231,23 @@ export default class VREditor extends  SyncGraphProvider {
                 graph.setProperty(asset.id,'width',img.width)
                 graph.setProperty(asset.id,'height',img.height)
             })
+        })
+    }
+    addGLTFAssetFromFile = (file) => {
+        this.uploadFile(file).then((ans)=>{
+            console.log("uploaded file with answer",ans)
+            const url = SERVER_URL_ASSETS+ans.id
+            const graph = this.getDataGraph()
+            const asset = fetchGraphObject(graph,graph.createObject({
+                type:'asset',
+                subtype:'gltf',
+                format:file.type,
+                src:url,
+                title:file.name,
+                parent:0
+            }))
+            const assets = fetchGraphObject(graph,this.getAssetsObject())
+            insertAsLastChild(graph,assets,asset)
         })
     }
 
@@ -219,20 +283,28 @@ export default class VREditor extends  SyncGraphProvider {
                 fun: this.addPlane
             },
             {
+                title:'model',
+                icon:'cube',
+                fun: this.addModel
+            },
+            {
                 title:'scene',
                 icon:'file',
                 fun: this.addScene
             },
             {
                 title:'cut',
+                icon:'cut',
                 fun:this.cutSelection
             },
             {
                 title:'copy',
+                icon:'copy',
                 fun:this.copySelection
             },
             {
                 title:'paste',
+                icon:'paste',
                 fun:this.pasteSelection
             },
         ]
@@ -291,7 +363,10 @@ export default class VREditor extends  SyncGraphProvider {
     acceptDrop(e,tgt) {
         const obj = fetchGraphObject(this.getDataGraph(),tgt)
         if(obj.type === 'assets') {
-            listToArray(e.dataTransfer.files).forEach(file => this.addImageAssetFromFile(file))
+            listToArray(e.dataTransfer.files).forEach(file => {
+                if(isImageType(file.type)) return this.addImageAssetFromFile(file)
+                if(isGLTFFile(file)) return this.addGLTFAssetFromFile(file)
+            })
         }
     }
     requestImageCache(src) {
@@ -327,6 +402,14 @@ export default class VREditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         graph.setProperty(objid,'color',color)
     }
+
+    showAddImageAssetDialog = () => {
+        console.log('showing a dialog')
+    }
+    showAddGLTFAssetDialog = () => {
+        console.log('showing a dialog')
+    }
+
 }
 
 class VREditorApp extends Component {
@@ -373,6 +456,26 @@ class VREditorApp extends Component {
                 icon: ICONS.plane,
                 fun: () => this.props.provider.addPlane()
             },
+            {
+                title: 'model',
+                icon: ICONS.model,
+                fun: () => this.props.provider.addModel()
+            },
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+    }
+    showAddAssetPopup = (e) => {
+        const acts = [
+            {
+                title: 'image',
+                icon: ICONS.image,
+                fun: () => this.props.provider.showAddImageAssetDialog()
+            },
+            {
+                title: 'model',
+                icon: ICONS.model,
+                fun: () => this.props.provider.showAddGLTFAssetDialog()
+            },
         ]
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
@@ -385,6 +488,7 @@ class VREditorApp extends Component {
             <Toolbar left bottom>
                 <button className={"fa fa-plus"} onClick={this.showAddPopup}>obj</button>
                 <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
+                <button className={"fa fa-plus"} onClick={this.showAddAssetPopup}>asset</button>
             </Toolbar>
 
 
