@@ -172,5 +172,6 @@ export const ITEM_ICONS = {
     model: 'cube',
     asset: 'file',
     assets: 'archive',
-    scene: 'globe'
+    scene: 'globe',
+    image:'image',
 }

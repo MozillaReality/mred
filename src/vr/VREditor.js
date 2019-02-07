@@ -19,12 +19,11 @@ import {
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
-import SphereDef from "./SphereDef";
-import {Dialog, DialogManager, HBox, PopupManager, VBox} from "appy-comps";
+import {DialogManager, HBox, PopupManager} from "appy-comps";
 import {get3DObjectDef, is3DObjectType, isGLTFFile, isImageType, ITEM_ICONS, PROP_DEFS, SIMPLE_COLORS} from './Common'
-import PlaneDef from './PlaneDef'
-import {ICONS} from '../metadoc/Common'
-import ModelDef from './ModelDef'
+import {AddImageAssetDialog} from './AddImageAssetDialog'
+import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
+import {AddGLBAssetDialog} from './AddGLBAssetDialog'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -326,96 +325,6 @@ export default class VREditor extends  SyncGraphProvider {
 
 }
 
-class AddImageAssetDialog extends Component {
-    cancel = () => {
-        DialogManager.hide()
-    }
-    okay = () => {
-        DialogManager.hide()
-        listToArray(this.fileinput.files).forEach(file => {
-            this.props.provider.addImageAssetFromFile(file)
-        })
-    }
-    render() {
-        return <Dialog visible={true}>
-            <VBox>
-                <h3>add image to assets</h3>
-                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile}/>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
-        </Dialog>
-    }
-
-    selectedFile = (e) => {
-        console.log("selected a file",e.target)
-    }
-}
-
-class AddGLTFAssetDialog extends Component {
-    cancel = () => {
-        DialogManager.hide()
-    }
-    okay = () => {
-        DialogManager.hide()
-        listToArray(this.fileinput.files).forEach(file => {
-            console.log("got the file",file)
-        })
-    }
-    render() {
-        return <Dialog visible={true}>
-            <VBox>
-                <h3>add GLTF file assets</h3>
-                <p>
-                    chose <b>the directory</b> containing the GLTF file
-                </p>
-                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile} multiple={true} webkitdirectory="true"/>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
-        </Dialog>
-    }
-
-    selectedFile = (e) => {
-        console.log("selected a file",e.target)
-    }
-}
-
-class AddGLBAssetDialog extends Component {
-    cancel = () => {
-        DialogManager.hide()
-    }
-    okay = () => {
-        DialogManager.hide()
-        listToArray(this.fileinput.files).forEach(file => {
-            this.props.provider.addGLBAssetFromFile(file)
-        })
-    }
-    render() {
-        return <Dialog visible={true}>
-            <VBox>
-                <h3>add GLB to assets</h3>
-                <p>
-                    choose a GLB file
-                </p>
-                <input type="file" ref={(obj)=>this.fileinput = obj} onChange={this.selectedFile} multiple={true}/>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
-        </Dialog>
-    }
-
-    selectedFile = (e) => {
-        console.log("selected a file",e.target)
-    }
-}
-
 class VREditorApp extends Component {
 
     constructor(props) {
@@ -457,17 +366,17 @@ class VREditorApp extends Component {
         const acts = [
             {
                 title: 'image',
-                icon: ICONS.image,
+                icon: ITEM_ICONS.image,
                 fun: () => this.props.provider.showAddImageAssetDialog()
             },
             {
                 title: 'GLTF model',
-                icon: ICONS.model,
+                icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
             },
             {
                 title: 'GLB model',
-                icon: ICONS.model,
+                icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLBAssetDialog()
             },
         ]
