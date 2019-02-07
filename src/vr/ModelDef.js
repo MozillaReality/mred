@@ -6,8 +6,9 @@ import {on} from "../utils";
 import {PROP_DEFS} from './Common'
 import GLTFLoader from '../gltfinspector/GLTFLoader'
 import {MeshLambertMaterial} from 'three'
+import ObjectDef from './ObjectDef'
 
-export default class ModelDef {
+export default class ModelDef extends ObjectDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't create model w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
@@ -46,15 +47,6 @@ export default class ModelDef {
             return
         }
 
-        if (op.name === 'tx') node.position.x = parseFloat(op.value)
-        if (op.name === 'ty') node.position.y = parseFloat(op.value)
-        if (op.name === 'tz') node.position.z = parseFloat(op.value)
-        if (op.name === 'rx') node.rotation.x = parseFloat(op.value)
-        if (op.name === 'ry') node.rotation.y = parseFloat(op.value)
-        if (op.name === 'rz') node.rotation.z = parseFloat(op.value)
-        if (op.name === 'sx') node.scale.x = parseFloat(op.value)
-        if (op.name === 'sy') node.scale.y = parseFloat(op.value)
-        if (op.name === 'sz') node.scale.z = parseFloat(op.value)
         if (op.name === PROP_DEFS.asset.key) {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)
@@ -81,6 +73,7 @@ export default class ModelDef {
 
             }
         }
+        return super.updateProperty(node,obj,op,provider)
     }
 
 }

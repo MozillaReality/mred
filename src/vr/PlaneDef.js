@@ -4,8 +4,9 @@ import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";
 import {on} from "../utils";
 import {PROP_DEFS} from './Common'
+import ObjectDef from './ObjectDef'
 
-export default class PlaneDef {
+export default class PlaneDef extends ObjectDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't create plane w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
@@ -41,18 +42,8 @@ export default class PlaneDef {
             node.material.color.set(parseInt(color,16))
             return
         }
-
         if (op.name === 'width') node.geometry = new THREE.PlaneBufferGeometry(op.value,obj.height)
         if (op.name === 'height') node.geometry = new THREE.PlaneBufferGeometry(obj.width,op.value)
-        if (op.name === 'tx') node.position.x = parseFloat(op.value)
-        if (op.name === 'ty') node.position.y = parseFloat(op.value)
-        if (op.name === 'tz') node.position.z = parseFloat(op.value)
-        if (op.name === 'rx') node.rotation.x = parseFloat(op.value)
-        if (op.name === 'ry') node.rotation.y = parseFloat(op.value)
-        if (op.name === 'rz') node.rotation.z = parseFloat(op.value)
-        if (op.name === 'sx') node.scale.x = parseFloat(op.value)
-        if (op.name === 'sy') node.scale.y = parseFloat(op.value)
-        if (op.name === 'sz') node.scale.z = parseFloat(op.value)
         if (op.name === PROP_DEFS.asset.key) {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)
@@ -61,6 +52,7 @@ export default class PlaneDef {
                 node.material = new THREE.MeshLambertMaterial({color:obj.color, side: THREE.DoubleSide, map:tex})
             }
         }
+        return super.updateProperty(node,obj,op,provider)
     }
 
 }
