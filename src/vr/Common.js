@@ -145,3 +145,32 @@ export function get3DObjectDef(type) {
 }
 
 export const toRad = (degrees) => degrees*Math.PI/180
+
+export function isImageType(type) {
+    if (!type) return false
+    if (type.toLowerCase() === 'image/png') return true
+    if (type.toLowerCase() === 'image/jpeg') return true
+    return false;
+}
+
+export function isGLTFFile(file) {
+    if (!file) return false
+    console.log("looking at the file", file, 'type', file.type, 'type')
+    if (!file.type || file.type === '' || file.type.length === 0) {
+        console.log("no mimetype. check extension")
+        if (file.name.toLowerCase().indexOf(".gltf") > 0) return true
+        if (file.name.toLowerCase().indexOf(".glb") > 0) return true
+    }
+    if (file.type.toLowerCase() === 'image/gltf') return true
+    return false;
+}
+
+export const ITEM_ICONS = {
+    plane: 'plane',
+    cube: 'square',
+    sphere: 'circle',
+    model: 'cube',
+    asset: 'file',
+    assets: 'archive',
+    scene: 'globe'
+}

@@ -9,6 +9,11 @@ html, body {
 }
 button {
     font-size: 100%;
+    color: black;
+    background-color: white;
+}
+button:hover {
+    background-color: lightblue;
 }
 
 .fill {

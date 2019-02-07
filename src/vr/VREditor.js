@@ -10,7 +10,10 @@ import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     cloneShape,
     fetchGraphObject,
-    insertAsFirstChild, insertAsLastChild, listToArray, propToArray,
+    insertAsFirstChild,
+    insertAsLastChild,
+    listToArray,
+    propToArray,
     removeFromParent
 } from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
@@ -18,30 +21,11 @@ import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import SphereDef from "./SphereDef";
 import {Dialog, DialogManager, HBox, PopupManager, VBox} from "appy-comps";
-import {is3DObjectType, PROP_DEFS, SIMPLE_COLORS} from './Common'
+import {get3DObjectDef, is3DObjectType, isGLTFFile, isImageType, ITEM_ICONS, PROP_DEFS, SIMPLE_COLORS} from './Common'
 import PlaneDef from './PlaneDef'
 import {ICONS} from '../metadoc/Common'
 import ModelDef from './ModelDef'
 
-
-function isImageType(type) {
-    if(!type) return false
-    if(type.toLowerCase() === 'image/png') return true
-    if(type.toLowerCase() === 'image/jpeg') return true
-    return false;
-}
-
-function isGLTFFile(file) {
-    if(!file) return false
-    console.log("looking at the file",file,'type',file.type,'type')
-    if(!file.type || file.type === '' || file.type.length === 0) {
-        console.log("no mimetype. check extension")
-        if(file.name.toLowerCase().indexOf(".gltf")>0) return true
-        if(file.name.toLowerCase().indexOf(".glb")>0) return true
-    }
-    if(file.type.toLowerCase() === 'image/gltf') return true
-    return false;
-}
 
 export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
@@ -73,12 +57,7 @@ export default class VREditor extends  SyncGraphProvider {
     getRendererForItem = (item) => {
         const obj = fetchGraphObject(this.getDataGraph(),item)
         if(!obj) return <div>???</div>
-        if(obj.type === 'plane') return <div><i className={"fa fa-"+ICONS.plane}> {obj.title}</i></div>
-        if(obj.type === 'cube') return <div><i className={"fa fa-"+ICONS.rect}> {obj.title}</i></div>
-        if(obj.type === 'sphere') return <div><i className={"fa fa-"+ICONS.circle}> {obj.title}</i></div>
-        if(obj.type === 'model') return <div><i className={"fa fa-"+ICONS.model}></i> {obj.title}</div>
-        if(obj.type === 'asset') return <div><i className={"fa fa-"+ICONS.page}></i> {obj.title}</div>
-        if(obj.type === 'scene') return <div><i className={"fa fa-"+ICONS.page}></i> {obj.title}</div>
+        if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}></i> {obj.title}</div>
         return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
     }
 
@@ -179,38 +158,13 @@ export default class VREditor extends  SyncGraphProvider {
         SelectionManager.setSelection(scene.id)
     }
 
-    addCube = () => {
+    add3DObject = (type) => {
         const graph = this.getDataGraph()
         const scene = this.getSelectedScene()
-        const obj = new CubeDef().make(graph,scene)
+        const obj = get3DObjectDef(type).make(graph,scene)
         insertAsFirstChild(graph,scene,obj)
         SelectionManager.setSelection(obj.id)
     }
-
-    addSphere = () => {
-        const graph = this.getDataGraph()
-        const scene = this.getSelectedScene()
-        const obj = new SphereDef().make(graph,scene)
-        insertAsFirstChild(graph,scene,obj)
-        SelectionManager.setSelection(obj.id)
-    }
-
-    addPlane = () => {
-        const graph = this.getDataGraph()
-        const scene = this.getSelectedScene()
-        const obj = new PlaneDef().make(graph,scene)
-        insertAsFirstChild(graph,scene,obj)
-        SelectionManager.setSelection(obj.id)
-    }
-
-    addModel = () => {
-        const graph = this.getDataGraph()
-        const scene = this.getSelectedScene()
-        const obj = new ModelDef().make(graph,scene)
-        insertAsFirstChild(graph,scene,obj)
-        SelectionManager.setSelection(obj.id)
-    }
-
     addImageAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
@@ -262,53 +216,16 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     calculateContextMenu(item) {
-        const cmds =  [
-            {
-                title:'delete',
-                icon:'close',
-                fun: this.deleteObject
-            },
-            {
-                title:'cube',
-                icon:'square',
-                fun: this.addCube
-            },
-            {
-                title:'sphere',
-                icon:'circle',
-                fun: this.addSphere
-            },
-            {
-                title:'plane',
-                icon:'plane',
-                fun: this.addPlane
-            },
-            {
-                title:'model',
-                icon:'cube',
-                fun: this.addModel
-            },
-            {
-                title:'scene',
-                icon:'file',
-                fun: this.addScene
-            },
-            {
-                title:'cut',
-                icon:'cut',
-                fun:this.cutSelection
-            },
-            {
-                title:'copy',
-                icon:'copy',
-                fun:this.copySelection
-            },
-            {
-                title:'paste',
-                icon:'paste',
-                fun:this.pasteSelection
-            },
-        ]
+        const cmds = []
+        cmds.push({ title:'delete', icon:'close', fun: this.deleteObject });
+
+        ['cube','sphere','plane','model'].forEach(type =>{
+            cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) })
+        });
+        cmds.push({ title:'scene', icon:'file', fun: this.addScene })
+        cmds.push({ title:'cut',   icon:'cut',  fun:this.cutSelection })
+        cmds.push({ title:'copy',  icon:'copy', fun:this.copySelection })
+        cmds.push({ title:'paste', icon:'paste',fun:this.pasteSelection })
         return cmds
     }
 
@@ -341,7 +258,6 @@ export default class VREditor extends  SyncGraphProvider {
         const obj2 = cloneShape(graph,obj1)
         graph.setProperty(obj2.id, 'parent', parent.id)
         insertAsFirstChild(graph, parent, obj2)
-        return
     }
 
     canAddChild(parent,child) {
@@ -404,15 +320,9 @@ export default class VREditor extends  SyncGraphProvider {
         graph.setProperty(objid,'color',color)
     }
 
-    showAddImageAssetDialog = () => {
-        DialogManager.show(<AddImageAssetDialog provider={this}/>)
-    }
-    showAddGLTFAssetDialog = () => {
-        DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
-    }
-    showAddGLBAssetDialog = () => {
-        DialogManager.show(<AddGLBAssetDialog provider={this}/>)
-    }
+    showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
+    showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
+    showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
 
 }
 
@@ -534,28 +444,13 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = [
-            {
-                title: 'cube',
-                icon: ICONS.rect,
-                fun: () => this.props.provider.addCube()
-            },
-            {
-                title: 'sphere',
-                icon: ICONS.circle,
-                fun: () => this.props.provider.addSphere()
-            },
-            {
-                title: 'plane',
-                icon: ICONS.plane,
-                fun: () => this.props.provider.addPlane()
-            },
-            {
-                title: 'model',
-                icon: ICONS.model,
-                fun: () => this.props.provider.addModel()
-            },
-        ]
+        const acts = ['cube','sphere','plane','model'].map(type =>{
+            return {
+                title:type,
+                icon: ITEM_ICONS[type],
+                fun: () => this.props.provider.add3DObject(type)
+            }
+        })
         PopupManager.show(<MenuPopup actions={acts}/>,e.target)
     }
     showAddAssetPopup = (e) => {
@@ -592,7 +487,7 @@ class VREditorApp extends Component {
 
 
             <Toolbar center top>
-                <button onClick={()=>prov.save()}>save</button>
+                <button className="fa fa-save" onClick={()=>prov.save()}></button>
                 <button onClick={()=>prov.preview()}>preview</button>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
@@ -612,7 +507,6 @@ class VREditorApp extends Component {
         </GridEditorApp>
     }
 }
-
 
 const EnumTitleRenderer = (props) => {
     let value = "---"
