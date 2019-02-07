@@ -325,26 +325,32 @@ export default class VREditor extends  SyncGraphProvider {
 
 }
 
+
+
 class VREditorApp extends Component {
 
     constructor(props) {
         super(props)
 
         this.im = new InputManager()
-        this.im.addKeyBinding({ id:'save',  key:InputManager.KEYS.S, modifiers:[InputManager.MODIFIERS.COMMAND]})
-        this.im.addKeyBinding({ id:'undo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND]})
-        this.im.addKeyBinding({ id:'redo', key:InputManager.KEYS.Z,  modifiers:[InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]})
-        this.im.addListener('save',this.props.provider.save)
-        this.im.addListener('undo',this.props.provider.performUndo)
-        this.im.addListener('redo',this.props.provider.performRedo)
+        this.im.addKeyBinding({id: 'save', key: InputManager.KEYS.S, modifiers: [InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id: 'undo', key: InputManager.KEYS.Z, modifiers: [InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({
+            id: 'redo',
+            key: InputManager.KEYS.Z,
+            modifiers: [InputManager.MODIFIERS.COMMAND, InputManager.MODIFIERS.SHIFT]
+        })
+        this.im.addListener('save', this.props.provider.save)
+        this.im.addListener('undo', this.props.provider.performUndo)
+        this.im.addListener('redo', this.props.provider.performRedo)
 
-        this.im.addKeyBinding({id:'cut', key:InputManager.KEYS.X, modifiers:[InputManager.MODIFIERS.COMMAND]})
-        this.im.addKeyBinding({id:'copy', key:InputManager.KEYS.C, modifiers:[InputManager.MODIFIERS.COMMAND]})
-        this.im.addKeyBinding({id:'paste', key:InputManager.KEYS.V, modifiers:[InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id: 'cut', key: InputManager.KEYS.X, modifiers: [InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id: 'copy', key: InputManager.KEYS.C, modifiers: [InputManager.MODIFIERS.COMMAND]})
+        this.im.addKeyBinding({id: 'paste', key: InputManager.KEYS.V, modifiers: [InputManager.MODIFIERS.COMMAND]})
 
-        this.im.addListener('cut',this.props.provider.cutSelection)
-        this.im.addListener('copy',this.props.provider.copySelection)
-        this.im.addListener('paste',this.props.provider.pasteSelection)
+        this.im.addListener('cut', this.props.provider.cutSelection)
+        this.im.addListener('copy', this.props.provider.copySelection)
+        this.im.addListener('paste', this.props.provider.pasteSelection)
 
     }
 
@@ -353,14 +359,14 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = ['cube','sphere','plane','model'].map(type =>{
+        const acts = ['cube', 'sphere', 'plane', 'model'].map(type => {
             return {
-                title:type,
+                title: type,
                 icon: ITEM_ICONS[type],
                 fun: () => this.props.provider.add3DObject(type)
             }
         })
-        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
     showAddAssetPopup = (e) => {
         const acts = [
@@ -380,8 +386,9 @@ class VREditorApp extends Component {
                 fun: () => this.props.provider.showAddGLBAssetDialog()
             },
         ]
-        PopupManager.show(<MenuPopup actions={acts}/>,e.target)
+        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -396,8 +403,8 @@ class VREditorApp extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-save" onClick={()=>prov.save()}></button>
-                <button onClick={()=>prov.preview()}>preview</button>
+                <button className="fa fa-save" onClick={() => prov.save()}></button>
+                <button onClick={() => prov.preview()}>preview</button>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
             </Toolbar>
@@ -416,7 +423,6 @@ class VREditorApp extends Component {
         </GridEditorApp>
     }
 }
-
 const EnumTitleRenderer = (props) => {
     let value = "---"
     if(props.value && props.provider) {
