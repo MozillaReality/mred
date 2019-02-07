@@ -5,6 +5,7 @@ import SelectionManager from "../SelectionManager";
 import {on} from "../utils";
 import {PROP_DEFS} from './Common'
 import GLTFLoader from '../gltfinspector/GLTFLoader'
+import {MeshLambertMaterial} from 'three'
 
 export default class ModelDef {
     make(graph, scene) {
@@ -22,8 +23,15 @@ export default class ModelDef {
     }
     makeNode(obj) {
         const node = new THREE.Group()
-        node.userData.clickable = true
-        on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        const clicker =  new THREE.Mesh(
+            new THREE.SphereBufferGeometry(1),
+            new MeshLambertMaterial({color:"red", transparent:true, opacity: 0.2})
+        )
+        clicker.material.visible = true
+        clicker.userData.clickable = true
+        node.userData.clicker = clicker
+        node.add(clicker)
+        on(clicker,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
@@ -56,10 +64,19 @@ export default class ModelDef {
                 console.log("loading the url",asset.src)
                 loader.load(asset.src, (gltf)=> {
                     console.log("loaded", gltf)
-                    //remove all existing children
-                    while (node.children.length) node.remove(node.children[0])
-                    //add model as new child
-                    node.add(gltf.scene.children[0].clone())
+                    //swap the model
+                    if(node.userData.model) node.remove(node.userData.model)
+                    node.userData.model = gltf.scene.children[0].clone()
+                    node.add(node.userData.model)
+
+                    //calculate the size of the model
+                    node.userData.model.geometry.computeBoundingSphere()
+                    const bs = node.userData.model.geometry.boundingSphere
+                    const model = node.userData.model
+                    model.position.x = -bs.center.x
+                    model.position.y = -bs.center.y
+                    model.position.z = -bs.center.z
+                    node.userData.clicker.geometry = new THREE.SphereBufferGeometry(bs.radius)
                 })
 
             }
