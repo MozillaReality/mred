@@ -16,7 +16,7 @@ import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d"
 import SceneDef from "./SceneDef"
 import {on} from "../utils"
-import {get3DObjectDef, is3DObjectType, SIMPLE_COLORS, toRad} from './Common'
+import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad} from './Common'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -124,6 +124,21 @@ export default class ImmersiveVREditor extends Component {
         if (this.selectedNode) this.controls.attach(this.selectedNode, this.pointer)
     }
 
+    navWithSelection = () => {
+        const sel = SelectionManager.getSelection()
+        if(!sel) return
+        console.log("navigating to",sel)
+        const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+        console.log("going to ",obj)
+        if(obj.navTarget){
+            const sceneObj = this.props.provider.findSceneById(obj.navTarget)
+            console.log("going to the scene object",sceneObj)
+            if(sceneObj) {
+                this.setCurrentSceneId(obj.navTarget)
+            }
+        }
+    }
+
     initContent() {
         this.scene.background = new THREE.Color( 0xcccccc );
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
@@ -184,16 +199,20 @@ export default class ImmersiveVREditor extends Component {
 
         this.tools.add(new button2d()
             .setAll({ x:5, y:5, text:'add box'})
-            .on(POINTER_CLICK, this.props.provider.addCube))
+            .on(POINTER_CLICK, ()=>this.props.provider.add3DObject(OBJ_TYPES.cube)))
         this.tools.add(new button2d()
             .setAll({ x:5, y:5+30, text:'add sphere'})
-            .on(POINTER_CLICK, this.props.provider.addSphere))
+            .on(POINTER_CLICK, ()=>this.props.provider.add3DObject(OBJ_TYPES.sphere)))
         this.tools.add(new button2d()
             .setAll({ x:5, y:5+30+30, text:'delete'})
             .on(POINTER_CLICK, this.props.provider.deleteObject))
         this.tools.add(new button2d()
             .setAll({ x:5, y:5+30+30+30, text:'save'})
             .on(POINTER_CLICK, this.props.provider.save))
+        this.tools.add(new button2d()
+            .setAll({x:5, y:5+30*4, text:'nav'})
+            .on(POINTER_CLICK, this.navWithSelection)
+        )
 
         const rowLayout = (panel)=>{
             let x = 0
@@ -204,7 +223,7 @@ export default class ImmersiveVREditor extends Component {
             })
         }
 
-        const color_group = new group2d().setAll({ x:5, y:5+30+30+30+30, w:235, h:35, layout:rowLayout})
+        const color_group = new group2d().setAll({ x:5, y:5+30*5, w:235, h:35, layout:rowLayout})
         SIMPLE_COLORS.forEach(c => {
             color_group.add(new button2d()
                 .setAll({text:' ', normalBg:c })

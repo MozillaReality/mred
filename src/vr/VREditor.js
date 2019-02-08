@@ -151,6 +151,9 @@ export default class VREditor extends  SyncGraphProvider {
         return -1
     }
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
+    findSceneById(id) {
+        return fetchGraphObject(this.getDataGraph(),id)
+    }
 
 
     quick_setPropertyValue(item, key, value) {
