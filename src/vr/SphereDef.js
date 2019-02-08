@@ -16,6 +16,7 @@ export default class SphereDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#0000ff',
+            navTarget:0,
             parent:scene.id
         }))
     }

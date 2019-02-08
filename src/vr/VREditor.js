@@ -123,9 +123,18 @@ export default class VREditor extends  SyncGraphProvider {
                 return assets.filter(a => a.subtype === 'image').map(a => a.id)
             }
         }
+        if(key === PROP_DEFS.navTarget.key) {
+            const children = this.getDataGraph().getPropertyValue(this.getSceneRoot(), 'children')
+            const scenes = propToArray(this.getDataGraph(), children)
+                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+                .filter(ch => ch.type === 'scene')
+            console.log(scenes)
+            return scenes.map(sc => sc.id)
+        }
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
+        if(key === PROP_DEFS.navTarget.key) return EnumTitleRenderer
     }
 
     getSelectedScene() {

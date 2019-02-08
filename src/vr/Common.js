@@ -125,6 +125,11 @@ export const PROP_DEFS = {
         type:TYPES.STRING,
         locked:true,
     },
+    navTarget: {
+        key:'navTarget',
+        name:'Nav Target',
+        type:TYPES.ENUM
+    }
 }
 
 export const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
