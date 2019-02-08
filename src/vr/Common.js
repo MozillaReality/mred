@@ -3,6 +3,7 @@ import CubeDef from './CubeDef'
 import SphereDef from './SphereDef'
 import PlaneDef from './PlaneDef'
 import ModelDef from './ModelDef'
+import BG360Def from './BG360Def'
 
 const stdhints = {
     incrementValue:0.1,
@@ -128,11 +129,20 @@ export const PROP_DEFS = {
 
 export const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
 
+export const OBJ_TYPES = {
+    cube:'cube',
+    sphere:'sphere',
+    plane:'plane',
+    model:'model',
+    bg360:'bg360'
+}
+
 export function is3DObjectType(type) {
     if(type === 'cube') return true
     if(type === 'sphere') return true
     if(type === 'plane') return true
     if(type === 'model') return true
+    if(type === OBJ_TYPES.bg360) return true
     return false
 }
 
@@ -141,15 +151,17 @@ export function get3DObjectDef(type) {
     if(type === 'sphere') return new SphereDef()
     if(type === 'plane') return new PlaneDef()
     if(type === 'model') return new ModelDef()
+    if(type === OBJ_TYPES.bg360) return new BG360Def()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
+export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg' }
 export function isImageType(type) {
     if (!type) return false
-    if (type.toLowerCase() === 'image/png') return true
-    if (type.toLowerCase() === 'image/jpeg') return true
+    if (type.toLowerCase() === MIME_TYPES.PNG) return true
+    if (type.toLowerCase() === MIME_TYPES.JPEG) return true
     return false;
 }
 
@@ -173,5 +185,6 @@ export const ITEM_ICONS = {
     asset: 'file',
     assets: 'archive',
     scene: 'globe',
+    bg360:'image',
     image:'image',
 }

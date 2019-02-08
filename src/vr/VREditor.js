@@ -20,7 +20,16 @@ import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogManager, HBox, PopupManager} from "appy-comps";
-import {get3DObjectDef, is3DObjectType, isGLTFFile, isImageType, ITEM_ICONS, PROP_DEFS, SIMPLE_COLORS} from './Common'
+import {
+    get3DObjectDef,
+    is3DObjectType,
+    isGLTFFile,
+    isImageType,
+    ITEM_ICONS,
+    OBJ_TYPES,
+    PROP_DEFS,
+    SIMPLE_COLORS
+} from './Common'
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
@@ -104,10 +113,13 @@ export default class VREditor extends  SyncGraphProvider {
             const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
             const assets = propToArray(this.getDataGraph(), children).map(ch => fetchGraphObject(this.getDataGraph(),ch))
             const realobj = fetchGraphObject(this.getDataGraph(),obj)
-            if(realobj.type === 'model') {
+            if(realobj.type === OBJ_TYPES.model) {
                 return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
             }
-            if(realobj.type === 'plane') {
+            if(realobj.type === OBJ_TYPES.plane) {
+                return assets.filter(a => a.subtype === 'image').map(a => a.id)
+            }
+            if(realobj.type === OBJ_TYPES.bg360) {
                 return assets.filter(a => a.subtype === 'image').map(a => a.id)
             }
         }
@@ -218,7 +230,7 @@ export default class VREditor extends  SyncGraphProvider {
         const cmds = []
         cmds.push({ title:'delete', icon:'close', fun: this.deleteObject });
 
-        ['cube','sphere','plane','model'].forEach(type =>{
+        ['cube','sphere','plane','model','bg360'].forEach(type =>{
             cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) })
         });
         cmds.push({ title:'scene', icon:'file', fun: this.addScene })
@@ -359,7 +371,7 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = ['cube', 'sphere', 'plane', 'model'].map(type => {
+        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360'].map(type => {
             return {
                 title: type,
                 icon: ITEM_ICONS[type],

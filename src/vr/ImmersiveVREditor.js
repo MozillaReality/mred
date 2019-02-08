@@ -9,7 +9,6 @@ import VRStats from "webxr-boilerplate/vrstats"
 import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
-import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
 import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
@@ -238,6 +237,7 @@ export default class ImmersiveVREditor extends Component {
             const node = this.findNode(op.object)
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)
+                if(obj.type === 'scene') return new SceneDef().updateProperty(node,obj,op,this.props.provider)
                 if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
@@ -281,7 +281,7 @@ export default class ImmersiveVREditor extends Component {
         this.sceneWrapper = this.findNode(sceneid)
         this.scene.add(this.sceneWrapper)
         this.sceneWrapper.add(this.controls)
-        const floor = new SceneAccessor(this.sceneWrapper).getFloor()
+        const floor = new SceneDef().getFloorPart(this.sceneWrapper)
         floor.userData.clickable = true
         on(floor,POINTER_MOVE,(e)=>{
             this.navcursor.position.x = e.point.x

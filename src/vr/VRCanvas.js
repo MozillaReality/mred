@@ -3,10 +3,9 @@ import * as THREE from 'three'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
-import {SceneAccessor} from './SceneAccessor'
 import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./SceneDef"
-import {get3DObjectDef, is3DObjectType} from './Common'
+import {get3DObjectDef, is3DObjectType, OBJ_TYPES} from './Common'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -44,6 +43,9 @@ export class VRCanvas extends Component {
         this.controls.addEventListener('change',(e)=>{
             const sel = SelectionManager.getSelection()
             if(sel) {
+                const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+                if(!is3DObjectType(obj.type)) return
+                if(obj.type === OBJ_TYPES.bg360) return
                 const node = this.findNode(sel)
                 if(!node) return
                 const prov = this.props.provider
@@ -138,11 +140,8 @@ export class VRCanvas extends Component {
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)
                 if(obj.type === 'scene') {
-                    if (op.name === 'defaultFloor') {
-                        const acc = new SceneAccessor(node)
-                        acc.setDefaultFloor(op.value)
-                        return
-                    }
+                    new SceneDef().updateProperty(node,obj,op,this.props.provider)
+                    return
                 }
                 if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
