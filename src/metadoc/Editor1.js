@@ -276,6 +276,33 @@ export default class MetadocEditor extends  SyncGraphProvider {
         })
     }
 
+    addImageAssetFromURL = (url) => {
+        //TODO: make this format detection code more robust
+        const name = url.substring(url.lastIndexOf('/')+1)
+        const type = name.substring(name.lastIndexOf(".")+1)
+        let fileType = "image/unknown"
+        if(type.toLowerCase() === 'png') fileType = 'image/png'
+        if(type.toLowerCase() === 'jpg') fileType = 'image/jpeg'
+        if(type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
+
+        const graph = this.getDataGraph()
+        const asset = fetchGraphObject(graph,graph.createObject({
+            type:'asset',
+            subtype:'image',
+            format:fileType,
+            src:url,
+            width:100,
+            height:100,
+            title:name,
+            parent:0
+        }))
+        const assets = fetchGraphObject(graph,this.getAssetsObject())
+        insertAsLastChild(graph,assets,asset)
+        this.requestImageCache(url).then(img => {
+            graph.setProperty(asset.id,'width',img.width)
+            graph.setProperty(asset.id,'height',img.height)
+        })
+    }
     deleteSelection = () => {
         const graph = this.getDataGraph()
         // const layer = this.getSelectedLayer()
@@ -307,7 +334,8 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const obj = fetchGraphObject(graph,sel)
         SelectionManager.setClipboard(obj.id)
     }
-    pasteSelection = () => {
+    pasteSelection = (e) => {
+        if(e.target && e.target.getAttribute('type') === 'input') return console.log("pasting into an input field. don't intercept")
         const graph = this.getDataGraph()
         const shapeid = SelectionManager.getClipboard()
         const obj1 = fetchGraphObject(graph,shapeid)

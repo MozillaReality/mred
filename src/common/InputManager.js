@@ -60,13 +60,13 @@ export default class InputManager {
         // console.log("final list is",m2.length)
         if(m2.length > 0) {
             // console.log("something matched")
-            e.preventDefault()
-            this.dispatchEvents(m2)
+            // e.preventDefault()
+            this.dispatchEvents(m2,e)
         }
     }
-    dispatchEvents(events) {
-        events.forEach((bind)=>{
-            if(this.listeners[bind.id]) this.listeners[bind.id].forEach((cb)=>cb?cb():null)
+    dispatchEvents(matches,e) {
+        matches.forEach((bind)=>{
+            if(this.listeners[bind.id]) this.listeners[bind.id].forEach((cb)=>cb?cb(e):null)
         })
     }
 }

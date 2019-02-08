@@ -42,6 +42,7 @@ export class MetadocCanvas extends Component {
     }
 
     redraw = () => {
+        if(!this.canvas) return
         const c = this.canvas.getContext('2d')
         c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
