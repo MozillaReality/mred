@@ -39,7 +39,7 @@ export default class SceneDef {
             scene.parts.floor = floor
             scene.add(floor)
         } else {
-            if (scene.parts.floor) {
+            if (scene.parts && scene.parts.floor) {
                 scene.remove(scene.parts.floor)
                 delete scene.parts.floor
             }
@@ -47,6 +47,8 @@ export default class SceneDef {
     }
 
     getFloorPart(node) {
+        if(!node) return null
+        if(!node.parts) return null
         return node.parts.floor
     }
 

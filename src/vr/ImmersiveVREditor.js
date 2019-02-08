@@ -282,15 +282,17 @@ export default class ImmersiveVREditor extends Component {
         this.scene.add(this.sceneWrapper)
         this.sceneWrapper.add(this.controls)
         const floor = new SceneDef().getFloorPart(this.sceneWrapper)
-        floor.userData.clickable = true
-        on(floor,POINTER_MOVE,(e)=>{
-            this.navcursor.position.x = e.point.x
-            this.navcursor.position.z = e.point.z
-        })
-        on(floor,POINTER_CLICK,(e)=>{
-            this.sceneWrapper.position.x -= e.point.x
-            this.sceneWrapper.position.z -= e.point.z + 3
-        })
+        if(floor) {
+            floor.userData.clickable = true
+            on(floor, POINTER_MOVE, (e) => {
+                this.navcursor.position.x = e.point.x
+                this.navcursor.position.z = e.point.z
+            })
+            on(floor, POINTER_CLICK, (e) => {
+                this.sceneWrapper.position.x -= e.point.x
+                this.sceneWrapper.position.z -= e.point.z + 3
+            })
+        }
     }
 
     loadScene() {
