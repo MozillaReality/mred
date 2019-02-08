@@ -13,7 +13,7 @@ import {
     propToArray,
     removeFromParent
 } from "../syncgraph/utils";
-import {HBox, PopupManager} from "appy-comps";
+import {DialogManager, HBox, PopupManager} from "appy-comps";
 import InputManager from "../common/InputManager";
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {
@@ -26,6 +26,7 @@ import {
     VERTICAL_ALIGNMENT
 } from "./Common";
 import AssetView from './AssetView'
+import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
 
 
 const EnumTitleRenderer = (props) => {
@@ -402,9 +403,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
 
-    showAddImageAssetDialog = () => {
-        console.log('showing a dialog')
-    }
+    showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
 }
 
 
