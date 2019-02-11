@@ -4,6 +4,7 @@ import SphereDef from './SphereDef'
 import PlaneDef from './PlaneDef'
 import ModelDef from './ModelDef'
 import BG360Def from './BG360Def'
+import TextDef from './TextDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -134,7 +135,64 @@ export const PROP_DEFS = {
         key:'offset',
         name:'Image Offset',
         type:TYPES.NUMBER,
+    },
+
+    text: {
+        key:'text',
+        name:'Text',
+        type:TYPES.STRING,
+        hints: {
+            multiline:true
+        }
+    },
+    fontSize: {
+        key:'fontSize',
+        name:'Font Size',
+        type:TYPES.NUMBER,
+    },
+    padding: {
+        key:'padding',
+        name:'Padding',
+        type:TYPES.NUMBER,
+    },
+    borderWidth: {
+        key:'borderWidth',
+        name:'Border width',
+        type:TYPES.NUMBER,
+    },
+    borderRadius: {
+        key:'borderRadius',
+        name:'Corner Size',
+        type:TYPES.NUMBER,
+    },
+    horizontalAlign: {
+        key:'horizontalAlign',
+        name:'H Align',
+        type:TYPES.ENUM,
         locked:false,
+    },
+    textColor: {
+        key:'textColor',
+        name:'Text Color',
+        type:TYPES.COLOR,
+        custom:true,
+    },
+    backgroundColor: {
+        key:'backgroundColor',
+        name:'BG Color',
+        type:TYPES.COLOR,
+        custom:true,
+    },
+    borderColor: {
+        key:'borderColor',
+        name:'Border Color',
+        type:TYPES.COLOR,
+        custom:true,
+    },
+    drawBackground: {
+        key:'drawBackground',
+        name:'BG?',
+        type:TYPES.BOOLEAN,
     }
 }
 
@@ -145,14 +203,23 @@ export const OBJ_TYPES = {
     sphere:'sphere',
     plane:'plane',
     model:'model',
-    bg360:'bg360'
+    bg360:'bg360',
+    text:'text',
 }
+
+export const HORIZONTAL_ALIGNMENT = {
+    LEFT:'LEFT',
+    CENTER:'CENTER',
+    RIGHT:'RIGHT',
+}
+
 
 export function is3DObjectType(type) {
     if(type === 'cube') return true
     if(type === 'sphere') return true
     if(type === 'plane') return true
     if(type === 'model') return true
+    if(type === OBJ_TYPES.text) return true
     if(type === OBJ_TYPES.bg360) return true
     return false
 }
@@ -163,6 +230,7 @@ export function get3DObjectDef(type) {
     if(type === 'plane') return new PlaneDef()
     if(type === 'model') return new ModelDef()
     if(type === OBJ_TYPES.bg360) return new BG360Def()
+    if(type === OBJ_TYPES.text) return new TextDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -198,4 +266,5 @@ export const ITEM_ICONS = {
     scene: 'globe',
     bg360:'image',
     image:'image',
+    text:'text',
 }

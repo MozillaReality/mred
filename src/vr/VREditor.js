@@ -33,6 +33,7 @@ import {
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
+import {HORIZONTAL_ALIGNMENT} from './Common'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -137,6 +138,9 @@ export default class VREditor extends  SyncGraphProvider {
                 .filter(ch => ch.type === 'scene')
             console.log(scenes)
             return scenes.map(sc => sc.id)
+        }
+        if(key === PROP_DEFS.horizontalAlign.key) {
+            return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
         }
     }
     getRendererForEnum(key,obj) {
@@ -249,7 +253,7 @@ export default class VREditor extends  SyncGraphProvider {
         const cmds = []
         cmds.push({ title:'delete', icon:'close', fun: this.deleteObject });
 
-        ['cube','sphere','plane','model','bg360'].forEach(type =>{
+        ['cube','sphere','plane','model','bg360',OBJ_TYPES.text].forEach(type =>{
             cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) })
         });
         cmds.push({ title:'scene', icon:'file', fun: this.addScene })
@@ -330,7 +334,11 @@ export default class VREditor extends  SyncGraphProvider {
 
 
     createCustomEditor(item,def,provider, value, onChange) {
-        if(def.key === PROP_DEFS.color.key) return <HBox>
+        if(def.key === PROP_DEFS.color.key
+            || def.key === PROP_DEFS.backgroundColor.key
+            || def.key === PROP_DEFS.borderColor.key
+            || def.key === PROP_DEFS.textColor.key
+        ) return <HBox>
             {
                 SIMPLE_COLORS
                     .map(c => <button
@@ -390,7 +398,7 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360'].map(type => {
+        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360', OBJ_TYPES.text].map(type => {
             return {
                 title: type,
                 icon: ITEM_ICONS[type],
