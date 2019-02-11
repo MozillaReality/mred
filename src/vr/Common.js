@@ -129,6 +129,12 @@ export const PROP_DEFS = {
         key:'navTarget',
         name:'Nav Target',
         type:TYPES.ENUM
+    },
+    imageOffset: {
+        key:'offset',
+        name:'Image Offset',
+        type:TYPES.NUMBER,
+        locked:false,
     }
 }
 

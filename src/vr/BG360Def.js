@@ -12,7 +12,8 @@ export default class BG360Def {
             type:OBJ_TYPES.bg360,
             title:'background',
             asset:0,
-            parent:scene.id
+            parent:scene.id,
+            imageOffset:0,
         }))
     }
     makeNode(obj) {
