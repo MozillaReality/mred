@@ -1,4 +1,4 @@
-import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
 import {POINTER_CLICK} from "webxr-boilerplate/pointer";
 import SelectionManager from "../SelectionManager";

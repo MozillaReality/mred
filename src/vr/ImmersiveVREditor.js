@@ -315,7 +315,6 @@ export default class ImmersiveVREditor extends Component {
         // this.setState({scene: -1})
         //make new stuff
         const hist = this.props.provider.getDocHistory()
-        console.log("==== replaying history")
         hist.forEach(op => this.updateScene(op))
     }
 
