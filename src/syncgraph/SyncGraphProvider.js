@@ -53,7 +53,8 @@ export default class SyncGraphProvider extends TreeItemProvider {
         })
     }
 
-    save = () => {
+    save = (e) => {
+        if(e) e.preventDefault()
         const payload_obj = {
             history:this.getDocHistory(),
             type:this.getDocType(),
