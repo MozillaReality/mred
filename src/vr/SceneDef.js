@@ -16,12 +16,13 @@ export default class SceneDef {
     }
     makeNode(obj) {
         const scene = new THREE.Group()
+        scene.name = obj.title
         this.setDefaultFloor(scene,obj.defaultFloor)
         return scene
     }
 
     updateProperty(node, obj, op, provider) {
-        console.log("got hte op",op)
+        console.log("update property",node.name,op.name,op.value)
         if(op.name === PROP_DEFS.defaultFloor.key) {
             console.log('setting the fllor too',op.value)
             this.setDefaultFloor(node,op.value)
@@ -34,6 +35,7 @@ export default class SceneDef {
                 new THREE.PlaneBufferGeometry(100, 100, 10, 10),
                 new THREE.MeshLambertMaterial({color: 'blue'})
             )
+            floor.name = 'defaultFloor'
             floor.rotation.x = -90 * Math.PI / 180
             scene.parts = {}
             scene.parts.floor = floor

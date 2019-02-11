@@ -24,6 +24,7 @@ export default class ModelDef extends ObjectDef {
     }
     makeNode(obj) {
         const node = new THREE.Group()
+        node.name = obj.title
         const clicker =  new THREE.Mesh(
             new THREE.SphereBufferGeometry(1),
             new MeshLambertMaterial({color:"red", transparent:true, opacity: 0.2})

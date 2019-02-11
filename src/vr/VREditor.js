@@ -2,7 +2,7 @@ import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
 import TreeTable from '../common/TreeTable'
-import PropSheet from '../common/PropSheet'
+import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
@@ -90,6 +90,13 @@ export default class VREditor extends  SyncGraphProvider {
                 console.log("unknown property",key)
             })
         }
+        defs.push({
+            key:'id',
+            name:"ID",
+            type:TYPES.STRING,
+            value:item,
+            locked:true
+        })
 
         return defs
     }

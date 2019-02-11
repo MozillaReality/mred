@@ -18,7 +18,7 @@ import SceneDef from "./SceneDef"
 import {on} from "../utils"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad} from './Common'
 
-const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
+const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
 
@@ -49,6 +49,7 @@ export default class ImmersiveVREditor extends Component {
 
 
     componentDidMount() {
+        this.sceneWrappers = {}
         this.initScene()
         this.renderer.setAnimationLoop(this.render3.bind(this))
     }
@@ -134,7 +135,8 @@ export default class ImmersiveVREditor extends Component {
             const sceneObj = this.props.provider.findSceneById(obj.navTarget)
             console.log("going to the scene object",sceneObj)
             if(sceneObj) {
-                this.setCurrentSceneId(obj.navTarget)
+                this.swapScene(obj.navTarget)
+                SelectionManager.clearSelection()
             }
         }
     }
@@ -171,6 +173,7 @@ export default class ImmersiveVREditor extends Component {
 
 
         this.controls = new TranslateControl()
+        this.controls.name = 'Controls'
         on(this.controls,'change',(e)=>{
             const sel = SelectionManager.getSelection()
             if(sel) {
@@ -240,67 +243,94 @@ export default class ImmersiveVREditor extends Component {
 
     updateScene(op) {
         const graph = this.props.provider.getDataGraph()
+        if (op.type === CREATE_OBJECT) {
+            if(op.defaults) {
+                // console.log("creating object with defaults",op.defaults)
+                if(op.defaults.type === 'scene') {
+                    let node =  this.findNode(op.id)
+                    if(node) {
+                        // console.log("scene already exists. skipping", node.name)
+                    } else {
+                        console.log("Mkaing a real scene", op)
+                        const obj = fetchGraphObject(graph, op.id)
+                        node = new SceneDef().makeNode(obj)
+                        this.insertNodeMapping(op.id,node)
+                        this.sceneWrappers[op.id] = node
+                        this.scene.add(node)
+                        this.swapScene(op.id)
+                    }
+                }
+            }
+        }
         if (op.type === INSERT_ELEMENT) {
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
-            if (obj.type === 'scene') {
-                this.populateNode(objid)
-                this.setCurrentSceneId(objid)
+            if (obj.type === 'scene') return // console.log("skipping insert scene")
+            if(is3DObjectType(obj.type)) {
+                const nodeobj = get3DObjectDef(obj.type).makeNode(obj)
+                this.insertNodeMapping(objid, nodeobj)
+                this.sceneWrappers[obj.parent].add(nodeobj)
                 return
             }
-            if(is3DObjectType(obj.type)) return this.sceneWrapper.add(this.populateNode(objid))
+            if(obj.type === 'assets') return
+            if(obj.type === 'asset') return
             console.warn("unknown object type", obj)
             return
         }
         if (op.type === SET_PROPERTY) {
+            const obj = fetchGraphObject(graph, op.object)
+            if(obj.type === 'asset') return
+            if(obj.type === 'assets') return
             const node = this.findNode(op.object)
             if (node) {
-                const obj = fetchGraphObject(graph, op.object)
+                if(op.name === 'parent') return
                 if(obj.type === 'scene') return new SceneDef().updateProperty(node,obj,op,this.props.provider)
                 if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
+                console.log("objects are",this.obj_node_map)
             }
             return
         }
         if(op.type === DELETE_ELEMENT) {
-            console.log("processing delerte",op)
-            const node = this.findNode(op.value)
-            console.log("the node iss",node)
             const obj = fetchGraphObject(graph,op.value)
-            console.log('the objcect is',obj)
-            if(is3DObjectType(obj.type)) this.sceneWrapper.remove(node)
+            if(is3DObjectType(obj.type)) {
+                const node = this.findNode(op.value)
+                this.sceneWrappers[obj.parent].remove(node)
+            }
             return
         }
-        console.log('skipping', op.type)
+        // console.log('skipping', op.type)
     }
     documentSwapped() {
         console.log("totally new document!")
         //nuke all the old stuff
-        if (this.sceneWrapper) {
-            this.sceneWrapper.remove(this.controls)
-            this.scene.remove(this.sceneWrapper)
-            this.sceneWrapper = null
-        }
+        Object.keys(this.sceneWrappers).forEach(key => {
+            const scene = this.sceneWrappers[key]
+            scene.remove(this.controls)
+            this.scene.remove(scene)
+        })
+        this.sceneWrappers = {}
         this.obj_node_map = {}
-        this.setState({scene: -1})
+        // this.setState({scene: -1})
         //make new stuff
         const hist = this.props.provider.getDocHistory()
         console.log("==== replaying history")
         hist.forEach(op => this.updateScene(op))
     }
 
-    setCurrentSceneId(sceneid) {
-        if (this.sceneWrapper) {
-            this.scene.remove(this.sceneWrapper)
-            this.scene.remove(this.controls)
-            this.sceneWrapper = null
-        }
-        this.setState({scene: sceneid})
-        this.sceneWrapper = this.findNode(sceneid)
-        this.scene.add(this.sceneWrapper)
-        this.sceneWrapper.add(this.controls)
-        const floor = new SceneDef().getFloorPart(this.sceneWrapper)
+    swapScene(id) {
+        console.log("swapping to the scene",id)
+        //make all scenes invisible except the right one
+        Object.keys(this.sceneWrappers).forEach(key => {
+            const scene = this.sceneWrappers[key]
+            scene.visible = (key === id)
+            scene.remove(this.controls)
+        })
+        this.sceneWrappers[id].add(this.controls)
+        this.sceneWrappers[id].position.x = 0
+        this.sceneWrappers[id].position.z = 0
+        const floor = new SceneDef().getFloorPart(this.sceneWrappers[id])
         if(floor) {
             floor.userData.clickable = true
             on(floor, POINTER_MOVE, (e) => {
@@ -308,11 +338,13 @@ export default class ImmersiveVREditor extends Component {
                 this.navcursor.position.z = e.point.z
             })
             on(floor, POINTER_CLICK, (e) => {
-                this.sceneWrapper.position.x -= e.point.x
-                this.sceneWrapper.position.z -= e.point.z + 3
+                this.sceneWrappers[id].position.x -= e.point.x
+                this.sceneWrappers[id].position.z -= e.point.z + 3
             })
         }
+        console.log("final scene",this.scene)
     }
+
 
     loadScene() {
         console.log("loading the final scene")
@@ -329,22 +361,6 @@ export default class ImmersiveVREditor extends Component {
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
         return this.obj_node_map[id]
-    }
-
-    populateNode(nodeid) {
-        const graph = this.props.provider.getDataGraph()
-        const obj = fetchGraphObject(graph, nodeid)
-        if(is3DObjectType(obj.type)) {
-            const nodeobj = get3DObjectDef(obj.type).makeNode(obj)
-            this.insertNodeMapping(nodeid, nodeobj)
-            return nodeobj
-        }
-        if (obj.type === 'scene') {
-            const scene = new SceneDef().makeNode(obj)
-            this.insertNodeMapping(nodeid, scene)
-            return scene
-        }
-        console.warn("cannot populate node for type", obj.type)
     }
 
 }

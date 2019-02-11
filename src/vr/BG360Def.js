@@ -20,6 +20,7 @@ export default class BG360Def {
             new THREE.SphereBufferGeometry(20.0, 50,50),
             new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide})
         )
+        node.name = obj.title
         node.userData.clickable = true
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         return node

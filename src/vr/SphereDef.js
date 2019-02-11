@@ -25,6 +25,7 @@ export default class SphereDef extends ObjectDef {
             new THREE.SphereBufferGeometry(obj.radius),
             new THREE.MeshLambertMaterial({color: obj.color})
         )
+        node.name = obj.title
         node.userData.clickable = true
         on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
