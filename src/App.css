@@ -276,12 +276,15 @@ g.selected > rect.selection {
 
 }
 
-.tree-node .drag-handle {
+.tree-node .drag {
     background-color: transparent;
-    border: 0px solid black;
+    border: 1px solid transparent;
+    padding:3px;
+    margin:0;
 }
-.tree-node .drag-handle:hover {
-     border: 1px solid black;
+.tree-node .drag:hover {
+    border: 1px solid black;
+    background-color: lightblue;
 }
 
 .tree-node.drop-target {

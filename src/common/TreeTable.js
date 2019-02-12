@@ -84,7 +84,7 @@ class TreeTableItem extends Component {
                   onDragEnd={this.onDragEnd}
             />
             <span style={{
-                width:this.props.depth*1+'em'
+                width:this.props.depth*1.5+'em'
             }}></span>
             {arrow}
             {prov.getRendererForItem(node)}

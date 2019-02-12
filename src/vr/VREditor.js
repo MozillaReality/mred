@@ -204,7 +204,9 @@ export default class VREditor extends  SyncGraphProvider {
         ToasterMananager.add('added '+type)
     }
     addImageAssetFromFile = (file) => {
+        ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
+            ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
             const url = SERVER_URL_ASSETS+ans.id
             const graph = this.getDataGraph()
