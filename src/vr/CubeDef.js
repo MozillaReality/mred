@@ -17,6 +17,7 @@ export default class CubeDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#00ff00',
+            navTarget:0,
             parent:scene.id
         }))
     }

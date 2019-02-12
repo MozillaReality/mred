@@ -121,16 +121,12 @@ export default class VREditor extends  SyncGraphProvider {
         }
     }
     getValuesForEnum(key,obj) {
+
         if (key === PROP_DEFS.asset.key) {
             const assets = this.accessObject(this.getAssetsObject()).array('children').map(ch => this.accessObject(ch))
             const realobj = this.accessObject(obj)
-            if(realobj.type === OBJ_TYPES.model) return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
-            if(realobj.type === OBJ_TYPES.plane
-                || realobj.type === OBJ_TYPES.bg360
-                || realobj.type === OBJ_TYPES.img2d
-            ) {
-                return assets.filter(a => a.subtype === 'image').map(a => a.id)
-            }
+            if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
+            if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === 'image').map(a => a.id)
         }
         if(key === PROP_DEFS.navTarget.key) {
             const scenes = this.accessObject(this.getSceneRoot()).array('children')
@@ -148,8 +144,10 @@ export default class VREditor extends  SyncGraphProvider {
         }
     }
     getRendererForEnum(key,obj) {
-        if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
-        if(key === PROP_DEFS.navTarget.key) return NavTargetRenderer
+        switch(key) {
+            case PROP_DEFS.asset.key: return EnumTitleRenderer
+            case PROP_DEFS.navTarget.key: return NavTargetRenderer
+        }
     }
 
     getSelectedScene() {
@@ -256,7 +254,9 @@ export default class VREditor extends  SyncGraphProvider {
         })
     }
     addAudioAssetFromFile = (file) => {
+        ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
+            ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
             const url = SERVER_URL_ASSETS+ans.id
             const graph = this.getDataGraph()
@@ -301,7 +301,9 @@ export default class VREditor extends  SyncGraphProvider {
         // })
     }
     addGLBAssetFromFile = (file) => {
+        ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
+            ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
             const url = SERVER_URL_ASSETS+ans.id
             const graph = this.getDataGraph()
@@ -663,4 +665,17 @@ class GraphAccessor {
             }
         }
     }
+}
+
+
+function acceptsModelAsset(type) {
+    if(type=== OBJ_TYPES.model) return true
+    return false
+}
+function acceptsImageAsset(type) {
+    if(type === OBJ_TYPES.plane
+        || type === OBJ_TYPES.bg360
+        || type === OBJ_TYPES.img2d
+    ) return true
+    return false
 }

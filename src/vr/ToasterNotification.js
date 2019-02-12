@@ -11,7 +11,6 @@ export class ToasterNotification extends Component {
     }
 
     add = (payload) => {
-        console.log("adding",payload)
         this.setState({notification:payload, visible:true})
         setTimeout(this.hide,2000)
     }

@@ -4,9 +4,7 @@
 module.exports = {
     adds: [],
     add: function add(note) {
-        this.adds.forEach(function (cb) {
-            return cb(note);
-        });
+        this.adds.forEach(cb => cb(note))
     },
     onAdd: function onAdd(cb) {
         this.adds.push(cb);
