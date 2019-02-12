@@ -67,13 +67,11 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     getRendererForItem = (item) => {
-        const obj = fetchGraphObject(this.getDataGraph(),item)
-        if(!obj) return <div>???</div>
-        if(obj.type === 'asset') {
-            return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}></i> {obj.title}</div>
-        }
+        const obj = this.accessObject(item)
+        if(!obj.exists()) return <div>???</div>
+        if(obj.type === 'asset') return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}></i> {obj.title}</div>
         if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}></i> {obj.title}</div>
-        return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
+        return <div>{obj.title}</div>
     }
 
     getProperties(item) {
@@ -111,10 +109,9 @@ export default class VREditor extends  SyncGraphProvider {
         super.setPropertyValue(item,def,value)
         //size the plane to match the aspect ratio of the asset
         if(def.key === PROP_DEFS.asset.key) {
-            const asset = fetchGraphObject(this.getDataGraph(),value)
-            const obj = fetchGraphObject(this.getDataGraph(),item)
+            const asset = this.accessObject(value)
             if(asset.subtype === 'image') {
-                let height = (asset.height / asset.width) * obj.width
+                let height = (asset.height / asset.width) * this.accessObject(item).width
                 super.setPropertyValue(item, {key: 'height'}, height)
             }
             if(asset.subtype === 'gltf') {
@@ -124,31 +121,25 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getValuesForEnum(key,obj) {
         if (key === PROP_DEFS.asset.key) {
-            const children = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
-            const assets = propToArray(this.getDataGraph(), children).map(ch => fetchGraphObject(this.getDataGraph(),ch))
-            const realobj = fetchGraphObject(this.getDataGraph(),obj)
-            if(realobj.type === OBJ_TYPES.model) {
-                return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
-            }
-            if(realobj.type === OBJ_TYPES.plane) {
-                return assets.filter(a => a.subtype === 'image').map(a => a.id)
-            }
-            if(realobj.type === OBJ_TYPES.bg360) {
-                return assets.filter(a => a.subtype === 'image').map(a => a.id)
-            }
-            if(realobj.type === OBJ_TYPES.img2d) {
+            const assets = this.accessObject(this.getAssetsObject()).array('children').map(ch => this.accessObject(ch))
+            const realobj = this.accessObject(obj)
+            if(realobj.type === OBJ_TYPES.model) return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
+            if(realobj.type === OBJ_TYPES.plane
+                || realobj.type === OBJ_TYPES.bg360
+                || realobj.type === OBJ_TYPES.img2d
+            ) {
                 return assets.filter(a => a.subtype === 'image').map(a => a.id)
             }
         }
         if(key === PROP_DEFS.navTarget.key) {
-            const children = this.getDataGraph().getPropertyValue(this.getSceneRoot(), 'children')
-            const scenes = propToArray(this.getDataGraph(), children)
-                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+            const scenes = this.accessObject(this.getSceneRoot()).array('children')
+                .map(ch => this.accessObject(ch))
                 .filter(ch => ch.type === 'scene')
                 .map(sc => sc.id)
-            const achildren = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
-            const assets = propToArray(this.getDataGraph(), achildren).map(ch => fetchGraphObject(this.getDataGraph(),ch))
-            const audios = assets.filter(a => a.subtype === 'audio').map(a=>a.id)
+            const audios = this.accessObject(this.getAssetsObject()).array('children')
+                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+                .filter(a => a.subtype === 'audio')
+                .map(a => a.id)
             return audios.concat(scenes)
         }
         if(key === PROP_DEFS.horizontalAlign.key) {
@@ -197,10 +188,9 @@ export default class VREditor extends  SyncGraphProvider {
     preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
     addScene = () => {
-        const graph = this.getDataGraph()
-        const root = fetchGraphObject(graph,this.getSceneRoot())
-        const scene = new SceneDef().make(graph,root)
-        insertAsFirstChild(graph,root,scene)
+        const root = this.accessObject(this.getSceneRoot())
+        const scene = new SceneDef().make(this.getDataGraph(),root)
+        root.insertFirstChild(scene)
         SelectionManager.setSelection(scene.id)
     }
 
@@ -455,6 +445,10 @@ export default class VREditor extends  SyncGraphProvider {
     showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
 
+
+    accessObject = (id) => {
+        return new GraphAccessor(this.getDataGraph()).object(id)
+    }
 }
 
 
@@ -604,19 +598,67 @@ const NavTargetRenderer = (props) => {
     let action = 'go to'
     let icon = ITEM_ICONS.asset
     if(props.value && props.provider) {
-        const graph = props.provider.getDataGraph()
-        title = graph.getPropertyValue(props.value,'title')
-        const type = graph.getPropertyValue(props.value,'type')
-        if(type === 'scene') {
+        const obj = props.provider.accessObject(props.value)
+        title = obj.title
+        // const graph = props.provider.getDataGraph()
+        // title = graph.getPropertyValue(props.value,'title')
+        // const type = graph.getPropertyValue(props.value,'type')
+        if(obj.type === 'scene') {
             icon = ITEM_ICONS.scene
         }
-        if(type === 'asset') {
-            const subtype = graph.getPropertyValue(props.value,'subtype')
-            if(subtype === 'audio') {
+        if(obj.type === 'asset' && obj.subtype === 'audio') {
+            // const subtype = graph.getPropertyValue(props.value,'subtype')
+            // if(subtype === 'audio') {
                 icon = ITEM_ICONS.audio
                 action = 'play'
-            }
+            // }
         }
     }
     return <div><i className={`fa fa-${icon}`}></i> {action} <b>{title}</b></div>
+}
+
+class GraphAccessor {
+    constructor(graph) {
+        this.graph = graph
+    }
+    object(id) {
+        if(this.graph.hasObject(id)) {
+            const obj = {}
+            this.graph.getPropertiesForObject(id).forEach(key => {
+                obj[key] = this.graph.getPropertyValue(id, key)
+            })
+            obj.id = id
+            obj.exists = function() { return true }
+            obj.set = (key, value) => {
+                this.graph.setProperty(id,key,value)
+                return obj
+            }
+            obj.array = (key) => {
+                const CH = obj[key]
+                const len = this.graph.getArrayLength(CH)
+                const ch = []
+                for (let i = 0; i < len; i++) {
+                    ch.push(this.graph.getElementAt(CH, i))
+                }
+                return ch
+            }
+            obj.insertChildLast = (child) => {
+                this.graph.setProperty(child.id,'parent',obj.id)
+                const CH = this.graph.getPropertyValue(obj.id,'children')
+                const len = this.graph.getArrayLength(CH)
+                const prev = this.graph.getElementAt(CH,len-1)
+                this.graph.insertAfter(CH,prev,child.id)
+            }
+            obj.insertFirstChild = (child) => {
+                this.graph.setProperty(child.id,'parent',obj.id)
+                const ch = this.graph.getPropertyValue(obj.id,'children')
+                this.graph.insertAfter(ch,null,child.id)
+            }
+            return obj
+        } else {
+            return {
+                exists: function() { return false }
+            }
+        }
+    }
 }

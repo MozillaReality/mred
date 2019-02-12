@@ -24,7 +24,6 @@ export default class Image2DDef extends ObjectDef {
     }
     makeNode(obj) {
         const node = new THREE.Mesh(
-            // new THREE.PlaneBufferGeometry(1,1),
             new THREE.PlaneBufferGeometry(obj.width, obj.width*obj.ratio),
             new THREE.MeshLambertMaterial({color: 'white', side: THREE.DoubleSide})
         )
@@ -38,12 +37,11 @@ export default class Image2DDef extends ObjectDef {
     }
     updateProperty(node, obj, op, provider) {
         if (op.name === PROP_DEFS.asset.key) {
-            const g = provider.getDataGraph()
-            const asset = fetchGraphObject(g,op.value)
-            if(asset) {
+            const asset = provider.accessObject(op.value)
+            if(asset.exists()) {
                 const tex = new THREE.TextureLoader().load(asset.src)
                 node.material = new THREE.MeshLambertMaterial({color:'white', side: THREE.DoubleSide, map:tex})
-                g.setProperty(obj.id,'ratio',asset.width/asset.height)
+                asset.set('ratio',asset.width/asset.height)
             }
             return
         }

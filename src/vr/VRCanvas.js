@@ -132,6 +132,7 @@ export class VRCanvas extends Component {
             const obj = fetchGraphObject(graph, objid)
             if (obj.type === 'scene') return this.populateNode(objid)
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
+            if(obj.type === 'asset') return
             console.warn("unknown object type", obj)
             return
         }

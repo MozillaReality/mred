@@ -131,7 +131,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
 
     genID = (prefix) => {
-        return `${prefix}_${Math.floor(Math.random() * 10000)}`
+        return `${prefix}_${Math.floor(Math.random() * 1000*1000*1000)}`
     }
 
     setDocument(doc, docid) {
