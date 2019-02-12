@@ -6,6 +6,7 @@ import TransformControls from './TransformControls.js'
 import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES} from './Common'
+import {ToasterNotification} from './ToasterNotification'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -173,7 +174,10 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
+        return <div>
+            <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
+            <ToasterNotification/>
+        </div>
     }
 
     populateNode(nodeid) {

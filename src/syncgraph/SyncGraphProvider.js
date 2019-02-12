@@ -5,6 +5,7 @@ import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
 import {PubnubSyncWrapper} from '../metadoc/PubnubSyncWrapper'
 import {propToArray} from "./utils";
+import * as ToasterMananager from '../vr/ToasterManager'
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
@@ -61,9 +62,11 @@ export default class SyncGraphProvider extends TreeItemProvider {
             id:this.getDocId()
         }
         const payload_string = JSON.stringify(payload_obj)
+        ToasterMananager.add('saving')
         return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
             console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
+            ToasterMananager.add(res.message)
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
         }).catch((e)=> console.log("error",e))
     }

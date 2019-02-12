@@ -37,6 +37,7 @@ import {AddGLBAssetDialog} from './AddGLBAssetDialog'
 import {AddAudioAssetDialog} from './AddAudioAssetDialog'
 import {HORIZONTAL_ALIGNMENT} from './Common'
 import AssetView from '../metadoc/AssetView'
+import * as ToasterMananager from './ToasterManager'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -200,6 +201,7 @@ export default class VREditor extends  SyncGraphProvider {
         const obj = get3DObjectDef(type).make(graph,scene)
         insertAsFirstChild(graph,scene,obj)
         SelectionManager.setSelection(obj.id)
+        ToasterMananager.add('added '+type)
     }
     addImageAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
@@ -450,8 +452,6 @@ export default class VREditor extends  SyncGraphProvider {
         return new GraphAccessor(this.getDataGraph()).object(id)
     }
 }
-
-
 
 class VREditorApp extends Component {
 
