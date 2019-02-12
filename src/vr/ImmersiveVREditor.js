@@ -135,8 +135,7 @@ export default class ImmersiveVREditor extends Component {
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         console.log("going to ",obj)
         if(obj.navTarget){
-            const target = fetchGraphObject(this.props.provider.getDataGraph(),obj.navTarget)
-            const targetObj = this.props.provider.findSceneById(obj.navTarget)
+            const targetObj = this.props.provider.accessObject(obj.navTarget)
             if(targetObj) {
                 if(targetObj.type === 'scene') {
                     this.swapScene(obj.navTarget)

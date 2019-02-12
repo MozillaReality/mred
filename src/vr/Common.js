@@ -274,4 +274,9 @@ export const ITEM_ICONS = {
     image:'image',
     text:'font',
     audio:'music',
+
+    cut:'cut',
+    copy:'copy',
+    paste:'paste',
+    delete:'close'
 }

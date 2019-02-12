@@ -43,6 +43,9 @@ class SelectionManager {
         if(this.selected.length === 0) return null;
         return this.selected[0];
     }
+    isEmpty() {
+        return this.selected.length === 0
+    }
     getFullSelection() {
         return this.selected
     }

@@ -8,13 +8,9 @@ import {VRCanvas} from './VRCanvas'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
-    cloneShape,
-    fetchGraphObject,
-    insertAsFirstChild,
+    fetchGraphObject, insertAsFirstChild,
     insertAsLastChild,
     listToArray,
-    propToArray,
-    removeFromParent
 } from '../syncgraph/utils'
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
@@ -38,6 +34,7 @@ import {AddAudioAssetDialog} from './AddAudioAssetDialog'
 import {HORIZONTAL_ALIGNMENT} from './Common'
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
+import GraphAccessor from "../syncgraph/GraphAccessor"
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -121,7 +118,6 @@ export default class VREditor extends  SyncGraphProvider {
         }
     }
     getValuesForEnum(key,obj) {
-
         if (key === PROP_DEFS.asset.key) {
             const assets = this.accessObject(this.getAssetsObject()).array('children').map(ch => this.accessObject(ch))
             const realobj = this.accessObject(obj)
@@ -151,23 +147,14 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     getSelectedScene() {
-        const graph = this.getDataGraph()
         const sel = SelectionManager.getSelection()
-        if(sel === null) {
-            const root = this.getSceneRoot()
-            const ch = graph.getPropertyValue(root,'children')
-            return fetchGraphObject(graph,graph.getElementAt(ch,0))
-        }
-        const type = this.getDataGraph().getPropertyValue(sel,'type')
-        if(type === 'scene') return fetchGraphObject(graph,sel)
-        if(is3DObjectType(type))  return fetchGraphObject(graph,graph.getPropertyValue(sel,'parent'))
+        if(sel === null) return this.accessObject(this.getSceneRoot()).child(0)
+        const selected = this.accessObject(sel)
+        if(selected.type === 'scene') return selected
+        if(is3DObjectType(selected.type))  return this.accessObject(selected.parent)
         return -1
     }
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
-    findSceneById(id) {
-        return fetchGraphObject(this.getDataGraph(),id)
-    }
-
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
@@ -194,65 +181,48 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     add3DObject = (type) => {
-        const graph = this.getDataGraph()
         const scene = this.getSelectedScene()
-        const obj = get3DObjectDef(type).make(graph,scene)
-        insertAsFirstChild(graph,scene,obj)
+        const obj = get3DObjectDef(type).make(this.getDataGraph(),scene)
+        scene.insertFirstChild(obj)
         SelectionManager.setSelection(obj.id)
         ToasterMananager.add('added '+type)
     }
+
     addImageAssetFromFile = (file) => {
         ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
             ToasterMananager.add('uploaded')
-            console.log("uploaded file with answer",ans)
-            const url = SERVER_URL_ASSETS+ans.id
-            const graph = this.getDataGraph()
-            const asset = fetchGraphObject(graph,graph.createObject({
-                type:'asset',
-                subtype:'image',
-                format:file.type,
-                src:url,
-                width:100,
-                height:100,
-                title:file.name,
-                parent:0
-            }))
-            const assets = fetchGraphObject(graph,this.getAssetsObject())
-            insertAsLastChild(graph,assets,asset)
-            this.requestImageCache(url).then(img => {
-                graph.setProperty(asset.id,'width',img.width)
-                graph.setProperty(asset.id,'height',img.height)
-            })
+            return this.addImageAssetFromExpandedURL(SERVER_URL_ASSETS+ans.id, file.type, file.name)
         })
     }
     addImageAssetFromURL = (url) => {
         //TODO: make this format detection code more robust
-        const name = url.substring(url.lastIndexOf('/')+1)
-        const type = name.substring(name.lastIndexOf(".")+1)
+        const name = url.substring(url.lastIndexOf('/') + 1)
+        const type = name.substring(name.lastIndexOf(".") + 1)
         let fileType = "image/unknown"
-        if(type.toLowerCase() === 'png') fileType = 'image/png'
-        if(type.toLowerCase() === 'jpg') fileType = 'image/jpeg'
-        if(type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
-
-        const graph = this.getDataGraph()
-        const asset = fetchGraphObject(graph,graph.createObject({
+        if (type.toLowerCase() === 'png') fileType = 'image/png'
+        if (type.toLowerCase() === 'jpg') fileType = 'image/jpeg'
+        if (type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
+        return this.addImageAssetFromExpandedURL(url, fileType, name)
+    }
+    addImageAssetFromExpandedURL(url,format,name) {
+        const asset = this.accessObject(this.getDataGraph().createObject({
             type:'asset',
             subtype:'image',
-            format:fileType,
+            format:format,
             src:url,
             width:100,
             height:100,
             title:name,
             parent:0
         }))
-        const assets = fetchGraphObject(graph,this.getAssetsObject())
-        insertAsLastChild(graph,assets,asset)
+        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         this.requestImageCache(url).then(img => {
-            graph.setProperty(asset.id,'width',img.width)
-            graph.setProperty(asset.id,'height',img.height)
+            asset.set('width',img.width)
+            asset.set('height',img.height)
         })
     }
+
     addAudioAssetFromFile = (file) => {
         ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
@@ -268,12 +238,7 @@ export default class VREditor extends  SyncGraphProvider {
                 title:file.name,
                 parent:0
             }))
-            const assets = fetchGraphObject(graph,this.getAssetsObject())
-            insertAsLastChild(graph,assets,asset)
-            // this.requestImageCache(url).then(img => {
-                // graph.setProperty(asset.id,'width',img.width)
-                // graph.setProperty(asset.id,'height',img.height)
-            // })
+            this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         })
     }
     addAudioAssetFromURL = (url) => {
@@ -293,12 +258,7 @@ export default class VREditor extends  SyncGraphProvider {
             title:name,
             parent:0
         }))
-        const assets = fetchGraphObject(graph,this.getAssetsObject())
-        insertAsLastChild(graph,assets,asset)
-        // this.requestImageCache(url).then(img => {
-            // graph.setProperty(asset.id,'width',img.width)
-            // graph.setProperty(asset.id,'height',img.height)
-        // })
+        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
     }
     addGLBAssetFromFile = (file) => {
         ToasterMananager.add('uploading')
@@ -315,96 +275,79 @@ export default class VREditor extends  SyncGraphProvider {
                 title:file.name,
                 parent:0
             }))
-            const assets = fetchGraphObject(graph,this.getAssetsObject())
-            insertAsLastChild(graph,assets,asset)
+            this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         })
     }
 
     deleteObject = () => {
-        const objid = SelectionManager.getSelection()
-        if(!objid) return
-        const graph = this.getDataGraph()
-        const obj = fetchGraphObject(graph,objid)
-        removeFromParent(graph,obj)
+        if(SelectionManager.isEmpty()) return
+        this.accessObject(SelectionManager.getSelection()).removeFromParent()
         SelectionManager.clearSelection()
     }
 
     calculateContextMenu(item) {
         const cmds = []
-        cmds.push({ title:'delete', icon:'close', fun: this.deleteObject });
-
-        ['cube','sphere','plane','model','bg360',OBJ_TYPES.text, OBJ_TYPES.img2d].forEach(type =>{
-            cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) })
-        });
-        cmds.push({ title:'scene', icon:'file', fun: this.addScene })
-        cmds.push({ title:'cut',   icon:'cut',  fun:this.cutSelection })
-        cmds.push({ title:'copy',  icon:'copy', fun:this.copySelection })
-        cmds.push({ title:'paste', icon:'paste',fun:this.pasteSelection })
+        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: this.deleteObject });
+        Object.keys(OBJ_TYPES).forEach(type => cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) }))
+        cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
+        cmds.push({ title:'cut',   icon:ITEM_ICONS.cut,   fun: this.cutSelection })
+        cmds.push({ title:'copy',  icon:ITEM_ICONS.copy,  fun: this.copySelection })
+        cmds.push({ title:'paste', icon:ITEM_ICONS.paste, fun: this.pasteSelection })
         return cmds
     }
 
     cutSelection = () => {
-        const graph = this.getDataGraph()
-        let sel = SelectionManager.getSelection()
-        if(!sel) return
-        const obj = fetchGraphObject(graph,sel)
+        if(SelectionManager.isEmpty()) return
+        const obj = this.accessObject(SelectionManager.getSelection())
         SelectionManager.setClipboard(obj.id)
-        removeFromParent(graph,obj)
+        obj.removeFromParent()
         SelectionManager.clearSelection()
     }
     copySelection = () => {
-        const graph = this.getDataGraph()
-        let sel = SelectionManager.getSelection()
-        if(!sel) return
-        const obj = fetchGraphObject(graph,sel)
+        if(SelectionManager.isEmpty()) return
+        const obj = this.accessObject(SelectionManager.getSelection())
         SelectionManager.setClipboard(obj.id)
     }
     pasteSelection = (e) => {
-        console.log("e is",e)
         //don't intercept if this is a paste into a text field
         if(e && e.target) {
             if (e.target.getAttribute('type') === 'input') return
             if (e.target.nodeName === 'INPUT') return
         }
         const graph = this.getDataGraph()
-        const shapeid = SelectionManager.getClipboard()
-        const obj1 = fetchGraphObject(graph,shapeid)
-
+        const obj1 = this.accessObject(SelectionManager.getClipboard())
         let parent = null
         if(is3DObjectType(obj1.type)) parent = this.getSelectedScene()
-        if(obj1.type === 'scene') parent = fetchGraphObject(graph,this.getSceneRoot())
+        if(obj1.type === 'scene') parent = this.accessObject(this.getSceneRoot())
         if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
-
-        const obj2 = cloneShape(graph,obj1)
-        graph.setProperty(obj2.id, 'parent', parent.id)
-        insertAsFirstChild(graph, parent, obj2)
+        parent.insertChildLast(obj1.clone())
     }
 
     canAddChild(parent,child) {
-        const p = fetchGraphObject(this.getDataGraph(),parent)
-        const c = fetchGraphObject(this.getDataGraph(),child)
+        const p = this.accessObject(parent)
+        const c = this.accessObject(child)
         if(p.type === 'root' && c.type === 'scene') return true
         if(p.type === 'scene' && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
-        const s = fetchGraphObject(this.getDataGraph(),src)
-        const t = fetchGraphObject(this.getDataGraph(),tgt)
+        const s = this.accessObject(src)
+        const t = this.getDataGraph(tgt)
         if(s.type === 'scene' && t.type === 'scene') return true
         if(is3DObjectType(s.type) && is3DObjectType(t.type)) return true
         return false
     }
     canAddExternalChild(parent,child) {
-        const pobj = fetchGraphObject(this.getDataGraph(),parent)
-        if(pobj.type === 'assets') return true
+        const obj = this.accessObject(parent)
+        if(obj.type === 'assets') return true
         return false
     }
     acceptDrop(e,tgt) {
-        const obj = fetchGraphObject(this.getDataGraph(),tgt)
+        const obj = this.accessObject(tgt)
         if(obj.type === 'assets') {
             listToArray(e.dataTransfer.files).forEach(file => {
                 if(isImageType(file.type)) return this.addImageAssetFromFile(file)
-                if(isGLTFFile(file)) return this.addGLTFAssetFromFile(file)
+                if(isGLTFFile(file)) return this.addGLBAssetFromFile(file)
             })
         }
     }
@@ -440,10 +383,8 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     setColor = (color) => {
-        const objid = SelectionManager.getSelection()
-        if(!objid) return
-        const graph = this.getDataGraph()
-        graph.setProperty(objid,'color',color)
+        if(SelectionManager.isEmpty()) return
+        this.accessObject(SelectionManager.getSelection()).set('color',color)
     }
 
     showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
@@ -491,13 +432,9 @@ class VREditorApp extends Component {
     componentDidMount() {
         this.im.attachKeyEvents(document)
         SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
-            const sel = SelectionManager.getSelection()
-            if(sel) {
-                const item = fetchGraphObject(this.props.provider.getDataGraph(),sel)
-                if(item.type === PROP_DEFS.asset.key) {
-                    this.setState({mode:'asset'})
-                    return
-                }
+            if(!SelectionManager.isEmpty()) {
+                const item = this.props.provider.accessObject(SelectionManager.getSelection())
+                if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
             }
             this.setState({mode:'canvas'})
         })
@@ -505,7 +442,7 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360', OBJ_TYPES.text, OBJ_TYPES.img2d].map(type => {
+        const acts = Object.keys(OBJ_TYPES).map(type => {
             return {
                 title: type,
                 icon: ITEM_ICONS[type],
@@ -581,18 +518,14 @@ class VREditorApp extends Component {
         if (mode === 'canvas') {
             return <VRCanvas provider={this.props.provider}/>
         } else {
-            const sel = SelectionManager.getSelection()
-            console.log('selection is',sel)
-            // return <VRCanvas provider={this.props.provider}/>
-            return <AssetView provider={this.props.provider} asset={sel}/>
+            return <AssetView provider={this.props.provider} asset={SelectionManager.getSelection()}/>
         }
     }
 }
 const EnumTitleRenderer = (props) => {
     let value = "---"
     if(props.value && props.provider) {
-        const graph = props.provider.getDataGraph()
-        value = graph.getPropertyValue(props.value,'title')
+        value = props.provider.accessObject(props.value).title
     }
     return <b>{value}</b>
 }
@@ -604,68 +537,15 @@ const NavTargetRenderer = (props) => {
     if(props.value && props.provider) {
         const obj = props.provider.accessObject(props.value)
         title = obj.title
-        // const graph = props.provider.getDataGraph()
-        // title = graph.getPropertyValue(props.value,'title')
-        // const type = graph.getPropertyValue(props.value,'type')
-        if(obj.type === 'scene') {
-            icon = ITEM_ICONS.scene
-        }
+        if(obj.type === 'scene') icon = ITEM_ICONS.scene
         if(obj.type === 'asset' && obj.subtype === 'audio') {
-            // const subtype = graph.getPropertyValue(props.value,'subtype')
-            // if(subtype === 'audio') {
-                icon = ITEM_ICONS.audio
-                action = 'play'
-            // }
+            icon = ITEM_ICONS.audio
+            action = 'play'
         }
     }
-    return <div><i className={`fa fa-${icon}`}></i> {action} <b>{title}</b></div>
+    return <div><i className={`fa fa-${icon}`}/> {action} <b>{title}</b></div>
 }
 
-class GraphAccessor {
-    constructor(graph) {
-        this.graph = graph
-    }
-    object(id) {
-        if(this.graph.hasObject(id)) {
-            const obj = {}
-            this.graph.getPropertiesForObject(id).forEach(key => {
-                obj[key] = this.graph.getPropertyValue(id, key)
-            })
-            obj.id = id
-            obj.exists = function() { return true }
-            obj.set = (key, value) => {
-                this.graph.setProperty(id,key,value)
-                return obj
-            }
-            obj.array = (key) => {
-                const CH = obj[key]
-                const len = this.graph.getArrayLength(CH)
-                const ch = []
-                for (let i = 0; i < len; i++) {
-                    ch.push(this.graph.getElementAt(CH, i))
-                }
-                return ch
-            }
-            obj.insertChildLast = (child) => {
-                this.graph.setProperty(child.id,'parent',obj.id)
-                const CH = this.graph.getPropertyValue(obj.id,'children')
-                const len = this.graph.getArrayLength(CH)
-                const prev = this.graph.getElementAt(CH,len-1)
-                this.graph.insertAfter(CH,prev,child.id)
-            }
-            obj.insertFirstChild = (child) => {
-                this.graph.setProperty(child.id,'parent',obj.id)
-                const ch = this.graph.getPropertyValue(obj.id,'children')
-                this.graph.insertAfter(ch,null,child.id)
-            }
-            return obj
-        } else {
-            return {
-                exists: function() { return false }
-            }
-        }
-    }
-}
 
 
 function acceptsModelAsset(type) {
