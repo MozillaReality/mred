@@ -45,6 +45,7 @@ export default class TextDef extends ObjectDef {
             new THREE.PlaneBufferGeometry(3,3),
             new THREE.MeshLambertMaterial({color: 'white', map:texture, transparent:true, opacity:1.0})
         )
+        node.renderOrder = -1
         node.name = obj.title
         node.userData.clickable = true
         node.userData.canvas = canvas
