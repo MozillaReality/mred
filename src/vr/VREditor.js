@@ -3,7 +3,7 @@ import React, {Component} from 'react'
 import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
-import SelectionManager from '../SelectionManager'
+import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
@@ -36,6 +36,7 @@ import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
 import {AddAudioAssetDialog} from './AddAudioAssetDialog'
 import {HORIZONTAL_ALIGNMENT} from './Common'
+import AssetView from '../metadoc/AssetView'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -461,6 +462,10 @@ class VREditorApp extends Component {
     constructor(props) {
         super(props)
 
+        this.state = {
+            mode:'canvas'
+        }
+
         this.im = new InputManager()
         this.im.addKeyBinding({id: 'save', key: InputManager.KEYS.S, modifiers: [InputManager.MODIFIERS.COMMAND]})
         this.im.addKeyBinding({id: 'undo', key: InputManager.KEYS.Z, modifiers: [InputManager.MODIFIERS.COMMAND]})
@@ -485,6 +490,18 @@ class VREditorApp extends Component {
 
     componentDidMount() {
         this.im.attachKeyEvents(document)
+        SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const item = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+                if(item.type === PROP_DEFS.asset.key) {
+                    this.setState({mode:'asset'})
+                    return
+                }
+            }
+            this.setState({mode:'canvas'})
+        })
+
     }
 
     showAddPopup = (e) => {
@@ -549,7 +566,7 @@ class VREditorApp extends Component {
 
 
             <Panel center middle scroll>
-                <VRCanvas provider={prov}/>
+                {this.renderCenterPane(this.state.mode)}
             </Panel>
 
             <Panel scroll right><PropSheet provider={prov}/></Panel>
@@ -559,6 +576,16 @@ class VREditorApp extends Component {
             <Toolbar right bottom/>
 
         </GridEditorApp>
+    }
+    renderCenterPane(mode) {
+        if (mode === 'canvas') {
+            return <VRCanvas provider={this.props.provider}/>
+        } else {
+            const sel = SelectionManager.getSelection()
+            console.log('selection is',sel)
+            // return <VRCanvas provider={this.props.provider}/>
+            return <AssetView provider={this.props.provider} asset={sel}/>
+        }
     }
 }
 const EnumTitleRenderer = (props) => {
