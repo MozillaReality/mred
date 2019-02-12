@@ -67,6 +67,8 @@ export class VRCanvas extends Component {
         light.position.set(1, 1, 1).normalize();
         this.scene.add(light);
 
+        this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
+
         this.renderer.setAnimationLoop(() => this.renderer.render(this.scene, this.camera))
 
         this.props.provider.onRawChange(op => this.updateScene(op))
