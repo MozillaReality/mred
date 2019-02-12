@@ -130,6 +130,9 @@ export default class VREditor extends  SyncGraphProvider {
             if(realobj.type === OBJ_TYPES.bg360) {
                 return assets.filter(a => a.subtype === 'image').map(a => a.id)
             }
+            if(realobj.type === OBJ_TYPES.img2d) {
+                return assets.filter(a => a.subtype === 'image').map(a => a.id)
+            }
         }
         if(key === PROP_DEFS.navTarget.key) {
             const children = this.getDataGraph().getPropertyValue(this.getSceneRoot(), 'children')
@@ -222,6 +225,33 @@ export default class VREditor extends  SyncGraphProvider {
             })
         })
     }
+    addImageAssetFromURL = (url) => {
+        //TODO: make this format detection code more robust
+        const name = url.substring(url.lastIndexOf('/')+1)
+        const type = name.substring(name.lastIndexOf(".")+1)
+        let fileType = "image/unknown"
+        if(type.toLowerCase() === 'png') fileType = 'image/png'
+        if(type.toLowerCase() === 'jpg') fileType = 'image/jpeg'
+        if(type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
+
+        const graph = this.getDataGraph()
+        const asset = fetchGraphObject(graph,graph.createObject({
+            type:'asset',
+            subtype:'image',
+            format:fileType,
+            src:url,
+            width:100,
+            height:100,
+            title:name,
+            parent:0
+        }))
+        const assets = fetchGraphObject(graph,this.getAssetsObject())
+        insertAsLastChild(graph,assets,asset)
+        this.requestImageCache(url).then(img => {
+            graph.setProperty(asset.id,'width',img.width)
+            graph.setProperty(asset.id,'height',img.height)
+        })
+    }
     addGLBAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
@@ -253,7 +283,7 @@ export default class VREditor extends  SyncGraphProvider {
         const cmds = []
         cmds.push({ title:'delete', icon:'close', fun: this.deleteObject });
 
-        ['cube','sphere','plane','model','bg360',OBJ_TYPES.text].forEach(type =>{
+        ['cube','sphere','plane','model','bg360',OBJ_TYPES.text, OBJ_TYPES.img2d].forEach(type =>{
             cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) })
         });
         cmds.push({ title:'scene', icon:'file', fun: this.addScene })
@@ -279,7 +309,13 @@ export default class VREditor extends  SyncGraphProvider {
         const obj = fetchGraphObject(graph,sel)
         SelectionManager.setClipboard(obj.id)
     }
-    pasteSelection = () => {
+    pasteSelection = (e) => {
+        console.log("e is",e)
+        //don't intercept if this is a paste into a text field
+        if(e && e.target) {
+            if (e.target.getAttribute('type') === 'input') return
+            if (e.target.nodeName === 'INPUT') return
+        }
         const graph = this.getDataGraph()
         const shapeid = SelectionManager.getClipboard()
         const obj1 = fetchGraphObject(graph,shapeid)
@@ -398,7 +434,7 @@ class VREditorApp extends Component {
     }
 
     showAddPopup = (e) => {
-        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360', OBJ_TYPES.text].map(type => {
+        const acts = ['cube', 'sphere', 'plane', 'model', 'bg360', OBJ_TYPES.text, OBJ_TYPES.img2d].map(type => {
             return {
                 title: type,
                 icon: ITEM_ICONS[type],

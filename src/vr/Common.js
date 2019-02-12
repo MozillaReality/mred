@@ -5,6 +5,7 @@ import PlaneDef from './PlaneDef'
 import ModelDef from './ModelDef'
 import BG360Def from './BG360Def'
 import TextDef from './TextDef'
+import Image2DDef from './Image2DDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -108,6 +109,7 @@ export const PROP_DEFS = {
         key:'src',
         name:'src',
         type:TYPES.STRING,
+        locked:true,
     },
     asset: {
         key:'asset',
@@ -205,6 +207,7 @@ export const OBJ_TYPES = {
     model:'model',
     bg360:'bg360',
     text:'text',
+    img2d:'img2d',
 }
 
 export const HORIZONTAL_ALIGNMENT = {
@@ -221,6 +224,7 @@ export function is3DObjectType(type) {
     if(type === 'model') return true
     if(type === OBJ_TYPES.text) return true
     if(type === OBJ_TYPES.bg360) return true
+    if(type === OBJ_TYPES.img2d) return true
     return false
 }
 
@@ -231,6 +235,7 @@ export function get3DObjectDef(type) {
     if(type === 'model') return new ModelDef()
     if(type === OBJ_TYPES.bg360) return new BG360Def()
     if(type === OBJ_TYPES.text) return new TextDef()
+    if(type === OBJ_TYPES.img2d) return new Image2DDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -265,6 +270,7 @@ export const ITEM_ICONS = {
     assets: 'archive',
     scene: 'globe',
     bg360:'image',
+    img2d:'image',
     image:'image',
-    text:'text',
+    text:'font',
 }
