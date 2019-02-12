@@ -387,12 +387,14 @@ export default class VREditor extends  SyncGraphProvider {
     canAddChild(parent,child) {
         const p = fetchGraphObject(this.getDataGraph(),parent)
         const c = fetchGraphObject(this.getDataGraph(),child)
+        if(p.type === 'root' && c.type === 'scene') return true
         if(p.type === 'scene' && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
         const s = fetchGraphObject(this.getDataGraph(),src)
         const t = fetchGraphObject(this.getDataGraph(),tgt)
+        if(s.type === 'scene' && t.type === 'scene') return true
         if(is3DObjectType(s.type) && is3DObjectType(t.type)) return true
         return false
     }
