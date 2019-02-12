@@ -26,6 +26,7 @@ import {
     isGLTFFile,
     isImageType,
     ITEM_ICONS,
+    MIME_TYPES,
     OBJ_TYPES,
     PROP_DEFS,
     SIMPLE_COLORS
@@ -33,6 +34,7 @@ import {
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
+import {AddAudioAssetDialog} from './AddAudioAssetDialog'
 import {HORIZONTAL_ALIGNMENT} from './Common'
 
 
@@ -66,6 +68,9 @@ export default class VREditor extends  SyncGraphProvider {
     getRendererForItem = (item) => {
         const obj = fetchGraphObject(this.getDataGraph(),item)
         if(!obj) return <div>???</div>
+        if(obj.type === 'asset') {
+            return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}></i> {obj.title}</div>
+        }
         if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}></i> {obj.title}</div>
         return <div>{this.getDataGraph().getPropertyValue(item,'title')}</div>
     }
@@ -139,8 +144,11 @@ export default class VREditor extends  SyncGraphProvider {
             const scenes = propToArray(this.getDataGraph(), children)
                 .map(ch => fetchGraphObject(this.getDataGraph(),ch))
                 .filter(ch => ch.type === 'scene')
-            console.log(scenes)
-            return scenes.map(sc => sc.id)
+                .map(sc => sc.id)
+            const achildren = this.getDataGraph().getPropertyValue(this.getAssetsObject(), 'children')
+            const assets = propToArray(this.getDataGraph(), achildren).map(ch => fetchGraphObject(this.getDataGraph(),ch))
+            const audios = assets.filter(a => a.subtype === 'audio').map(a=>a.id)
+            return audios.concat(scenes)
         }
         if(key === PROP_DEFS.horizontalAlign.key) {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
@@ -148,7 +156,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
-        if(key === PROP_DEFS.navTarget.key) return EnumTitleRenderer
+        if(key === PROP_DEFS.navTarget.key) return NavTargetRenderer
     }
 
     getSelectedScene() {
@@ -251,6 +259,51 @@ export default class VREditor extends  SyncGraphProvider {
             graph.setProperty(asset.id,'width',img.width)
             graph.setProperty(asset.id,'height',img.height)
         })
+    }
+    addAudioAssetFromFile = (file) => {
+        this.uploadFile(file).then((ans)=>{
+            console.log("uploaded file with answer",ans)
+            const url = SERVER_URL_ASSETS+ans.id
+            const graph = this.getDataGraph()
+            const asset = fetchGraphObject(graph,graph.createObject({
+                type:'asset',
+                subtype:'audio',
+                format:file.type,
+                src:url,
+                title:file.name,
+                parent:0
+            }))
+            const assets = fetchGraphObject(graph,this.getAssetsObject())
+            insertAsLastChild(graph,assets,asset)
+            // this.requestImageCache(url).then(img => {
+                // graph.setProperty(asset.id,'width',img.width)
+                // graph.setProperty(asset.id,'height',img.height)
+            // })
+        })
+    }
+    addAudioAssetFromURL = (url) => {
+        //TODO: make this format detection code more robust
+        const name = url.substring(url.lastIndexOf('/')+1)
+        const type = name.substring(name.lastIndexOf(".")+1)
+        let fileType = "audio/unknown"
+        if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
+        if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
+
+        const graph = this.getDataGraph()
+        const asset = fetchGraphObject(graph,graph.createObject({
+            type:'asset',
+            subtype:'audio',
+            format:fileType,
+            src:url,
+            title:name,
+            parent:0
+        }))
+        const assets = fetchGraphObject(graph,this.getAssetsObject())
+        insertAsLastChild(graph,assets,asset)
+        // this.requestImageCache(url).then(img => {
+            // graph.setProperty(asset.id,'width',img.width)
+            // graph.setProperty(asset.id,'height',img.height)
+        // })
     }
     addGLBAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
@@ -395,6 +448,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
+    showAddAudioAssetDialog = () => DialogManager.show(<AddAudioAssetDialog provider={this}/>)
     showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
 
@@ -460,6 +514,11 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLBAssetDialog()
             },
+            {
+                title: 'audio file',
+                icon: ITEM_ICONS.audio,
+                fun: () => this.props.provider.showAddAudioAssetDialog()
+            },
         ]
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
@@ -509,4 +568,26 @@ const EnumTitleRenderer = (props) => {
         value = graph.getPropertyValue(props.value,'title')
     }
     return <b>{value}</b>
+}
+
+const NavTargetRenderer = (props) => {
+    let title = '---'
+    let action = 'go to'
+    let icon = ITEM_ICONS.asset
+    if(props.value && props.provider) {
+        const graph = props.provider.getDataGraph()
+        title = graph.getPropertyValue(props.value,'title')
+        const type = graph.getPropertyValue(props.value,'type')
+        if(type === 'scene') {
+            icon = ITEM_ICONS.scene
+        }
+        if(type === 'asset') {
+            const subtype = graph.getPropertyValue(props.value,'subtype')
+            if(subtype === 'audio') {
+                icon = ITEM_ICONS.audio
+                action = 'play'
+            }
+        }
+    }
+    return <div><i className={`fa fa-${icon}`}></i> {action} <b>{title}</b></div>
 }

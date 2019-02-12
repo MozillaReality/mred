@@ -3,7 +3,7 @@ import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../syncgraph/utils'
 import {ToggleButton, Toolbar} from '../GridEditorApp'
 
-export class AddImageAssetDialog extends Component {
+export class AddAudioAssetDialog extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -20,11 +20,11 @@ export class AddImageAssetDialog extends Component {
         DialogManager.hide()
         if(this.state.view === 'remote') {
             console.log("adding the url",this.state.url)
-            this.props.provider.addImageAssetFromURL(this.state.url)
+            this.props.provider.addAudioAssetFromURL(this.state.url)
         } else {
             console.log("the file input is",this.fileInput)
             listToArray(this.fileInput.current.files).forEach(file => {
-                this.props.provider.addImageAssetFromFile(file)
+                this.props.provider.addAudioAssetFromFile(file)
             })
         }
     }
@@ -51,6 +51,7 @@ export class AddImageAssetDialog extends Component {
     }
 
     selectedFile = (e) => {
+        console.log("selected a file", e.target)
         this.setState({fileInput:e.target.value})
     }
 

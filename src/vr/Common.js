@@ -130,7 +130,7 @@ export const PROP_DEFS = {
     },
     navTarget: {
         key:'navTarget',
-        name:'Nav Target',
+        name:'Action',
         type:TYPES.ENUM
     },
     imageOffset: {
@@ -241,7 +241,7 @@ export function get3DObjectDef(type) {
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
-export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg' }
+export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac' }
 export function isImageType(type) {
     if (!type) return false
     if (type.toLowerCase() === MIME_TYPES.PNG) return true
@@ -273,4 +273,5 @@ export const ITEM_ICONS = {
     img2d:'image',
     image:'image',
     text:'font',
+    audio:'music',
 }
