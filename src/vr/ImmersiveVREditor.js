@@ -78,6 +78,9 @@ export default class ImmersiveVREditor extends Component {
         container.appendChild( renderer.domElement );
         this.vrmanager = new VRManager(renderer)
 
+        this.audioListener = new THREE.AudioListener()
+        this.camera.add(this.audioListener)
+
         this.initContent()
 
         window.addEventListener( 'resize', ()=>{
@@ -132,11 +135,17 @@ export default class ImmersiveVREditor extends Component {
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         console.log("going to ",obj)
         if(obj.navTarget){
-            const sceneObj = this.props.provider.findSceneById(obj.navTarget)
-            console.log("going to the scene object",sceneObj)
-            if(sceneObj) {
-                this.swapScene(obj.navTarget)
-                SelectionManager.clearSelection()
+            const target = fetchGraphObject(this.props.provider.getDataGraph(),obj.navTarget)
+            const targetObj = this.props.provider.findSceneById(obj.navTarget)
+            if(targetObj) {
+                if(targetObj.type === 'scene') {
+                    this.swapScene(obj.navTarget)
+                    SelectionManager.clearSelection()
+                    return
+                }
+                if(targetObj.type === 'asset' && targetObj.subtype === 'audio') {
+                    return this.playAudioAsset(targetObj, obj)
+                }
             }
         }
     }
@@ -362,6 +371,17 @@ export default class ImmersiveVREditor extends Component {
         return this.obj_node_map[id]
     }
 
+    playAudioAsset(audioObj, target) {
+        console.log("playing the audio",audioObj,'on the target',target)
+        var sound = new THREE.Audio( this.audioListener );
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load(audioObj.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+    }
 }
 
 
