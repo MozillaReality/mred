@@ -8,47 +8,13 @@ import {StringEditor} from "./StringEditor";
 import {EnumEditor} from "./EnumEditor";
 import {ArrayEditor} from "./ArrayEditor";
 
-/*const COLORS2 = {
-    "black": 0x000000,
-    "valhalla": 0x222034,
-    "loulou": 0x45283c,
-    "oiled-cedar": 0x663931,
-    "rope": 0x8f563b,
-    "tahiti-gold": 0xdf7126,
-    "twine": 0xd9a066,
-    "pancho": 0xeec39a,
-    "golden-fizz": 0xfbf236,
-    "atlantis": 0x99e550,
-    "christi": 0x6abe30,
-    "elf-green": 0x37946e,
-    "dell": 0x4b692f,
-    "verdigris": 0x524b24,
-    "opal": 0x323c39,
-    "deep-koamaru": 0x3f3f74,
-    "venice-blue": 0x306082,
-    "royal-blue": 0x5b6ee1,
-    "cornflower": 0x639bff,
-    "viking": 0x5fcde4,
-    "light-steel-blue": 0xcbdbfc,
-    "white": 0xffffff,
-    "heather": 0x9badb7,
-    "topaz": 0x847e87,
-    "dim-gray": 0x696a6a,
-    "smokey-ash": 0x595652,
-    "clairvoyant": 0x76428a,
-    "brown": 0xac3232,
-    "mandy": 0xd95763,
-    "plum": 0xd77bba,
-    "rainforest": 0x8f974a,
-    "stinger": 0x8a6f30,
-}*/
-
 export const TYPES = {
     STRING:'string',
     NUMBER:'number',
     BOOLEAN:'boolean',
     ENUM:'enum',
     COLOR:'color',
+    GROUP:'group',
 }
 
 class PropEditor extends Component {
@@ -64,6 +30,7 @@ class PropEditor extends Component {
         }
     }
     shouldComponentUpdate(nextProps, nextState) {
+        if(nextProps.def.getType() === 'group') return true
         if(this.state.value !== nextState.value) return true
         if(this.props.def.getKey() === nextProps.def.getKey()) {
             if(this.props.def.getValue() === nextProps.def.getValue()) {
@@ -84,6 +51,8 @@ class PropEditor extends Component {
     }
     customChanged = value => {
         if(this.props.def.isType(TYPES.COLOR)) return this.colorChanged(value)
+        this.setState({value:value})
+        this.props.def.setValue(value)
     }
     keypressed = (e) => {
         if(e.charCode === 13) this.commit();
@@ -219,7 +188,7 @@ export default class PropSheet extends Component {
         this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.h2)
     }
     render() {
-        const props = this.calculateProps();
+        const props = this.calculateGroups(this.calculateProps())
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
             return <li key={prop.getKey()}>
@@ -255,6 +224,15 @@ export default class PropSheet extends Component {
         });
     }
 
+    calculateGroups(props) {
+        const group_defs = props.filter(p => p.getType() === TYPES.GROUP)
+        group_defs.forEach(def => {
+            const group_keys = def.getGroupKeys()
+            //remove any groups in the group keys of a group def
+            props = props.filter(p => group_keys.indexOf(p.getKey())<0)
+        })
+        return props
+    }
 }
 
 //return items from A that are also in B
@@ -285,6 +263,7 @@ class MultiPropProxy {
     isType(s)  { return this.first().isType(s)  }
     isLive()   { return this.first().isLive()   }
     getKey()   { return this.key                }
+    getGroupKeys() { return this.first().getGroupKeys() }
     setValue(v) {
         this.subs.forEach((s)=> s.setValue(v))
     }
@@ -337,6 +316,9 @@ class PropProxy {
     }
     getHints() {
         return this.def.hints
+    }
+    getGroupKeys() {
+        return this.def.group
     }
     isIndeterminate() { return false; }
 }

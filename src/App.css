@@ -366,3 +366,9 @@ g.selected > rect.selection {
 .hypercard-card .code-block {
     white-space: pre;
 }
+
+
+.scale-editor input[type=number] {
+    border:1px solid blue;
+    width: 3em;
+}

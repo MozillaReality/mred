@@ -101,6 +101,17 @@ export default class VREditor extends  SyncGraphProvider {
             locked:true
         })
 
+        const obj = this.accessObject(item)
+        if(is3DObjectType(obj.type)) {
+            defs.push({
+                key: 'scale',
+                name: 'Scale',
+                type: TYPES.GROUP,
+                group: ['sx','sy','sz'],
+                custom:true,
+            })
+        }
+
         return defs
     }
     setPropertyValue(item, def, value) {
@@ -115,6 +126,11 @@ export default class VREditor extends  SyncGraphProvider {
             if(asset.subtype === 'gltf') {
                 console.log("adjusting to a gtlf")
             }
+        }
+        if(def.key === 'scale') {
+            super.setPropertyValue(item,{key:'sx'},value.sx)
+            super.setPropertyValue(item,{key:'sy'},value.sy)
+            super.setPropertyValue(item,{key:'sz'},value.sz)
         }
     }
     getValuesForEnum(key,obj) {
@@ -379,8 +395,11 @@ export default class VREditor extends  SyncGraphProvider {
                         className={"fa fa-square"}/> )
             }
         </HBox>
+
+        if(def.key === 'scale') return <ScaleEditor def={def} item={item} onChange={onChange} provider={this}/>
         return <i>no custom editor for {def.key}</i>
     }
+
 
     setColor = (color) => {
         if(SelectionManager.isEmpty()) return
@@ -546,6 +565,40 @@ const NavTargetRenderer = (props) => {
     return <div><i className={`fa fa-${icon}`}/> {action} <b>{title}</b></div>
 }
 
+class ScaleEditor extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            sync:false,
+        }
+    }
+    syncChanged = (e) => this.setState({sync: !this.state.sync})
+    changed = (e, key) =>{
+        const obj = this.props.provider.accessObject(this.props.item)
+        const newvals = {
+            sx:obj.sx,
+            sy:obj.sy,
+            sz:obj.sz
+        }
+        const val = parseFloat(e.target.value)
+        newvals[key] = val
+        if(this.state.sync) {
+            newvals.sx = val
+            newvals.sy = val
+            newvals.sz = val
+        }
+        this.props.onChange(newvals)
+    }
+    render() {
+        const obj = this.props.provider.accessObject(this.props.item)
+        return <HBox className="scale-editor">
+            <input type="checkbox" checked={this.state.sync} onChange={this.syncChanged}/>
+            <input type="number" value={obj.sx} onChange={(e)=>this.changed(e,'sx')}/>
+            <input type="number" value={obj.sy} onChange={(e)=>this.changed(e,'sy')}/>
+            <input type="number" value={obj.sz} onChange={(e)=>this.changed(e,'sz')}/>
+        </HBox>
+    }
+}
 
 
 function acceptsModelAsset(type) {
