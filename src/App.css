@@ -369,6 +369,5 @@ g.selected > rect.selection {
 
 
 .scale-editor input[type=number] {
-    border:1px solid blue;
     width: 3em;
 }

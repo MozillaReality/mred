@@ -594,9 +594,9 @@ class ScaleEditor extends Component {
         const obj = this.props.provider.accessObject(this.props.item)
         return <HBox className="scale-editor">
             <input type="checkbox" checked={this.state.sync} onChange={this.syncChanged}/>
-            <input type="number" value={obj.sx} onChange={(e)=>this.changed(e,'sx')}/>
-            <input type="number" value={obj.sy} onChange={(e)=>this.changed(e,'sy')}/>
-            <input type="number" value={obj.sz} onChange={(e)=>this.changed(e,'sz')}/>
+            <input type="number" value={obj.sx} onChange={(e)=>this.changed(e,'sx')} step={0.1}/>
+            <input type="number" value={obj.sy} onChange={(e)=>this.changed(e,'sy')} step={0.1}/>
+            <input type="number" value={obj.sz} onChange={(e)=>this.changed(e,'sz')} step={0.1}/>
         </HBox>
     }
 }
