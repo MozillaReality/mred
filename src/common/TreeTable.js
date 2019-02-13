@@ -8,6 +8,7 @@ import {fetchGraphObject, removeFromParent} from "../syncgraph/utils";
 const ContextMenu = (props) => {
     return <VBox className={"popup-menu"}>
         {props.menu.map((item,i)=>{
+            if(item.divider) return <div className="divider"></div>
             return <button key={i} onClick={()=>{
                 PopupManager.hide()
                 if(item.fun) item.fun()

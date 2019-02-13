@@ -288,8 +288,10 @@ export default class VREditor extends  SyncGraphProvider {
     calculateContextMenu(item) {
         const cmds = []
         cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: this.deleteObject });
+        cmds.push({ divider:true })
         Object.keys(OBJ_TYPES).forEach(type => cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) }))
         cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
+        cmds.push({ divider:true })
         cmds.push({ title:'cut',   icon:ITEM_ICONS.cut,   fun: this.cutSelection })
         cmds.push({ title:'copy',  icon:ITEM_ICONS.copy,  fun: this.copySelection })
         cmds.push({ title:'paste', icon:ITEM_ICONS.paste, fun: this.pasteSelection })
@@ -463,6 +465,7 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
             },
+            { divider:true },
             {
                 title: 'GLB model',
                 icon: ITEM_ICONS.model,

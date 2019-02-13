@@ -231,6 +231,15 @@ ul.popup-menu li:hover {
 .popup-menu > div:hover {
      background-color: lightblue;
 }
+.popup-menu .divider {
+    border: 1px solid lightgray;
+    border-width: 1px 0 0 0;
+    padding:0;
+    margin: 0.25em;
+}
+.popup-menu .divider:hover {
+    background-color: inherit;
+}
 
 svg rect.bg {
     fill: #aaccff;
