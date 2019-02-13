@@ -115,6 +115,12 @@ export default class VREditor extends  SyncGraphProvider {
         return defs
     }
     setPropertyValue(item, def, value) {
+        if(def.key === 'scale') {
+            super.setPropertyValue(item,{key:'sx'},value.sx)
+            super.setPropertyValue(item,{key:'sy'},value.sy)
+            super.setPropertyValue(item,{key:'sz'},value.sz)
+            return
+        }
         super.setPropertyValue(item,def,value)
         //size the plane to match the aspect ratio of the asset
         if(def.key === PROP_DEFS.asset.key) {
@@ -126,11 +132,6 @@ export default class VREditor extends  SyncGraphProvider {
             if(asset.subtype === 'gltf') {
                 console.log("adjusting to a gtlf")
             }
-        }
-        if(def.key === 'scale') {
-            super.setPropertyValue(item,{key:'sx'},value.sx)
-            super.setPropertyValue(item,{key:'sy'},value.sy)
-            super.setPropertyValue(item,{key:'sz'},value.sz)
         }
     }
     getValuesForEnum(key,obj) {
