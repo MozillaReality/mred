@@ -25,7 +25,7 @@ button:hover {
 }
 .grid {
     display: grid;
-    grid-template-rows: [top] 2em [middle] auto [bottom] 2em;
+    grid-template-rows: [top] 2em [middle] 1fr [bottom] 2em [end];
     padding:0;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
@@ -46,6 +46,7 @@ button:hover {
     flex-direction: row;
     align-items: stretch;
     padding: 0;
+    overflow-x: auto;
 }
 
 .top {
@@ -134,7 +135,7 @@ button:hover {
 .tree-table {
     padding:0;
     margin:0;
-    width: 400px;
+    /*width: 400px;*/
 }
 .tree-table .tree-node {
     white-space: nowrap;
@@ -169,7 +170,7 @@ button:hover {
     padding:0;
     margin:0;
 }
-.prop-sheet li {
+.prop-sheet {
     display: grid;
     grid-template-columns: [name]5em [icon] 1em [value]auto [gutter] 2em;
     grid-column-gap: 0.25em;
@@ -177,15 +178,19 @@ button:hover {
     border: 1px solid black;
     border-width: 0 0 0px 0;
 }
-.prop-sheet li label {
+.prop-sheet label {
     grid-column-start: name;
     justify-self: right;
+    align-self: center;
+    font-size: 70%;
 }
-.prop-sheet li .icon {
+.prop-sheet .icon {
     grid-column-start: icon;
 }
-.prop-sheet li input, .prop-sheet li textarea, .prop-sheet li button {
+.prop-sheet input, .prop-sheet li textarea, .prop-sheet button {
     grid-column-start: value;
+    grid-column-end: gutter;
+    align-self: center;
 }
 
 .prop-sheet li textarea {

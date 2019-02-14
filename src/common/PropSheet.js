@@ -222,16 +222,16 @@ export default class PropSheet extends Component {
         const props = this.calculateProps();
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
-            return <li key={prop.getKey()}>
-                <label>{prop.getName()}</label>
-                {this.renderIndeterminate(prop,i)}
-                <PropEditor def={prop} provider={this.props.provider} item={item}/>
-            </li>
+            return [
+                <label key={prop.getKey()+'-label'}>{prop.getName()}</label>,
+                this.renderIndeterminate(prop,i),
+                <PropEditor key={prop.getKey()+'-editor'} def={prop} provider={this.props.provider} item={item}/>
+            ]
         })}</ul>
     }
     renderIndeterminate(prop, i) {
         if(prop.isIndeterminate()) {
-            return <i className="icon fa fa-exclamation-circle"></i>
+            return <i key={prop.getKey()+'-indeterminate'} className="icon fa fa-exclamation-circle"/>
         } else {
             return ""
         }
