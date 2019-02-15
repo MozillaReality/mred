@@ -112,7 +112,7 @@ class PropEditor extends Component {
         if (prop.isLocked()) return <i>{prop.getValue()}</i>
         if (prop.isType(TYPES.STRING))  return <StringEditor value={this.state.value}
                                  onChange={this.changed}
-                                 onBlur={this.commit}
+                                 onBlur={this.commit} onCommit={this.commit}
                                  def={prop} obj={obj}
                                  provider={this.props.provider}/>
         if (prop.isType(TYPES.NUMBER))  {

@@ -27,6 +27,7 @@ import {
 } from "./Common";
 import AssetView from './AssetView'
 import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
+import {Dimension, parseDimension} from "./Dimension"
 
 
 const EnumTitleRenderer = (props) => {
@@ -49,7 +50,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
     makeEmptyRoot(doc) {
         //create root and children
-        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children: doc.createArray(), parent:0}))
+        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', pageSize:'640 x 480 px', children: doc.createArray(), parent:0}))
         //create page and children
         const page = fetchGraphObject(doc,doc.createObject({ type:'page', title:'page 1', children: doc.createArray(),parent:0}))
         //create layer and children
@@ -139,6 +140,14 @@ export default class MetadocEditor extends  SyncGraphProvider {
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
+    }
+
+
+    getPageSize(page) {
+        const root = this.getSceneRoot()
+        const rootobj = fetchGraphObject(this.getDataGraph(),root)
+        console.log(rootobj.pageSize)
+        return parseDimension(rootobj.pageSize)
     }
 
 

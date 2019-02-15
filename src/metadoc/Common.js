@@ -124,6 +124,12 @@ export const PROP_DEFS = {
         type:TYPES.ENUM,
         locked:false,
     },
+    pageSize: {
+        key:'pageSize',
+        name:'Size',
+        type:TYPES.STRING,
+        locked:false,
+    }
 }
 
 export const SHAPE_DEFS = {

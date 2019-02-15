@@ -1,6 +1,10 @@
 import React, {Component} from "react";
 
 export class StringEditor extends Component {
+    keypressed = (e) => {
+        if(e.charCode === 13) this.props.onCommit();
+    }
+
     render() {
         const prop = this.props.def;
         if (prop.hasHints()) {
@@ -15,6 +19,7 @@ export class StringEditor extends Component {
         return <input type='string'
                       value={this.props.value}
                       onChange={this.props.onChange}
+                      onKeyPress={this.keypressed}
                       onBlur={this.props.onBlur}
         />
     }

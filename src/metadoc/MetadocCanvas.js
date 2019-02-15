@@ -3,6 +3,7 @@ import SelectionManager, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from "../TreeItemProvider";
 import {fetchGraphObject, propToArray} from "../syncgraph/utils";
 import {makePoint} from '../utils'
+import {UNITS, DEFAULT_DPI} from "./Dimension"
 
 
 export class MetadocCanvas extends Component {
@@ -44,6 +45,9 @@ export class MetadocCanvas extends Component {
     redraw = () => {
         if(!this.canvas) return
         const c = this.canvas.getContext('2d')
+        const size = this.props.prov.getPageSize(this.props.prov.getSelectedPage()).as(UNITS.PIXEL,this.props.scale,DEFAULT_DPI)
+        this.canvas.width = size.width
+        this.canvas.height = size.height
         c.fillStyle = 'white'
         c.fillRect(0, 0, this.canvas.width, this.canvas.height)
         c.save()
@@ -123,7 +127,7 @@ export class MetadocCanvas extends Component {
     render() {
         return <div className="panel">
             <canvas style={{border: '1px solid red'}}
-                    width={500} height={300} ref={(e) => this.canvas = e}
+                    width={100} height={100} ref={(e) => this.canvas = e}
                     onClick={this.onClick}
                     onMouseDown={this.mouseDown}
                     onMouseUp={this.mouseUp}
