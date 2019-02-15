@@ -28,6 +28,7 @@ import {
 import AssetView from './AssetView'
 import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
 import {Dimension, parseDimension} from "./Dimension"
+import {EnumEditor} from "../common/EnumEditor";
 
 
 const EnumTitleRenderer = (props) => {
@@ -35,6 +36,41 @@ const EnumTitleRenderer = (props) => {
     if(props.value && props.provider) {
         const graph = props.provider.getDataGraph()
         value = graph.getPropertyValue(props.value,'title')
+    }
+    return <b>{value}</b>
+}
+
+const STANDARD_PAGE_SIZES = [
+    {
+        name:"1024 x 768 pixels",
+        value:'1024x768px',
+    },
+    {
+        name:"VGA (640x480)",
+        value:"640x480px"
+    },
+    {
+        name:"A4 paper",
+        value:"210x297mm"
+    },
+    {
+        name:"16:9",
+        value:"300x169mm"
+    },
+    {
+        name:"4:3",
+        value:"133x100mm"
+    },
+]
+const PageSizeRenderer = (props) => {
+    let value = "---"
+    if(props.value && props.provider) {
+        const size = STANDARD_PAGE_SIZES.find(s => s.value === props.value)
+        if(size) {
+            value = size.name
+        } else {
+            value = props.value
+        }
     }
     return <b>{value}</b>
 }
@@ -120,6 +156,10 @@ export default class MetadocEditor extends  SyncGraphProvider {
                         className={"fa fa-square"}/> )
             }
         </HBox>
+        if(def.key === PROP_DEFS.pageSize.key) {
+            const obj = fetchGraphObject(this.getDataGraph(),item)
+            return <EnumEditor def={def} provider={this} obj={item} value={obj.pageSize} onChange={onChange}/>
+        }
         return <i>no custom editor for {def.key}</i>
     }
 
@@ -137,9 +177,13 @@ export default class MetadocEditor extends  SyncGraphProvider {
         if(key === PROP_DEFS.horizontalAlign.key) {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
         }
+        if(key === PROP_DEFS.pageSize.key) {
+            return STANDARD_PAGE_SIZES.map(s => s.value)
+        }
     }
     getRendererForEnum(key,obj) {
         if(key === PROP_DEFS.asset.key) return EnumTitleRenderer
+        if(key === PROP_DEFS.pageSize.key) return PageSizeRenderer
     }
 
 

@@ -129,6 +129,7 @@ export const PROP_DEFS = {
         name:'Size',
         type:TYPES.STRING,
         locked:false,
+        custom:true,
     }
 }
 
