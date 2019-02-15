@@ -52,6 +52,7 @@ export const ToggleButton = (props) => {
 export const MenuPopup = (props) => {
     return <VBox className={"popup-menu"}>
         {props.actions.map((act,i)=>{
+            if(act.divider) return <div className="divider"></div>
             return <button  key={i} onClick={()=>{
                 PopupManager.hide();
                 if(act.fun) act.fun()
