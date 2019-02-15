@@ -59,7 +59,7 @@ const STANDARD_PAGE_SIZES = [
     },
     {
         name:"4:3",
-        value:"133x100mm"
+        value:"225x169mm"
     },
 ]
 const PageSizeRenderer = (props) => {
