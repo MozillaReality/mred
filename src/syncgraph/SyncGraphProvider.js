@@ -44,7 +44,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     setPropertyValue(item, def, value) {
-        this.getDataGraph().setProperty(item,def.key,value)
+        const op = this.cmd.setProperty(item,def.key,value)
+        op.prevValue = def.value
+        this.getRawGraph().process(op)
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
             provider: this,
             child:item,
@@ -143,7 +145,11 @@ export default class SyncGraphProvider extends TreeItemProvider {
     unpauseQueue = () => this.coalescer.unpause()
 
     performUndo = () => {
-        if(this.undoqueue.canUndo()) this.undoqueue.undo()
+        if(this.undoqueue.canUndo()) {
+            this.undoqueue.undo()
+        } else {
+            console.warn("at beginnning of the undo queue")
+        }
     }
     performRedo = () => {
         if(this.undoqueue.canRedo()) this.undoqueue.redo()

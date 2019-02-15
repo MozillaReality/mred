@@ -11,7 +11,7 @@ export class UndoQueue {
     }
 
     submit(op) {
-        // console.log("UNDOREDO: ",short(op))
+        // console.log("UNDOREDO: submit",op)
         this.history.push(op)
         this.current = this.history.length - 1
     }
@@ -27,11 +27,12 @@ export class UndoQueue {
     undo() {
         const last = this.history[this.current]
         this.current--
-        // console.log("undoing",short(last))
+        // console.log("undoing",last)
         // this.history.forEach(op => console.log(short(op)))
         if (last.type === SET_PROPERTY) {
             if (!last.prevValue) {
                 console.warn("undoing set property without a previous value!", last)
+                return
             }
             const op = {
                 type: SET_PROPERTY,
