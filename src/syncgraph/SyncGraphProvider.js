@@ -144,14 +144,17 @@ export default class SyncGraphProvider extends TreeItemProvider {
     pauseQueue = () => this.coalescer.pause()
     unpauseQueue = () => this.coalescer.unpause()
 
-    performUndo = () => {
+    performUndo = (e) => {
+        if(e && e.preventDefault) e.preventDefault()
+
         if(this.undoqueue.canUndo()) {
             this.undoqueue.undo()
         } else {
             console.warn("at beginnning of the undo queue")
         }
     }
-    performRedo = () => {
+    performRedo = (e) => {
+        if(e && e.preventDefault) e.preventDefault()
         if(this.undoqueue.canRedo()) this.undoqueue.redo()
     }
 
