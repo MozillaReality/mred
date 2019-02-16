@@ -31,6 +31,14 @@ export default class CircleDef {
         return false
     }
 
+    getBounds(newOrigin,shape, canvas) {
+        return {
+            x:newOrigin.x,
+            y:newOrigin.y,
+            width:shape.radius*2,
+            height:shape.radius*2,
+        }
+    }
 
     toSVGString(obj) {
         return `<circle cx="${obj.x}" cy="${obj.y}" r="${obj.radius}" fill="${obj.fillColor}"/>`

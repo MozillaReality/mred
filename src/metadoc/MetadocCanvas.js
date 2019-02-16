@@ -114,7 +114,8 @@ export class MetadocCanvas extends Component {
     }
     mouseMove = (e) => {
         if (!this.state.pressed) return
-        const pt = this.toCanvas(e).add(this.state.initial)
+        let pt = this.toCanvas(e).add(this.state.initial)
+        pt = this.snap(pt)
         const graph = this.props.prov.getRawGraph()
         graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'x', pt.x))
         graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'y', pt.y))
@@ -134,5 +135,62 @@ export class MetadocCanvas extends Component {
                     onMouseMove={this.mouseMove}
             ></canvas>
         </div>
+    }
+
+    snap(pt) {
+        const EDGES = {
+            LEFT:'LEFT',
+            RIGHT:'RIGHT',
+            CENTER:'CENTER',
+            TOP:'TOP',
+            MIDDLE:'MIDDLE',
+            BOTTOM:'BOTTOM',
+            NONE:'NONE',
+        }
+
+        const snaps = [
+            {value:0,type:EDGES.LEFT},
+            {value:320,type:EDGES.CENTER},
+            {value:640,type:EDGES.RIGHT},
+            {value:0, type:EDGES.TOP},
+            {value:240, type:EDGES.MIDDLE},
+            {value:480, type:EDGES.BOTTOM},
+        ]
+        const SNAP_THRESHOLD = 20
+        function isNearH(pt,snap) {
+            if(snap.type === EDGES.LEFT && Math.abs(pt.x-snap.value) < SNAP_THRESHOLD) return EDGES.LEFT
+            if(snap.type === EDGES.CENTER && Math.abs(pt.x + pt.width/2 - snap.value) < SNAP_THRESHOLD) return EDGES.CENTER
+            if(snap.type === EDGES.RIGHT && Math.abs(pt.x + pt.width - snap.value) < SNAP_THRESHOLD) return EDGES.RIGHT
+            return EDGES.NONE
+        }
+        function isNearV(pt,snap) {
+            if(snap.type === EDGES.TOP && Math.abs(pt.y-snap.value) < SNAP_THRESHOLD) return EDGES.TOP
+            if(snap.type === EDGES.MIDDLE && Math.abs(pt.y + pt.height/2 -snap.value) < SNAP_THRESHOLD) return EDGES.MIDDLE
+            if(snap.type === EDGES.BOTTOM && Math.abs(pt.y + pt.height -snap.value) < SNAP_THRESHOLD) return EDGES.BOTTOM
+            return EDGES.NONE
+        }
+
+        const graph = this.props.prov.getRawGraph()
+        const shape = fetchGraphObject(graph,this.state.shape)
+        const def = this.props.prov.getShapeDef(shape.type)
+        if(def) {
+            const bounds = def.getBounds(pt,shape,this.canvas)
+            // bounds.x = pt.x
+            // bounds.y = pt.y
+            for(let i=0; i<snaps.length; i++)  {
+                const snap = snaps[i]
+                const nearH = isNearH(bounds,snap)
+                if(nearH === EDGES.LEFT)   pt.x = snap.value
+                if(nearH === EDGES.CENTER) pt.x = snap.value-bounds.width/2
+                if(nearH === EDGES.RIGHT)  pt.x = snap.value-bounds.width
+
+                const nearV = isNearV(bounds,snap)
+                if(nearV === EDGES.TOP)    pt.y = snap.value
+                if(nearV === EDGES.MIDDLE) pt.y = snap.value-bounds.height/2
+                if(nearV === EDGES.BOTTOM) pt.y = snap.value-bounds.height
+            }
+        }
+
+        return pt
     }
 }

@@ -55,6 +55,15 @@ export default class RectDef {
         return true
     }
 
+    getBounds(newOrigin,shape) {
+        return {
+            x:newOrigin.x,
+            y:newOrigin.y,
+            width:shape.width,
+            height:shape.height,
+        }
+    }
+
     toSVGString(obj) {
         return `<rect x="${obj.x}" y="${obj.y}" width="${obj.width}" height="${obj.height}" fill="${obj.fillColor}"/>`
     }

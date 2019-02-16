@@ -190,7 +190,6 @@ export default class MetadocEditor extends  SyncGraphProvider {
     getPageSize(page) {
         const root = this.getSceneRoot()
         const rootobj = fetchGraphObject(this.getDataGraph(),root)
-        console.log(rootobj.pageSize)
         return parseDimension(rootobj.pageSize)
     }
 

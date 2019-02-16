@@ -96,6 +96,18 @@ export default class TextDef {
         return this.insideRect(pt,shape.x,shape.y,total_width,total_height)
     }
 
+    getBounds(newOrigin,shape, canvas) {
+        const c = canvas.getContext('2d')
+        const {total_width, total_height} = this.calculateLines(shape,c)
+        return {
+            x:newOrigin.x,
+            y:newOrigin.y,
+            width:total_width,
+            height:total_height,
+        }
+    }
+
+
     toSVGString(obj) {
         return `<text x="${obj.x}" y="${obj.y}"
                      fill="${obj.fillColor}" fontSize="${obj.fontSize}"
