@@ -55,7 +55,7 @@ export default class TextDef {
     }
 
     calculateLines(shape,c) {
-        const size_px = shape.fontSize
+        const size_px = parseFloat(shape.fontSize)
         c.font = `normal ${size_px}px sans-serif`
         const lines = shape.text.split("\n").map(text => {
             return {
