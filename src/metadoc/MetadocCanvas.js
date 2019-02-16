@@ -13,6 +13,8 @@ export class MetadocCanvas extends Component {
             pressed: false,
             selection: null,
             shape:null,
+            hsnap:null,
+            vsnap:null,
         }
         props.prov.onRawChange(e => {
             if (this.props.list === -1) return
@@ -55,6 +57,9 @@ export class MetadocCanvas extends Component {
         const graph = this.props.prov.getRawGraph()
         const page = this.props.prov.getSelectedPage()
         if(page) this.drawPage(c,graph,page)
+        c.fillStyle = "rgba(0,255,255,0.5)"
+        if(this.state.hsnap) c.fillRect(this.state.hsnap.value - 1,0,2,this.canvas.height)
+        if(this.state.vsnap) c.fillRect(0, this.state.vsnap.value - 1,this.canvas.width,2)
         c.restore()
     }
 
@@ -121,13 +126,13 @@ export class MetadocCanvas extends Component {
         graph.process(this.props.prov.cmd.setProperty(this.state.shape, 'y', pt.y))
     }
     mouseUp = (e) => {
-        this.setState({pressed: false})
+        this.setState({pressed: false, hsnap:null, vsnap:null})
         this.props.prov.unpauseQueue()
     }
 
     render() {
         return <div className="panel">
-            <canvas style={{border: '1px solid red'}}
+            <canvas style={{border: '0px solid red'}}
                     width={100} height={100} ref={(e) => this.canvas = e}
                     onClick={this.onClick}
                     onMouseDown={this.mouseDown}
@@ -173,10 +178,10 @@ export class MetadocCanvas extends Component {
         const graph = this.props.prov.getRawGraph()
         const shape = fetchGraphObject(graph,this.state.shape)
         const def = this.props.prov.getShapeDef(shape.type)
+        let hsnap = null
+        let vsnap = null
         if(def) {
             const bounds = def.getBounds(pt,shape,this.canvas)
-            // bounds.x = pt.x
-            // bounds.y = pt.y
             for(let i=0; i<snaps.length; i++)  {
                 const snap = snaps[i]
                 const nearH = isNearH(bounds,snap)
@@ -188,8 +193,12 @@ export class MetadocCanvas extends Component {
                 if(nearV === EDGES.TOP)    pt.y = snap.value
                 if(nearV === EDGES.MIDDLE) pt.y = snap.value-bounds.height/2
                 if(nearV === EDGES.BOTTOM) pt.y = snap.value-bounds.height
+
+                if(nearH !== EDGES.NONE) hsnap = snap
+                if(nearV !== EDGES.NONE) vsnap = snap
             }
         }
+        this.setState({hsnap:hsnap, vsnap:vsnap})
 
         return pt
     }
