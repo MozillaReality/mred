@@ -14,39 +14,36 @@ export default class PresentationApp extends Component {
         }
     }
 
-    docSwapped = () => {
-        console.log('reset!')
-        this.setState({pageIndex:0})
-    }
     componentDidMount() {
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.docSwapped)
+    }
 
+    docSwapped = () => this.setState({pageIndex:0})
+
+    getPages() {
+        const provider = this.props.provider
+        const root = provider.accessObject(provider.getSceneRoot())
+        return root.array('children').map(ch => provider.accessObject(ch) ).filter(ch => ch.type === 'page')
     }
 
     render() {
         const provider = this.props.provider
-        const root = provider.accessObject(provider.getSceneRoot())
-        console.log("root",root)
-        const pages = root.array('children').map(ch => provider.accessObject(ch) ).filter(ch => ch.type === 'page')
-        console.log("pages ",pages)
-
+        const pages = this.getPages()
         if(this.state.pageIndex < 0) return <div>no pages loaded</div>
         const page = pages[this.state.pageIndex]
-        console.log('rendering with the page',page)
-        console.log("index is", this.state.pageIndex)
-        return <PageCanvasView page={page} provider={provider} onNext={this.onNext}/>
+        return <PageCanvasView page={page} provider={provider} onNext={this.onNext} onPrev={this.onPrev}/>
     }
 
     onNext = () => {
-        const provider = this.props.provider
-        const root = provider.accessObject(provider.getSceneRoot())
-        console.log("root",root)
-        const pages = root.array('children').map(ch => provider.accessObject(ch) ).filter(ch => ch.type === 'page')
-
-        if(this.state.pageIndex === pages.length-1) {
-            this.state.pageIndex = -1
-        }
+        const pages = this.getPages()
+        if(this.state.pageIndex === pages.length-1) this.state.pageIndex = -1
         this.setState({pageIndex:this.state.pageIndex+1})
+    }
+
+    onPrev = () => {
+        const pages = this.getPages()
+        if(this.state.pageIndex === 0) this.state.pageIndex = pages.length
+        this.setState({pageIndex:this.state.pageIndex-1})
     }
 }
 
@@ -59,6 +56,7 @@ class PageCanvasView extends Component {
         }
     }
     componentDidMount() {
+        this.canvas.focus()
         this.redraw()
     }
 
@@ -69,9 +67,7 @@ class PageCanvasView extends Component {
     redraw = () => {
         if(!this.canvas) return
         const c = this.canvas.getContext('2d')
-        console.log('rendering hte page',this.props.page)
         const size = this.props.provider.getPageSize(this.props.page).as(UNITS.PIXEL,1,DEFAULT_DPI)
-        console.log("using the size",size)
         this.canvas.width = size.width
         this.canvas.height = size.height
         c.fillStyle = 'white'
@@ -97,18 +93,19 @@ class PageCanvasView extends Component {
     }
 
     render() {
-        return <canvas style={{border: '1px solid red'}}
-                width={100} height={100} ref={(e) => this.canvas = e}
+        return <canvas
+                       tabIndex={-1}
+                       width={100} height={100} ref={(e) => this.canvas = e}
                        style={{
                            width:'100vw',
                        }}
-                onClick={this.props.onNext}
+                    onClick={this.props.onNext}
+                    onKeyDown={this.handleKeypress}
         ></canvas>
     }
 
-
-    onClick = () => {
-        console.log("going to the next")
-        this.setState({})
+    handleKeypress = (e) => {
+        if(e.key === 'ArrowRight') this.props.onNext()
+        if(e.key === 'ArrowLeft') this.props.onPrev()
     }
 }
