@@ -29,6 +29,8 @@ import AssetView from './AssetView'
 import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
 import {Dimension, parseDimension} from "./Dimension"
 import {EnumEditor} from "../common/EnumEditor";
+import PresentationApp from './PresentationApp'
+import GraphAccessor from '../syncgraph/GraphAccessor'
 
 
 const EnumTitleRenderer = (props) => {
@@ -81,7 +83,10 @@ export default class MetadocEditor extends  SyncGraphProvider {
         this.imagecache = {}
     }
     getDocType() { return "metadoc" }
-    getApp = () => <MetadocApp provider={this}/>
+    getApp = () => {
+        if(this.mode === 'view') return <PresentationApp provider={this}/>
+        return <MetadocApp provider={this}/>
+    }
     getTitle = () => "MetaDoc"
 
     makeEmptyRoot(doc) {
@@ -190,6 +195,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
     getPageSize(page) {
         const root = this.getSceneRoot()
         const rootobj = fetchGraphObject(this.getDataGraph(),root)
+        console.log("parsing",rootobj)
         return parseDimension(rootobj.pageSize)
     }
 
@@ -278,14 +284,17 @@ export default class MetadocEditor extends  SyncGraphProvider {
             },
             {
                 title:'cut',
+                icon: ICONS.cut,
                 fun:this.cutSelection
             },
             {
                 title:'copy',
+                icon: ICONS.copy,
                 fun:this.copySelection
             },
             {
                 title:'paste',
+                icon: ICONS.paste,
                 fun:this.pasteSelection
             },
         ]
@@ -460,6 +469,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
 
 
     newView = () => window.open( `./?mode=metadoc&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+    openPresentationView = () => window.open( `./?mode=view&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
 
 
     isImageCached(src) {
@@ -484,6 +494,11 @@ export default class MetadocEditor extends  SyncGraphProvider {
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
 
     showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
+
+    accessObject = (id) => {
+        return new GraphAccessor(this.getDataGraph()).object(id)
+    }
+
 }
 
 
@@ -620,6 +635,7 @@ class MetadocApp extends Component {
                 <button className="fa fa-copy" onClick={prov.copySelection}/>
                 <button className="fa fa-paste" onClick={prov.pasteSelection}/>
                 <Spacer/>
+                <button className="fa fa-play" onClick={prov.openPresentationView}/>
                 <button className="fa fa-plus" onClick={prov.newView}> view</button>
                 <button className="fa fa-superpowers" onClick={prov.toggleConnected}>{this.state.connected?"disconnect":"connect"}</button>
             </Toolbar>

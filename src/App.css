@@ -187,7 +187,7 @@ button:hover {
 .prop-sheet .icon {
     grid-column-start: icon;
 }
-.prop-sheet input, .prop-sheet li textarea, .prop-sheet button {
+.prop-sheet input, .prop-sheet textarea, .prop-sheet button {
     grid-column-start: value;
     grid-column-end: gutter;
     align-self: center;

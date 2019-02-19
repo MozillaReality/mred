@@ -148,7 +148,11 @@ export const ICONS = {
     text:'font',
     plane:'plane',
     image:'image',
-    model:'cube'
+    model:'cube',
+    cut:'cut',
+    copy:'copy',
+    paste:'paste',
+    delete:'close'
 }
 
 export const VERTICAL_ALIGNMENT = {
