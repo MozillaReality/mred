@@ -17,6 +17,8 @@ import group2d from "./panel2d/group2d"
 import SceneDef from "./SceneDef"
 import {on} from "../utils"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad} from './Common'
+//use the oculus go controller
+import ThreeDOFController from "./3dof.js"
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -58,6 +60,7 @@ export default class ImmersiveVREditor extends Component {
         //update the pointer and stats, if configured
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
+        if(this.controller) this.controller.update(time)
         this.renderer.render( this.scene, this.camera );
     }
 
@@ -68,6 +71,10 @@ export default class ImmersiveVREditor extends Component {
 
         const container = this.wrapper
         this.scene = new THREE.Scene();
+        this.stageRot = new THREE.Group()
+        this.scene.add(this.stageRot)
+        this.stagePos = new THREE.Group()
+        this.stageRot.add(this.stagePos)
         this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         const renderer = this.renderer
@@ -115,6 +122,8 @@ export default class ImmersiveVREditor extends Component {
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged.bind(this))
         //clear selection when click on the bg
         on(this.pointer,POINTER_CLICK,()=> SelectionManager.clearSelection())
+
+        this.controller = new ThreeDOFController(this.stagePos, this.stageRot)
 
         this.loadScene()
     }
@@ -264,7 +273,8 @@ export default class ImmersiveVREditor extends Component {
                         node = new SceneDef().makeNode(obj)
                         this.insertNodeMapping(op.id,node)
                         this.sceneWrappers[op.id] = node
-                        this.scene.add(node)
+                        this.stagePos.add(node)
+                        // this.scene.add(node)
                         this.swapScene(op.id)
                     }
                 }
@@ -316,7 +326,8 @@ export default class ImmersiveVREditor extends Component {
         Object.keys(this.sceneWrappers).forEach(key => {
             const scene = this.sceneWrappers[key]
             scene.remove(this.controls)
-            this.scene.remove(scene)
+            // this.scene.remove(scene)
+            this.stagePos.remove(scene)
         })
         this.sceneWrappers = {}
         this.obj_node_map = {}
@@ -349,7 +360,6 @@ export default class ImmersiveVREditor extends Component {
                 this.sceneWrappers[id].position.z -= e.point.z + 3
             })
         }
-        console.log("final scene",this.scene)
     }
 
 
