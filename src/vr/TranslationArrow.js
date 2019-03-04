@@ -68,6 +68,7 @@ export default class TranslationArrow extends THREE.Group {
     beginDrag = (e) => {
         this.startPoint = this.parent.position.clone()
         this.startPoint.copy(e.intersection.point)
+        this.parent.target.parent.worldToLocal(this.startPoint)
         this.oldFilter = this.parent.pointer.intersectionFilter
         this.parent.pointer.intersectionFilter = (obj) => obj.userData.draggable
         this.startPosition = this.parent.target.position.clone()
@@ -77,6 +78,7 @@ export default class TranslationArrow extends THREE.Group {
     }
     updateDrag = (e) => {
         this.endPoint = e.intersection.point.clone()
+        this.parent.target.parent.worldToLocal(this.endPoint)
         //neutralize y and z
         if (this.axis === 'X') {
             this.endPoint.y = this.startPoint.y
