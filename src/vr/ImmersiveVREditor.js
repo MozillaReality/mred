@@ -176,6 +176,7 @@ export default class ImmersiveVREditor extends Component {
             cameraFollowMouse:false,
             mouseSimulatesController:false,
             enableLaser: true,
+            laserLength: 20,
         })
 
 
