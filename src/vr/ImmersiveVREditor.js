@@ -171,7 +171,9 @@ export default class ImmersiveVREditor extends Component {
 
         // enable stats visible inside VR
         this.stats = new VRStats(this.renderer)
-        this.camera.add(this.stats)
+        if(this.props.editable) {
+            this.camera.add(this.stats)
+        }
         this.scene.add(this.camera)
 
         //class which handles mouse and VR controller
