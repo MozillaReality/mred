@@ -3,6 +3,7 @@ export default class GraphAccessor {
         this.graph = graph
     }
     object(id) {
+        console.log('accessing',id)
         if(this.graph.hasObject(id)) {
             const obj = {}
             this.graph.getPropertiesForObject(id).forEach(key => {
@@ -15,7 +16,10 @@ export default class GraphAccessor {
                 return obj
             }
             obj.array = (key) => {
+                console.log("looking at key",key)
+                console.log("self is",obj)
                 const CH = obj[key]
+                console.log("children id is",CH)
                 const len = this.graph.getArrayLength(CH)
                 const ch = []
                 for (let i = 0; i < len; i++) {
@@ -23,6 +27,7 @@ export default class GraphAccessor {
                 }
                 return ch
             }
+            obj.getChildren = () => obj.array('children').map(id => this.object(id))
             obj.insertChildLast = (child) => {
                 this.graph.setProperty(child.id,'parent',obj.id)
                 const CH = this.graph.getPropertyValue(obj.id,'children')

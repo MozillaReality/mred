@@ -27,7 +27,7 @@ import {
 } from "./Common";
 import AssetView from './AssetView'
 import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
-import {Dimension, parseDimension} from "./Dimension"
+import {DEFAULT_DPI, parseDimension, UNITS} from "./Dimension"
 import {EnumEditor} from "../common/EnumEditor";
 import PresentationApp from './PresentationApp'
 import GraphAccessor from '../syncgraph/GraphAccessor'
@@ -438,6 +438,33 @@ export default class MetadocEditor extends  SyncGraphProvider {
         return "";
     }
 
+    exportPNG = () => {
+        const page = this.getSelectedPage()
+        const canvas = document.createElement('canvas')
+        const c = canvas.getContext('2d')
+        const g = this.getRawGraph()
+        const size = this.getPageSize(page).as(UNITS.PIXEL, 1, DEFAULT_DPI)
+        canvas.width = size.width
+        canvas.height = size.height
+        c.fillStyle = 'white'
+        c.fillRect(0, 0, canvas.width, canvas.height)
+        if(page) {
+            this.accessObject(page.id).getChildren().forEach(layer => {
+                layer.getChildren().forEach(shape => {
+                    const def = this.getShapeDef(shape.type)
+                    if (def) def.draw(c, g, shape, false, this)
+                })
+            })
+        }
+
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png')
+        link.download = 'test.png'
+        document.body.appendChild(link)
+        link.click()
+    }
+
+
     canAddChild(parent,child) {
         const p = fetchGraphObject(this.getDataGraph(),parent)
         const c = fetchGraphObject(this.getDataGraph(),child)
@@ -625,7 +652,8 @@ class MetadocApp extends Component {
 
             <Toolbar center top>
                 <button className="fa fa-save" onClick={prov.save}/>
-                <button className="fa fa-download" onClick={prov.exportSVG}/>
+                <button className="fa fa-download" onClick={prov.exportSVG}> SVG</button>
+                <button className="fa fa-download" onClick={prov.exportPNG}> PNG</button>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
                 <button className="fa fa-search-plus" onClick={this.zoomIn}/>
