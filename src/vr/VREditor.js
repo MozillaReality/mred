@@ -35,6 +35,7 @@ import {HORIZONTAL_ALIGNMENT} from './Common'
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
+import {MakeEmbedDialog} from './MakeEmbedDialog'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -189,6 +190,10 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+
+    embedView = () => {
+        DialogManager.show(<MakeEmbedDialog provider={this}/>)
+    }
 
     addScene = () => {
         const root = this.accessObject(this.getSceneRoot())
@@ -516,6 +521,7 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-save" onClick={() => prov.save()}></button>
                 <button onClick={() => prov.preview()}>preview</button>
+                <button onClick={()=>prov.embedView()}> embed</button>
                 <button className="fa fa-undo" onClick={prov.performUndo}/>
                 <button className="fa fa-repeat" onClick={prov.performRedo}/>
                 <Spacer/>
