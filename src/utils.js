@@ -119,7 +119,11 @@ export function genAlphaID(count) {
 }
 
 export function setQuery(obj) {
-    const query = Object.keys(obj).map((key)=>`${key}=${obj[key]}`).join('&')
+    const oldOpts = parseOptions({})
+    const final = {}
+    Object.keys(oldOpts).forEach(key=> final[key] = oldOpts[key])
+    Object.keys(obj).forEach(key=> final[key] = obj[key])
+    const query = Object.keys(final).map((key)=>`${key}=${final[key]}`).join('&')
     window.history.pushState(obj,'a title','?'+query)
 }
 export function toQueryString(obj) {

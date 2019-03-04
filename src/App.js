@@ -9,7 +9,14 @@ export default class App extends Component {
     constructor(props) {
         super(props)
 
+        this.state = {
+            switcher:true,
+        }
         this.providers = ['vr','metadoc']
+        const sw = this.props.options.switcher
+        if(typeof sw !== 'undefined' && sw === false || sw === 'false') {
+            this.state.switcher = false
+        }
     }
 
     getApp() {
@@ -43,6 +50,7 @@ export default class App extends Component {
         )
     }
     render() {
+        if(!this.state.switcher) return this.getApp()
         return (
             <VBox fill>
                 <button
