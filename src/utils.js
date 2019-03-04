@@ -7,6 +7,10 @@ export function parseOptions(opts) {
             opts[keyval[0]] = keyval[1]
         })
     }
+    console.log(opts)
+    if(typeof opts.switcher === 'string') {
+        console.log("parsing switcher")
+    }
     return opts;
 }
 

@@ -11,7 +11,7 @@ export class MakeEmbedDialog extends Component {
     }
 
     generateEmbedURL() {
-        return `http://localhost:3000/?mode=embed-view&doctype=${this.props.provider.getDocType()}&doc=${this.props.provider.getDocId()}`
+        return `http://localhost:3000/?mode=embed-view&doctype=${this.props.provider.getDocType()}&doc=${this.props.provider.getDocId()}&switcher=false`
     }
 
     render() {

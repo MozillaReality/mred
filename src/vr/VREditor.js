@@ -36,6 +36,7 @@ import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
 import {MakeEmbedDialog} from './MakeEmbedDialog'
+import VREmbedViewApp from './VREmbedViewApp'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -47,6 +48,7 @@ export default class VREditor extends  SyncGraphProvider {
     getApp = () => {
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
         if(this.mode === 'vredit') return <ImmersiveVREditor provider={this}/>
+        if(this.mode === 'embed-view') return <VREmbedViewApp provider={this}/>
         throw new Error("unknown mode " +this.mode)
     }
     getTitle = () => "VR Builder"
