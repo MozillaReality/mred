@@ -27,6 +27,10 @@ const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("s
 
 
 export default class ImmersiveVREditor extends Component {
+    constructor(props) {
+        super(props)
+        this.obj_node_map = {}
+    }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         return false
@@ -130,11 +134,11 @@ export default class ImmersiveVREditor extends Component {
 
     selectionChanged() {
         const sel = SelectionManager.getSelection()
-        if (sel === null) return this.controls.detach(this.selectedNode)
+        if (sel === null && this.controls) return this.controls.detach(this.selectedNode)
         const node = this.findNode(sel)
-        if(this.selectedNode !== node) this.controls.detach(this.selectedNode)
+        if(this.selectedNode !== node && this.controls) this.controls.detach(this.selectedNode)
         this.selectedNode = node
-        if (this.selectedNode) this.controls.attach(this.selectedNode, this.pointer)
+        if (this.selectedNode && this.controls) this.controls.attach(this.selectedNode, this.pointer)
     }
 
     navWithSelection = () => {
@@ -190,71 +194,74 @@ export default class ImmersiveVREditor extends Component {
         this.pointer.controller1.add(stick)
 
 
-        this.controls = new TranslateControl()
-        this.controls.name = 'Controls'
-        on(this.controls,'change',(e)=>{
-            const sel = SelectionManager.getSelection()
-            if(sel) {
-                const node = this.findNode(sel)
-                const prov = this.props.provider
-                prov.quick_setPropertyValue(sel,'tx',node.position.x)
-                prov.quick_setPropertyValue(sel,'ty',node.position.y)
-                prov.quick_setPropertyValue(sel,'tz',node.position.z)
-            }
-        })
-
-        this.navcursor = new THREE.Mesh(
-            new THREE.RingBufferGeometry(0.2,0.3,32),
-            new THREE.MeshLambertMaterial({color:'yellow'})
-        )
-        this.navcursor.rotation.x = toRad(-90)
-        this.navcursor.position.y = 0.1
-        this.scene.add(this.navcursor)
-
-
-        this.tools = new panel2d(this.scene,this.camera)
-        this.tools.position.set(-1,1,-3)
-        this.scene.add(this.tools)
-
-
-
-        this.tools.add(new button2d()
-            .setAll({ x:5, y:5, text:'add box'})
-            .on(POINTER_CLICK, ()=>this.props.provider.add3DObject(OBJ_TYPES.cube)))
-        this.tools.add(new button2d()
-            .setAll({ x:5, y:5+30, text:'add sphere'})
-            .on(POINTER_CLICK, ()=>this.props.provider.add3DObject(OBJ_TYPES.sphere)))
-        this.tools.add(new button2d()
-            .setAll({ x:5, y:5+30+30, text:'delete'})
-            .on(POINTER_CLICK, this.props.provider.deleteObject))
-        this.tools.add(new button2d()
-            .setAll({ x:5, y:5+30+30+30, text:'save'})
-            .on(POINTER_CLICK, this.props.provider.save))
-        this.tools.add(new button2d()
-            .setAll({x:5, y:5+30*4, text:'nav'})
-            .on(POINTER_CLICK, this.navWithSelection)
-        )
-
-        const rowLayout = (panel)=>{
-            let x = 0
-            panel.comps.forEach((c)=>{
-                c.x=x
-                c.y=0
-                x += c.w+panel.padding
+        if(this.props.editable) {
+            this.controls = new TranslateControl()
+            this.controls.name = 'Controls'
+            on(this.controls, 'change', (e) => {
+                const sel = SelectionManager.getSelection()
+                if (sel) {
+                    const node = this.findNode(sel)
+                    const prov = this.props.provider
+                    prov.quick_setPropertyValue(sel, 'tx', node.position.x)
+                    prov.quick_setPropertyValue(sel, 'ty', node.position.y)
+                    prov.quick_setPropertyValue(sel, 'tz', node.position.z)
+                }
             })
         }
 
-        const color_group = new group2d().setAll({ x:5, y:5+30*5, w:235, h:35, layout:rowLayout})
-        SIMPLE_COLORS.forEach(c => {
-            color_group.add(new button2d()
-                .setAll({text:' ', normalBg:c })
-                .on(POINTER_CLICK,()=>this.props.provider.setColor(c))
+        // this.navcursor = new THREE.Mesh(
+        //     new THREE.RingBufferGeometry(0.2,0.3,32),
+        //     new THREE.MeshLambertMaterial({color:'yellow'})
+        // )
+        // this.navcursor.rotation.x = toRad(-90)
+        // this.navcursor.position.y = 0.1
+        // this.scene.add(this.navcursor)
+
+
+        if(this.props.editable) {
+            this.tools = new panel2d(this.scene, this.camera)
+            this.tools.position.set(-1, 1, -3)
+            this.scene.add(this.tools)
+
+
+            this.tools.add(new button2d()
+                .setAll({x: 5, y: 5, text: 'add box'})
+                .on(POINTER_CLICK, () => this.props.provider.add3DObject(OBJ_TYPES.cube)))
+            this.tools.add(new button2d()
+                .setAll({x: 5, y: 5 + 30, text: 'add sphere'})
+                .on(POINTER_CLICK, () => this.props.provider.add3DObject(OBJ_TYPES.sphere)))
+            this.tools.add(new button2d()
+                .setAll({x: 5, y: 5 + 30 + 30, text: 'delete'})
+                .on(POINTER_CLICK, this.props.provider.deleteObject))
+            this.tools.add(new button2d()
+                .setAll({x: 5, y: 5 + 30 + 30 + 30, text: 'save'})
+                .on(POINTER_CLICK, this.props.provider.save))
+            this.tools.add(new button2d()
+                .setAll({x: 5, y: 5 + 30 * 4, text: 'nav'})
+                .on(POINTER_CLICK, this.navWithSelection)
             )
-        })
 
-        this.tools.add(color_group)
+            const rowLayout = (panel) => {
+                let x = 0
+                panel.comps.forEach((c) => {
+                    c.x = x
+                    c.y = 0
+                    x += c.w + panel.padding
+                })
+            }
 
-        this.tools.redraw()
+            const color_group = new group2d().setAll({x: 5, y: 5 + 30 * 5, w: 235, h: 35, layout: rowLayout})
+            SIMPLE_COLORS.forEach(c => {
+                color_group.add(new button2d()
+                    .setAll({text: ' ', normalBg: c})
+                    .on(POINTER_CLICK, () => this.props.provider.setColor(c))
+                )
+            })
+
+            this.tools.add(color_group)
+
+            this.tools.redraw()
+        }
 
     }
 
@@ -326,8 +333,7 @@ export default class ImmersiveVREditor extends Component {
         //nuke all the old stuff
         Object.keys(this.sceneWrappers).forEach(key => {
             const scene = this.sceneWrappers[key]
-            scene.remove(this.controls)
-            // this.scene.remove(scene)
+            if(this.controls) scene.remove(this.controls)
             this.stagePos.remove(scene)
         })
         this.sceneWrappers = {}
@@ -344,23 +350,23 @@ export default class ImmersiveVREditor extends Component {
         Object.keys(this.sceneWrappers).forEach(key => {
             const scene = this.sceneWrappers[key]
             scene.visible = (key === id)
-            scene.remove(this.controls)
+            if(this.controls) scene.remove(this.controls)
         })
-        this.sceneWrappers[id].add(this.controls)
+        if(this.controls) this.sceneWrappers[id].add(this.controls)
         this.sceneWrappers[id].position.x = 0
         this.sceneWrappers[id].position.z = 0
         const floor = new SceneDef().getFloorPart(this.sceneWrappers[id])
-        if(floor) {
-            floor.userData.clickable = true
-            on(floor, POINTER_MOVE, (e) => {
-                this.navcursor.position.x = e.point.x
-                this.navcursor.position.z = e.point.z
-            })
-            on(floor, POINTER_CLICK, (e) => {
-                this.sceneWrappers[id].position.x -= e.point.x
-                this.sceneWrappers[id].position.z -= e.point.z + 3
-            })
-        }
+        // if(floor) {
+        //     floor.userData.clickable = true
+        //     on(floor, POINTER_MOVE, (e) => {
+        //         this.navcursor.position.x = e.point.x
+        //         this.navcursor.position.z = e.point.z
+        //     })
+        //     on(floor, POINTER_CLICK, (e) => {
+        //         this.sceneWrappers[id].position.x -= e.point.x
+        //         this.sceneWrappers[id].position.z -= e.point.z + 3
+        //     })
+        // }
     }
 
 

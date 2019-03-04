@@ -47,8 +47,8 @@ export default class VREditor extends  SyncGraphProvider {
     getDocType() { return "vr" }
     getApp = () => {
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
-        if(this.mode === 'vredit') return <ImmersiveVREditor provider={this}/>
-        if(this.mode === 'embed-view') return <VREmbedViewApp provider={this}/>
+        if(this.mode === 'vredit') return <ImmersiveVREditor provider={this} editable={true}/>
+        if(this.mode === 'embed-view') return <ImmersiveVREditor provider={this} editable={false}/>
         throw new Error("unknown mode " +this.mode)
     }
     getTitle = () => "VR Builder"
