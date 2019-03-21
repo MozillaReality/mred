@@ -24,7 +24,6 @@ export class VRCanvas extends Component {
     }
 
     componentDidMount() {
-        console.log('mounting the canvas',this.props.provider.getDataGraph())
         const canvas = this.canvas
 
         this.scene = new THREE.Scene();
@@ -167,7 +166,7 @@ export class VRCanvas extends Component {
             }
             return
         }
-        console.log('skipping', op.type)
+        // console.log('skipping', op.type)
     }
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         return false

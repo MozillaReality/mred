@@ -3,7 +3,7 @@ export default class GraphAccessor {
         this.graph = graph
     }
     object(id) {
-        console.log('accessing',id)
+        // console.log('accessing',id)
         if(this.graph.hasObject(id)) {
             const obj = {}
             this.graph.getPropertiesForObject(id).forEach(key => {

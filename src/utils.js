@@ -7,7 +7,7 @@ export function parseOptions(opts) {
             opts[keyval[0]] = keyval[1]
         })
     }
-    console.log(opts)
+    // console.log(opts)
     if(typeof opts.switcher === 'string') {
         console.log("parsing switcher")
     }
@@ -41,7 +41,7 @@ export function GET_JSON(path, cb) {
 
 
 export function POST_JSON(path, payload) {
-    console.log("POSTING",path,typeof payload);
+    console.log("POSTING",path,payload);
     return new Promise((res,rej)=>{
         const req = new XMLHttpRequest();
         req.onreadystatechange = function() {

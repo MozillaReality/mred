@@ -12,7 +12,7 @@ const default_options = {
     doc:genAlphaID(20)
 }
 const options = parseOptions(default_options)
-// console.log("options is",options);
+console.log("options is",options);
 
 function init() {
     if(options.mode === 'preview') {

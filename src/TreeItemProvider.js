@@ -93,11 +93,16 @@ class TreeItemProviderInterface {
 }
 
 export default class TreeItemProvider extends TreeItemProviderInterface {
-    constructor() {
+    constructor(options) {
         super()
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
+        this.SERVER_URL = SERVER_URL
+        if(options.SERVER_URL) {
+            this.SERVER_URL = `https://${options.SERVER_URL}/doc/`
+        }
+        console.log("using server",this.SERVER_URL)
     }
 
     on(type, cb) {
@@ -158,7 +163,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             return value
         })
         console.info("doc is",payload_string)
-        return POST_JSON(SERVER_URL+this.docid,payload_string).then((res)=>{
+        return POST_JSON(this.SERVER_URL+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
@@ -166,7 +171,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
     loadDoc(docid) {
         console.log("need to load the doc",docid)
-        GET_JSON(SERVER_URL+docid).then((payload)=>{
+        GET_JSON(this.SERVER_URL+docid).then((payload)=>{
             console.log("got the doc",payload)
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
@@ -179,7 +184,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     reloadDocument() {
         const spath = this.generateSelectionPath(Selection.getSelection());
         console.log("got the path",spath)
-        GET_JSON(SERVER_URL+this.docid).then((payload)=>{
+        GET_JSON(this.SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
@@ -219,7 +224,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             xml.addEventListener('load',(e)=>res(xml.response))
             xml.addEventListener('error',(e)=>console.log(`error`))
             xml.addEventListener('abort',(e)=>console.log(`abort`))
-            const url = SERVER_URL_ASSETS+file.name;
+            const url = this.SERVER_URL_ASSETS+file.name;
             console.info("uploading to ", url)
             xml.responseType = 'json'
             xml.open('POST',url)

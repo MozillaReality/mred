@@ -1,4 +1,4 @@
-import TreeItemProvider, {SERVER_URL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {GET_JSON, POST_JSON, setQuery} from '../utils'
 import {UndoQueue} from '../metadoc/UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
@@ -11,7 +11,7 @@ const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
 export default class SyncGraphProvider extends TreeItemProvider {
     constructor(options) {
-        super()
+        super(options)
         this.options = options || {}
         this.mode = options.mode || 'edit'
         this.datalisteners = []
@@ -61,11 +61,12 @@ export default class SyncGraphProvider extends TreeItemProvider {
         const payload_obj = {
             history:this.getDocHistory(),
             type:this.getDocType(),
-            id:this.getDocId()
+            id:this.getDocId(),
+            graph:{}
         }
         const payload_string = JSON.stringify(payload_obj)
         ToasterMananager.add('saving')
-        return POST_JSON(SERVER_URL+this.getDocId(),payload_string).then((res)=>{
+        return POST_JSON(this.SERVER_URL+this.getDocId(),payload_string).then((res)=>{
             console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             ToasterMananager.add(res.message)
@@ -74,7 +75,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     loadDoc(docid) {
-        return GET_JSON(SERVER_URL+docid).then((payload)=>{
+        console.log("loading")
+        return GET_JSON(this.SERVER_URL+docid).then((payload)=>{
+            console.log("got the payload",payload)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,docid)
         }).catch((e)=>{
@@ -117,7 +120,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     reloadDocument() {
-        return GET_JSON(SERVER_URL+this.docid).then((payload)=>{
+        return GET_JSON(this.SERVER_URL+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)
