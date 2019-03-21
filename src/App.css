@@ -124,6 +124,7 @@ button:hover {
 }
 .toolbar button:disabled {
     color: var(--bd);
+    background-color: transparent;
 }
 .toolbar button:disabled:hover {
     background-color: transparent;

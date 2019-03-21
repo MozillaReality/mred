@@ -16,14 +16,12 @@ import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d"
 import SceneDef from "./SceneDef"
 import {on} from "../utils"
-import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad} from './Common'
+import {TweenManager} from "../common/tween"
+import {ACTIONS, get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TRIGGERS} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
-
-
-
 
 
 export default class ImmersiveVREditor extends Component {
@@ -62,6 +60,7 @@ export default class ImmersiveVREditor extends Component {
 
     render3(time) {
         //update the pointer and stats, if configured
+        if(this.tweenManager) this.tweenManager.update(time)
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
@@ -74,6 +73,7 @@ export default class ImmersiveVREditor extends Component {
         const on = (elem, type, cb) => elem.addEventListener(type,cb)
 
         const container = this.wrapper
+        this.tweenManager = new TweenManager()
         this.scene = new THREE.Scene();
         this.stageRot = new THREE.Group()
         this.scene.add(this.stageRot)
@@ -141,25 +141,33 @@ export default class ImmersiveVREditor extends Component {
         if (this.selectedNode && this.controls) this.controls.attach(this.selectedNode, this.pointer)
     }
 
-    navWithSelection = () => {
+    performAction(action, target) {
+        if(action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action,target)
+        if(action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action,target)
+        if(action.subtype === ACTIONS.SCRIPT) return this.executeScriptAction(action,target)
+        if(action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
+    }
+
+    performClickOnSelection = () => {
         const sel = SelectionManager.getSelection()
         if(!sel) return
-        console.log("navigating to",sel)
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
-        console.log("going to ",obj)
-        if(obj.action){
-            const targetObj = this.props.provider.accessObject(obj.action)
-            if(targetObj) {
-                if(targetObj.type === 'scene') {
-                    this.swapScene(obj.action)
-                    SelectionManager.clearSelection()
-                    return
-                }
-                if(targetObj.type === 'asset' && targetObj.subtype === 'audio') {
-                    return this.playAudioAsset(targetObj, obj)
-                }
-            }
-        }
+        if(!obj) return
+        const actionObj = this.props.provider.accessObject(obj.action)
+        if(!actionObj) return
+        if(!actionObj.trigger === TRIGGERS.CLICK) return
+        this.performAction(actionObj, obj)
+    }
+
+    performProximityOnSelection = () => {
+        const sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+        if(!obj) return
+        const actionObj = this.props.provider.accessObject(obj.action)
+        if(!actionObj) return
+        if(!actionObj.trigger === TRIGGERS.PROXIMITY) return
+        this.performAction(actionObj, obj)
     }
 
     initContent() {
@@ -239,8 +247,12 @@ export default class ImmersiveVREditor extends Component {
                 .setAll({x: 5, y: 5 + 30 + 30 + 30, text: 'save'})
                 .on(POINTER_CLICK, this.props.provider.save))
             this.tools.add(new button2d()
-                .setAll({x: 5, y: 5 + 30 * 4, text: 'nav'})
-                .on(POINTER_CLICK, this.navWithSelection)
+                .setAll({x: 5, y: 5 + 30 * 4, text: 'click'})
+                .on(POINTER_CLICK, this.performClickOnSelection)
+            )
+            this.tools.add(new button2d()
+                .setAll({x: 60, y: 5 + 30 * 4, text: 'proximity'})
+                .on(POINTER_CLICK, this.performProximityOnSelection)
             )
 
             const rowLayout = (panel) => {
@@ -389,16 +401,35 @@ export default class ImmersiveVREditor extends Component {
         return this.obj_node_map[id]
     }
 
-    playAudioAsset(audioObj, target) {
-        console.log("playing the audio",audioObj,'on the target',target)
-        var sound = new THREE.Audio( this.audioListener );
-        var audioLoader = new THREE.AudioLoader();
-        audioLoader.load(audioObj.src, function( buffer ) {
+    playAudioAsset(audio, target) {
+        console.log("playing the audio",audio,'on the target',target)
+        const sound = new THREE.Audio(this.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
             sound.setBuffer( buffer );
             sound.setLoop( true );
             sound.setVolume( 0.5 );
             sound.play();
         });
+    }
+
+
+    animateTargetObject(action, obj) {
+        const node = this.findNode(obj.id)
+        const pos = node.position
+        this.tweenManager.prop({
+            target: pos,
+            property: 'y',
+            from: pos.y,
+            to: pos.y + 1.0,
+            autoReverse: true,
+            duration: 0.25,
+            loop: 8,
+        }).start()
+    }
+
+    executeScriptAction(action,obj) {
+        console.log("runing the script",action.scriptBody)
     }
 }
 

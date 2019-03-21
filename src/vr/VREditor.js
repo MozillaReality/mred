@@ -17,6 +17,7 @@ import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogManager, HBox, PopupManager} from "appy-comps";
 import {
+    ACTIONS,
     get3DObjectDef,
     is3DObjectType,
     isGLTFFile,
@@ -37,6 +38,7 @@ import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
 import {MakeEmbedDialog} from './MakeEmbedDialog'
 import VREmbedViewApp from './VREmbedViewApp'
+import {toQueryString} from '../utils'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -201,7 +203,15 @@ export default class VREditor extends  SyncGraphProvider {
         })
     }
 
-    preview = () => window.open( `./?mode=vredit&doctype=${this.getDocType()}&doc=${this.getDocId()}`)
+    editInVR = () => {
+        const opts = Object.assign({},this.options,{mode:'vredit'})
+        window.open(`./?${toQueryString(opts)}`)
+    }
+
+    viewInVR = () => {
+        const opts = Object.assign({},this.options,{mode:'vrview'})
+        window.open(`./?${toQueryString(opts)}`)
+    }
 
     embedView = () => {
         DialogManager.show(<MakeEmbedDialog provider={this}/>)
@@ -341,9 +351,10 @@ export default class VREditor extends  SyncGraphProvider {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
             type:'action',
-            subtype:'script',
-            trigger:'click',
+            subtype:ACTIONS.SCRIPT,
+            trigger:TRIGGERS.CLICK,
             title:'script action',
+            scriptBody:`console.log("I'm a running script. Can you catch me?")`,
             parent:0
         }))
         this.accessObject(this.getActionsObject()).insertChildLast(action)
@@ -591,7 +602,8 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-file" onClick={() => prov.newDoc()} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
-                <button onClick={() => prov.preview()}>VR Edit</button>
+                <button onClick={() => prov.editInVR()}>VR Edit</button>
+                <button disabled onClick={() => prov.viewInVR()}>VR View</button>
                 <button onClick={()=>prov.embedView()}>Embed</button>
                 <Spacer/>
                 <button className="fa fa-cut" onClick={prov.cutSelection}/>

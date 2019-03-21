@@ -200,6 +200,14 @@ export const PROP_DEFS = {
         key:'trigger',
         name:'Trigger',
         type:TYPES.ENUM,
+    },
+    scriptBody: {
+        key:'scriptBody',
+        name:'code',
+        type:TYPES.STRING,
+        hints: {
+            multiline:true
+        }
     }
 }
 
@@ -219,6 +227,12 @@ export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
     CENTER:'CENTER',
     RIGHT:'RIGHT',
+}
+
+export const ACTIONS = {
+    ANIMATE:'ANIMATE',
+    SOUND:'SOUND',
+    SCRIPT:'SCRIPT',
 }
 
 export const TRIGGERS = {
