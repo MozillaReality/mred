@@ -18,7 +18,7 @@ export default class Image2DDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             asset:0,
-            navTarget:0,
+            action:0,
             parent:scene.id,
         }))
     }

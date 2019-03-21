@@ -128,8 +128,8 @@ export const PROP_DEFS = {
         type:TYPES.STRING,
         locked:true,
     },
-    navTarget: {
-        key:'navTarget',
+    action: {
+        key:'action',
         name:'Action',
         type:TYPES.ENUM
     },
@@ -195,6 +195,11 @@ export const PROP_DEFS = {
         key:'drawBackground',
         name:'BG?',
         type:TYPES.BOOLEAN,
+    },
+    trigger: {
+        key:'trigger',
+        name:'Trigger',
+        type:TYPES.ENUM,
     }
 }
 
@@ -214,6 +219,11 @@ export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
     CENTER:'CENTER',
     RIGHT:'RIGHT',
+}
+
+export const TRIGGERS = {
+    CLICK:'CLICK',
+    PROXIMITY:'PROXIMITY',
 }
 
 
@@ -268,6 +278,8 @@ export const ITEM_ICONS = {
     model: 'cube',
     asset: 'file',
     assets: 'archive',
+    actions:'superpowers',
+    action: 'superpowers',
     scene: 'globe',
     bg360:'image',
     img2d:'image',

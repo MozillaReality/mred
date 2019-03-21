@@ -147,11 +147,11 @@ export default class ImmersiveVREditor extends Component {
         console.log("navigating to",sel)
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         console.log("going to ",obj)
-        if(obj.navTarget){
-            const targetObj = this.props.provider.accessObject(obj.navTarget)
+        if(obj.action){
+            const targetObj = this.props.provider.accessObject(obj.action)
             if(targetObj) {
                 if(targetObj.type === 'scene') {
-                    this.swapScene(obj.navTarget)
+                    this.swapScene(obj.action)
                     SelectionManager.clearSelection()
                     return
                 }

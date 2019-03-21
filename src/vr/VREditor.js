@@ -25,7 +25,7 @@ import {
     MIME_TYPES,
     OBJ_TYPES,
     PROP_DEFS,
-    SIMPLE_COLORS
+    SIMPLE_COLORS, TRIGGERS
 } from './Common'
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
@@ -61,9 +61,12 @@ export default class VREditor extends  SyncGraphProvider {
         const obj = new CubeDef().make(doc,scene1)
         //make assets
         const assets = fetchGraphObject(doc,doc.createObject({type:'assets',title:'Assets', children: doc.createArray(), parent:0}))
+        //make actions
+        const actions = fetchGraphObject(doc,doc.createObject({type:'actions',title:'Actions', children: doc.createArray(), parent:0}))
         //tie it all together
         insertAsFirstChild(doc,root,scene1)
         insertAsFirstChild(doc,scene1,obj)
+        insertAsLastChild(doc,root,actions)
         insertAsLastChild(doc,root,assets)
     }
 
@@ -144,7 +147,7 @@ export default class VREditor extends  SyncGraphProvider {
             if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
             if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === 'image').map(a => a.id)
         }
-        if(key === PROP_DEFS.navTarget.key) {
+        if(key === PROP_DEFS.action.key) {
             const scenes = this.accessObject(this.getSceneRoot()).array('children')
                 .map(ch => this.accessObject(ch))
                 .filter(ch => ch.type === 'scene')
@@ -153,16 +156,22 @@ export default class VREditor extends  SyncGraphProvider {
                 .map(ch => fetchGraphObject(this.getDataGraph(),ch))
                 .filter(a => a.subtype === 'audio')
                 .map(a => a.id)
-            return audios.concat(scenes)
+            const actions = this.accessObject(this.getActionsObject()).array('children')
+                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+                .map(a => a.id)
+            return audios.concat(scenes).concat(actions)
         }
         if(key === PROP_DEFS.horizontalAlign.key) {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
+        }
+        if(key === PROP_DEFS.trigger.key) {
+            return Object.keys(TRIGGERS).map(key => TRIGGERS[key])
         }
     }
     getRendererForEnum(key,obj) {
         switch(key) {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
-            case PROP_DEFS.navTarget.key: return NavTargetRenderer
+            case PROP_DEFS.action.key: return ActionRenderer
         }
     }
 
@@ -175,6 +184,7 @@ export default class VREditor extends  SyncGraphProvider {
         return -1
     }
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
+    getActionsObject = () => this.getDataGraph().getObjectByProperty('type','actions')
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
@@ -301,6 +311,42 @@ export default class VREditor extends  SyncGraphProvider {
             }))
             this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         })
+    }
+
+    addSoundAction = () => {
+        const graph = this.getDataGraph()
+        const action = fetchGraphObject(graph,graph.createObject({
+            type:'action',
+            subtype:'sound',
+            trigger:TRIGGERS.CLICK,
+            title:'sound action',
+            parent:0
+        }))
+        this.accessObject(this.getActionsObject()).insertChildLast(action)
+    }
+
+    addAnimateAction = () => {
+        const graph = this.getDataGraph()
+        const action = fetchGraphObject(graph,graph.createObject({
+            type:'action',
+            subtype:'animate',
+            trigger:TRIGGERS.CLICK,
+            title:'animate action',
+            parent:0
+        }))
+        this.accessObject(this.getActionsObject()).insertChildLast(action)
+    }
+
+    addScriptAction = () => {
+        const graph = this.getDataGraph()
+        const action = fetchGraphObject(graph,graph.createObject({
+            type:'action',
+            subtype:'script',
+            trigger:'click',
+            title:'script action',
+            parent:0
+        }))
+        this.accessObject(this.getActionsObject()).insertChildLast(action)
     }
 
     deleteObject = () => {
@@ -507,6 +553,27 @@ class VREditorApp extends Component {
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
 
+    showAddActionPopup = (e) => {
+        const acts = [
+            {
+                title: 'play sound',
+                icon: ITEM_ICONS.actions,
+                fun: () => this.props.provider.addSoundAction()
+            },
+            {
+                title: 'animate',
+                icon: ITEM_ICONS.actions,
+                fun: () => this.props.provider.addAnimateAction()
+            },
+            {
+                title: 'script',
+                icon: ITEM_ICONS.actions,
+                fun: () => this.props.provider.addScriptAction()
+            },
+        ]
+        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+    }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -517,19 +584,21 @@ class VREditorApp extends Component {
                 <button className={"fa fa-plus"} onClick={this.showAddPopup}>obj</button>
                 <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
                 <button className={"fa fa-plus"} onClick={this.showAddAssetPopup}>asset</button>
+                <button className={"fa fa-plus"} onClick={this.showAddActionPopup}>action</button>
             </Toolbar>
 
 
             <Toolbar center top>
-                <button className="fa fa-save" onClick={() => prov.save()}></button>
-                <button onClick={() => prov.preview()}>preview</button>
-                <button onClick={()=>prov.embedView()}> embed</button>
-                <button className="fa fa-undo" onClick={prov.performUndo}/>
-                <button className="fa fa-repeat" onClick={prov.performRedo}/>
+                <button className="fa fa-file" onClick={() => prov.newDoc()} title={'new project'}></button>
+                <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
+                <button onClick={() => prov.preview()}>VR Edit</button>
+                <button onClick={()=>prov.embedView()}>Embed</button>
                 <Spacer/>
                 <button className="fa fa-cut" onClick={prov.cutSelection}/>
                 <button className="fa fa-copy" onClick={prov.copySelection}/>
                 <button className="fa fa-paste" onClick={prov.pasteSelection}/>
+                <button className="fa fa-undo" onClick={prov.performUndo}/>
+                <button className="fa fa-repeat" onClick={prov.performRedo}/>
             </Toolbar>
 
 
@@ -561,7 +630,7 @@ const EnumTitleRenderer = (props) => {
     return <b>{value}</b>
 }
 
-const NavTargetRenderer = (props) => {
+const ActionRenderer = (props) => {
     let title = '---'
     let action = 'go to'
     let icon = ITEM_ICONS.asset
@@ -572,6 +641,10 @@ const NavTargetRenderer = (props) => {
         if(obj.type === 'asset' && obj.subtype === 'audio') {
             icon = ITEM_ICONS.audio
             action = 'play'
+        }
+        if(obj.type === 'action') {
+            icon = ITEM_ICONS.action
+            action = ''
         }
     }
     return <div><i className={`fa fa-${icon}`}/> {action} <b>{title}</b></div>
