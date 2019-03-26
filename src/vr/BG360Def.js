@@ -1,9 +1,6 @@
 import {fetchGraphObject} from '../syncgraph/utils'
 import {OBJ_TYPES, PROP_DEFS} from './Common'
 import * as THREE from 'three'
-import {on} from '../utils'
-import {POINTER_CLICK} from 'webxr-boilerplate/pointer'
-import SelectionManager from '../SelectionManager'
 
 export default class BG360Def {
     make(graph, scene) {
@@ -23,7 +20,7 @@ export default class BG360Def {
         )
         node.name = obj.title
         node.userData.clickable = true
-        on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         return node
     }
     updateProperty(node, obj, op, provider) {

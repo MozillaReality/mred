@@ -142,6 +142,8 @@ export default class ImmersiveVREditor extends Component {
     }
 
     performAction(action, target) {
+        //old style, navigate to a scene
+        if(action.type === 'scene') return this.swapScene(action.id)
         if(action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action,target)
         if(action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action,target)
         if(action.subtype === ACTIONS.SCRIPT) return this.executeScriptAction(action,target)
@@ -167,6 +169,16 @@ export default class ImmersiveVREditor extends Component {
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
         if(!actionObj.trigger === TRIGGERS.PROXIMITY) return
+        this.performAction(actionObj, obj)
+    }
+
+    standardViewClickHandler = (e)  => {
+        const id = e.target.userData.graphid
+        const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
+        if(!obj) return
+        const actionObj = this.props.provider.accessObject(obj.action)
+        if(!actionObj) return
+        if(!actionObj.trigger === TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -282,15 +294,16 @@ export default class ImmersiveVREditor extends Component {
 
     updateScene(op) {
         const graph = this.props.provider.getDataGraph()
+        //only do scenes with create_object
         if (op.type === CREATE_OBJECT) {
             if(op.defaults) {
-                // console.log("creating object with defaults",op.defaults)
+                //console.log("creating object with defaults",op.defaults)
                 if(op.defaults.type === 'scene') {
                     let node =  this.findNode(op.id)
                     if(node) {
                         // console.log("scene already exists. skipping", node.name)
                     } else {
-                        console.log("Mkaing a real scene", op)
+                        // console.log("Making a real scene", op)
                         const obj = fetchGraphObject(graph, op.id)
                         node = new SceneDef().makeNode(obj)
                         this.insertNodeMapping(op.id,node)
@@ -302,14 +315,20 @@ export default class ImmersiveVREditor extends Component {
                 }
             }
         }
+        // other objects are done with insert_element
         if (op.type === INSERT_ELEMENT) {
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
             if (obj.type === 'scene') return // console.log("skipping insert scene")
             if(is3DObjectType(obj.type)) {
-                const nodeobj = get3DObjectDef(obj.type).makeNode(obj)
-                this.insertNodeMapping(objid, nodeobj)
-                this.sceneWrappers[obj.parent].add(nodeobj)
+                const nodeObj = get3DObjectDef(obj.type).makeNode(obj)
+                if(this.props.editable) {
+                    on(nodeObj, POINTER_CLICK, e => SelectionManager.setSelection(nodeObj.userData.graphid))
+                } else {
+                    on(nodeObj, POINTER_CLICK, this.standardViewClickHandler)
+                }
+                this.insertNodeMapping(objid, nodeObj)
+                this.sceneWrappers[obj.parent].add(nodeObj)
                 return
             }
             if(obj.type === 'assets') return
@@ -369,7 +388,7 @@ export default class ImmersiveVREditor extends Component {
         if(this.controls) this.sceneWrappers[id].add(this.controls)
         this.sceneWrappers[id].position.x = 0
         this.sceneWrappers[id].position.z = 0
-        const floor = new SceneDef().getFloorPart(this.sceneWrappers[id])
+        // const floor = new SceneDef().getFloorPart(this.sceneWrappers[id])
         // if(floor) {
         //     floor.userData.clickable = true
         //     on(floor, POINTER_MOVE, (e) => {
@@ -385,7 +404,7 @@ export default class ImmersiveVREditor extends Component {
 
 
     loadScene() {
-        console.log("loading the final scene")
+        // console.log("loading the final scene")
         // const graph = this.props.provider.getDataGraph()
         // console.log("history is",this.props.provider.getDocHistory())
     }

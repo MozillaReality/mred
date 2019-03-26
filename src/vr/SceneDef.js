@@ -1,6 +1,6 @@
 import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
-import {OBJ_TYPES, PROP_DEFS} from './Common'
+import {PROP_DEFS} from './Common'
 
 
 export default class SceneDef {

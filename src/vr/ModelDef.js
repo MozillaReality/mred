@@ -1,8 +1,5 @@
 import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
-import {POINTER_CLICK} from "webxr-boilerplate/pointer";
-import SelectionManager from "../SelectionManager";
-import {on} from "../utils";
 import {PROP_DEFS} from './Common'
 import GLTFLoader from '../gltfinspector/GLTFLoader'
 import {MeshLambertMaterial} from 'three'
@@ -33,7 +30,7 @@ export default class ModelDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
-        on(clicker,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        // on(clicker,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)

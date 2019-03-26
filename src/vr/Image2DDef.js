@@ -1,9 +1,6 @@
 import {fetchGraphObject} from '../syncgraph/utils'
 import {OBJ_TYPES, PROP_DEFS} from './Common'
 import * as THREE from 'three'
-import {on} from '../utils'
-import {POINTER_CLICK} from 'webxr-boilerplate/pointer'
-import SelectionManager from '../SelectionManager'
 import ObjectDef from './ObjectDef'
 
 export default class Image2DDef extends ObjectDef {
@@ -29,7 +26,7 @@ export default class Image2DDef extends ObjectDef {
         )
         node.name = obj.title
         node.userData.clickable = true
-        on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)

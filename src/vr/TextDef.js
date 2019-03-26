@@ -2,9 +2,6 @@ import ObjectDef from './ObjectDef'
 import {fetchGraphObject} from '../syncgraph/utils'
 import {HORIZONTAL_ALIGNMENT, OBJ_TYPES, PROP_DEFS} from './Common'
 import * as THREE from 'three'
-import {on} from '../utils'
-import {POINTER_CLICK} from 'webxr-boilerplate/pointer'
-import SelectionManager from '../SelectionManager'
 import {VERTICAL_ALIGNMENT} from '../metadoc/Common'
 
 export default class TextDef extends ObjectDef {
@@ -54,7 +51,7 @@ export default class TextDef extends ObjectDef {
 
 
 
-        on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)

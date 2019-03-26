@@ -8,9 +8,9 @@ export function parseOptions(opts) {
         })
     }
     // console.log(opts)
-    if(typeof opts.switcher === 'string') {
-        console.log("parsing switcher")
-    }
+    // if(typeof opts.switcher === 'string') {
+    //     console.log("parsing switcher")
+    // }
     return opts;
 }
 

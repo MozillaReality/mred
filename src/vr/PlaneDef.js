@@ -1,8 +1,5 @@
 import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
-import {POINTER_CLICK} from "webxr-boilerplate/pointer";
-import SelectionManager from "../SelectionManager";
-import {on} from "../utils";
 import {PROP_DEFS} from './Common'
 import ObjectDef from './ObjectDef'
 
@@ -28,7 +25,7 @@ export default class PlaneDef extends ObjectDef {
             new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide})
         )
         node.userData.clickable = true
-        on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)

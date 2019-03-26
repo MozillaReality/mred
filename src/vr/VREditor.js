@@ -51,6 +51,7 @@ export default class VREditor extends  SyncGraphProvider {
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
         if(this.mode === 'vredit') return <ImmersiveVREditor provider={this} editable={true}/>
         if(this.mode === 'embed-view') return <ImmersiveVREditor provider={this} editable={false}/>
+        if(this.mode === 'vrview') return <ImmersiveVREditor provider={this} editable={false}/>
         throw new Error("unknown mode " +this.mode)
     }
     getTitle = () => "VR Builder"
@@ -204,12 +205,12 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     editInVR = () => {
-        const opts = Object.assign({},this.options,{mode:'vredit'})
+        const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
         window.open(`./?${toQueryString(opts)}`)
     }
 
     viewInVR = () => {
-        const opts = Object.assign({},this.options,{mode:'vrview'})
+        const opts = Object.assign({},this.options,{mode:'vrview', switcher:false})
         window.open(`./?${toQueryString(opts)}`)
     }
 
@@ -603,7 +604,7 @@ class VREditorApp extends Component {
                 <button className="fa fa-file" onClick={() => prov.newDoc()} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editInVR()}>VR Edit</button>
-                <button disabled onClick={() => prov.viewInVR()}>VR View</button>
+                <button onClick={() => prov.viewInVR()}>VR View</button>
                 <button onClick={()=>prov.embedView()}>Embed</button>
                 <Spacer/>
                 <button className="fa fa-cut" onClick={prov.cutSelection}/>
