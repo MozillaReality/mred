@@ -144,10 +144,10 @@ export default class ImmersiveVREditor extends Component {
     performAction(action, target) {
         //old style, navigate to a scene
         if(action.type === 'scene') return this.swapScene(action.id)
-        if(action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action,target)
-        if(action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action,target)
-        if(action.subtype === ACTIONS.SCRIPT) return this.executeScriptAction(action,target)
-        if(action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
+        if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
+        if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
+        if (action.subtype === ACTIONS.SCRIPT) return this.executeScriptAction(action, target)
+        if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
     }
 
     performClickOnSelection = () => {

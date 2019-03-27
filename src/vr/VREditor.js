@@ -327,8 +327,8 @@ export default class VREditor extends  SyncGraphProvider {
     addSoundAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:'action',
-            subtype:'sound',
+            type:OBJ_TYPES.ACTION,
+            subtype:ACTIONS.SOUND,
             trigger:TRIGGERS.CLICK,
             title:'sound action',
             parent:0
@@ -339,8 +339,8 @@ export default class VREditor extends  SyncGraphProvider {
     addAnimateAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:'action',
-            subtype:'animate',
+            type:OBJ_TYPES.ACTION,
+            subtype:ACTIONS.ANIMATE,
             trigger:TRIGGERS.CLICK,
             title:'animate action',
             parent:0
@@ -351,7 +351,7 @@ export default class VREditor extends  SyncGraphProvider {
     addScriptAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:'action',
+            type:OBJ_TYPES.ACTION,
             subtype:ACTIONS.SCRIPT,
             trigger:TRIGGERS.CLICK,
             title:'script action',

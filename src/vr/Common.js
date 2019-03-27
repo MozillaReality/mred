@@ -221,6 +221,7 @@ export const OBJ_TYPES = {
     bg360:'bg360',
     text:'text',
     img2d:'img2d',
+    ACTION:'action',
 }
 
 export const HORIZONTAL_ALIGNMENT = {
