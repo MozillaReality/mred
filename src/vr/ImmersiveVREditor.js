@@ -485,8 +485,21 @@ export default class ImmersiveVREditor extends Component {
         }).start()
     }
 
+    makeScriptContext() {
+        return {
+
+        }
+    }
+
     executeScriptAction(action,obj) {
         console.log("running the script",action.scriptBody)
+        const ctx = this.makeScriptContext()
+
+        function doit(ctx) {
+            eval(action.scriptBody);
+        }
+
+        doit(ctx);
     }
 }
 
