@@ -11,6 +11,7 @@ export default class ThreeDOFController {
         this.stagePos = stagePos
         this.stageRot = stageRot
         this.states = { touchpad: false}
+        this.listeners = {}
         this.keystates = {
             ArrowLeft:{current:false, previous:false},
             ArrowRight:{current:false, previous:false},
@@ -32,6 +33,17 @@ export default class ThreeDOFController {
         })
 
     }
+
+    addEventListener(type, cb) {
+        if (!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+
+    _fire(type,payload) {
+        if (!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].forEach(cb => cb(payload))
+    }
+
 
 
 
@@ -66,10 +78,12 @@ export default class ThreeDOFController {
 
     moveForward() {
         this.stagePos.position.add(this.dir)
+        this._fire('move',this.stagePos.position)
     }
 
     moveBackward() {
         this.stagePos.position.sub(this.dir)
+        this._fire('move',this.stagePos.position)
     }
 
     update() {

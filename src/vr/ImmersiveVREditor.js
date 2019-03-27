@@ -17,7 +17,16 @@ import group2d from "./panel2d/group2d"
 import SceneDef from "./SceneDef"
 import {on} from "../utils"
 import {TweenManager} from "../common/tween"
-import {ACTIONS, get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TRIGGERS} from './Common'
+import {
+    ACTIONS,
+    get3DObjectDef,
+    is3DObjectType,
+    OBJ_TYPES,
+    SIMPLE_COLORS,
+    toRad,
+    TOTAL_OBJ_TYPES,
+    TRIGGERS
+} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 
@@ -128,6 +137,7 @@ export default class ImmersiveVREditor extends Component {
         on(this.pointer,POINTER_CLICK,()=> SelectionManager.clearSelection())
 
         this.controller = new ThreeDOFController(this.stagePos, this.stageRot)
+        on(this.controller,'move', this.standardProximityHandler)
 
         this.loadScene()
     }
@@ -157,7 +167,8 @@ export default class ImmersiveVREditor extends Component {
         if(!obj) return
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        if(!actionObj.trigger === TRIGGERS.CLICK) return
+        if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
+        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -168,7 +179,7 @@ export default class ImmersiveVREditor extends Component {
         if(!obj) return
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        if(!actionObj.trigger === TRIGGERS.PROXIMITY) return
+        if(actionObj.trigger !== TRIGGERS.PROXIMITY) return
         this.performAction(actionObj, obj)
     }
 
@@ -178,9 +189,36 @@ export default class ImmersiveVREditor extends Component {
         if(!obj) return
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        if(!actionObj.trigger === TRIGGERS.CLICK) return
+        if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
+        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
+
+    standardProximityHandler = (pos) => {
+        //JOSH: for now only do proxmity check in view mode, not edit mode
+        if(this.props.editable) return
+
+        const scene_id = Object.keys(this.sceneWrappers).find(key => this.sceneWrappers[key].visible)
+        const scene = this.sceneWrappers[scene_id]
+        // const scene = this.props.provider.accessObject(scene_id)
+        const closest = scene.children.filter(ch => {
+            const pos = this.stagePos.position.clone()
+            pos.x = -pos.x
+            pos.z = -pos.z
+            if(ch.userData.clickable && ch.position.distanceTo(pos) < 2.5) return true
+            return false
+        })
+        if(closest.length > 0) {
+            const obj = fetchGraphObject(this.props.provider.getDataGraph(),closest[0].userData.graphid)
+            if(!obj) return
+            const actionObj = this.props.provider.accessObject(obj.action)
+            if(!actionObj) return
+            if(actionObj.trigger !== TRIGGERS.PROXIMITY) return
+            this.performAction(actionObj, obj)
+        }
+
+    }
+
 
     initContent() {
         this.scene.background = new THREE.Color( 0xcccccc );
@@ -448,7 +486,7 @@ export default class ImmersiveVREditor extends Component {
     }
 
     executeScriptAction(action,obj) {
-        console.log("runing the script",action.scriptBody)
+        console.log("running the script",action.scriptBody)
     }
 }
 
