@@ -5,7 +5,7 @@ import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {BASE_URL, LOGIN_URL, SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     fetchGraphObject, insertAsFirstChild,
@@ -39,6 +39,7 @@ import GraphAccessor from "../syncgraph/GraphAccessor"
 import {MakeEmbedDialog} from './MakeEmbedDialog'
 import VREmbedViewApp from './VREmbedViewApp'
 import {toQueryString} from '../utils'
+import {OpenFileDialog} from './OpenFileDialog'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -55,6 +56,7 @@ export default class VREditor extends  SyncGraphProvider {
         throw new Error("unknown mode " +this.mode)
     }
     getTitle = () => "VR Builder"
+    getDocTitle = () => this.accessObject(this.getSceneRoot()).title
     makeEmptyRoot(doc) {
         //make root
         const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children:doc.createArray() }))
@@ -478,10 +480,58 @@ export default class VREditor extends  SyncGraphProvider {
     showAddAudioAssetDialog = () => DialogManager.show(<AddAudioAssetDialog provider={this}/>)
     showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
+    showOpenFileDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
 
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
+    }
+
+    login = () => {
+        console.log("getting",LOGIN_URL)
+        fetch(`${LOGIN_URL}`)
+            .then((res)=>res.json())
+            .then((res)=>{
+                this.win = window.open(res.url,'_blank')
+                window.addEventListener('message',this.authCallback)
+                this.win.focus()
+            })
+    }
+    authCallback = (msg) => {
+        console.log("got an event from the external window",msg)
+        console.log("origin = ", msg.origin)
+        if(!msg.origin === 'http://localhost:39176') {
+            console.log("message is not from the expected origin. what do we do?")
+        }
+        console.log("data is",msg.data.payload)
+        console.log("hello user", msg.data.payload.id)
+        console.log("your access token is",msg.data.payload.accessToken)
+        this.setUserData(msg.data.payload)
+        //close the window
+        this.win.close()
+        window.removeEventListener('message',this.authCallback)
+    }
+    setUserData(data) {
+        localStorage.setItem('access-token',data.accessToken)
+        // this.fireChange()
+    }
+    getAccessToken() {
+        return localStorage.getItem('access-token')
+    }
+    loadDocList() {
+        return fetch(`${BASE_URL}list/`,{
+            method:'GET',
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "access-key": this.getAccessToken()
+            }
+        })
+            .then(res=>res.json())
+            .then(res => {
+                console.log("got the doc list",res)
+                return res
+            })
     }
 }
 
@@ -622,7 +672,9 @@ class VREditorApp extends Component {
             <Panel scroll right><PropSheet provider={prov}/></Panel>
 
 
-            <Toolbar right top/>
+            <Toolbar right top>
+                {this.renderLoginButton(prov.getAccessToken())}
+            </Toolbar>
             <Toolbar right bottom/>
 
         </GridEditorApp>
@@ -632,6 +684,14 @@ class VREditorApp extends Component {
             return <VRCanvas provider={this.props.provider}/>
         } else {
             return <AssetView provider={this.props.provider} asset={SelectionManager.getSelection()}/>
+        }
+    }
+
+    renderLoginButton(accessToken) {
+        if(accessToken) {
+            return <button className="fa fa-folder-open" onClick={this.props.provider.showOpenFileDialog} title={"open"}></button>
+        } else {
+            return <button className="fa fa-user" onClick={() => this.props.provider.login()} title={'login'}></button>
         }
     }
 }

@@ -1,5 +1,5 @@
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import {GET_JSON, POST_JSON, setQuery} from '../utils'
+import {GET_JSON, POST_JSON, setQuery, toQueryString} from '../utils'
 import {UndoQueue} from '../metadoc/UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
@@ -23,6 +23,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.setupDocFlow(doc,this.genID('doc'))
         if(options.doc) this.loadDoc(options.doc)
     }
+    getDocTitle = () => "untitled"
     getDocHistory = () => this.getDataGraph().getHistory()
     onRawChange = cb => this.rawlisteners.push(cb)
     getRawGraph = () => this.coalescer
@@ -62,11 +63,18 @@ export default class SyncGraphProvider extends TreeItemProvider {
             history:this.getDocHistory(),
             type:this.getDocType(),
             id:this.getDocId(),
-            graph:{}
+            graph:{},
+            title:this.getDocTitle(),
         }
         const payload_string = JSON.stringify(payload_obj)
         ToasterMananager.add('saving')
-        return POST_JSON(this.SERVER_URL+this.getDocId()+'?type='+this.getDocType(),payload_string).then((res)=>{
+        const opts = {
+            type:this.getDocType(),
+            title:this.getDocTitle(),
+        }
+        const url = this.SERVER_URL+this.getDocId()+'?'+toQueryString(opts)
+        console.log("posting to url",url)
+        return POST_JSON(url,payload_string).then(res => {
             console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             ToasterMananager.add(res.message)
