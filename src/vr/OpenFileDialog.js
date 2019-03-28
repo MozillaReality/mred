@@ -35,7 +35,7 @@ export class OpenFileDialog extends Component {
                 <h3>Open document</h3>
                 <ul>{this.state.docList.map((doc, i) => {
                     return <li key={i}>
-                        {doc.doc} title = {doc.title} <button onClick={()=>this.openDoc(doc)}>open</button>
+                        <b>{doc.title}</b> <button onClick={()=>this.openDoc(doc)}>open</button>
                     </li>
                 })}
                 </ul>
