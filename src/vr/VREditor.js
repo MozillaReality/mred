@@ -40,6 +40,7 @@ import {MakeEmbedDialog} from './MakeEmbedDialog'
 import VREmbedViewApp from './VREmbedViewApp'
 import {toQueryString} from '../utils'
 import {OpenFileDialog} from './OpenFileDialog'
+import {AuthModule, USER_CHANGE} from './AuthModule'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -487,44 +488,13 @@ export default class VREditor extends  SyncGraphProvider {
         return new GraphAccessor(this.getDataGraph()).object(id)
     }
 
-    login = () => {
-        console.log("getting",LOGIN_URL)
-        fetch(`${LOGIN_URL}`)
-            .then((res)=>res.json())
-            .then((res)=>{
-                this.win = window.open(res.url,'_blank')
-                window.addEventListener('message',this.authCallback)
-                this.win.focus()
-            })
-    }
-    authCallback = (msg) => {
-        console.log("got an event from the external window",msg)
-        console.log("origin = ", msg.origin)
-        if(!msg.origin === 'http://localhost:39176') {
-            console.log("message is not from the expected origin. what do we do?")
-        }
-        console.log("data is",msg.data.payload)
-        console.log("hello user", msg.data.payload.id)
-        console.log("your access token is",msg.data.payload.accessToken)
-        this.setUserData(msg.data.payload)
-        //close the window
-        this.win.close()
-        window.removeEventListener('message',this.authCallback)
-    }
-    setUserData(data) {
-        localStorage.setItem('access-token',data.accessToken)
-        // this.fireChange()
-    }
-    getAccessToken() {
-        return localStorage.getItem('access-token')
-    }
     loadDocList() {
         return fetch(`${BASE_URL}list/`,{
             method:'GET',
             mode: "cors",
             headers: {
                 "Content-Type": "application/json",
-                "access-key": this.getAccessToken()
+                "access-key": AuthModule.getAccessToken()
             }
         })
             .then(res=>res.json())
@@ -541,7 +511,8 @@ class VREditorApp extends Component {
         super(props)
 
         this.state = {
-            mode:'canvas'
+            mode:'canvas',
+            user:null,
         }
 
         this.im = new InputManager()
@@ -575,7 +546,7 @@ class VREditorApp extends Component {
             }
             this.setState({mode:'canvas'})
         })
-
+        AuthModule.on(USER_CHANGE,()=>this.setState({user:AuthModule.getUsername()}))
     }
 
     showAddPopup = (e) => {
@@ -673,7 +644,7 @@ class VREditorApp extends Component {
 
 
             <Toolbar right top>
-                {this.renderLoginButton(prov.getAccessToken())}
+                {this.renderLoginButton()}
             </Toolbar>
             <Toolbar right bottom/>
 
@@ -687,11 +658,14 @@ class VREditorApp extends Component {
         }
     }
 
-    renderLoginButton(accessToken) {
-        if(accessToken) {
-            return <button className="fa fa-folder-open" onClick={this.props.provider.showOpenFileDialog} title={"open"}></button>
+    renderLoginButton() {
+        if(AuthModule.isLoggedIn()) {
+            return [
+                <button className="fa fa-folder-open" onClick={this.props.provider.showOpenFileDialog} title={"open"}></button>,
+                <button className="fa fa-user" onClick={AuthModule.logout}>logout</button>
+                ]
         } else {
-            return <button className="fa fa-user" onClick={() => this.props.provider.login()} title={'login'}></button>
+            return <button className="fa fa-user" onClick={AuthModule.login} title={'login'}></button>
         }
     }
 }
