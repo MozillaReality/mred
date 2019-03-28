@@ -41,6 +41,7 @@ import VREmbedViewApp from './VREmbedViewApp'
 import {toQueryString} from '../utils'
 import {OpenFileDialog} from './OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
+import {OpenAssetDialog} from './OpenAssetDialog'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -265,6 +266,7 @@ export default class VREditor extends  SyncGraphProvider {
             title:title,
             parent:0
         }))
+        console.log('adding asset',asset)
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         this.requestImageCache(url).then(img => {
             asset.set('width',img.width)
@@ -291,13 +293,18 @@ export default class VREditor extends  SyncGraphProvider {
             this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         })
     }
-    addAudioAssetFromURL = (url) => {
+
+    addAudioAssetFromURL = (url, fileType, name) => {
         //TODO: make this format detection code more robust
-        const name = url.substring(url.lastIndexOf('/')+1)
-        const type = name.substring(name.lastIndexOf(".")+1)
-        let fileType = "audio/unknown"
-        if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
-        if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
+        if(!name) {
+            name = url.substring(url.lastIndexOf('/') + 1)
+        }
+        if(!fileType) {
+            const type = name.substring(name.lastIndexOf(".") + 1)
+            fileType = "audio/unknown"
+            if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
+            if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
+        }
 
         const graph = this.getDataGraph()
         const asset = fetchGraphObject(graph,graph.createObject({
@@ -483,7 +490,8 @@ export default class VREditor extends  SyncGraphProvider {
     showAddAudioAssetDialog = () => DialogManager.show(<AddAudioAssetDialog provider={this}/>)
     showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
-    showOpenFileDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
+    showOpenDocumentDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
+    showOpenAssetDialog = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
 
 
     accessObject = (id) => {
@@ -504,6 +512,17 @@ export default class VREditor extends  SyncGraphProvider {
                 console.log("got the doc list",res)
                 return res
             })
+    }
+    loadAssetList() {
+        return fetch(`${BASE_URL}asset/list`,{
+            method:'GET',
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "access-key": AuthModule.getAccessToken()
+            }
+        })
+            .then(res=>res.json())
     }
 }
 
@@ -584,6 +603,11 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.audio,
                 fun: () => this.props.provider.showAddAudioAssetDialog()
             },
+            {
+                title: 'existing asset on server',
+                icon: ITEM_ICONS.assets,
+                fun: () => this.props.provider.showOpenAssetDialog()
+            }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
@@ -663,7 +687,7 @@ class VREditorApp extends Component {
     renderLoginButton() {
         if(AuthModule.isLoggedIn()) {
             return [
-                <button className="fa fa-folder-open" onClick={this.props.provider.showOpenFileDialog} title={"open"}></button>,
+                <button className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>,
                 <button className="fa fa-user" onClick={AuthModule.logout}>logout</button>
                 ]
         } else {

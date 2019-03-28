@@ -15,6 +15,7 @@ export class OpenFileDialog extends Component {
             .then((docs) => this.setState({docList:docs}))
     }
     openDoc(info) {
+        DialogManager.hide()
         const opts = Object.assign({},this.props.provider.options,{
             mode:'edit',
             switcher:false,
