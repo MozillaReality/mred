@@ -1,5 +1,6 @@
 import {GET_JSON, POST_JSON, setQuery} from './utils'
 import Selection from './SelectionManager'
+import {AuthModule} from './vr/AuthModule'
 
 export const TREE_ITEM_PROVIDER = {
     EXPANDED_CHANGED:'EXPANDED_CHANGED',
@@ -16,7 +17,8 @@ export const TREE_ITEM_PROVIDER = {
 // export const SERVER_URL_ASSETS = "http://localhost:30065/asset/"
 export const SERVER_URL = "http://localhost:55555/doc/"
 export const BASE_URL = "http://localhost:55555/"
-export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
+export const SERVER_URL_ASSETS = "http://localhost:55555/asset/"
+// export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
 export const LOGIN_URL = "http://localhost:55555/auth/github/login"
 
 class TreeItemProviderInterface {
@@ -219,14 +221,14 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         return new Promise((res,rej)=>{
             const fd = new FormData()
             fd.append('file',file)
-            console.info("filesize is",file.size);
+            console.info("filesize is",file.size, file.name);
             const xml = new XMLHttpRequest()
             xml.onreadystatechange = () => console.log(`ready state = ${xml.readyState} status ${xml.status}`)
             xml.addEventListener('progress',(e)=>console.log(`progress`))
-            xml.addEventListener('load',(e)=>res(xml.response))
+            xml.addEventListener('load',(e)=> res(xml.response))
             xml.addEventListener('error',(e)=>console.log(`error`))
             xml.addEventListener('abort',(e)=>console.log(`abort`))
-            const url = this.SERVER_URL_ASSETS+file.name;
+            const url = SERVER_URL_ASSETS+file.name;
             console.info("uploading to ", url)
             xml.responseType = 'json'
             xml.open('POST',url)

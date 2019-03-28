@@ -237,10 +237,11 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     addImageAssetFromFile = (file) => {
-        ToasterMananager.add('uploading')
+        ToasterMananager.add('uploading ' + file.name)
         this.uploadFile(file).then((ans)=>{
             ToasterMananager.add('uploaded')
-            return this.addImageAssetFromExpandedURL(SERVER_URL_ASSETS+ans.id, file.type, file.name)
+            if(ans.success === false) return console.log("there was an error uploading! :(")
+            return this.addImageAssetFromExpandedURL(SERVER_URL_ASSETS+ans.asset.id, ans.asset.mimeType, file.name)
         })
     }
     addImageAssetFromURL = (url) => {
@@ -253,7 +254,7 @@ export default class VREditor extends  SyncGraphProvider {
         if (type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
         return this.addImageAssetFromExpandedURL(url, fileType, name)
     }
-    addImageAssetFromExpandedURL(url,format,name) {
+    addImageAssetFromExpandedURL(url,format,title) {
         const asset = this.accessObject(this.getDataGraph().createObject({
             type:'asset',
             subtype:'image',
@@ -261,7 +262,7 @@ export default class VREditor extends  SyncGraphProvider {
             src:url,
             width:100,
             height:100,
-            title:name,
+            title:title,
             parent:0
         }))
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
@@ -276,12 +277,13 @@ export default class VREditor extends  SyncGraphProvider {
         this.uploadFile(file).then((ans)=>{
             ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
-            const url = SERVER_URL_ASSETS+ans.id
+            if(ans.success === false) return console.log("there was an error uploading! :(")
+            const url = SERVER_URL_ASSETS+ans.asset.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
                 type:'asset',
                 subtype:'audio',
-                format:file.type,
+                format:ans.asset.mimeType,
                 src:url,
                 title:file.name,
                 parent:0
