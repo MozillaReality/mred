@@ -66,7 +66,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
         }
         const payload_string = JSON.stringify(payload_obj)
         ToasterMananager.add('saving')
-        return POST_JSON(this.SERVER_URL+this.getDocId(),payload_string).then((res)=>{
+        return POST_JSON(this.SERVER_URL+this.getDocId()+'?type='+this.getDocType(),payload_string).then((res)=>{
             console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             ToasterMananager.add(res.message)
