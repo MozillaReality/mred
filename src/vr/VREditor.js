@@ -5,7 +5,7 @@ import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {BASE_URL, LOGIN_URL, SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {getAssetsURL, getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     fetchGraphObject, insertAsFirstChild,
@@ -242,7 +242,7 @@ export default class VREditor extends  SyncGraphProvider {
         this.uploadFile(file).then((ans)=>{
             ToasterMananager.add('uploaded')
             if(ans.success === false) return console.log("there was an error uploading! :(")
-            return this.addImageAssetFromExpandedURL(SERVER_URL_ASSETS+ans.asset.id, ans.asset.mimeType, file.name)
+            return this.addImageAssetFromExpandedURL(getAssetsURL()+ans.asset.id, ans.asset.mimeType, file.name)
         })
     }
     addImageAssetFromURL = (url) => {
@@ -280,7 +280,7 @@ export default class VREditor extends  SyncGraphProvider {
             ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
             if(ans.success === false) return console.log("there was an error uploading! :(")
-            const url = SERVER_URL_ASSETS+ans.asset.id
+            const url = getAssetsURL()+ans.asset.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
                 type:'asset',
@@ -322,7 +322,7 @@ export default class VREditor extends  SyncGraphProvider {
         this.uploadFile(file).then((ans)=>{
             ToasterMananager.add('uploaded')
             console.log("uploaded file with answer",ans)
-            const url = SERVER_URL_ASSETS+ans.id
+            const url = getAssetsURL()+ans.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
                 type:'asset',
@@ -499,7 +499,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     loadDocList() {
-        return fetch(`${BASE_URL}doc/list`,{
+        return fetch(`${getDocsURL()}list`,{
             method:'GET',
             mode: "cors",
             headers: {
@@ -514,7 +514,7 @@ export default class VREditor extends  SyncGraphProvider {
             })
     }
     loadAssetList() {
-        return fetch(`${BASE_URL}asset/list`,{
+        return fetch(`${getAssetsURL()}list`,{
             method:'GET',
             mode: "cors",
             headers: {

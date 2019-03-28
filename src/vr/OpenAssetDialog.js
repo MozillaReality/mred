@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {ToggleButton, Toolbar} from '../GridEditorApp'
 import {toQueryString} from '../utils'
-import {SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {getAssetsURL, SERVER_URL_ASSETS} from '../TreeItemProvider'
 import {isAudioType, isImageType} from './Common'
 
 export class OpenAssetDialog extends Component {
@@ -20,11 +20,11 @@ export class OpenAssetDialog extends Component {
         DialogManager.hide()
         console.log("adding info",info)
         if(isImageType(info.mimeType)) {
-            const url = `${SERVER_URL_ASSETS}${info.id}`
+            const url = `${getAssetsURL()}${info.id}`
             return this.props.provider.addImageAssetFromExpandedURL(url,info.mimeType, info.title)
         }
         if(isAudioType(info.mimeType)) {
-            const url = `${SERVER_URL_ASSETS}${info.id}`
+            const url = `${getAssetsURL()}${info.id}`
             return this.props.provider.addAudioAssetFromURL(url, info.mimeType, info.title)
         }
         console.log("can't add this type")

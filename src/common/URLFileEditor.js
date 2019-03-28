@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {getAssetsURL, SERVER_URL_ASSETS} from '../TreeItemProvider'
 import selMan from '../SelectionManager'
 
 export default class URLFileEditor extends Component {
@@ -29,7 +29,7 @@ export default class URLFileEditor extends Component {
         fr.readAsDataURL(e.target.files[0])
         this.props.provider.uploadFile(e.target.files[0]).then((ans)=>{
             console.log("got back the asnwer",ans)
-            const url = SERVER_URL_ASSETS+ans.id
+            const url = getAssetsURL()+ans.id
             this.props.provider.setPropertyValue(this.props.item,this.props.def,url)
             this.setState({text:url})
         })

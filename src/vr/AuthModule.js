@@ -1,4 +1,5 @@
-import {LOGIN_URL} from '../TreeItemProvider'
+import {} from '../TreeItemProvider'
+import {getLoginURL} from '../TreeItemProvider'
 
 export const USER_CHANGE = 'USER_CHANGE'
 class AuthModuleSingleton {
@@ -20,8 +21,8 @@ class AuthModuleSingleton {
     }
 
     login = () => {
-        console.log("getting",LOGIN_URL)
-        fetch(`${LOGIN_URL}`)
+        console.log("getting",getLoginURL())
+        fetch(`${getLoginURL()}`)
             .then((res)=>res.json())
             .then((res)=>{
                 this.win = window.open(res.url,'_blank')

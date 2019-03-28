@@ -13,13 +13,30 @@ export const TREE_ITEM_PROVIDER = {
     DOCUMENT_SWAPPED:'DOCUMENT_SWAPPED',
 }
 
+const URLS = {
+    BASE:'https://vr.josh.earth/generaled/api/'
+}
+export function getDocsURL() {
+    return URLS.BASE + 'doc/'
+}
+export function getAssetsURL() {
+    return URLS.BASE + 'asset/'
+}
+export function getLoginURL() {
+    return URLS.BASE + 'auth/github/login'
+}
+
 // export const SERVER_URL = "http://localhost:30065/doc/"
 // export const SERVER_URL_ASSETS = "http://localhost:30065/asset/"
-export const SERVER_URL = "http://localhost:55555/doc/"
-export const BASE_URL = "http://localhost:55555/"
-export const SERVER_URL_ASSETS = "http://localhost:55555/asset/"
+// export const SERVER_URL = "http://localhost:55555/doc/"
+// export const SERVER_URL = "https://vr.josh.earth/generaled/api/doc/"
+// export const BASE_URL = "http://localhost:55555/"
+// export const BASE_URL = "https://vr.josh.earth:55555/"
+// export const SERVER_URL_ASSETS = "http://localhost:55555/asset/"
+// export const SERVER_URL_ASSETS = "https://vr.josh.earth/generaled/api/asset/"
 // export const SERVER_URL_ASSETS = "http://josh.earth:30068/asset/"
-export const LOGIN_URL = "http://localhost:55555/auth/github/login"
+// export const LOGIN_URL = "http://localhost:55555/auth/github/login"
+// export const LOGIN_URL = "https://vr.josh.earth/generaled/api/auth/github/login"
 
 class TreeItemProviderInterface {
     /** register a listener */
@@ -102,11 +119,11 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
-        this.SERVER_URL = SERVER_URL
+        // URLS.BASE = SERVER_URL
         if(options.SERVER_URL) {
-            this.SERVER_URL = `https://${options.SERVER_URL}/doc/`
+            URLS.SERVER_URL = `https://${options.SERVER_URL}/doc/`
         }
-        console.log("using server",this.SERVER_URL)
+        console.log("using server",URLS.SERVER_URL)
     }
 
     on(type, cb) {
@@ -167,7 +184,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             return value
         })
         console.info("doc is",payload_string)
-        return POST_JSON(this.SERVER_URL+this.docid,payload_string).then((res)=>{
+        return POST_JSON(getDocsURL()+this.docid,payload_string).then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
@@ -175,7 +192,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
     loadDoc(docid) {
         console.log("need to load the doc",docid)
-        GET_JSON(this.SERVER_URL+docid).then((payload)=>{
+        GET_JSON(getDocsURL()+docid).then((payload)=>{
             console.log("got the doc",payload)
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
@@ -188,7 +205,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     reloadDocument() {
         const spath = this.generateSelectionPath(Selection.getSelection());
         console.log("got the path",spath)
-        GET_JSON(this.SERVER_URL+this.docid).then((payload)=>{
+        GET_JSON(getDocsURL()+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)
@@ -228,7 +245,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             xml.addEventListener('load',(e)=> res(xml.response))
             xml.addEventListener('error',(e)=>console.log(`error`))
             xml.addEventListener('abort',(e)=>console.log(`abort`))
-            const url = SERVER_URL_ASSETS+file.name;
+            const url = getAssetsURL()+file.name;
             console.info("uploading to ", url)
             xml.responseType = 'json'
             xml.open('POST',url)

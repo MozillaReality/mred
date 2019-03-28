@@ -1,4 +1,4 @@
-import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import TreeItemProvider, {getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {GET_JSON, POST_JSON, setQuery, toQueryString} from '../utils'
 import {UndoQueue} from '../metadoc/UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
@@ -72,7 +72,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
             type:this.getDocType(),
             title:this.getDocTitle(),
         }
-        const url = this.SERVER_URL+this.getDocId()+'?'+toQueryString(opts)
+        const url = getDocsURL()+this.getDocId()+'?'+toQueryString(opts)
         console.log("posting to url",url)
         return POST_JSON(url,payload_string).then(res => {
             console.log("got back result",res)
@@ -84,7 +84,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     loadDoc(docid) {
         console.log("loading")
-        return GET_JSON(this.SERVER_URL+docid).then((payload)=>{
+        return GET_JSON(getDocsURL()+docid).then((payload)=>{
             console.log("got the payload",payload)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,docid)
@@ -128,7 +128,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     reloadDocument() {
-        return GET_JSON(this.SERVER_URL+this.docid).then((payload)=>{
+        return GET_JSON(getDocsURL()+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)

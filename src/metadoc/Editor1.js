@@ -15,7 +15,7 @@ import {
 } from "../syncgraph/utils";
 import {DialogManager, HBox, PopupManager} from "appy-comps";
 import InputManager from "../common/InputManager";
-import {SERVER_URL_ASSETS, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {getAssetsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {
     HORIZONTAL_ALIGNMENT,
     ICONS,
@@ -316,7 +316,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
     addImageAssetFromFile = (file) => {
         this.uploadFile(file).then((ans)=>{
             console.log("uploaded file with answer",ans)
-            const url = SERVER_URL_ASSETS+ans.id
+            const url = getAssetsURL()+ans.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
                 type:'asset',
