@@ -121,9 +121,9 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
         this.docid = null
         // URLS.BASE = SERVER_URL
         if(options.SERVER_URL) {
-            URLS.SERVER_URL = `https://${options.SERVER_URL}/doc/`
+            URLS.BASE = `https://${options.SERVER_URL}/`
         }
-        console.log("using server",URLS.SERVER_URL)
+        console.log("using server",URLS.BASE)
     }
 
     on(type, cb) {

@@ -687,8 +687,8 @@ class VREditorApp extends Component {
     renderLoginButton() {
         if(AuthModule.isLoggedIn()) {
             return [
-                <button className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>,
-                <button className="fa fa-user" onClick={AuthModule.logout}>logout</button>
+                <button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>,
+                <button key="logout" className="fa fa-user" onClick={AuthModule.logout}>logout</button>
                 ]
         } else {
             return <button className="fa fa-user" onClick={AuthModule.login} title={'login'}></button>
