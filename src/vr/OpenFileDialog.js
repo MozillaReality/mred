@@ -18,7 +18,7 @@ export class OpenFileDialog extends Component {
         const opts = Object.assign({},this.props.provider.options,{
             mode:'edit',
             switcher:false,
-            doc:info.doc
+            doc:info.id
         })
         window.open(`./?${toQueryString(opts)}`)
     }

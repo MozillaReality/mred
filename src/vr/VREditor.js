@@ -491,7 +491,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     loadDocList() {
-        return fetch(`${BASE_URL}list/`,{
+        return fetch(`${BASE_URL}doc/list`,{
             method:'GET',
             mode: "cors",
             headers: {
