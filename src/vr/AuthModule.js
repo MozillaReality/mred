@@ -1,10 +1,14 @@
 import {} from '../TreeItemProvider'
 import {getLoginURL} from '../TreeItemProvider'
+import {getInfoURL} from '../TreeItemProvider'
 
 export const USER_CHANGE = 'USER_CHANGE'
 class AuthModuleSingleton {
     constructor() {
         this.listeners = {}
+        this.supported = false
+        this.doclistSupported = false
+        this.assetUploadSupported = false
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -15,9 +19,34 @@ class AuthModuleSingleton {
         this.listeners[type].forEach(cb => cb(payload))
     }
 
+    init() {
+        if(this.isLoggedIn()) this.doclistSupported = true
+        fetch(getInfoURL()).then(res => res.json())
+            .then(info => {
+                console.log("got the info",info)
+                if(info.authentication === true) {
+                    this.supported = true
+                }
+                if(info.assetUpload === true) {
+                    this.assetUploadSupported = true
+                }
+
+                this.fire(USER_CHANGE)
+            })
+    }
+
     isLoggedIn() {
         if(localStorage.getItem('access-token')) return true
         return false
+    }
+    supportsAuth() {
+        return this.supported
+    }
+    supportsDocList() {
+        return this.doclistSupported
+    }
+    supportsAssetUpload() {
+        return this.assetUploadSupported
     }
 
     login = () => {
@@ -32,6 +61,7 @@ class AuthModuleSingleton {
     }
     logout = () => {
         localStorage.clear()
+        this.doclistSupported = false
         this.fire(USER_CHANGE)
     }
     authCallback = (msg) => {
@@ -47,6 +77,7 @@ class AuthModuleSingleton {
         //close the window
         this.win.close()
         window.removeEventListener('message',this.authCallback)
+        this.doclistSupported = true
         this.fire(USER_CHANGE)
     }
     setUserData(data) {
@@ -59,6 +90,7 @@ class AuthModuleSingleton {
     getUsername() {
         return this.getAccessToken()
     }
+
 }
 
 export const AuthModule = new AuthModuleSingleton()

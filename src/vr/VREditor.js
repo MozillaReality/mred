@@ -499,7 +499,9 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     loadDocList() {
-        return fetch(`${getDocsURL()}list`,{
+        const url = `${getDocsURL()}list`
+        console.log("loadin hte url",url)
+        return fetch(url,{
             method:'GET',
             mode: "cors",
             headers: {
@@ -581,8 +583,10 @@ class VREditorApp extends Component {
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
     showAddAssetPopup = (e) => {
-        const acts = [
-            {
+        let acts = []
+        console.log("Auth mod",AuthModule.supportsAssetUpload())
+        if(AuthModule.supportsAssetUpload()) {
+            acts = acts.concat([{
                 title: 'image',
                 icon: ITEM_ICONS.image,
                 fun: () => this.props.provider.showAddImageAssetDialog()
@@ -592,7 +596,7 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
             },
-            { divider:true },
+            {divider: true},
             {
                 title: 'GLB model',
                 icon: ITEM_ICONS.model,
@@ -602,13 +606,15 @@ class VREditorApp extends Component {
                 title: 'audio file',
                 icon: ITEM_ICONS.audio,
                 fun: () => this.props.provider.showAddAudioAssetDialog()
-            },
-            {
-                title: 'existing asset on server',
-                icon: ITEM_ICONS.assets,
-                fun: () => this.props.provider.showOpenAssetDialog()
-            }
-        ]
+            }])
+        }
+
+        acts.push({
+            title: 'existing asset on server',
+            icon: ITEM_ICONS.assets,
+            fun: () => this.props.provider.showOpenAssetDialog()
+        })
+
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
 
@@ -685,14 +691,19 @@ class VREditorApp extends Component {
     }
 
     renderLoginButton() {
-        if(AuthModule.isLoggedIn()) {
-            return [
-                <button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>,
-                <button key="logout" className="fa fa-user" onClick={AuthModule.logout}>logout</button>
-                ]
-        } else {
-            return <button className="fa fa-user" onClick={AuthModule.login} title={'login'}></button>
+        const buttons = []
+
+        if(AuthModule.supportsAuth()) {
+            if(AuthModule.isLoggedIn()) {
+                buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout}>logout</button>)
+            } else {
+                buttons.push(<button key="login" className="fa fa-user" onClick={AuthModule.login} title={'login'}></button>)
+            }
         }
+        if(AuthModule.supportsDocList()) {
+            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>)
+        }
+        return buttons
     }
 }
 const EnumTitleRenderer = (props) => {

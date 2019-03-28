@@ -20,12 +20,12 @@ export class OpenAssetDialog extends Component {
         DialogManager.hide()
         console.log("adding info",info)
         if(isImageType(info.mimeType)) {
-            const url = `${getAssetsURL()}${info.id}`
-            return this.props.provider.addImageAssetFromExpandedURL(url,info.mimeType, info.title)
+            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
+            return this.props.provider.addImageAssetFromExpandedURL(info.url,info.mimeType, info.title)
         }
         if(isAudioType(info.mimeType)) {
-            const url = `${getAssetsURL()}${info.id}`
-            return this.props.provider.addAudioAssetFromURL(url, info.mimeType, info.title)
+            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
+            return this.props.provider.addAudioAssetFromURL(info.url, info.mimeType, info.title)
         }
         console.log("can't add this type")
     }
@@ -42,7 +42,6 @@ export class OpenAssetDialog extends Component {
                 <h3>Add Asset</h3>
                 <VBox scroll>
                 <ul>{this.state.assetList.map((doc, i) => {
-                    console.log("asset is",doc)
                     return <li key={i}>
                         <b>{doc.mimeType}</b> -
                         <b>{doc.title}</b>

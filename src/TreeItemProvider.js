@@ -25,6 +25,9 @@ export function getAssetsURL() {
 export function getLoginURL() {
     return URLS.BASE + 'auth/github/login'
 }
+export function getInfoURL() {
+    return URLS.BASE +'info'
+}
 
 // export const SERVER_URL = "http://localhost:30065/doc/"
 // export const SERVER_URL_ASSETS = "http://localhost:30065/asset/"
@@ -124,6 +127,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             URLS.BASE = `https://${options.SERVER_URL}/`
         }
         console.log("using server",URLS.BASE)
+        AuthModule.init()
     }
 
     on(type, cb) {
