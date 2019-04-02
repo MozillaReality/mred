@@ -140,6 +140,7 @@ export default class ImmersiveVREditor extends Component {
         if(!this.PASSHTHROUGH) {
             this.renderer.setAnimationLoop(this.render3.bind(this))
         } else {
+            console.log("************** Pass through Mode ************** ")
             // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
             this.xr = new XRSupport({
                 camera:this.camera,

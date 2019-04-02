@@ -124,10 +124,6 @@ export default class XRSupport {
 	_handleFrame(frame){
 		const nextFrameRequest = this.session.requestFrame(this._boundHandleFrame)
 
-		if(!this.updateScene) {
-			return
-		}
-
 		// a clock
 		if(!this.clock) this.clock = new THREE.Clock()
         let time = this.clock.getElapsedTime()

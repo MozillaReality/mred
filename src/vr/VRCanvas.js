@@ -8,6 +8,8 @@ import SceneDef from "./SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 
+import XRSupport from './XRSupport.js'
+
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
@@ -15,6 +17,7 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 export class VRCanvas extends Component {
     constructor(props) {
         super(props)
+        this.PASSTHROUGH = 1
         console.info("CREATED VR Canvas")
         this.obj_node_map = {}
         this.scenes = []
@@ -26,9 +29,12 @@ export class VRCanvas extends Component {
     componentDidMount() {
         const canvas = this.canvas
 
+console.log("************ mount")
+this.PASSTHROUGH = 1
+
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
-        this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
+        this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, alpha: this.PASSTHROUGH });
         // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
@@ -69,7 +75,28 @@ export class VRCanvas extends Component {
 
         this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
 
-        this.renderer.setAnimationLoop(() => this.renderer.render(this.scene, this.camera))
+        this.renderScene = function() {
+            this.renderer.render(this.scene, this.camera)
+        }
+
+        if(!this.PASSTHROUGH) {
+            this.renderer.setAnimationLoop(this.renderScene.bind(this))
+        } else {
+            console.log("************** Pass through Mode ************** ")
+
+            // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
+            this.xr = new XRSupport({
+                camera:this.camera,
+                renderer:this.renderer,
+                updateScene:0,
+                renderScene:this.renderScene.bind(this),
+                createVirtualReality:false,
+                shouldStartPresenting:true,
+                useComputervision:false,
+                worldSensing:true,
+                alignEUS:true
+            })
+        }
 
         this.props.provider.onRawChange(op => this.updateScene(op))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, () => {
