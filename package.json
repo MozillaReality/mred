@@ -17,7 +17,8 @@
     "syncing_protocol": "0.0.8",
     "three": "^0.100.0",
     "three-gltf2-loader": "^1.2.0",
-    "webxr-boilerplate": "^0.1.2"
+    "webxr-boilerplate": "^0.1.2",
+    "webxr-polyfill": "^1.0.13"
   },
   "scripts": {
     "start": "react-scripts start",

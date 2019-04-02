@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 
+import XRSupport from "./XRSupport.js"
+
 import './VREditor.css'
 // for pointer (mouse, controller, touch) support
 import {Pointer, POINTER_CLICK, POINTER_MOVE} from 'webxr-boilerplate/pointer'
@@ -60,11 +62,28 @@ export default class ImmersiveVREditor extends Component {
         </div>
     }
 
+    // 
 
     componentDidMount() {
         this.sceneWrappers = {}
         this.initScene()
-        this.renderer.setAnimationLoop(this.render3.bind(this))
+
+        // this.renderer.setAnimationLoop(this.render3.bind(this))
+        // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
+        this.xr = new XRSupport({
+            glContext:this.renderer.glContext,
+            renderer:this.renderer,
+            composer:0,
+            scene:this.scene,
+            camera:this.camera,
+            updateScene:this.render3.bind(this),
+            createVirtualReality:false,
+            shouldStartPresenting:true,
+            useComputervision:false,
+            worldSensing:true,
+            alignEUS:true
+        })
+
     }
 
     render3(time) {
@@ -73,7 +92,7 @@ export default class ImmersiveVREditor extends Component {
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
-        this.renderer.render( this.scene, this.camera );
+        //this.renderer.render( this.scene, this.camera );
     }
 
     initScene() {
