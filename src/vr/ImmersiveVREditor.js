@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 
-import XRSupport from "./XRSupport.js"
+import XRSupport from './XRSupport.js'
 
 import './VREditor.css'
 // for pointer (mouse, controller, touch) support
@@ -39,6 +39,7 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
+        this.PASSTHROUGH = 1
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -62,37 +63,11 @@ export default class ImmersiveVREditor extends Component {
         </div>
     }
 
-    // 
+    ///// > a comment to breakup editor syntax highlighting bug in sublime
 
     componentDidMount() {
         this.sceneWrappers = {}
         this.initScene()
-
-        // this.renderer.setAnimationLoop(this.render3.bind(this))
-        // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
-        this.xr = new XRSupport({
-            glContext:this.renderer.glContext,
-            renderer:this.renderer,
-            composer:0,
-            scene:this.scene,
-            camera:this.camera,
-            updateScene:this.render3.bind(this),
-            createVirtualReality:false,
-            shouldStartPresenting:true,
-            useComputervision:false,
-            worldSensing:true,
-            alignEUS:true
-        })
-
-    }
-
-    render3(time) {
-        //update the pointer and stats, if configured
-        if(this.tweenManager) this.tweenManager.update(time)
-        if(this.pointer) this.pointer.tick(time)
-        if(this.stats) this.stats.update(time)
-        if(this.controller) this.controller.update(time)
-        //this.renderer.render( this.scene, this.camera );
     }
 
     initScene() {
@@ -108,7 +83,7 @@ export default class ImmersiveVREditor extends Component {
         this.stagePos = new THREE.Group()
         this.stageRot.add(this.stagePos)
         this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        this.renderer = new THREE.WebGLRenderer( { antialias: true, alpha: this.PASSTHROUGH } );
         const renderer = this.renderer
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -159,6 +134,43 @@ export default class ImmersiveVREditor extends Component {
         on(this.controller,'move', this.standardProximityHandler)
 
         this.loadScene()
+
+        // Setup refresh based on if using a pass through xr vision mode
+
+        if(!this.PASSHTHROUGH) {
+            this.renderer.setAnimationLoop(this.render3.bind(this))
+        } else {
+            // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
+            this.xr = new XRSupport({
+                camera:this.camera,
+                renderer:this.renderer,
+                updateScene:this.updateScene.bind(this),
+                renderScene:this.renderScene.bind(this),
+                createVirtualReality:false,
+                shouldStartPresenting:true,
+                useComputervision:false,
+                worldSensing:true,
+                alignEUS:true
+            })
+        }
+
+    }
+
+    updateScene(time) {
+        //update the pointer and stats, if configured
+        if(this.tweenManager) this.tweenManager.update(time)
+        if(this.pointer) this.pointer.tick(time)
+        if(this.stats) this.stats.update(time)
+        if(this.controller) this.controller.update(time)
+    }
+
+    renderScene() {
+        this.renderer.render( this.scene, this.camera )
+    }
+
+    render3() {
+        this.updateScene()
+        this.renderScene()
     }
 
     selectionChanged() {
@@ -521,5 +533,4 @@ export default class ImmersiveVREditor extends Component {
         doit(ctx);
     }
 }
-
 

@@ -1,16 +1,8 @@
 
+
 import * as THREE from 'three'
 import WebXRPolyfill from 'webxr-polyfill'
-
 const polyfill = new WebXRPolyfill();
-
-console.log("*******************************")
-console.log(polyfill)
-console.log(window.XRSession)
-console.log(polyfill.global)
-console.log(polyfill.global.XRSession)
-
-
 let XRSession = window.XRSession || polyfill.global.XRSession
 let XRWebGLLayer = window.XRWebGLLayer || polyfill.global.XRWebGLLayer
 
@@ -26,18 +18,19 @@ export default class XRSupport {
 
 	constructor(args) {
 
+		// caller must provide some parameters
+		this.camera = args.camera
+		this.canvas = args.canvas ? args.canvas : args.renderer.domElement
+		this.context = args.context ? args.context : args.renderer.getContext()
+		this.renderer = args.renderer
+		this.updateScene = args.updateScene || 0
+		this.renderScene = args.renderScene || 0
+
+		// avoid clearing color and depth since both are apparently over-written by the xr pass through camera
+		this.renderer.autoClear = false
+
 		// caller may provide a message handler for some convenience messages
 		this.showMessage = args.showMessage || this.defaultShowMessage
-
-		// caller must provide scene information
-		this.glContext = args.glContext
-		this.scene = args.scene
-		this.camera = args.camera
-		this.renderer = args.renderer
-		this.composer = args.composer
-
-		// caller may provide a method to update their scene every frame
-		this.updateScene = args.updateScene
 
 		// Set during the XR.getDisplays call below
 		this.displays = null
@@ -122,7 +115,7 @@ export default class XRSupport {
 		}
 
 		// Set the session's base layer into which the app will render
-		this.session.baseLayer = new XRWebGLLayer(this.session, this.glContext)
+		this.session.baseLayer = new XRWebGLLayer(this.session, this.context)
 
 		// kickstart updates
 		this.session.requestFrame(this._boundHandleFrame)
@@ -140,7 +133,7 @@ export default class XRSupport {
         let time = this.clock.getElapsedTime()
 
 		// callback to update the 3js scenegraph
-		this.updateScene(time,this.session,frame)
+		if(this.updateScene) this.updateScene(time,this.session,frame)
 
 		let width = this.session.baseLayer.framebufferWidth || window.innerWidth
 		let height = this.session.baseLayer.framebufferHeight || window.innerHeight
@@ -167,11 +160,7 @@ export default class XRSupport {
 			this.renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
 			// paint
-			if(this.composer) {
-				this.composer.render(this.scene, this.camera)
-			} else {
-				this.renderer.render(this.scene, this.camera)
-			}
+			if(this.renderScene) this.renderScene()
 		}
 	}
 
