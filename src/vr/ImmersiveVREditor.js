@@ -39,7 +39,7 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        this.PASSTHROUGH = 1
+        this.PASSTHROUGH = XRSupport.supportsARKit()
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {

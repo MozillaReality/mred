@@ -17,7 +17,7 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 export class VRCanvas extends Component {
     constructor(props) {
         super(props)
-        this.PASSTHROUGH = 1
+        this.PASSTHROUGH = XRSupport.supportsARKit()
         console.info("CREATED VR Canvas")
         this.obj_node_map = {}
         this.scenes = []

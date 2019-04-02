@@ -16,6 +16,11 @@ let XRWebGLLayer = window.XRWebGLLayer || polyfill.global.XRWebGLLayer
 
 export default class XRSupport {
 
+	static supportsARKit() {
+		console.log(window.webkit)
+		return typeof window.webkit !== 'undefined'
+	}
+
 	constructor(args) {
 
 		// caller must provide some parameters
@@ -89,11 +94,6 @@ export default class XRSupport {
 			this.session = session
 			this.session.depthNear = 0.1
 			this.session.depthFar = 1000.0
-
-			if(!this.display._arKitWrapper) {
-			  this.popupWarning()
-			  return
-			}
 
 			if(args.shouldStartPresenting) {
 				// VR Displays need startPresenting called due to input events like a click
@@ -175,21 +175,6 @@ export default class XRSupport {
 		let div = document.createElement('div')
 		div.innerHTML = messageText
 		message.appendChild(div)
-	}
-
-	///
-	/// helper
-	///
-	popupWarning() {
-	  let url = "https://itunes.apple.com/us/app/webxr-viewer/id1295998056?mt=8"
-	  document.body.innerHTML =
-	    `<br/><br/><center>
-	     <div style="color:white;width:80%;background:#400;border:3px solid red">
-	     Please use the WebXR iOS browser to experience this app.
-	     <br/><br/>
-	     <a href="https://itunes.apple.com/us/app/webxr-viewer/id1295998056?mt=8">
-	     https://itunes.apple.com/us/app/webxr-viewer/id1295998056?mt=8</a></div>
-	   `
 	}
 
 }
