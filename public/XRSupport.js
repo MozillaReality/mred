@@ -1,10 +1,7 @@
 
 
-import * as THREE from 'three'
-import WebXRPolyfill from 'webxr-polyfill'
-const polyfill = new WebXRPolyfill();
-let XRSession = window.XRSession || polyfill.global.XRSession
-let XRWebGLLayer = window.XRWebGLLayer || polyfill.global.XRWebGLLayer
+//import * as THREE from 'three'
+//import WebXRPolyfill from 'webxr-polyfill'
 
 ///
 /// XR Support
@@ -14,7 +11,11 @@ let XRWebGLLayer = window.XRWebGLLayer || polyfill.global.XRWebGLLayer
 ///
 ///
 
-export default class XRSupport {
+let XR = navigator.XR || 0
+let XRSession = window.XRSession || 0
+let THREE = window.THREE || 0
+
+class XRSupport {
 
 	static supportsARKit() {
 		console.log(window.webkit)
@@ -22,6 +23,9 @@ export default class XRSupport {
 	}
 
 	constructor(args) {
+
+if(!XR) console.error("xr missing")
+if(!XRSession) console.error("session missing")
 
 		// caller must provide some parameters
 		this.camera = args.camera
@@ -48,7 +52,10 @@ export default class XRSupport {
 		this._boundHandleFrame = this._handleFrame.bind(this)
 
 		// WebXR present at all?
-		if(typeof navigator.XR === 'undefined'){
+		if(!XR || !XR.getDisplays) {
+
+  console.error("********** FAILED TO BE ABLE TO FIND ANYTHING USEFUL ")
+
 			this.showMessage('No WebXR API found, usually because the WebXR polyfill has not loaded')
 			return
 		}
@@ -59,6 +66,7 @@ export default class XRSupport {
 				this.showMessage('No displays are available')
 				return
 			}
+			console.log("************* Making XR Displays *********************")
 			this.displays = displays
 			this._startSession(args)
 		}).catch(err => {
@@ -69,6 +77,8 @@ export default class XRSupport {
 	}
 
 	_startSession(args){
+
+		console.log("**************** Starting XR Session ********************* ")
 
 		let sessionInitParameters = {
 			exclusive: args.createVirtualReality,
@@ -96,6 +106,9 @@ export default class XRSupport {
 			this.session.depthFar = 1000.0
 
 			if(args.shouldStartPresenting) {
+
+console.log("*************** starting presenting ***************** ")
+
 				// VR Displays need startPresenting called due to input events like a click
 				this.startPresenting()
 			}
@@ -124,9 +137,14 @@ export default class XRSupport {
 	_handleFrame(frame){
 		const nextFrameRequest = this.session.requestFrame(this._boundHandleFrame)
 
+if(this.counter < 10) {
+	this.counter++
+	console.log("******************* rendering *****************")
+}
 		// a clock
-		if(!this.clock) this.clock = new THREE.Clock()
-        let time = this.clock.getElapsedTime()
+	//	if(!this.clock) this.clock = new THREE.Clock()
+//        let time = this.clock.getElapsedTime()
+		let time = this.time ? this.time + 0.001 : 0.001
 
 		// callback to update the 3js scenegraph
 		if(this.updateScene) this.updateScene(time,this.session,frame)

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 
-import XRSupport from './XRSupport.js'
+//import XRSupport from './XRSupport.js'
 
 import './VREditor.css'
 // for pointer (mouse, controller, touch) support
@@ -34,12 +34,11 @@ import ThreeDOFController from "./3dof.js"
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
-
 export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        this.PASSTHROUGH = XRSupport.supportsARKit()
+        //this.PASSTHROUGH = XRSupport.supportsARKit()
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -83,7 +82,7 @@ export default class ImmersiveVREditor extends Component {
         this.stagePos = new THREE.Group()
         this.stageRot.add(this.stagePos)
         this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
-        this.renderer = new THREE.WebGLRenderer( { antialias: true, alpha: this.PASSTHROUGH } );
+        this.renderer = new THREE.WebGLRenderer( { antialias: true, alpha: this.PASSTHROUGH ? true : false } );
         const renderer = this.renderer
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -137,9 +136,10 @@ export default class ImmersiveVREditor extends Component {
 
         // Setup refresh based on if using a pass through xr vision mode
 
-        if(!this.PASSHTHROUGH) {
+        if(!this.PASSTHROUGH) {
             this.renderer.setAnimationLoop(this.render3.bind(this))
         } else {
+/*
             console.log("************** Pass through Mode ************** ")
             // attach xr support for pass through xr and arkit support - which will then take over the camera and render loop
             this.xr = new XRSupport({
@@ -153,6 +153,7 @@ export default class ImmersiveVREditor extends Component {
                 worldSensing:true,
                 alignEUS:true
             })
+  */
         }
 
     }

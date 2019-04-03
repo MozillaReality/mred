@@ -8,11 +8,14 @@ import SceneDef from "./SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 
-import XRSupport from './XRSupport.js'
+//import XRSupport from './XRSupport.js'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
-
+let XRSupport = window.XRSupport
+if(!XRSupport) {
+    console.error("************* xrsupport not found")
+}
 
 export class VRCanvas extends Component {
     constructor(props) {
@@ -29,17 +32,17 @@ export class VRCanvas extends Component {
     componentDidMount() {
         const canvas = this.canvas
 
-console.log("************ mount")
-this.PASSTHROUGH = 1
-
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
-        this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, alpha: this.PASSTHROUGH });
+        this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, alpha: this.PASSTHROUGH ? true : false })
         // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
 
-        this.scene.background = new THREE.Color(0xff00ff);
+        if(!this.PASSTHROUGH) {
+            this.scene.background = new THREE.Color(0xff00ff)
+        }
+
         this.camera.position.y = 1.5
         this.camera.position.x = 0
         this.camera.position.z = 0
@@ -74,10 +77,6 @@ this.PASSTHROUGH = 1
         this.scene.add(light);
 
         this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
-
-        this.renderScene = function() {
-            this.renderer.render(this.scene, this.camera)
-        }
 
         if(!this.PASSTHROUGH) {
             this.renderer.setAnimationLoop(this.renderScene.bind(this))
@@ -150,6 +149,10 @@ this.PASSTHROUGH = 1
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
         return this.obj_node_map[id]
+    }
+
+    renderScene() {
+        this.renderer.render(this.scene, this.camera)
     }
 
     updateScene(op) {
