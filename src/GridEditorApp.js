@@ -13,7 +13,7 @@ const GridLayout = (props) => {
     [right-resize] 2px
     [right] ${props.rightWidth}px
     `
-    const style = {gridTemplateColumns:cols}
+    const style = {}//gridTemplateColumns:cols}
     return <div className={clss} style={style}>{props.children}</div>
 };
 

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
 
-//import XRSupport from './XRSupport.js'
+// import XRSupport from './XRSupport.js'
 
 import './VREditor.css'
 // for pointer (mouse, controller, touch) support
@@ -38,7 +38,7 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        //this.PASSTHROUGH = XRSupport.supportsARKit()
+        // this.PASSTHROUGH = XRSupport.supportsARKit()
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -135,7 +135,6 @@ export default class ImmersiveVREditor extends Component {
         this.loadScene()
 
         // Setup refresh based on if using a pass through xr vision mode
-
         if(!this.PASSTHROUGH) {
             this.renderer.setAnimationLoop(this.render3.bind(this))
         } else {
