@@ -20,7 +20,7 @@ if(!XRSupport) {
 export class VRCanvas extends Component {
     constructor(props) {
         super(props)
-        this.PASSTHROUGH = XRSupport.supportsARKit()
+        this.PASSTHROUGH = XRSupport && XRSupport.supportsARKit()
         console.info("CREATED VR Canvas")
         this.obj_node_map = {}
         this.scenes = []

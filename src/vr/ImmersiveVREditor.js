@@ -197,11 +197,9 @@ export default class ImmersiveVREditor extends Component {
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        const trigger = this.props.provider.accessObject(obj.trigger)
-        if(!trigger) return
-        if(trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
         this.performAction(actionObj, obj)
     }
@@ -211,9 +209,9 @@ export default class ImmersiveVREditor extends Component {
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.PROXIMITY) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        if(actionObj.trigger !== TRIGGERS.PROXIMITY) return
         this.performAction(actionObj, obj)
     }
 
@@ -221,10 +219,10 @@ export default class ImmersiveVREditor extends Component {
         const id = e.target.userData.graphid
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
         if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -526,11 +524,21 @@ export default class ImmersiveVREditor extends Component {
     }
 
     executeScriptAction(action,obj) {
-        console.log("running the script",action.scriptBody)
+        const type = obj.trigger
+        const evt = {
+            type:type,
+        }
+        const txt = `${action.scriptBody}
+            new MyScript()
+        `;
+        console.log("running the script",txt)
         const ctx = this.makeScriptContext()
 
         function doit(ctx) {
-            eval(action.scriptBody);
+            const obj = eval(txt);
+            console.log("returned",obj)
+            obj.handle(evt)
+
         }
 
         doit(ctx);
