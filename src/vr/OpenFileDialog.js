@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {ToggleButton, Toolbar} from '../GridEditorApp'
 import {toQueryString} from '../utils'
 
 export class OpenFileDialog extends Component {

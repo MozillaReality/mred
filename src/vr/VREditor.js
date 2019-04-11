@@ -424,7 +424,6 @@ new MyScript()
             if (e.target.getAttribute('type') === 'input') return
             if (e.target.nodeName === 'INPUT') return
         }
-        const graph = this.getDataGraph()
         const obj1 = this.accessObject(SelectionManager.getClipboard())
         let parent = null
         if(is3DObjectType(obj1.type)) parent = this.getSelectedScene()

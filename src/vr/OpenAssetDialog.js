@@ -1,8 +1,6 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {ToggleButton, Toolbar} from '../GridEditorApp'
-import {toQueryString} from '../utils'
-import {getAssetsURL, SERVER_URL_ASSETS} from '../TreeItemProvider'
+import {getAssetsURL} from '../TreeItemProvider'
 import {isAudioType, isImageType} from './Common'
 
 export class OpenAssetDialog extends Component {
