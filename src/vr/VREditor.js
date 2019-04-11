@@ -62,7 +62,7 @@ export default class VREditor extends  SyncGraphProvider {
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
     makeEmptyRoot(doc) {
         //make root
-        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', children:doc.createArray() }))
+        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', defaultScene:0, children:doc.createArray() }))
         //make scene
         const scene1 = new SceneDef().make(doc,root)
         //make cube
@@ -175,11 +175,19 @@ export default class VREditor extends  SyncGraphProvider {
         if(key === PROP_DEFS.trigger.key) {
             return Object.keys(TRIGGERS).map(key => TRIGGERS[key])
         }
+        if(key === PROP_DEFS.defaultScene.key) {
+            const scenes = this.accessObject(this.getSceneRoot()).array('children')
+                .map(ch => this.accessObject(ch))
+                .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
+                .map(ch => ch.id)
+            return scenes
+        }
     }
     getRendererForEnum(key,obj) {
         switch(key) {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
             case PROP_DEFS.action.key: return ActionRenderer
+            case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
         }
     }
 
@@ -579,7 +587,7 @@ class VREditorApp extends Component {
             if(!SelectionManager.isEmpty()) {
                 const item = this.props.provider.accessObject(SelectionManager.getSelection())
                 if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
-                if(item.type === OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
+                if(item.type === TOTAL_OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
             }
             this.setState({mode:'canvas'})
         })

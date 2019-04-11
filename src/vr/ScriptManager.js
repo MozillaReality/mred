@@ -43,7 +43,9 @@ export default class ScriptManager {
             type:type,
             system:this.makeSystemFacade(),
         }
-        const txt = `${action.scriptBody}
+        const txt = `
+            const toRadians = (deg) => deg*Math.PI/180 
+            ${action.scriptBody}
             new MyScript()
         `;
         console.log("running the script",txt)

@@ -208,6 +208,11 @@ export const PROP_DEFS = {
         hints: {
             multiline:true
         }
+    },
+    defaultScene: {
+        key:'defaultScene',
+        name:'Start Scene',
+        type:TYPES.ENUM,
     }
 }
 
