@@ -492,6 +492,8 @@ export default class ImmersiveVREditor extends Component {
     }
 
     makeSystemFacade() {
+        const prov = this.props.provider
+        const master = this
         return {
             getCurrentScene() {
                 return null
@@ -503,7 +505,9 @@ export default class ImmersiveVREditor extends Component {
                 return null
             },
             getAsset(name) {
-                return null
+                const obj = prov.getDataGraph().getObjectByProperty('title',name)
+                const realobj = prov.accessObject(obj)
+                return new AssetFacade(realobj,master)
             },
             setKeyValue(key, value) {
             },
@@ -541,3 +545,12 @@ export default class ImmersiveVREditor extends Component {
 }
 
 
+class AssetFacade {
+    constructor(obj,master) {
+        this.obj = obj
+        this.master = master
+    }
+    play() {
+        this.master.playAudioAsset(this.obj,'somethign')
+    }
+}
