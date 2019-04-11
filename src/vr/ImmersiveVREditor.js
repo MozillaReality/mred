@@ -491,10 +491,37 @@ export default class ImmersiveVREditor extends Component {
         }
     }
 
+    makeSystemFacade() {
+        return {
+            getCurrentScene() {
+                return null
+            },
+            getScene(name) {
+                return null
+            },
+            getObject(name) {
+                return null
+            },
+            getAsset(name) {
+                return null
+            },
+            setKeyValue(key, value) {
+            },
+            getKeyValue(key, value) {
+            },
+            hasKeyValue(key, value) {
+            },
+            isAR() {
+                return false
+            },
+        }
+    }
+
     executeScriptAction(action,obj) {
         const type = obj.trigger
         const evt = {
             type:type,
+            system:this.makeSystemFacade(),
         }
         const txt = `${action.scriptBody}
             new MyScript()
