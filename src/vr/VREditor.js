@@ -26,7 +26,7 @@ import {
     MIME_TYPES,
     OBJ_TYPES,
     PROP_DEFS,
-    SIMPLE_COLORS, TRIGGERS
+    SIMPLE_COLORS, TOTAL_OBJ_TYPES, TRIGGERS
 } from './Common'
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
@@ -351,7 +351,7 @@ export default class VREditor extends  SyncGraphProvider {
     addAnimateAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.ACTION,
+            type:TOTAL_OBJ_TYPES.ACTION,
             subtype:ACTIONS.ANIMATE,
             title:'animate action',
             parent:0
@@ -362,7 +362,7 @@ export default class VREditor extends  SyncGraphProvider {
     addScriptAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.ACTION,
+            type:TOTAL_OBJ_TYPES.ACTION,
             subtype:ACTIONS.SCRIPT,
             title:'script action',
             scriptBody:`
