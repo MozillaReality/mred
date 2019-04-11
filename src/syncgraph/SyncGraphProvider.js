@@ -9,6 +9,22 @@ import * as ToasterMananager from '../vr/ToasterManager'
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
+
+function DocGraphToObjectGraph(doc, id) {
+    const props = doc.getPropertiesForObject(id)
+    const obj = {}
+    props.forEach(name => {
+        obj[name] = doc.getPropertyValue(id,name)
+        if(name === 'children') {
+            obj.children = propToArray(doc,obj[name]).map(child => {
+                return DocGraphToObjectGraph(doc,child)
+            })
+        }
+    })
+    return obj
+}
+
+
 export default class SyncGraphProvider extends TreeItemProvider {
     constructor(options) {
         super(options)
@@ -25,6 +41,10 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
     getDocTitle = () => "untitled"
     getDocHistory = () => this.getDataGraph().getHistory()
+    getDocGraph = () => {
+        const root = this.getDataGraph().getObjectByProperty('type','root')
+        return DocGraphToObjectGraph(this.getDataGraph(),root)
+    }
     onRawChange = cb => this.rawlisteners.push(cb)
     getRawGraph = () => this.coalescer
     getDataGraph = () => this.syncdoc
@@ -63,7 +83,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
             history:this.getDocHistory(),
             type:this.getDocType(),
             id:this.getDocId(),
-            graph:{},
+            graph:this.getDocGraph(),
             title:this.getDocTitle(),
         }
         const payload_string = JSON.stringify(payload_obj)
@@ -73,7 +93,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
             title:this.getDocTitle(),
         }
         const url = getDocsURL()+this.getDocId()+'?'+toQueryString(opts)
-        console.log("posting to url",url)
+        console.log(`saving ${payload_string.length} chars to ${url}`, payload_obj)
         return POST_JSON(url,payload_string).then(res => {
             console.log("got back result",res)
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})

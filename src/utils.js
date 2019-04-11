@@ -41,7 +41,7 @@ export function GET_JSON(path, cb) {
 
 
 export function POST_JSON(path, payload) {
-    console.log("POSTING",path,payload);
+    // console.log("POSTING",path,payload);
     return new Promise((res,rej)=>{
         const req = new XMLHttpRequest();
         req.onreadystatechange = function() {
