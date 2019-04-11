@@ -366,20 +366,21 @@ export default class VREditor extends  SyncGraphProvider {
             subtype:ACTIONS.SCRIPT,
             title:'script action',
             scriptBody:`
-                class MyScript {
-                    constructor() {
-                        
-                    }
-                    create() {
-                    }
-                    draw() {
-                    }
-                    handle(e) {
-                       console.log("got the event ",e);
-                    }
-                    destroy() {
-                    }
-                }
+class MyScript {
+    constructor() {
+        this.name = 'MyScript'
+    }
+    create() {
+    }
+    draw() {
+    }
+    handle(e) {
+       console.log("got the event ",e);
+    }
+    destroy() {
+    }
+}
+new MyScript()
                 `,
             parent:0
         }))
