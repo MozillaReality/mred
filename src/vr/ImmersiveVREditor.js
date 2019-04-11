@@ -130,7 +130,7 @@ export default class ImmersiveVREditor extends Component {
             $("#enter-button").removeAttribute('disabled')
         }
 
-        this.props.provider.onRawChange(this.updateScene.bind(this))
+        this.props.provider.onRawChange(this.updateSceneOp.bind(this))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.documentSwapped.bind(this))
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged.bind(this))
         //clear selection when click on the bg
@@ -165,10 +165,10 @@ export default class ImmersiveVREditor extends Component {
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
         if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -177,9 +177,9 @@ export default class ImmersiveVREditor extends Component {
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.PROXIMITY) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
-        if(actionObj.trigger !== TRIGGERS.PROXIMITY) return
         this.performAction(actionObj, obj)
     }
 
@@ -187,10 +187,10 @@ export default class ImmersiveVREditor extends Component {
         const id = e.target.userData.graphid
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
         if(!obj) return
+        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
         if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -330,7 +330,7 @@ export default class ImmersiveVREditor extends Component {
     }
 
 
-    updateScene(op) {
+    updateSceneOp(op) {
         const graph = this.props.provider.getDataGraph()
         //only do scenes with create_object
         if (op.type === CREATE_OBJECT) {
@@ -412,7 +412,7 @@ export default class ImmersiveVREditor extends Component {
         // this.setState({scene: -1})
         //make new stuff
         const hist = this.props.provider.getDocHistory()
-        hist.forEach(op => this.updateScene(op))
+        hist.forEach(op => this.updateSceneOp(op))
     }
 
     swapScene(id) {
@@ -491,12 +491,49 @@ export default class ImmersiveVREditor extends Component {
         }
     }
 
+    makeSystemFacade() {
+        return {
+            getCurrentScene() {
+                return null
+            },
+            getScene(name) {
+                return null
+            },
+            getObject(name) {
+                return null
+            },
+            getAsset(name) {
+                return null
+            },
+            setKeyValue(key, value) {
+            },
+            getKeyValue(key, value) {
+            },
+            hasKeyValue(key, value) {
+            },
+            isAR() {
+                return false
+            },
+        }
+    }
+
     executeScriptAction(action,obj) {
-        console.log("running the script",action.scriptBody)
+        const type = obj.trigger
+        const evt = {
+            type:type,
+            system:this.makeSystemFacade(),
+        }
+        const txt = `${action.scriptBody}
+            new MyScript()
+        `;
+        console.log("running the script",txt)
         const ctx = this.makeScriptContext()
 
         function doit(ctx) {
-            eval(action.scriptBody);
+            const obj = eval(txt);
+            console.log("returned",obj)
+            obj.handle(evt)
+
         }
 
         doit(ctx);

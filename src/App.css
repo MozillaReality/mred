@@ -22,10 +22,12 @@ button:hover {
     right:0;
     top:0;
     bottom:0;
+    min-height: 100%;
 }
 .grid {
     display: grid;
-    grid-template-rows: [top] 2em [middle] 1fr [bottom] 2em [end];
+    grid-template-rows: [top] 2em [middle] 1fr [bottom] 4em [end];
+    grid-template-columns: [left] 250px [left-resize] 2px [center] auto [right-resize] 2px [right] 250px;
     padding:0;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
@@ -73,7 +75,13 @@ button:hover {
     grid-template-columns: [center] auto [right] 400px;
 }
 .grid.hide-right {
-    grid-template-columns: [left] 250px [center] auto;
+    grid-template-columns: [left] 250px [left-resize] 2px [center] auto;
+}
+.grid.hide-left .left-resize {
+    display: none;
+}
+.grid.hide-right .right-resize {
+    display: none;
 }
 .grid.hide-left.hide-right {
     grid-template-columns: [center] auto;

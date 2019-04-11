@@ -1,6 +1,6 @@
 import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS} from './Common'
+import {PROP_DEFS, TRIGGERS} from './Common'
 import ObjectDef from './ObjectDef'
 
 export default class PlaneDef extends ObjectDef {
@@ -16,6 +16,8 @@ export default class PlaneDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#ffffff',
             asset:0,
+            action:0,
+            trigger:TRIGGERS.CLICK,
             parent:scene.id
         }))
     }
