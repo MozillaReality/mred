@@ -341,7 +341,6 @@ export default class VREditor extends  SyncGraphProvider {
         const action = fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.ACTION,
             subtype:ACTIONS.SOUND,
-            trigger:TRIGGERS.CLICK,
             title:'sound action',
             parent:0
         }))
@@ -353,7 +352,6 @@ export default class VREditor extends  SyncGraphProvider {
         const action = fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.ACTION,
             subtype:ACTIONS.ANIMATE,
-            trigger:TRIGGERS.CLICK,
             title:'animate action',
             parent:0
         }))
@@ -365,9 +363,23 @@ export default class VREditor extends  SyncGraphProvider {
         const action = fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.ACTION,
             subtype:ACTIONS.SCRIPT,
-            trigger:TRIGGERS.CLICK,
             title:'script action',
-            scriptBody:`console.log("I'm a running script. Can you catch me?")`,
+            scriptBody:`
+                class MyScript {
+                    constructor() {
+                        
+                    }
+                    create() {
+                    }
+                    draw() {
+                    }
+                    handle(e) {
+                       console.log("got the event ",e);
+                    }
+                    destroy() {
+                    }
+                }
+                `,
             parent:0
         }))
         this.accessObject(this.getActionsObject()).insertChildLast(action)

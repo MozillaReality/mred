@@ -123,7 +123,7 @@ export default class ImmersiveVREditor extends Component {
             $("#enter-button").removeAttribute('disabled')
         }
 
-        this.props.provider.onRawChange(this.updateScene.bind(this))
+        this.props.provider.onRawChange(this.updateSceneOp.bind(this))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.documentSwapped.bind(this))
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged.bind(this))
         //clear selection when click on the bg
@@ -199,8 +199,10 @@ export default class ImmersiveVREditor extends Component {
         if(!obj) return
         const actionObj = this.props.provider.accessObject(obj.action)
         if(!actionObj) return
+        const trigger = this.props.provider.accessObject(obj.trigger)
+        if(!trigger) return
+        if(trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
         if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        if(actionObj.trigger !== TRIGGERS.CLICK) return
         this.performAction(actionObj, obj)
     }
 
@@ -362,7 +364,7 @@ export default class ImmersiveVREditor extends Component {
     }
 
 
-    updateScene(op) {
+    updateSceneOp(op) {
         const graph = this.props.provider.getDataGraph()
         //only do scenes with create_object
         if (op.type === CREATE_OBJECT) {
@@ -444,7 +446,7 @@ export default class ImmersiveVREditor extends Component {
         // this.setState({scene: -1})
         //make new stuff
         const hist = this.props.provider.getDocHistory()
-        hist.forEach(op => this.updateScene(op))
+        hist.forEach(op => this.updateSceneOp(op))
     }
 
     swapScene(id) {

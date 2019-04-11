@@ -242,6 +242,8 @@ export const ACTIONS = {
 export const TRIGGERS = {
     CLICK:'CLICK',
     PROXIMITY:'PROXIMITY',
+    ENTER_SCENE:'ENTER_SCENE',
+    EXIT_SCENE:'EXIT_SCENE',
 }
 
 
