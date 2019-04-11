@@ -138,6 +138,10 @@ button:hover {
     background-color: transparent;
 }
 
+button.run-button.active {
+    background-color: red;
+}
+
 
 
 /* ================= tree table ============== */

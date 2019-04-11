@@ -16,10 +16,10 @@ export default class GraphAccessor {
                 return obj
             }
             obj.array = (key) => {
-                console.log("looking at key",key)
-                console.log("self is",obj)
+                // console.log("looking at key",key)
+                // console.log("self is",obj)
                 const CH = obj[key]
-                console.log("children id is",CH)
+                // console.log("children id is",CH)
                 const len = this.graph.getArrayLength(CH)
                 const ch = []
                 for (let i = 0; i < len; i++) {

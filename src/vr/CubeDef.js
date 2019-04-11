@@ -43,4 +43,8 @@ export default class CubeDef extends ObjectDef {
         }
         return super.updateProperty(node,obj,op,provider)
     }
+
+    reset(node, obj) {
+        node.position.set(obj.tx,obj.ty,obj.tz)
+    }
 }

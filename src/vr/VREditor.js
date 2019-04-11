@@ -384,6 +384,7 @@ class MyScript {
     }
     handle(e) {
        console.log("got the event ",e);
+       e.system.getObject('cube1').setPosition(-1,0,0)
     }
     destroy() {
     }
@@ -557,6 +558,7 @@ class VREditorApp extends Component {
         this.state = {
             mode:'canvas',
             user:null,
+            running:false,
         }
 
         this.im = new InputManager()
@@ -661,6 +663,10 @@ class VREditorApp extends Component {
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
 
+    toggleRunning = () => {
+        this.setState({running:!this.state.running})
+    }
+
     render() {
         const prov = this.props.provider
         return <GridEditorApp>
@@ -682,6 +688,8 @@ class VREditorApp extends Component {
                 <button onClick={() => prov.viewInVR()}>VR View</button>
                 <button onClick={()=>prov.embedView()}>Embed</button>
                 <Spacer/>
+                <RunButton onClick={this.toggleRunning} active={this.state.running}/>
+                <Spacer/>
                 <button className="fa fa-cut" onClick={prov.cutSelection}/>
                 <button className="fa fa-copy" onClick={prov.copySelection}/>
                 <button className="fa fa-paste" onClick={prov.pasteSelection}/>
@@ -700,13 +708,14 @@ class VREditorApp extends Component {
             <Toolbar right top>
                 {this.renderLoginButton()}
             </Toolbar>
-            <Toolbar right bottom/>
+            <Toolbar right bottom>
+            </Toolbar>
 
         </GridEditorApp>
     }
     renderCenterPane(mode) {
         if (mode === 'script') return <ScriptEditor provider={this.props.provider}/>
-        if (mode === 'canvas') return <VRCanvas provider={this.props.provider}/>
+        if (mode === 'canvas') return <VRCanvas provider={this.props.provider} running={this.state.running}/>
         return <AssetView provider={this.props.provider} asset={SelectionManager.getSelection()}/>
     }
 
@@ -800,4 +809,11 @@ function acceptsImageAsset(type) {
         || type === OBJ_TYPES.img2d
     ) return true
     return false
+}
+
+
+const RunButton = (props) => {
+    const text = props.active?"stop":"run"
+    const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
+    return <button onClick={props.onClick} className={clss}></button>
 }

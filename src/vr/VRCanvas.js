@@ -5,8 +5,9 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./SceneDef"
-import {get3DObjectDef, is3DObjectType, OBJ_TYPES} from './Common'
+import {ACTIONS, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES, TRIGGERS} from './Common'
 import {ToasterNotification} from './ToasterNotification'
+import ScriptManager from './ScriptManager'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -19,8 +20,10 @@ export class VRCanvas extends Component {
         this.obj_node_map = {}
         this.scenes = []
         this.state = {
-            scene: -1
+            scene: -1,
+            running:props.running
         }
+        this.scriptManager = new ScriptManager(this.props.provider, this)
     }
 
     componentDidMount() {
@@ -120,6 +123,10 @@ export class VRCanvas extends Component {
         delete node.userData.graphid
     }
 
+    findThreeObjectByGraphId(id) {
+        return this.findNode(id)
+    }
+
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
         return this.obj_node_map[id]
@@ -171,6 +178,13 @@ export class VRCanvas extends Component {
         // console.log('skipping', op.type)
     }
     shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if('running' in nextProps) {
+            if(nextProps.running !== this.props.running) {
+                this.setState({running:nextProps.running})
+                if(nextProps.running === false) this.resetSceneGraph()
+                return false
+            }
+        }
         return false
     }
 
@@ -249,10 +263,48 @@ export class VRCanvas extends Component {
         const intersect = this.raycaster.intersectObjects(this.getCurrentSceneWrapper().children, true)
         if(intersect && intersect.length >= 1) {
             const obj = intersect[0].object
-            SelectionManager.setSelection(obj.userData.graphid)
+            if(this.state.running) {
+                this.performClickAction(obj.userData.graphid)
+            } else {
+                SelectionManager.setSelection(obj.userData.graphid)
+            }
         } else {
             SelectionManager.clearSelection()
         }
     }
 
+    performClickAction(objectId) {
+        const obj = fetchGraphObject(this.props.provider.getDataGraph(),objectId)
+        if(!obj) return
+        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
+        const actionObj = this.props.provider.accessObject(obj.action)
+        if(!actionObj) return
+        this.performAction(actionObj, obj)
+    }
+    performAction(action, target) {
+        //old style, navigate to a scene
+        if(action.type === TOTAL_OBJ_TYPES.SCENE) return SelectionManager.setSelection(action.id)
+        // if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
+        // if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
+        if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
+        if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
+    }
+
+    resetSceneGraph() {
+        console.log(this.obj_node_map)
+        Object.keys(this.obj_node_map).forEach(id => {
+            const graphObj = fetchGraphObject(this.props.provider.getDataGraph(),id)
+            const threeObj = this.obj_node_map[id]
+            if(graphObj.type === 'scene') {
+                // new SceneDef().updateProperty(node,obj,op,this.props.provider)
+                return
+            }
+            if(is3DObjectType(graphObj.type)) {
+                const def = get3DObjectDef(graphObj.type)
+                if(def.reset) {
+                    def.reset(threeObj,graphObj,this.props.provider.getDataGraph())
+                }
+            }
+        })
+    }
 }

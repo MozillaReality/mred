@@ -1,6 +1,13 @@
+import * as ToasterMananager from './ToasterManager'
+
 export default class ScriptManager {
-    constructor(provider) {
+    constructor(provider, sceneGraphProvider) {
         this.prov = provider
+        this.sgp = sceneGraphProvider
+    }
+
+    getThreeObject(id) {
+        return this.sgp.findThreeObjectByGraphId(id)
     }
     makeScriptContext() {
         return {
@@ -10,7 +17,7 @@ export default class ScriptManager {
 
     makeSystemFacade() {
         const prov = this.prov
-        const master = this
+        const manager = this
         return {
             getCurrentScene() {
                 return null
@@ -19,12 +26,16 @@ export default class ScriptManager {
                 return null
             },
             getObject(name) {
-                return null
+                const obj = prov.getDataGraph().getObjectByProperty('title',name)
+                if(!obj) throw new Error(`object '${name}' not found`)
+                console.log("found the obj",obj)
+                const realobj = prov.accessObject(obj)
+                return new ThreeObjectFacade(realobj,manager,obj)
             },
             getAsset(name) {
                 const obj = prov.getDataGraph().getObjectByProperty('title',name)
                 const realobj = prov.accessObject(obj)
-                return new AssetFacade(realobj,master)
+                return new AssetFacade(realobj,manager)
             },
             setKeyValue(key, value) {
             },
@@ -58,17 +69,33 @@ export default class ScriptManager {
 
         }
 
-        doit(ctx);
+        try {
+            doit(ctx);
+        } catch (e) {
+            ToasterMananager.add('ERROR: ' + e.message)
+            console.error(e.message)
+        }
     }
 }
 
 
 class AssetFacade {
-    constructor(obj,master) {
+    constructor(obj,manager) {
         this.obj = obj
-        this.master = master
+        this.manager = manager
     }
     play() {
-        this.master.playAudioAsset(this.obj,'somethign')
+        this.manager.playAudioAsset(this.obj,'somethign')
+    }
+}
+class ThreeObjectFacade {
+    constructor(obj,manager,id) {
+        this.obj = obj
+        this.manager = manager
+        this.id = id
+    }
+    setPosition(x,y,z) {
+        const threeobj = this.manager.getThreeObject(this.id)
+        threeobj.position.set(x,y,z)
     }
 }

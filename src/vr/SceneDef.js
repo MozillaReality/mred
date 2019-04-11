@@ -26,7 +26,7 @@ export default class SceneDef {
     updateProperty(node, obj, op, provider) {
         console.log("update property",node.name,op.name,op.value)
         if(op.name === PROP_DEFS.defaultFloor.key) {
-            console.log('setting the fllor too',op.value)
+            console.log('setting the floor too',op.value)
             this.setDefaultFloor(node,op.value)
         }
     }
