@@ -42,6 +42,7 @@ import {toQueryString} from '../utils'
 import {OpenFileDialog} from './OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
+import ScriptEditor from './ScriptEditor'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -578,6 +579,7 @@ class VREditorApp extends Component {
             if(!SelectionManager.isEmpty()) {
                 const item = this.props.provider.accessObject(SelectionManager.getSelection())
                 if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
+                if(item.type === OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
             }
             this.setState({mode:'canvas'})
         })
@@ -695,11 +697,9 @@ class VREditorApp extends Component {
         </GridEditorApp>
     }
     renderCenterPane(mode) {
-        if (mode === 'canvas') {
-            return <VRCanvas provider={this.props.provider}/>
-        } else {
-            return <AssetView provider={this.props.provider} asset={SelectionManager.getSelection()}/>
-        }
+        if (mode === 'script') return <ScriptEditor provider={this.props.provider}/>
+        if (mode === 'canvas') return <VRCanvas provider={this.props.provider}/>
+        return <AssetView provider={this.props.provider} asset={SelectionManager.getSelection()}/>
     }
 
     renderLoginButton() {
