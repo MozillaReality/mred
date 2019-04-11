@@ -1,6 +1,7 @@
 import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from './ObjectDef'
+import {TRIGGERS} from './Common'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
@@ -16,6 +17,7 @@ export default class CubeDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#00ff00',
             action:0,
+            trigger:TRIGGERS.CLICK,
             parent:scene.id
         }))
     }

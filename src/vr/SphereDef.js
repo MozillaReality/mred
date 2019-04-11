@@ -1,6 +1,7 @@
 import {fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from './ObjectDef'
+import {TRIGGERS} from './Common'
 
 export default class SphereDef extends ObjectDef {
     make(graph, scene) {
@@ -14,6 +15,7 @@ export default class SphereDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#0000ff',
             action:0,
+            trigger:TRIGGERS.CLICK,
             parent:scene.id
         }))
     }

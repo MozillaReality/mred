@@ -1,6 +1,6 @@
 import ObjectDef from './ObjectDef'
 import {fetchGraphObject} from '../syncgraph/utils'
-import {HORIZONTAL_ALIGNMENT, OBJ_TYPES, PROP_DEFS} from './Common'
+import {HORIZONTAL_ALIGNMENT, OBJ_TYPES, PROP_DEFS, TRIGGERS} from './Common'
 import * as THREE from 'three'
 import {VERTICAL_ALIGNMENT} from '../metadoc/Common'
 
@@ -27,6 +27,7 @@ export default class TextDef extends ObjectDef {
             sx:1, sy:1, sz:1,
 
             action:0,
+            trigger:TRIGGERS.CLICK,
             parent:scene.id
         }))
     }
