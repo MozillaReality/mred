@@ -8,6 +8,7 @@ export default class BG360Def {
         return fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.bg360,
             title:'background',
+            visible:true,
             asset:0,
             parent:scene.id,
             imageOffset:0,

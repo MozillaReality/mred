@@ -9,6 +9,7 @@ export default class Image2DDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.img2d,
             title:'image',
+            visible:true,
             width:1,
             ratio:1,
             tx:0, ty:1.5, tz:-5,

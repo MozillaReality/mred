@@ -74,6 +74,7 @@ export default class ScriptManager {
         } catch (e) {
             ToasterMananager.add('ERROR: ' + e.message)
             console.error(e.message)
+            console.log(e)
         }
     }
 }
@@ -97,5 +98,13 @@ class ThreeObjectFacade {
     setPosition(x,y,z) {
         const threeobj = this.manager.getThreeObject(this.id)
         threeobj.position.set(x,y,z)
+    }
+    setVisible(visible) {
+        const threeobj = this.manager.getThreeObject(this.id)
+        threeobj.visible = visible
+    }
+    isVisible() {
+        const threeobj = this.manager.getThreeObject(this.id)
+        return threeobj.visible
     }
 }

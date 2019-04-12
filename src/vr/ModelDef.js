@@ -11,6 +11,7 @@ export default class ModelDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:'model',
             title:'a model',
+            visible:true,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,

@@ -9,6 +9,7 @@ export default class ObjectDef {
         if (op.name === 'sx') node.scale.x = parseFloat(op.value)
         if (op.name === 'sy') node.scale.y = parseFloat(op.value)
         if (op.name === 'sz') node.scale.z = parseFloat(op.value)
+        if (op.name === 'visible') node.visible = op.value
 
         if (op.name === 'color') {
             let color = op.value
@@ -17,5 +18,9 @@ export default class ObjectDef {
             return
         }
 
+    }
+    reset(node, obj) {
+        node.position.set(obj.tx,obj.ty,obj.tz)
+        node.visible = obj.visible
     }
 }

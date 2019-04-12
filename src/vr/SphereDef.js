@@ -9,6 +9,7 @@ export default class SphereDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:'sphere',
             title:'a sphere',
+            visible:true,
             radius: 0.5,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,

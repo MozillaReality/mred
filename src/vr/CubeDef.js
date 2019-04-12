@@ -11,6 +11,7 @@ export default class CubeDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:'cube',
             title:'first cube',
+            visible:true,
             width:1, height:1, depth:1,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,
@@ -44,7 +45,4 @@ export default class CubeDef extends ObjectDef {
         return super.updateProperty(node,obj,op,provider)
     }
 
-    reset(node, obj) {
-        node.position.set(obj.tx,obj.ty,obj.tz)
-    }
 }

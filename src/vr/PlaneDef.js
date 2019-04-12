@@ -9,6 +9,7 @@ export default class PlaneDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:'plane',
             title:'a plane',
+            visible:true,
             width: 3,
             height: 3,
             tx:0, ty:1.5, tz:-5,

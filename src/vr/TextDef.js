@@ -10,6 +10,7 @@ export default class TextDef extends ObjectDef {
         return fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.text,
             title:'some text',
+            visible:true,
             text:'some text\nto read\nright now',
 
             textColor:'#000000',

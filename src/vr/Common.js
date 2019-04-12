@@ -213,6 +213,11 @@ export const PROP_DEFS = {
         key:'defaultScene',
         name:'Start Scene',
         type:TYPES.ENUM,
+    },
+    visible: {
+        key:'visible',
+        name:'Visible',
+        type:TYPES.BOOLEAN
     }
 }
 
