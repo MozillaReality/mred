@@ -35,6 +35,8 @@ export class VRCanvas extends Component {
         // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
+        this.audioListener = new THREE.AudioListener()
+        this.camera.add(this.audioListener)
 
         this.scene.background = new THREE.Color(0xff00ff);
         this.camera.position.y = 1.5
@@ -283,15 +285,34 @@ export class VRCanvas extends Component {
     }
     performAction(action, target) {
         //old style, navigate to a scene
-        if(action.type === TOTAL_OBJ_TYPES.SCENE) return SelectionManager.setSelection(action.id)
+        if(action.type === TOTAL_OBJ_TYPES.SCENE) {
+            const scene = fetchGraphObject(this.props.provider.getDataGraph(),action.id)
+            if(scene) {
+                if(scene.action && scene.trigger === TRIGGERS.ENTER_SCENE) {
+                    const action2 = fetchGraphObject(this.props.provider.getDataGraph(),scene.action)
+                    this.performAction(action2,scene)
+                }
+            }
+            return SelectionManager.setSelection(action.id)
+        }
         // if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
         // if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
         if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
         if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
     }
 
+    playAudioAsset(audio) {
+        const sound = new THREE.Audio(this.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+    }
+
     resetSceneGraph() {
-        console.log(this.obj_node_map)
         Object.keys(this.obj_node_map).forEach(id => {
             const graphObj = fetchGraphObject(this.props.provider.getDataGraph(),id)
             const threeObj = this.obj_node_map[id]

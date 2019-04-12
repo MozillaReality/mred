@@ -9,6 +9,9 @@ export default class ScriptManager {
     getThreeObject(id) {
         return this.sgp.findThreeObjectByGraphId(id)
     }
+    playAudioAsset(obj) {
+        return this.sgp.playAudioAsset(obj)
+    }
     makeScriptContext() {
         return {
 
@@ -35,7 +38,7 @@ export default class ScriptManager {
             getAsset(name) {
                 const obj = prov.getDataGraph().getObjectByProperty('title',name)
                 const realobj = prov.accessObject(obj)
-                return new AssetFacade(realobj,manager)
+                return new AssetFacade(realobj,manager,obj)
             },
             setKeyValue(key, value) {
             },
@@ -81,12 +84,13 @@ export default class ScriptManager {
 
 
 class AssetFacade {
-    constructor(obj,manager) {
+    constructor(obj,manager,id) {
         this.obj = obj
         this.manager = manager
+        this.id = id
     }
     play() {
-        this.manager.playAudioAsset(this.obj,'somethign')
+        this.manager.playAudioAsset(this.obj)
     }
 }
 class ThreeObjectFacade {
