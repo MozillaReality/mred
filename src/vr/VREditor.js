@@ -15,7 +15,7 @@ import {
 import CubeDef from "./CubeDef";
 import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
-import {DialogManager, HBox, PopupManager} from "appy-comps";
+import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
     ACTIONS,
     get3DObjectDef,
@@ -53,14 +53,11 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getDocType() { return "vr" }
     getApp = () => {
-        if(!this.mode) this.mode = 'play'
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
         if(this.mode === 'vredit') return <ImmersiveVREditor provider={this} editable={true}/>
         if(this.mode === 'embed-view') return <ImmersiveVREditor provider={this} editable={false}/>
         if(this.mode === 'vrview') return <ImmersiveVREditor provider={this} editable={false}/>
-        if(this.mode === 'play') return <ImmersivePlayer provider={this}/>
         console.log("no mode!")
-        return <ImmersivePlayer provider={this}/>
     }
     getTitle = () => "VR Builder"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
@@ -228,8 +225,8 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     viewInVR = () => {
-        const opts = Object.assign({},this.options,{mode:'play', switcher:false})
-        window.open(`./?${toQueryString(opts)}`)
+            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
+            window.open(`./?${toQueryString(opts)}`)
     }
 
     embedView = () => {
@@ -726,6 +723,8 @@ class VREditorApp extends Component {
             </Toolbar>
             <Toolbar right bottom>
             </Toolbar>
+            <DialogContainer/>
+            <PopupContainer/>
 
         </GridEditorApp>
     }

@@ -4,6 +4,7 @@ import {DialogContainer, PopupContainer, PopupManager, VBox} from "appy-comps"
 
 import MetadocEditor from "./metadoc/Editor1"
 import VREditor from './vr/VREditor'
+import {ImmersivePlayer} from './vr/ImmersivePlayer'
 
 export default class App extends Component {
     constructor(props) {
@@ -22,6 +23,10 @@ export default class App extends Component {
     getApp() {
         const doctype = this.props.options.doctype || "vr"
         if(doctype === 'vr') {
+            if(this.props.options.mode === 'play') {
+                console.log("doing play instead")
+                return <ImmersivePlayer/>
+            }
             this.provider = new VREditor(this.props.options)
             return this.provider.getApp()
         }
