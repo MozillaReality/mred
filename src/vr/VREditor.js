@@ -415,14 +415,24 @@ new MyScript()
         return cmds
     }
 
-    cutSelection = () => {
+    cutSelection = (e) => {
+        if(e && e.target) {
+            if (e.target.getAttribute('type') === 'input') return
+            if (e.target.nodeName === 'INPUT') return
+            if (e.target.nodeName === 'TEXTAREA') return
+        }
         if(SelectionManager.isEmpty()) return
         const obj = this.accessObject(SelectionManager.getSelection())
         SelectionManager.setClipboard(obj.id)
         obj.removeFromParent()
         SelectionManager.clearSelection()
     }
-    copySelection = () => {
+    copySelection = (e) => {
+        if(e && e.target) {
+            if (e.target.getAttribute('type') === 'input') return
+            if (e.target.nodeName === 'INPUT') return
+            if (e.target.nodeName === 'TEXTAREA') return
+        }
         if(SelectionManager.isEmpty()) return
         const obj = this.accessObject(SelectionManager.getSelection())
         SelectionManager.setClipboard(obj.id)
@@ -432,6 +442,7 @@ new MyScript()
         if(e && e.target) {
             if (e.target.getAttribute('type') === 'input') return
             if (e.target.nodeName === 'INPUT') return
+            if (e.target.nodeName === 'TEXTAREA') return
         }
         const obj1 = this.accessObject(SelectionManager.getClipboard())
         let parent = null
