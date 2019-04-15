@@ -21,6 +21,7 @@ function DocGraphToObjectGraph(doc, id) {
             })
         }
     })
+    obj.id = id
     return obj
 }
 

@@ -1,13 +1,15 @@
 import * as ToasterMananager from './ToasterManager'
 
 export default class ScriptManager {
-    constructor(provider, sceneGraphProvider) {
-        this.prov = provider
+    constructor(sceneGraphProvider) {
         this.sgp = sceneGraphProvider
     }
 
+    getGraphObjectByName(title) {
+        return this.sgp.findGraphObjectByTitle(title)
+    }
     getThreeObject(id) {
-        return this.sgp.findThreeObjectByGraphId(id)
+        return this.sgp.findThreeObject(id)
     }
     playAudioAsset(obj) {
         return this.sgp.playAudioAsset(obj)
@@ -29,16 +31,14 @@ export default class ScriptManager {
                 return null
             },
             getObject(name) {
-                const obj = prov.getDataGraph().getObjectByProperty('title',name)
+                const obj = manager.getGraphObjectByName(name)
                 if(!obj) throw new Error(`object '${name}' not found`)
-                console.log("found the obj",obj)
-                const realobj = prov.accessObject(obj)
-                return new ThreeObjectFacade(realobj,manager,obj)
+                return new ThreeObjectFacade(manager,obj)
             },
             getAsset(name) {
-                const obj = prov.getDataGraph().getObjectByProperty('title',name)
-                const realobj = prov.accessObject(obj)
-                return new AssetFacade(realobj,manager,obj)
+                const obj = manager.getGraphObjectByName(name)
+                if(!obj) throw new Error(`asset '${name}' not found`)
+                return new AssetFacade(manager,obj)
             },
             setKeyValue(key, value) {
             },
@@ -84,31 +84,27 @@ export default class ScriptManager {
 
 
 class AssetFacade {
-    constructor(obj,manager,id) {
-        this.obj = obj
+    constructor(manager,obj) {
         this.manager = manager
-        this.id = id
+        this.obj = obj
     }
     play() {
         this.manager.playAudioAsset(this.obj)
     }
 }
 class ThreeObjectFacade {
-    constructor(obj,manager,id) {
-        this.obj = obj
+    constructor(manager,obj) {
         this.manager = manager
-        this.id = id
+        this.obj = obj
     }
     setPosition(x,y,z) {
-        const threeobj = this.manager.getThreeObject(this.id)
-        threeobj.position.set(x,y,z)
+        this.manager.getThreeObject(this.obj).position.set(x,y,z)
     }
     setVisible(visible) {
-        const threeobj = this.manager.getThreeObject(this.id)
+        const threeobj = this.manager.getThreeObject(this.obj)
         threeobj.visible = visible
     }
     isVisible() {
-        const threeobj = this.manager.getThreeObject(this.id)
-        return threeobj.visible
+        this.manager.getThreeObject(this.obj).visible
     }
 }

@@ -23,7 +23,7 @@ export class VRCanvas extends Component {
             scene: -1,
             running:props.running
         }
-        this.scriptManager = new ScriptManager(this.props.provider, this)
+        this.scriptManager = new ScriptManager(this)
     }
 
     componentDidMount() {

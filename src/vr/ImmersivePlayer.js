@@ -1,18 +1,22 @@
 import React, {Component} from 'react'
 import ScriptManager from './ScriptManager'
 import {getDocsURL} from '../TreeItemProvider'
-import {GET_JSON, parseOptions} from '../utils'
+import {GET_JSON, on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
 import {Group} from "three"
 import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
 import SceneDef from './SceneDef'
-import {get3DObjectDef} from './Common'
+import {ACTIONS, get3DObjectDef, TRIGGERS} from './Common'
+import {Pointer} from 'webxr-boilerplate/pointer'
 
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
+        this.three_map = {}
+        this.action_map = {}
+        this.title_map = {}
         this.scriptManager = new ScriptManager(this)
     }
 
@@ -44,17 +48,31 @@ export class ImmersivePlayer extends Component {
         console.log("building",graph)
         graph.children.forEach(ch => {
             if(ch.type === 'scene') return this.initScene(ch)
+            if(ch.type === 'actions') return this.initActions(ch)
         })
     }
 
     initScene(def) {
         console.log("making a scene",def)
         const scene = new SceneDef().makeNode(def)
+        this.three_map[def.id] = scene
         this.scenes.add(scene)
+        this.title_map[def.title] = def
         def.children.forEach(ch => {
+            this.title_map[ch.title] = ch
             const child = get3DObjectDef(ch.type).makeNode(ch)
+            this.three_map[ch.id] = child
+            on(child,'click',()=>{
+                if(ch.action) this.performAction(ch, TRIGGERS.CLICK)
+            })
             scene.add(child)
         })
+    }
+
+    performAction(obj,type) {
+        if(obj.trigger !== type) return
+        const action = this.action_map[obj.action]
+        if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,obj)
     }
 
     initThreeJS() {
@@ -77,6 +95,9 @@ export class ImmersivePlayer extends Component {
             this.renderer.setSize( window.innerWidth, window.innerHeight );
         }, false );
         this.renderer.setAnimationLoop(this.renderThree)
+        const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        light.position.set( 1, 1, 1 ).normalize();
+        this.scene.add( light );
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
 
@@ -104,6 +125,17 @@ export class ImmersivePlayer extends Component {
             $("#enter-button").style.display = 'block'
             $("#enter-button").removeAttribute('disabled')
         }
+
+
+        //class which handles mouse and VR controller
+        this.pointer = new Pointer(this.scene,this.renderer,this.camera, {
+            intersectionFilter: ((o) => o.userData.clickable),
+            cameraFollowMouse:false,
+            mouseSimulatesController:false,
+            enableLaser: true,
+            laserLength: 20,
+        })
+
     }
 
     renderThree = (time) => {
@@ -115,4 +147,20 @@ export class ImmersivePlayer extends Component {
     }
 
 
+    initActions(acts) {
+        acts.children.forEach(act => {
+            this.action_map[act.id] = act
+        })
+    }
+
+
+
+
+    findGraphObjectByTitle(title) {
+        return this.title_map[title]
+    }
+
+    findThreeObject(obj) {
+        return this.three_map[obj.id]
+    }
 }

@@ -38,7 +38,7 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        this.scriptManager = new ScriptManager(this.props.provider)
+        this.scriptManager = new ScriptManager(this)
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
