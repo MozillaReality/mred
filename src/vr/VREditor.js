@@ -43,6 +43,7 @@ import {OpenFileDialog} from './OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
+import {ImmersivePlayer} from './ImmersivePlayer'
 
 
 export default class VREditor extends  SyncGraphProvider {
@@ -52,11 +53,14 @@ export default class VREditor extends  SyncGraphProvider {
     }
     getDocType() { return "vr" }
     getApp = () => {
+        if(!this.mode) this.mode = 'play'
         if(this.mode === 'edit') return <VREditorApp provider={this}/>
         if(this.mode === 'vredit') return <ImmersiveVREditor provider={this} editable={true}/>
         if(this.mode === 'embed-view') return <ImmersiveVREditor provider={this} editable={false}/>
         if(this.mode === 'vrview') return <ImmersiveVREditor provider={this} editable={false}/>
-        throw new Error("unknown mode " +this.mode)
+        if(this.mode === 'play') return <ImmersivePlayer provider={this}/>
+        console.log("no mode!")
+        return <ImmersivePlayer provider={this}/>
     }
     getTitle = () => "VR Builder"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
@@ -223,7 +227,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     viewInVR = () => {
-        const opts = Object.assign({},this.options,{mode:'vrview', switcher:false})
+        const opts = Object.assign({},this.options,{mode:'play', switcher:false})
         window.open(`./?${toQueryString(opts)}`)
     }
 
@@ -697,7 +701,7 @@ class VREditorApp extends Component {
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editInVR()}>VR Edit</button>
                 <button onClick={() => prov.viewInVR()}>VR View</button>
-                <button onClick={()=>prov.embedView()}>Embed</button>
+                {/*<button onClick={()=>prov.embedView()}>Embed</button>*/}
                 <Spacer/>
                 <RunButton onClick={this.toggleRunning} active={this.state.running}/>
                 <Spacer/>

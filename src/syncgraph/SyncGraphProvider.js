@@ -106,6 +106,13 @@ export default class SyncGraphProvider extends TreeItemProvider {
         console.log("loading")
         return GET_JSON(getDocsURL()+docid).then((payload)=>{
             console.log("got the payload",payload)
+            if(payload.success === false) {
+                console.log("no such doc. :(")
+                const doc = new DocGraph()
+                this.makeEmptyRoot(doc)
+                this.setupDocFlow(doc,this.genID('doc'))
+                return
+            }
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,docid)
         }).catch((e)=>{
