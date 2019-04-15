@@ -105,6 +105,6 @@ class ThreeObjectFacade {
         threeobj.visible = visible
     }
     isVisible() {
-        this.manager.getThreeObject(this.obj).visible
+        return this.manager.getThreeObject(this.obj).visible
     }
 }
