@@ -148,7 +148,10 @@ export class VRCanvas extends Component {
             return
         }
         if (op.type === SET_PROPERTY) {
+            //skip setting parents. done through insert_element
+            if(op.name === 'parent') return
             // console.log('setting property', op.object, op.name, '=',op.value)
+            // console.log('real graph', fetchGraphObject(graph,op.object))
             const node = this.findNode(op.object)
             if (node) {
                 const obj = fetchGraphObject(graph, op.object)

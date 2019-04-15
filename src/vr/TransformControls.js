@@ -100,7 +100,7 @@ const TransformControls = function ( camera, domElement ) {
     defineProperty( "rotationAngle", rotationAngle );
     defineProperty( "eye", eye );
 
-    {
+
 
         domElement.addEventListener( "mousedown", onPointerDown, false );
         domElement.addEventListener( "touchstart", onPointerDown, false );
@@ -113,7 +113,7 @@ const TransformControls = function ( camera, domElement ) {
         domElement.addEventListener( "touchleave", onPointerUp, false );
         domElement.addEventListener( "contextmenu", onContext, false );
 
-    }
+
 
     this.dispose = function () {
 
@@ -623,7 +623,6 @@ TransformControls.prototype = Object.assign( Object.create( THREE.Object3D.proto
 
 const TransformControlsGizmo = function () {
 
-    'use strict';
 
     THREE.Object3D.call( this );
 
@@ -1373,7 +1372,6 @@ TransformControlsGizmo.prototype = Object.assign( Object.create( THREE.Object3D.
 
 const TransformControlsPlane = function () {
 
-    'use strict';
 
     THREE.Mesh.call( this,
         new THREE.PlaneBufferGeometry( 100000, 100000, 2, 2 ),
@@ -1437,6 +1435,8 @@ const TransformControlsPlane = function () {
                     case 'XYZ':
                     case 'E':
                         dirVector.set( 0, 0, 0 );
+                        break;
+                    default:
                         break;
                 }
                 break;

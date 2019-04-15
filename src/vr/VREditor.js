@@ -192,6 +192,7 @@ export default class VREditor extends  SyncGraphProvider {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
             case PROP_DEFS.action.key: return ActionRenderer
             case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
+            default: return null
         }
     }
 
@@ -828,7 +829,6 @@ function acceptsImageAsset(type) {
 
 
 const RunButton = (props) => {
-    const text = props.active?"stop":"run"
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
     return <button onClick={props.onClick} className={clss}></button>
 }
