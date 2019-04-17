@@ -46,6 +46,12 @@ import ScriptEditor from './ScriptEditor'
 import {ImmersivePlayer} from './ImmersivePlayer'
 
 
+function parsePropsOfBehaviorContent(contents) {
+    const obj = Function('"use strict"; return('+contents+')')();
+    console.log("behavior obj is",obj)
+    return obj.properties
+}
+
 export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
         super(options)
@@ -119,6 +125,22 @@ export default class VREditor extends  SyncGraphProvider {
         })
 
         const obj = this.accessObject(item)
+        //if a behavior object is selected, get the defs from the root behavior asset
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+            const behaviorProps = this.getCachedBehaviorPropDefs(obj.behavior)
+            Object.keys(behaviorProps).forEach(pname => {
+                const propdef = behaviorProps[pname]
+                const ndef = {
+                    key:pname,
+                    name:pname,
+                    type:propdef.type,
+                    value:obj[pname]
+                }
+                defs.push(ndef)
+            })
+        }
+
+
         if(is3DObjectType(obj.type)) {
             defs.push({
                 key: 'scale',
@@ -432,16 +454,25 @@ new MyScript()
         SelectionManager.clearSelection()
     }
     addBehaviorToObject = (b,item) => {
-        console.log("adding behavior",b,'to',item)
         this.fetchBehaviorAssetContents(b.id).then((contents)=>{
-            console.log('the contents are',contents)
-            const graph = this.getDataGraph()
-            const behavior = fetchGraphObject(graph,graph.createObject({
-                type:TOTAL_OBJ_TYPES.BEHAVIOR,
-                title:b.title,
-                parent:0,
-            }))
-            this.accessObject(item).insertChildLast(behavior)
+            try {
+                const def = {
+                    type: TOTAL_OBJ_TYPES.BEHAVIOR,
+                    title: b.title,
+                    parent: 0,
+                    behavior:b.id,
+                }
+                const props = parsePropsOfBehaviorContent(contents)
+                this.setCachedBehaviorPropDefs(b.id,props)
+                Object.keys(props).forEach(name => {
+                    def[name] = props[name].value
+                })
+                const graph = this.getDataGraph()
+                const behavior = fetchGraphObject(graph, graph.createObject(def))
+                this.accessObject(item).insertChildLast(behavior)
+            } catch (e) {
+                console.error(e)
+            }
         })
     }
 
@@ -613,11 +644,9 @@ new MyScript()
 
     fetchBehaviorAssetContents(id) {
         const obj = fetchGraphObject(this.getDataGraph(),id)
-        console.log("obj is",obj)
         return fetch(obj.src)
             .then(res => res.text())
             .then(text => {
-            console.log("response is",text)
                 return text
         })
     }
@@ -634,6 +663,14 @@ new MyScript()
                 console.log("got back the response by updating",ans)
                 obj.set('src',getAssetsURL()+ans.asset.id)
             })
+    }
+
+    getCachedBehaviorPropDefs(behavior) {
+        return this.behaviorCache[behavior];
+    }
+
+    setCachedBehaviorPropDefs(id, props) {
+        this.behaviorCache[id] = props
     }
 }
 
