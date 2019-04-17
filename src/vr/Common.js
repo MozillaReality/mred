@@ -260,10 +260,10 @@ export const TRIGGERS = {
 
 
 export function is3DObjectType(type) {
-    if(type === 'cube') return true
-    if(type === 'sphere') return true
-    if(type === 'plane') return true
-    if(type === 'model') return true
+    if(type === OBJ_TYPES.cube) return true
+    if(type === OBJ_TYPES.sphere) return true
+    if(type === OBJ_TYPES.plane) return true
+    if(type === OBJ_TYPES.model) return true
     if(type === OBJ_TYPES.text) return true
     if(type === OBJ_TYPES.bg360) return true
     if(type === OBJ_TYPES.img2d) return true

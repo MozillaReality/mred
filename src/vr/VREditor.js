@@ -507,13 +507,20 @@ new MyScript()
         cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
         cmds.push({ divider:true })
 
-        this.accessObject(this.getAssetsObject()).array('children')
-            .map(ch => fetchGraphObject(this.getDataGraph(),ch))
-            .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
-            .forEach((beh)=>{
-                cmds.push({ title:beh.title, icon:ITEM_ICONS.action, fun: ()=>this.addBehaviorToObject(beh,item)})
-            })
-        cmds.push({ divider:true })
+        const obj = this.accessObject(item)
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE || is3DObjectType(obj.type)) {
+            this.accessObject(this.getAssetsObject()).array('children')
+                .map(ch => fetchGraphObject(this.getDataGraph(), ch))
+                .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
+                .forEach((beh) => {
+                    cmds.push({
+                        title: beh.title,
+                        icon: ITEM_ICONS.action,
+                        fun: () => this.addBehaviorToObject(beh, item)
+                    })
+                })
+            cmds.push({divider: true})
+        }
         cmds.push({ title:'cut',   icon:ITEM_ICONS.cut,   fun: this.cutSelection })
         cmds.push({ title:'copy',  icon:ITEM_ICONS.copy,  fun: this.copySelection })
         cmds.push({ title:'paste', icon:ITEM_ICONS.paste, fun: this.pasteSelection })
