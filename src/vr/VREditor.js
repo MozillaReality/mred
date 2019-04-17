@@ -50,6 +50,7 @@ export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
         super(options)
         this.imagecache = {}
+        this.behaviorCache = {}
     }
     getDocType() { return "vr" }
     getApp = () => {
@@ -82,8 +83,9 @@ export default class VREditor extends  SyncGraphProvider {
     getRendererForItem = (item) => {
         const obj = this.accessObject(item)
         if(!obj.exists()) return <div>???</div>
-        if(obj.type === 'asset') return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}></i> {obj.title}</div>
-        if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}></i> {obj.title}</div>
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return <div><i className={`fa fa-superpowers`}/> {obj.title}</div>
+        if(obj.type === 'asset') return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}/> {obj.title}</div>
+        if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}/> {obj.title}</div>
         return <div>{obj.title}</div>
     }
 
@@ -429,6 +431,19 @@ new MyScript()
         this.accessObject(SelectionManager.getSelection()).removeFromParent()
         SelectionManager.clearSelection()
     }
+    addBehaviorToObject = (b,item) => {
+        console.log("adding behavior",b,'to',item)
+        this.fetchBehaviorAssetContents(b.id).then((contents)=>{
+            console.log('the contents are',contents)
+            const graph = this.getDataGraph()
+            const behavior = fetchGraphObject(graph,graph.createObject({
+                type:TOTAL_OBJ_TYPES.BEHAVIOR,
+                title:b.title,
+                parent:0,
+            }))
+            this.accessObject(item).insertChildLast(behavior)
+        })
+    }
 
     calculateContextMenu(item) {
         const cmds = []
@@ -436,6 +451,14 @@ new MyScript()
         cmds.push({ divider:true })
         Object.keys(OBJ_TYPES).forEach(type => cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) }))
         cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
+        cmds.push({ divider:true })
+
+        this.accessObject(this.getAssetsObject()).array('children')
+            .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+            .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
+            .forEach((beh)=>{
+                cmds.push({ title:beh.title, icon:ITEM_ICONS.action, fun: ()=>this.addBehaviorToObject(beh,item)})
+            })
         cmds.push({ divider:true })
         cmds.push({ title:'cut',   icon:ITEM_ICONS.cut,   fun: this.cutSelection })
         cmds.push({ title:'copy',  icon:ITEM_ICONS.copy,  fun: this.copySelection })
@@ -587,6 +610,31 @@ new MyScript()
         })
             .then(res=>res.json())
     }
+
+    fetchBehaviorAssetContents(id) {
+        const obj = fetchGraphObject(this.getDataGraph(),id)
+        console.log("obj is",obj)
+        return fetch(obj.src)
+            .then(res => res.text())
+            .then(text => {
+            console.log("response is",text)
+                return text
+        })
+    }
+    updateBehaviorAssetContents(id,text) {
+        const obj = this.accessObject(id)
+        console.log("obj is",obj)
+        return fetch(obj.src+'.js',{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:text
+        }).then(res => res.json())
+            .then(ans => {
+                console.log("got back the response by updating",ans)
+                obj.set('src',getAssetsURL()+ans.asset.id)
+            })
+    }
 }
 
 class VREditorApp extends Component {
@@ -627,6 +675,7 @@ class VREditorApp extends Component {
         SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
             if(!SelectionManager.isEmpty()) {
                 const item = this.props.provider.accessObject(SelectionManager.getSelection())
+                if(item.type === PROP_DEFS.asset.key && item.subtype === ASSET_TYPES.BEHAVIOR) return this.setState({mode:'script'})
                 if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
                 if(item.type === TOTAL_OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
             }
