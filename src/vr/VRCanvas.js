@@ -340,18 +340,8 @@ export class VRCanvas extends Component {
 
 
     getAllBehaviors() {
-        const prov = this.props.provider
-        const behaviors = []
-        prov.accessObject(prov.getSceneRoot()).getChildren()
-            .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
-            .forEach(sc => {
-                prov.accessObject(sc.id).getChildren()
-                    .filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-                    .forEach(ch => {
-                        behaviors.push(ch)
-                })
-            })
-        return behaviors
+        return this.props.provider.accessObject(this.props.provider.getSceneRoot())
+            .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
 
     getParsedBehaviorAsset(beh) {

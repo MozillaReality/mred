@@ -19,6 +19,7 @@ export default class CubeDef extends ObjectDef {
             color:'#00ff00',
             action:0,
             trigger:TRIGGERS.CLICK,
+            children:graph.createArray(),
             parent:scene.id
         }))
     }

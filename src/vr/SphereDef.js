@@ -17,6 +17,7 @@ export default class SphereDef extends ObjectDef {
             color:'#0000ff',
             action:0,
             trigger:TRIGGERS.CLICK,
+            children:graph.createArray(),
             parent:scene.id
         }))
     }

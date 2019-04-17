@@ -61,6 +61,14 @@ export default class GraphAccessor {
                 })
                 return this.object(id2)
             }
+            obj.find = (match,list) => {
+                if(!list) list = []
+                if(match(obj)) list.push(obj)
+                if(obj.children) obj.getChildren().forEach(ch => {
+                    ch.find(match,list)
+                })
+                return list
+            }
             return obj
         } else {
             return {

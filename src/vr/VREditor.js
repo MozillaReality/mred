@@ -47,9 +47,7 @@ import {ImmersivePlayer} from './ImmersivePlayer'
 
 
 function parsePropsOfBehaviorContent(contents) {
-    const obj = Function('"use strict"; return('+contents+')')();
-    console.log("behavior obj is",obj)
-    return obj
+    return Function('"use strict"; return('+contents+')')();
 }
 
 export default class VREditor extends  SyncGraphProvider {
@@ -123,17 +121,6 @@ export default class VREditor extends  SyncGraphProvider {
         let defs = []
         if(!item) return defs
 
-        const props = this.syncdoc.getPropertiesForObject(item)
-        if(props) {
-            props.forEach(key => {
-                if(key === 'type') return
-                if(key === 'children') return
-                if(key === 'parent') return
-                const value = this.syncdoc.getPropertyValue(item,key)
-                if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
-                console.log("unknown property",key)
-            })
-        }
         defs.push({
             key:'id',
             name:"ID",
@@ -160,7 +147,21 @@ export default class VREditor extends  SyncGraphProvider {
             } else {
                 console.warn("Missing prop defs for behavior object")
             }
+            // return defs
         }
+
+        const props = this.syncdoc.getPropertiesForObject(item)
+        if(props) {
+            props.forEach(key => {
+                if(key === 'type') return
+                if(key === 'children') return
+                if(key === 'parent') return
+                const value = this.syncdoc.getPropertyValue(item,key)
+                if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
+                // console.log("unknown property",key)
+            })
+        }
+
 
 
         if(is3DObjectType(obj.type)) {
