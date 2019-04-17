@@ -17,7 +17,7 @@ import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
-    ACTIONS,
+    ACTIONS, ASSET_TYPES,
     get3DObjectDef,
     is3DObjectType,
     isGLTFFile,
@@ -361,12 +361,38 @@ export default class VREditor extends  SyncGraphProvider {
     addAnimateAction = () => {
         const graph = this.getDataGraph()
         const action = fetchGraphObject(graph,graph.createObject({
-            type:TOTAL_OBJ_TYPES.ACTION,
+            type:TOTAL_OBJ_TYPES.ASSET,
             subtype:ACTIONS.ANIMATE,
             title:'animate action',
             parent:0
         }))
         this.accessObject(this.getActionsObject()).insertChildLast(action)
+    }
+
+    addCustomBehaviorAsset = () => {
+        const url = getAssetsURL()+'behavior'+(Math.floor(Math.random()*100000000))+'.js';
+        const contents = "console.log('this is a script')"
+        fetch(url,{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:contents
+        })
+            .then(res => res.json())
+            .then(ans => {
+                const url = getAssetsURL()+ans.asset.id
+                const graph = this.getDataGraph()
+                const asset = fetchGraphObject(graph,graph.createObject({
+                    type:TOTAL_OBJ_TYPES.ASSET,
+                    subtype:ASSET_TYPES.BEHAVIOR,
+                    format:MIME_TYPES.JAVASCRIPT,
+                    title:'custom behavior',
+                    src:url,
+                    parent:0
+                }))
+                this.accessObject(this.getAssetsObject()).insertChildLast(asset)
+            })
+            .catch(err => console.error(err))
     }
 
     addScriptAction = () => {
@@ -672,6 +698,11 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.actions,
                 fun: () => this.props.provider.addScriptAction()
             },
+            {
+                title:'behavior',
+                icon: ITEM_ICONS.actions,
+                fun: () => this.props.provider.addCustomBehaviorAsset()
+            }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }

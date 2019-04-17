@@ -236,6 +236,7 @@ export const OBJ_TYPES = {
 export const TOTAL_OBJ_TYPES = {
     ACTION:'action',
     SCENE:'scene',
+    ASSET:'asset',
 }
 export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
@@ -281,7 +282,10 @@ export function get3DObjectDef(type) {
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
-export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac' }
+export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript' }
+export const ASSET_TYPES = {
+    BEHAVIOR:'behavior'
+}
 export function isImageType(type) {
     if (!type) return false
     if (type.toLowerCase() === MIME_TYPES.PNG) return true
