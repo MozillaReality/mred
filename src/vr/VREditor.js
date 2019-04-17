@@ -49,7 +49,7 @@ import {ImmersivePlayer} from './ImmersivePlayer'
 function parsePropsOfBehaviorContent(contents) {
     const obj = Function('"use strict"; return('+contents+')')();
     console.log("behavior obj is",obj)
-    return obj.properties
+    return obj
 }
 
 export default class VREditor extends  SyncGraphProvider {
@@ -84,6 +84,24 @@ export default class VREditor extends  SyncGraphProvider {
         insertAsFirstChild(doc,scene1,obj)
         insertAsLastChild(doc,root,actions)
         insertAsLastChild(doc,root,assets)
+    }
+    docLoaded = () => {
+        console.log("really loaded the doc. caching the behaviors",this.getAssetsObject())
+        this.accessObject(this.getAssetsObject()).array('children')
+            .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+            .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
+            .forEach((b)=>{
+                console.log("processing behavior",b)
+                this.fetchBehaviorAssetContents(b.id).then((contents)=> {
+                    try {
+                        const info = parsePropsOfBehaviorContent(contents)
+                        info.text = contents
+                        this.setCachedBehaviorAsset(b.id, info)
+                    } catch (e) {
+                        console.error(e)
+                    }
+                })
+            })
     }
 
     getRendererForItem = (item) => {
@@ -128,16 +146,20 @@ export default class VREditor extends  SyncGraphProvider {
         //if a behavior object is selected, get the defs from the root behavior asset
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
             const behaviorProps = this.getCachedBehaviorPropDefs(obj.behavior)
-            Object.keys(behaviorProps).forEach(pname => {
-                const propdef = behaviorProps[pname]
-                const ndef = {
-                    key:pname,
-                    name:pname,
-                    type:propdef.type,
-                    value:obj[pname]
-                }
-                defs.push(ndef)
-            })
+            if(behaviorProps) {
+                Object.keys(behaviorProps).forEach(pname => {
+                    const propdef = behaviorProps[pname]
+                    const ndef = {
+                        key: pname,
+                        name: pname,
+                        type: propdef.type,
+                        value: obj[pname]
+                    }
+                    defs.push(ndef)
+                })
+            } else {
+                console.warn("Missing prop defs for behavior object")
+            }
         }
 
 
@@ -462,10 +484,10 @@ new MyScript()
                     parent: 0,
                     behavior:b.id,
                 }
-                const props = parsePropsOfBehaviorContent(contents)
-                this.setCachedBehaviorPropDefs(b.id,props)
-                Object.keys(props).forEach(name => {
-                    def[name] = props[name].value
+                const obj = parsePropsOfBehaviorContent(contents)
+                this.setCachedBehaviorAsset(b.id,obj)
+                Object.keys(obj.properties).forEach(name => {
+                    def[name] = obj.properties[name].value
                 })
                 const graph = this.getDataGraph()
                 const behavior = fetchGraphObject(graph, graph.createObject(def))
@@ -666,11 +688,15 @@ new MyScript()
     }
 
     getCachedBehaviorPropDefs(behavior) {
-        return this.behaviorCache[behavior];
+        return this.behaviorCache[behavior].properties;
     }
 
-    setCachedBehaviorPropDefs(id, props) {
-        this.behaviorCache[id] = props
+    getCachedBehaviorAsset(id) {
+        return this.behaviorCache[id]
+    }
+
+    setCachedBehaviorAsset(id, asset) {
+        this.behaviorCache[id] = asset
     }
 }
 

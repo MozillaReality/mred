@@ -153,6 +153,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.fire("CONNECTED",this.connected)
         this.fire(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,{provider:this})
         setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
+        this.docLoaded()
     }
 
     reloadDocument() {
@@ -164,6 +165,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
             console.log("couldn't reload the doc",e)
         })
 
+    }
+
+    docLoaded = () => {
     }
 
     toggleConnected = () => {

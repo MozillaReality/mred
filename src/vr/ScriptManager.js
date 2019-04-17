@@ -80,6 +80,20 @@ export default class ScriptManager {
             console.log(e)
         }
     }
+
+    startRunning() {
+        console.log("script manager starting")
+        const nodes = this.sgp.getAllBehaviors()
+        nodes.forEach(ref => {
+            const asset = this.sgp.getParsedBehaviorAsset(ref)
+            console.log("behavior asset",asset)
+            if(asset.init) asset.init()
+        })
+
+    }
+    stopRunning() {
+        console.log("script manager stopping")
+    }
 }
 
 

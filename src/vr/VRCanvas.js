@@ -186,7 +186,13 @@ export class VRCanvas extends Component {
         if('running' in nextProps) {
             if(nextProps.running !== this.props.running) {
                 this.setState({running:nextProps.running})
-                if(nextProps.running === false) this.resetSceneGraph()
+                if(nextProps.running === false) {
+                    this.scriptManager.stopRunning()
+                    this.resetSceneGraph()
+                } else {
+                    //start the script manager
+                    this.scriptManager.startRunning()
+                }
                 return false
             }
         }
@@ -330,5 +336,27 @@ export class VRCanvas extends Component {
                 }
             }
         })
+    }
+
+
+    getAllBehaviors() {
+        const prov = this.props.provider
+        const behaviors = []
+        prov.accessObject(prov.getSceneRoot()).getChildren()
+            .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
+            .forEach(sc => {
+                prov.accessObject(sc.id).getChildren()
+                    .filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+                    .forEach(ch => {
+                        behaviors.push(ch)
+                })
+            })
+        return behaviors
+    }
+
+    getParsedBehaviorAsset(beh) {
+        const prov = this.props.provider
+        const asset = prov.accessObject(beh.behavior)
+        return prov.getCachedBehaviorAsset(asset.id)
     }
 }
