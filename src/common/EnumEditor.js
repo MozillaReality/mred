@@ -15,7 +15,7 @@ const EnumPicker = (props) => {
 
 const DefaultEnumRenderer = (props) => {
     let value = ""
-    if(typeof props.value !== 'undefined') {
+    if(typeof props.value !== 'undefined' && props.value !== null) {
         value = props.value.toString()
     }
     return <span>{value}</span>
@@ -32,7 +32,7 @@ export class EnumEditor extends Component {
     }
 
     calculateValues() {
-        const vals = this.props.provider.getValuesForEnum(this.props.def.getKey(), this.props.obj)
+        const vals = this.props.provider.getValuesForEnum(this.props.def.getKey(), this.props.obj, this.props.def)
         if (!vals) {
             console.log(`no values for enum ${this.props.def.getKey()}`);
             return []

@@ -142,6 +142,7 @@ export default class VREditor extends  SyncGraphProvider {
                         type: propdef.type,
                         value: obj[pname]
                     }
+                    if(propdef.hints) ndef.hints = propdef.hints
                     defs.push(ndef)
                 })
             } else {
@@ -196,7 +197,19 @@ export default class VREditor extends  SyncGraphProvider {
             }
         }
     }
-    getValuesForEnum(key,obj) {
+    getValuesForEnum(key,obj,def) {
+        const realobj = this.accessObject(obj)
+        if(realobj.exists() && realobj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+            // console.log("doing prop for behavior")
+            if(def.hasHints()) {
+                const hints = def.getHints()
+                if(hints.type === 'node') {
+                    return this.accessObject(this.getSceneRoot())
+                        .find(obj => obj.type === hints.nodeType)
+                        .map(ch => ch.id)
+                }
+            }
+        }
         if (key === PROP_DEFS.asset.key) {
             const assets = this.accessObject(this.getAssetsObject()).array('children').map(ch => this.accessObject(ch))
             const realobj = this.accessObject(obj)
@@ -232,6 +245,8 @@ export default class VREditor extends  SyncGraphProvider {
         }
     }
     getRendererForEnum(key,obj) {
+        const realobj = this.accessObject(obj)
+        if(realobj.exists() && realobj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return EnumTitleRenderer
         switch(key) {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
             case PROP_DEFS.action.key: return ActionRenderer
