@@ -50,7 +50,7 @@ export default class GraphAccessor {
             obj.child = (index) => this.object(obj.array('children')[index])
             obj.removeFromParent = () => {
                 const parent = this.object(obj.parent)
-                const n = parent.array('children').findIndex(ch => obj.id)
+                const n = parent.array('children').findIndex(ch => ch === obj.id)
                 // const n = indexOf(graph, parent.children, obj.id)
                 if (n >= 0) {
                     this.graph.removeElement(parent.children, n)
