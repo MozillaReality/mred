@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL} from '../TreeItemProvider'
-import {isAudioType, isImageType} from './Common'
+import {isAudioType, isImageType, MIME_TYPES} from './Common'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {
@@ -12,7 +12,10 @@ export class OpenAssetDialog extends Component {
     }
     componentDidMount() {
         this.props.provider.loadAssetList()
-            .then((assets) => this.setState({assetList:assets}))
+            .then((assets) => {
+                if(this.props.filter) assets = assets.filter(this.props.filter)
+                this.setState({assetList:assets})
+            })
     }
     addAsset(info) {
         DialogManager.hide()
@@ -25,12 +28,13 @@ export class OpenAssetDialog extends Component {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
             return this.props.provider.addAudioAssetFromURL(info.url, info.mimeType, info.title)
         }
+        if(info.mimeType === MIME_TYPES.JAVASCRIPT) {
+            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
+            return this.props.provider.addBehaviorAssetFromURL(info.url, info.mimeType, info.title)
+        }
         console.log("can't add this type")
     }
 
-    cancel = () => {
-        DialogManager.hide()
-    }
     okay = () => {
         DialogManager.hide()
     }
@@ -49,8 +53,7 @@ export class OpenAssetDialog extends Component {
                     </ul>
                 </VBox>
                 <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
+                    <button onClick={this.okay}>close</button>
                 </HBox>
             </VBox>
         </Dialog>

@@ -390,6 +390,19 @@ export default class VREditor extends  SyncGraphProvider {
         }))
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
     }
+    addBehaviorAssetFromURL = (url, fileType, name) => {
+        const graph = this.getDataGraph()
+        const asset = fetchGraphObject(graph,graph.createObject({
+            type:TOTAL_OBJ_TYPES.ASSET,
+            subtype:ASSET_TYPES.BEHAVIOR,
+            format:MIME_TYPES.JAVASCRIPT,
+            title:name,
+            src:url,
+            parent:0
+        }))
+        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
+
+    }
     addGLBAssetFromFile = (file) => {
         ToasterMananager.add('uploading')
         this.uploadFile(file).then((ans)=>{
@@ -654,6 +667,17 @@ new MyScript()
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
     showOpenDocumentDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
     showOpenAssetDialog = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
+    showAddServerImageDialog = () => {
+        DialogManager.show(<OpenAssetDialog provider={this}
+                                            filter={a => a.mimeType === MIME_TYPES.PNG
+                                                || a.mimeType === MIME_TYPES.JPEG}
+        />)
+    }
+    showOpenBehaviorDialog = () => {
+        DialogManager.show(<OpenAssetDialog provider={this}
+                                            filter={(a => a.mimeType === MIME_TYPES.JAVASCRIPT)}
+        />)
+    }
 
 
     accessObject = (id) => {
@@ -792,6 +816,11 @@ class VREditorApp extends Component {
                 fun: () => this.props.provider.showAddImageAssetDialog()
             },
             {
+                title: 'server image',
+                icon: ITEM_ICONS.image,
+                fun: () => this.props.provider.showAddServerImageDialog()
+            },
+            {
                 title: 'GLTF model',
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
@@ -836,9 +865,14 @@ class VREditorApp extends Component {
                 fun: () => this.props.provider.addScriptAction()
             },
             {
-                title:'behavior',
+                title:'new behavior',
                 icon: ITEM_ICONS.actions,
                 fun: () => this.props.provider.addCustomBehaviorAsset()
+            },
+            {
+                title:'behavior from server',
+                icon: ITEM_ICONS.actions,
+                fun: () => this.props.provider.showOpenBehaviorDialog()
             }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
