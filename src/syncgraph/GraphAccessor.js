@@ -15,6 +15,13 @@ export default class GraphAccessor {
                 this.graph.setProperty(id,key,value)
                 return obj
             }
+            obj.props = () => {
+                const o = {}
+                this.graph.getPropertiesForObject(id).forEach(key => {
+                    o[key] = this.graph.getPropertyValue(id, key)
+                })
+                return o
+            }
             obj.array = (key) => {
                 // console.log("looking at key",key)
                 // console.log("self is",obj)

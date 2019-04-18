@@ -1,4 +1,5 @@
 import * as ToasterMananager from './ToasterManager'
+import {TOTAL_OBJ_TYPES} from './Common'
 
 export default class ScriptManager {
     constructor(sceneGraphProvider) {
@@ -8,11 +9,17 @@ export default class ScriptManager {
     getGraphObjectByName(title) {
         return this.sgp.findGraphObjectByTitle(title)
     }
+    getGraphObjectById(id) {
+        return this.sgp.getGraphObjectById(id)
+    }
     getThreeObject(id) {
         return this.sgp.findThreeObject(id)
     }
     playAudioAsset(obj) {
         return this.sgp.playAudioAsset(obj)
+    }
+    navigateScene(id) {
+        return this.sgp.navigateScene(id)
     }
     makeScriptContext() {
         return {
@@ -39,6 +46,12 @@ export default class ScriptManager {
                 const obj = manager.getGraphObjectByName(name)
                 if(!obj) throw new Error(`asset '${name}' not found`)
                 return new AssetFacade(manager,obj)
+            },
+            getObjectById(id) {
+                return manager.getGraphObjectById(id)
+            },
+            navigateScene(id) {
+                return manager.navigateScene(id)
             },
             setKeyValue(key, value) {
             },
@@ -78,6 +91,21 @@ export default class ScriptManager {
             ToasterMananager.add('ERROR: ' + e.message)
             console.error(e.message)
             console.log(e)
+        }
+    }
+    performClickAction(target) {
+        console.log("user clicked on",target)
+        const evt = {
+            type:'click',
+            target:target,
+            system:this.makeSystemFacade(),
+        }
+        const behaviors = target.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        for(let i in behaviors) {
+            let b = behaviors[i]
+            evt.props = b.props()
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if(asset.onClick) asset.onClick(evt)
         }
     }
 

@@ -285,12 +285,7 @@ export class VRCanvas extends Component {
     }
 
     performClickAction(objectId) {
-        const obj = fetchGraphObject(this.props.provider.getDataGraph(),objectId)
-        if(!obj) return
-        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
-        const actionObj = this.props.provider.accessObject(obj.action)
-        if(!actionObj) return
-        this.performAction(actionObj, obj)
+        this.scriptManager.performClickAction(this.props.provider.accessObject(objectId))
     }
     performAction(action, target) {
         //old style, navigate to a scene
@@ -339,6 +334,7 @@ export class VRCanvas extends Component {
     }
 
 
+    // ================  SGP implementation
     getAllBehaviors() {
         return this.props.provider.accessObject(this.props.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
@@ -348,5 +344,11 @@ export class VRCanvas extends Component {
         const prov = this.props.provider
         const asset = prov.accessObject(beh.behavior)
         return prov.getCachedBehaviorAsset(asset.id)
+    }
+    getGraphObjectById(id) {
+        return this.props.provider.accessObject(id)
+    }
+    navigateScene(id) {
+        SelectionManager.setSelection(id)
     }
 }
