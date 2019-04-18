@@ -58,6 +58,10 @@ export default class ScriptManager {
                 manager.navigateScene(id)
                 manager.fireSceneEnter(this.getCurrentScene())
             },
+            playSound(id) {
+                const asset = manager.getGraphObjectById(id)
+                manager.playAudioAsset(asset)
+            },
             setKeyValue(key, value) {
             },
             getKeyValue(key, value) {
