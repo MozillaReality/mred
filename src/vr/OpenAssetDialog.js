@@ -38,15 +38,15 @@ export class OpenAssetDialog extends Component {
         return <Dialog visible={true}>
             <VBox grow>
                 <h3>Add Asset</h3>
-                <VBox scroll>
-                <ul>{this.state.assetList.map((doc, i) => {
-                    return <li key={i}>
-                        <b>{doc.mimeType}</b> -
-                        <b>{doc.title}</b>
-                        <button onClick={()=>this.addAsset(doc)}>add</button>
-                    </li>
-                })}
-                </ul>
+                <VBox scroll style={{ maxHeight:'60vh'}}>
+                    <ul>{this.state.assetList.map((doc, i) => {
+                        return <li key={i}>
+                            <b>{doc.mimeType}</b> -
+                            <b>{doc.title}</b>
+                            <button onClick={()=>this.addAsset(doc)}>add</button>
+                        </li>
+                    })}
+                    </ul>
                 </VBox>
                 <HBox>
                     <button onClick={this.cancel}>cancel</button>
