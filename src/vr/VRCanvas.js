@@ -310,7 +310,7 @@ export class VRCanvas extends Component {
         const audioLoader = new THREE.AudioLoader()
         audioLoader.load(audio.src, function( buffer ) {
             sound.setBuffer( buffer );
-            sound.setLoop( true );
+            sound.setLoop( false );
             sound.setVolume( 0.5 );
             sound.play();
         });
@@ -360,7 +360,13 @@ export class VRCanvas extends Component {
         }
         return null
     }
+    getSceneObjects(scene) {
+        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+    }
     findThreeObject(id) {
         return this.findNode(id)
+    }
+    getBehaviorsForObject(scene) {
+        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
 }

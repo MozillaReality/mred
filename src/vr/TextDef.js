@@ -29,6 +29,7 @@ export default class TextDef extends ObjectDef {
 
             action:0,
             trigger:TRIGGERS.CLICK,
+            children:graph.createArray(),
             parent:scene.id
         }))
     }

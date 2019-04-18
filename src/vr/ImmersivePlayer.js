@@ -7,24 +7,90 @@ import * as THREE from 'three'
 import {Group} from "three"
 import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
 import SceneDef from './SceneDef'
-import {ACTIONS, get3DObjectDef, TRIGGERS} from './Common'
+import {ACTIONS, ASSET_TYPES, get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES, TRIGGERS} from './Common'
 import {Pointer} from 'webxr-boilerplate/pointer'
+
+function parsePropsOfBehaviorContent(contents) {
+    return Function('"use strict"; return('+contents+')')();
+}
+
 
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
-        this.obj_node_map = {}
+        this.obj_map = {}
         this.three_map = {}
         this.action_map = {}
         this.title_map = {}
-        this.scriptManager = new ScriptManager(this)
+        this.current_scene = null
+        this.root = null
+        this.behavior_map = {}
+        this.behavior_assets = {}
+        this.pendingAssets = []
+        this.scriptManager = new ScriptManager({
+            getCurrentScene: () => {
+                return this.current_scene
+            },
+            getBehaviorsForObject: (obj) => {
+                if(!obj.children) return []
+                return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+            },
+            getAllBehaviors: () => {
+                console.log("all behaviors",this.behavior_map)
+                return Object.keys(this.behavior_map).map(key => this.behavior_map[key])
+            },
+            getParsedBehaviorAsset: (b) => {
+                // console.log("trying to load",b)
+                const asset = this.behavior_assets[b.behavior]
+                // console.log("found the asset",asset)
+                return asset
+                // console.log("pending assets",this.pendingAssets)
+            },
+            navigateScene: (sceneid) => {
+                console.log("navigating to ",sceneid)
+                const scene = this.obj_map[sceneid]
+                if(!scene) return console.warn("couldn't find scene for",sceneid)
+                this.setCurrentScene(scene)
+            },
+            getSceneObjects:(sc) => {
+                // console.log("getting children for",sc)
+                return sc.children.filter(ch => is3DObjectType(ch.type))
+            },
+            getGraphObjectById: (id) => {
+                return this.obj_map[id]
+            },
+            findThreeObject: (id) => {
+                return this.three_map[id]
+            },
+            playAudioAsset: (audio) => {
+                console.log("trying to play",audio)
+                const sound = new THREE.Audio(this.audioListener)
+                const audioLoader = new THREE.AudioLoader()
+                audioLoader.load(audio.src, function( buffer ) {
+                    sound.setBuffer( buffer );
+                    sound.setLoop( false );
+                    sound.setVolume( 0.5 );
+                    sound.play();
+                });
+            }
+        })
     }
 
     componentDidMount() {
         this.initThreeJS()
         const opts = parseOptions({})
         GET_JSON(getDocsURL()+opts.doc).then((payload)=>{
-            this.buildScene(payload.graph)
+            this.root = payload.graph
+            this.buildRoot(this.root)
+            console.log("root is",this.root)
+            if(this.root.defaultScene) {
+                const sc = this.root.children.find(ch => ch.id  === this.root.defaultScene)
+                this.setCurrentScene(sc)
+            }
+            Promise.all(this.pendingAssets).then(() => {
+                console.log("all assets loaded now")
+                this.scriptManager.startRunning()
+            })
         })
     }
 
@@ -44,29 +110,50 @@ export class ImmersivePlayer extends Component {
         </div>
     }
 
-    buildScene(graph) {
-        console.log("building",graph)
+    buildRoot(graph) {
         graph.children.forEach(ch => {
             if(ch.type === 'scene') return this.initScene(ch)
-            if(ch.type === 'actions') return this.initActions(ch)
+            if(ch.type === 'assets') return this.initAssets(ch)
         })
     }
 
     initScene(def) {
-        console.log("making a scene",def)
+        // console.log("making a scene",def)
+        this.obj_map[def.id] = def
         const scene = new SceneDef().makeNode(def)
         this.three_map[def.id] = scene
         this.scenes.add(scene)
         this.title_map[def.title] = def
         def.children.forEach(ch => {
+            this.obj_map[ch.id] = ch
             this.title_map[ch.title] = ch
-            const child = get3DObjectDef(ch.type).makeNode(ch)
-            this.three_map[ch.id] = child
-            on(child,'click',()=>{
-                if(ch.action) this.performAction(ch, TRIGGERS.CLICK)
-            })
-            scene.add(child)
+            ch.props = () => {
+                return ch
+            }
+            if(is3DObjectType(ch.type)) {
+                const child = get3DObjectDef(ch.type).makeNode(ch)
+                this.three_map[ch.id] = child
+                on(child, 'click', () => {
+                    this.scriptManager.performClickAction(ch)
+                })
+                scene.add(child)
+                //TODO: Make this recursive
+                if(ch.children) {
+                    ch.children.forEach(cch => {
+                        if(cch.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+                            this.behavior_map[cch.id] = cch
+                            cch.props = () => {
+                                return cch
+                            }
+                        }
+                    })
+                }
+            }
+            if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+                this.behavior_map[ch.id] = ch
+            }
         })
+        scene.visible = false
     }
 
     performAction(obj,type) {
@@ -143,6 +230,7 @@ export class ImmersivePlayer extends Component {
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
+        this.scriptManager.tick(time)
         this.renderer.render( this.scene, this.camera );
     }
 
@@ -153,8 +241,37 @@ export class ImmersivePlayer extends Component {
         })
     }
 
+    initAssets(assets) {
+        console.log("loading assets",assets.children)
+        assets.children.forEach(ch => {
+            console.log("loading asset",ch)
+            this.obj_map[ch.id] =  ch
+            if(ch.subtype === ASSET_TYPES.BEHAVIOR) {
+                console.log("loading asset",ch)
+                // this.behavior_assets[ch.id] = ch
+                const prom = fetch(ch.src)
+                    .then(res => res.text())
+                    .then(text => {
 
 
+                        const info = parsePropsOfBehaviorContent(text)
+                        info.text = text
+                        // ch.text = text
+                        this.behavior_assets[ch.id] = info
+                        return text
+                    })
+                this.pendingAssets.push(prom)
+            }
+        })
+    }
+
+
+    setCurrentScene(scene) {
+        // console.log('setting the current scene to',scene)
+        this.scenes.children.forEach(sc => sc.visible = false)
+        if(this.three_map[scene.id]) this.three_map[scene.id].visible = true
+        this.current_scene = scene
+    }
 
     findGraphObjectByTitle(title) {
         return this.title_map[title]

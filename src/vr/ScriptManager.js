@@ -4,10 +4,17 @@ import {TOTAL_OBJ_TYPES} from './Common'
 export default class ScriptManager {
     constructor(sceneGraphProvider) {
         this.sgp = sceneGraphProvider
+        this.running = false
     }
 
     getCurrentScene() {
         return this.sgp.getCurrentScene()
+    }
+    getSceneObjects(scene) {
+        return this.sgp.getSceneObjects(scene)
+    }
+    getBehaviorsForObject(scene) {
+        return this.sgp.getBehaviorsForObject(scene)
     }
     getGraphObjectByName(title) {
         return this.sgp.findGraphObjectByTitle(title)
@@ -109,7 +116,7 @@ export default class ScriptManager {
             target:target,
             system:this.makeSystemFacade(),
         }
-        const behaviors = target.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        const behaviors = this.getBehaviorsForObject(target)
         for(let i in behaviors) {
             let b = behaviors[i]
             evt.props = b.props()
@@ -124,7 +131,7 @@ export default class ScriptManager {
             target:scene,
             system:this.makeSystemFacade(),
         }
-        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onExit) asset.onExit(evt)
@@ -136,7 +143,7 @@ export default class ScriptManager {
             target:scene,
             system:this.makeSystemFacade(),
         }
-        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onEnter) asset.onEnter(evt)
@@ -144,6 +151,7 @@ export default class ScriptManager {
     }
 
     tick(time) {
+        if(!this.running) return
         const scene = this.getCurrentScene()
         if (!scene) return
         const evt = {
@@ -151,18 +159,26 @@ export default class ScriptManager {
             system:this.makeSystemFacade(),
             time:time
         }
-        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
-            // console.log("b =",b.parent)
-            const parent = this.sgp.getGraphObjectById(b.parent)
             evt.target = new ThreeObjectFacade(this,b.parent)
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onTick) asset.onTick(evt)
+        })
+        this.getSceneObjects(scene).forEach(child => {
+            const behaviors = this.getBehaviorsForObject(child)
+            behaviors.forEach(b => {
+                const parent = this.sgp.getGraphObjectById(b.parent)
+                evt.target = new ThreeObjectFacade(this,b.parent)
+                const asset = this.sgp.getParsedBehaviorAsset(b)
+                if(asset.onTick) asset.onTick(evt)
+            })
         })
     }
 
 
     startRunning() {
+        this.running = true
         console.log("script manager starting")
         const nodes = this.sgp.getAllBehaviors()
         nodes.forEach(ref => {
@@ -173,6 +189,7 @@ export default class ScriptManager {
 
     }
     stopRunning() {
+        this.running = false
         console.log("script manager stopping")
     }
 }
