@@ -6,6 +6,9 @@ export default class ScriptManager {
         this.sgp = sceneGraphProvider
     }
 
+    getCurrentScene() {
+        return this.sgp.getCurrentScene()
+    }
     getGraphObjectByName(title) {
         return this.sgp.findGraphObjectByTitle(title)
     }
@@ -19,7 +22,7 @@ export default class ScriptManager {
         return this.sgp.playAudioAsset(obj)
     }
     navigateScene(id) {
-        return this.sgp.navigateScene(id)
+        this.sgp.navigateScene(id)
     }
     makeScriptContext() {
         return {
@@ -32,7 +35,7 @@ export default class ScriptManager {
         const manager = this
         return {
             getCurrentScene() {
-                return null
+                return manager.getCurrentScene()
             },
             getScene(name) {
                 return null
@@ -51,7 +54,9 @@ export default class ScriptManager {
                 return manager.getGraphObjectById(id)
             },
             navigateScene(id) {
-                return manager.navigateScene(id)
+                manager.fireSceneExit(this.getCurrentScene())
+                manager.navigateScene(id)
+                manager.fireSceneEnter(this.getCurrentScene())
             },
             setKeyValue(key, value) {
             },
@@ -109,6 +114,30 @@ export default class ScriptManager {
         }
     }
 
+    fireSceneExit(scene) {
+        const evt = {
+            type:'exit',
+            target:scene,
+            system:this.makeSystemFacade(),
+        }
+        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        behaviors.forEach(b => {
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if(asset.onExit) asset.onExit(evt)
+        })
+    }
+    fireSceneEnter(scene) {
+        const evt = {
+            type:'enter',
+            target:scene,
+            system:this.makeSystemFacade(),
+        }
+        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        behaviors.forEach(b => {
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if(asset.onEnter) asset.onEnter(evt)
+        })
+    }
     startRunning() {
         console.log("script manager starting")
         const nodes = this.sgp.getAllBehaviors()

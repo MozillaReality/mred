@@ -289,20 +289,20 @@ export class VRCanvas extends Component {
     }
     performAction(action, target) {
         //old style, navigate to a scene
-        if(action.type === TOTAL_OBJ_TYPES.SCENE) {
-            const scene = fetchGraphObject(this.props.provider.getDataGraph(),action.id)
-            if(scene) {
-                if(scene.action && scene.trigger === TRIGGERS.ENTER_SCENE) {
-                    const action2 = fetchGraphObject(this.props.provider.getDataGraph(),scene.action)
-                    this.performAction(action2,scene)
-                }
-            }
-            return SelectionManager.setSelection(action.id)
-        }
+        // if(action.type === TOTAL_OBJ_TYPES.SCENE) {
+        //     const scene = fetchGraphObject(this.props.provider.getDataGraph(),action.id)
+        //     if(scene) {
+        //         if(scene.action && scene.trigger === TRIGGERS.ENTER_SCENE) {
+        //             const action2 = fetchGraphObject(this.props.provider.getDataGraph(),scene.action)
+        //             this.performAction(action2,scene)
+        //         }
+        //     }
+        //     return SelectionManager.setSelection(action.id)
+        // }
         // if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
         // if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
-        if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
-        if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
+        // if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
+        // if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
     }
 
     playAudioAsset(audio) {
@@ -350,5 +350,14 @@ export class VRCanvas extends Component {
     }
     navigateScene(id) {
         SelectionManager.setSelection(id)
+    }
+    getCurrentScene() {
+        const sel = SelectionManager.getSelection()
+        const obj = this.props.provider.accessObject(sel)
+        if(obj.type === 'scene') return obj
+        if(is3DObjectType(obj.type)) {
+            return this.props.provider.accessObject(obj.parent)
+        }
+        return null
     }
 }
