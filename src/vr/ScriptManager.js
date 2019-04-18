@@ -142,6 +142,26 @@ export default class ScriptManager {
             if(asset.onEnter) asset.onEnter(evt)
         })
     }
+
+    tick(time) {
+        const scene = this.getCurrentScene()
+        if (!scene) return
+        const evt = {
+            type:'tick',
+            system:this.makeSystemFacade(),
+            time:time
+        }
+        const behaviors = scene.find(o => o.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+        behaviors.forEach(b => {
+            // console.log("b =",b.parent)
+            const parent = this.sgp.getGraphObjectById(b.parent)
+            evt.target = new ThreeObjectFacade(this,b.parent)
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if(asset.onTick) asset.onTick(evt)
+        })
+    }
+
+
     startRunning() {
         console.log("script manager starting")
         const nodes = this.sgp.getAllBehaviors()
@@ -174,6 +194,9 @@ class ThreeObjectFacade {
     }
     setPosition(x,y,z) {
         this.manager.getThreeObject(this.obj).position.set(x,y,z)
+    }
+    getRotation() {
+        return this.manager.getThreeObject(this.obj).rotation
     }
     setVisible(visible) {
         const threeobj = this.manager.getThreeObject(this.obj)

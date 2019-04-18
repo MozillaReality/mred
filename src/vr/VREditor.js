@@ -502,9 +502,11 @@ new MyScript()
                 }
                 const obj = parsePropsOfBehaviorContent(contents)
                 this.setCachedBehaviorAsset(b.id,obj)
-                Object.keys(obj.properties).forEach(name => {
-                    def[name] = obj.properties[name].value
-                })
+                if(obj.properties) {
+                    Object.keys(obj.properties).forEach(name => {
+                        def[name] = obj.properties[name].value
+                    })
+                }
                 const graph = this.getDataGraph()
                 const behavior = fetchGraphObject(graph, graph.createObject(def))
                 this.accessObject(item).insertChildLast(behavior)

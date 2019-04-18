@@ -74,7 +74,10 @@ export class VRCanvas extends Component {
 
         this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
 
-        this.renderer.setAnimationLoop(() => this.renderer.render(this.scene, this.camera))
+        this.renderer.setAnimationLoop((time) => {
+            if(this.state.running) this.scriptManager.tick(time)
+            this.renderer.render(this.scene, this.camera)
+        })
 
         this.props.provider.onRawChange(op => this.updateScene(op))
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, () => {
@@ -125,9 +128,6 @@ export class VRCanvas extends Component {
         delete node.userData.graphid
     }
 
-    findThreeObjectByGraphId(id) {
-        return this.findNode(id)
-    }
 
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
@@ -359,5 +359,8 @@ export class VRCanvas extends Component {
             return this.props.provider.accessObject(obj.parent)
         }
         return null
+    }
+    findThreeObject(id) {
+        return this.findNode(id)
     }
 }
