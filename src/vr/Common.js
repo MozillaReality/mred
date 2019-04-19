@@ -133,11 +133,6 @@ export const PROP_DEFS = {
         type:TYPES.STRING,
         locked:true,
     },
-    action: {
-        key:'action',
-        name:'Action',
-        type:TYPES.ENUM
-    },
     imageOffset: {
         key:'offset',
         name:'Image Offset',
@@ -201,11 +196,6 @@ export const PROP_DEFS = {
         name:'BG?',
         type:TYPES.BOOLEAN,
     },
-    trigger: {
-        key:'trigger',
-        name:'Trigger',
-        type:TYPES.ENUM,
-    },
     scriptBody: {
         key:'scriptBody',
         name:'code',
@@ -239,7 +229,6 @@ export const OBJ_TYPES = {
 }
 
 export const TOTAL_OBJ_TYPES = {
-    ACTION:'action',
     SCENE:'scene',
     ASSET:'asset',
     BEHAVIOR:'behavior',
@@ -253,19 +242,6 @@ export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
     CENTER:'CENTER',
     RIGHT:'RIGHT',
-}
-
-export const ACTIONS = {
-    ANIMATE:'ANIMATE',
-    SOUND:'SOUND',
-    SCRIPT:'SCRIPT',
-}
-
-export const TRIGGERS = {
-    CLICK:'CLICK',
-    PROXIMITY:'PROXIMITY',
-    ENTER_SCENE:'ENTER_SCENE',
-    EXIT_SCENE:'EXIT_SCENE',
 }
 
 
@@ -333,8 +309,6 @@ export const ITEM_ICONS = {
     model: 'cube',
     asset: 'file',
     assets: 'archive',
-    actions:'superpowers',
-    action: 'superpowers',
     behavior_script:'superpowers',
     scene: 'globe',
     bg360:'image',

@@ -17,7 +17,7 @@ import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
-    ACTIONS, ASSET_TYPES,
+    ASSET_TYPES,
     get3DObjectDef,
     is3DObjectType,
     isGLTFFile,
@@ -26,8 +26,7 @@ import {
     MIME_TYPES,
     OBJ_TYPES,
     PROP_DEFS,
-    SIMPLE_COLORS, TOTAL_OBJ_TYPES, TRIGGERS
-} from './Common'
+    SIMPLE_COLORS, TOTAL_OBJ_TYPES} from './Common'
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
@@ -77,7 +76,7 @@ export default class VREditor extends  SyncGraphProvider {
         //make assets
         const assets = fetchGraphObject(doc,doc.createObject({type:TOTAL_OBJ_TYPES.ASSETS_LIST,
             title:'Assets', children: doc.createArray(), parent:0}))
-        //make actions
+        //make behaviors
         const behaviors = fetchGraphObject(doc,doc.createObject({type:TOTAL_OBJ_TYPES.BEHAVIORS_LIST,
             title:'Behaviors', children: doc.createArray(), parent:0}))
         //tie it all together
@@ -832,12 +831,12 @@ class VREditorApp extends Component {
         const acts = [
             {
                 title:'new behavior',
-                icon: ITEM_ICONS.actions,
+                icon: ITEM_ICONS.behavior_script,
                 fun: () => this.props.provider.addCustomBehaviorAsset()
             },
             {
                 title:'behavior template from server',
-                icon: ITEM_ICONS.actions,
+                icon: ITEM_ICONS.behavior_script,
                 fun: () => this.props.provider.showOpenBehaviorDialog()
             }
         ]

@@ -18,14 +18,12 @@ import SceneDef from "./SceneDef"
 import {on} from "../utils"
 import {TweenManager} from "../common/tween"
 import {
-    ACTIONS,
     get3DObjectDef,
     is3DObjectType,
     OBJ_TYPES,
     SIMPLE_COLORS,
     toRad,
     TOTAL_OBJ_TYPES,
-    TRIGGERS
 } from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
@@ -139,7 +137,7 @@ export default class ImmersiveVREditor extends Component {
         on(this.pointer,POINTER_CLICK,()=> SelectionManager.clearSelection())
 
         this.controller = new ThreeDOFController(this.stagePos, this.stageRot)
-        on(this.controller,'move', this.standardProximityHandler)
+        // on(this.controller,'move', this.standardProximityHandler)
 
         this.loadScene()
     }
@@ -153,25 +151,12 @@ export default class ImmersiveVREditor extends Component {
         if (this.selectedNode && this.controls) this.controls.attach(this.selectedNode, this.pointer)
     }
 
-    performAction(action, target) {
-        //old style, navigate to a scene
-        if(action.type === 'scene') return this.swapScene(action.id)
-        if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
-        if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
-        if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
-        if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
-    }
 
     performClickOnSelection = () => {
         const sel = SelectionManager.getSelection()
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
-        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
-        const actionObj = this.props.provider.accessObject(obj.action)
-        if(!actionObj) return
-        if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        this.performAction(actionObj, obj)
     }
 
     performProximityOnSelection = () => {
@@ -179,46 +164,12 @@ export default class ImmersiveVREditor extends Component {
         if(!sel) return
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
         if(!obj) return
-        if(obj.trigger !== TRIGGERS.PROXIMITY) return console.log("not the right trigger type")
-        const actionObj = this.props.provider.accessObject(obj.action)
-        if(!actionObj) return
-        this.performAction(actionObj, obj)
     }
 
     standardViewClickHandler = (e)  => {
         const id = e.target.userData.graphid
         const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
         if(!obj) return
-        if(obj.trigger !== TRIGGERS.CLICK) return console.log("not the right trigger type")
-        const actionObj = this.props.provider.accessObject(obj.action)
-        if(!actionObj) return
-        if(actionObj.type === TOTAL_OBJ_TYPES.SCENE) return this.swapScene(actionObj.id)
-        this.performAction(actionObj, obj)
-    }
-
-    standardProximityHandler = (pos) => {
-        //JOSH: for now only do proxmity check in view mode, not edit mode
-        if(this.props.editable) return
-
-        const scene_id = Object.keys(this.sceneWrappers).find(key => this.sceneWrappers[key].visible)
-        const scene = this.sceneWrappers[scene_id]
-        // const scene = this.props.provider.accessObject(scene_id)
-        const closest = scene.children.filter(ch => {
-            const pos = this.stagePos.position.clone()
-            pos.x = -pos.x
-            pos.z = -pos.z
-            if(ch.userData.clickable && ch.position.distanceTo(pos) < 2.5) return true
-            return false
-        })
-        if(closest.length > 0) {
-            const obj = fetchGraphObject(this.props.provider.getDataGraph(),closest[0].userData.graphid)
-            if(!obj) return
-            const actionObj = this.props.provider.accessObject(obj.action)
-            if(!actionObj) return
-            if(actionObj.trigger !== TRIGGERS.PROXIMITY) return
-            this.performAction(actionObj, obj)
-        }
-
     }
 
 
@@ -270,15 +221,6 @@ export default class ImmersiveVREditor extends Component {
                 }
             })
         }
-
-        // this.navcursor = new THREE.Mesh(
-        //     new THREE.RingBufferGeometry(0.2,0.3,32),
-        //     new THREE.MeshLambertMaterial({color:'yellow'})
-        // )
-        // this.navcursor.rotation.x = toRad(-90)
-        // this.navcursor.position.y = 0.1
-        // this.scene.add(this.navcursor)
-
 
         if(this.props.editable) {
             this.tools = new panel2d(this.scene, this.camera)
@@ -428,25 +370,10 @@ export default class ImmersiveVREditor extends Component {
         if(this.controls) this.sceneWrappers[id].add(this.controls)
         this.sceneWrappers[id].position.x = 0
         this.sceneWrappers[id].position.z = 0
-        // const floor = new SceneDef().getFloorPart(this.sceneWrappers[id])
-        // if(floor) {
-        //     floor.userData.clickable = true
-        //     on(floor, POINTER_MOVE, (e) => {
-        //         this.navcursor.position.x = e.point.x
-        //         this.navcursor.position.z = e.point.z
-        //     })
-        //     on(floor, POINTER_CLICK, (e) => {
-        //         this.sceneWrappers[id].position.x -= e.point.x
-        //         this.sceneWrappers[id].position.z -= e.point.z + 3
-        //     })
-        // }
     }
 
 
     loadScene() {
-        // console.log("loading the final scene")
-        // const graph = this.props.provider.getDataGraph()
-        // console.log("history is",this.props.provider.getDocHistory())
     }
 
     insertNodeMapping(id, node) {
@@ -471,22 +398,6 @@ export default class ImmersiveVREditor extends Component {
             sound.play();
         });
     }
-
-
-    animateTargetObject(action, obj) {
-        const node = this.findNode(obj.id)
-        const pos = node.position
-        this.tweenManager.prop({
-            target: pos,
-            property: 'y',
-            from: pos.y,
-            to: pos.y + 1.0,
-            autoReverse: true,
-            duration: 0.25,
-            loop: 8,
-        }).start()
-    }
-
 
 }
 

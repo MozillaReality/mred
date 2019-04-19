@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import {Group} from "three"
 import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
 import SceneDef from './SceneDef'
-import {ACTIONS, ASSET_TYPES, get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES} from './Common'
+import {get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES} from './Common'
 import {Pointer} from 'webxr-boilerplate/pointer'
 
 function parsePropsOfBehaviorContent(contents) {
@@ -20,7 +20,6 @@ export class ImmersivePlayer extends Component {
         super(props)
         this.obj_map = {}
         this.three_map = {}
-        this.action_map = {}
         this.title_map = {}
         this.current_scene = null
         this.root = null
@@ -155,12 +154,6 @@ export class ImmersivePlayer extends Component {
             }
         })
         scene.visible = false
-    }
-
-    performAction(obj,type) {
-        if(obj.trigger !== type) return
-        const action = this.action_map[obj.action]
-        if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,obj)
     }
 
     initThreeJS() {

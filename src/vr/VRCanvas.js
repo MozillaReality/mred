@@ -5,7 +5,7 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./SceneDef"
-import {ACTIONS, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES, TRIGGERS} from './Common'
+import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager from './ScriptManager'
 
@@ -141,9 +141,9 @@ export class VRCanvas extends Component {
             const obj = fetchGraphObject(graph, objid)
             if (obj.type === 'scene') return this.populateNode(objid)
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
-            if(obj.type === 'asset') return
-            if(obj.type === 'assets') return
-            if(obj.type === 'actions') return
+            if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
+            if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return
             console.warn("unknown object type", obj)
             return
         }
@@ -275,34 +275,13 @@ export class VRCanvas extends Component {
         if(intersect && intersect.length >= 1) {
             const obj = intersect[0].object
             if(this.state.running) {
-                this.performClickAction(obj.userData.graphid)
+                this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid))
             } else {
                 SelectionManager.setSelection(obj.userData.graphid)
             }
         } else {
             SelectionManager.clearSelection()
         }
-    }
-
-    performClickAction(objectId) {
-        this.scriptManager.performClickAction(this.props.provider.accessObject(objectId))
-    }
-    performAction(action, target) {
-        //old style, navigate to a scene
-        // if(action.type === TOTAL_OBJ_TYPES.SCENE) {
-        //     const scene = fetchGraphObject(this.props.provider.getDataGraph(),action.id)
-        //     if(scene) {
-        //         if(scene.action && scene.trigger === TRIGGERS.ENTER_SCENE) {
-        //             const action2 = fetchGraphObject(this.props.provider.getDataGraph(),scene.action)
-        //             this.performAction(action2,scene)
-        //         }
-        //     }
-        //     return SelectionManager.setSelection(action.id)
-        // }
-        // if (action.subtype === ACTIONS.ANIMATE) return this.animateTargetObject(action, target)
-        // if (action.subtype === ACTIONS.SOUND) return this.playAudioAsset(action, target)
-        // if (action.subtype === ACTIONS.SCRIPT) return this.scriptManager.executeScriptAction(action,target)
-        // if (action.subtype === 'asset' && action.subtype === 'audio') return this.playAudioAsset(action, target)
     }
 
     playAudioAsset(audio) {

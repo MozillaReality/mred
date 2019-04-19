@@ -80,35 +80,35 @@ export default class ScriptManager {
             },
         }
     }
-    executeScriptAction(action,obj) {
-        const type = obj.trigger
-        const evt = {
-            type:type,
-            system:this.makeSystemFacade(),
-        }
-        const txt = `
-            const toRadians = (deg) => deg*Math.PI/180 
-            ${action.scriptBody}
-            new MyScript()
-        `;
-        console.log("running the script",txt)
-        const ctx = this.makeScriptContext()
-
-        function doit(ctx) {
-            const obj = eval(txt);
-            console.log("returned",obj)
-            obj.handle(evt)
-
-        }
-
-        try {
-            doit(ctx);
-        } catch (e) {
-            ToasterMananager.add('ERROR: ' + e.message)
-            console.error(e.message)
-            console.log(e)
-        }
-    }
+    // executeScriptAction(action,obj) {
+    //     const type = obj.trigger
+    //     const evt = {
+    //         type:type,
+    //         system:this.makeSystemFacade(),
+    //     }
+    //     const txt = `
+    //         const toRadians = (deg) => deg*Math.PI/180
+    //         ${action.scriptBody}
+    //         new MyScript()
+    //     `;
+    //     console.log("running the script",txt)
+    //     const ctx = this.makeScriptContext()
+    //
+    //     function doit(ctx) {
+    //         const obj = eval(txt);
+    //         console.log("returned",obj)
+    //         obj.handle(evt)
+    //
+    //     }
+    //
+    //     try {
+    //         doit(ctx);
+    //     } catch (e) {
+    //         ToasterMananager.add('ERROR: ' + e.message)
+    //         console.error(e.message)
+    //         console.log(e)
+    //     }
+    // }
     performClickAction(target) {
         console.log("user clicked on",target)
         const evt = {

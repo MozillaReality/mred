@@ -1,5 +1,5 @@
 import {fetchGraphObject} from '../syncgraph/utils'
-import {OBJ_TYPES, PROP_DEFS, TRIGGERS} from './Common'
+import {OBJ_TYPES, PROP_DEFS} from './Common'
 import * as THREE from 'three'
 import ObjectDef from './ObjectDef'
 
@@ -16,8 +16,6 @@ export default class Image2DDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             asset:0,
-            action:0,
-            trigger:TRIGGERS.CLICK,
             parent:scene.id,
         }))
     }

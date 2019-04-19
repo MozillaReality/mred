@@ -1,6 +1,6 @@
 import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS, TRIGGERS} from './Common'
+import {PROP_DEFS} from './Common'
 
 
 export default class SceneDef {
@@ -10,8 +10,6 @@ export default class SceneDef {
             type:'scene',
             title:'Scene 1',
             defaultFloor: true,
-            action:0,
-            trigger:TRIGGERS.CLICK,
             parent:root.id,
             children:graph.createArray()
         }))
