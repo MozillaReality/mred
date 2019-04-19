@@ -375,15 +375,15 @@ export default class VREditor extends  SyncGraphProvider {
     }
     addBehaviorAssetFromURL = (info) => {
         const graph = this.getDataGraph()
-        const asset = fetchGraphObject(graph,graph.createObject({
+        const behavior = fetchGraphObject(graph,graph.createObject({
             type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
             title:info.title,
             description:info.description,
             src:info.url,
             parent:0
         }))
-        this.accessObject(this.getBehaviorsObject()).insertChildLast(asset)
-
+        this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
+        SelectionManager.setSelection(behavior.id)
     }
     removeBehaviorAssetSource(name) {
         const url = `${getScriptsURL()}delete/${name}`
@@ -433,14 +433,16 @@ export default class VREditor extends  SyncGraphProvider {
             .then(ans => {
                 console.log("got back the answer",ans)
                 const graph = this.getDataGraph()
-                const asset = fetchGraphObject(graph,graph.createObject({
+                const behavior = fetchGraphObject(graph,graph.createObject({
                     type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
                     title:ans.script.title,
                     description:ans.script.description,
                     src:url,
                     parent:0
                 }))
-                this.accessObject(this.getBehaviorsObject()).insertChildLast(asset)
+                this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
+                SelectionManager.setSelection(behavior.id)
+
             })
             .catch(err => console.error(err))
     }
