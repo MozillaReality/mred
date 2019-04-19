@@ -11,15 +11,14 @@ export default class ScriptEditor extends Component {
         super(props)
         this.refresh = () => {
             const id = selMan.getSelection()
-            const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
-            if(obj.subtype === ASSET_TYPES.BEHAVIOR) {
+            const obj = this.props.provider.accessObject(id)
+            console.log('id',id,obj.exists(), obj.type)
+            if(obj.exists() && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 this.props.provider.fetchBehaviorAssetContents(id).then(text => {
                     this.setState({id:id, text:text})
                 })
-                return
+            } else {
             }
-            console.log("looking at the action",obj)
-            this.setState({id:selMan.getSelection(), text:obj.scriptBody})
         }
         this.state = {
             id:null,
@@ -38,18 +37,13 @@ export default class ScriptEditor extends Component {
     }
     swap = () => {
         const obj = this.props.provider.accessObject(selMan.getSelection())
-        if(obj.exists()  && obj.type === TOTAL_OBJ_TYPES.ASSET && obj.subtype === ASSET_TYPES.BEHAVIOR) {
+        if(obj.exists()  && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
             this.refresh()
         }
     }
     changeText = (value) => this.setState({text:value})
     save = (e) => {
-        const acc = this.props.provider.accessObject(this.state.id)
-        if(acc.subtype === ASSET_TYPES.BEHAVIOR) {
-            this.props.provider.updateBehaviorAssetContents(this.state.id,this.state.text)
-            return
-        }
-        this.props.provider.quick_setPropertyValue(this.state.id,'scriptBody',this.state.text)
+        this.props.provider.updateBehaviorAssetContents(this.state.id,this.state.text)
     }
     render() {
         const prov = this.props.provider
@@ -61,6 +55,7 @@ export default class ScriptEditor extends Component {
                           onChange={this.changeText}
                           onBlur={this.save}
                           showGutter={true}
+                          width={'100%'}
         />
     }
 

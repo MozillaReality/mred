@@ -28,10 +28,6 @@ export class OpenAssetDialog extends Component {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
             return this.props.provider.addAudioAssetFromURL(info.url, info.mimeType, info.title)
         }
-        if(info.mimeType === MIME_TYPES.JAVASCRIPT) {
-            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return this.props.provider.addBehaviorAssetFromURL(info.url, info.mimeType, info.title)
-        }
         console.log("can't add this type")
     }
 

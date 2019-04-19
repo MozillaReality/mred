@@ -126,6 +126,7 @@ export default class ScriptManager {
     }
 
     fireSceneExit(scene) {
+        if(!scene) console.error("firing exit for a scene that is null")
         const evt = {
             type:'exit',
             target:scene,

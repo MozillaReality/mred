@@ -238,6 +238,7 @@ export const TOTAL_OBJ_TYPES = {
     SCENE:'scene',
     ASSET:'asset',
     BEHAVIOR:'behavior',
+    BEHAVIOR_SCRIPT:'behavior_script',
 }
 export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',

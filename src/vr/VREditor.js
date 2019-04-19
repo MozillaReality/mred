@@ -5,7 +5,7 @@ import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {getAssetsURL, getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {getAssetsURL, getDocsURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     fetchGraphObject, insertAsFirstChild,
@@ -44,6 +44,7 @@ import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {ImmersivePlayer} from './ImmersivePlayer'
+import {OpenScriptDialog} from './OpenScriptDialog'
 
 
 function parsePropsOfBehaviorContent(contents) {
@@ -87,7 +88,7 @@ export default class VREditor extends  SyncGraphProvider {
         console.log("really loaded the doc. caching the behaviors",this.getAssetsObject())
         this.accessObject(this.getAssetsObject()).array('children')
             .map(ch => fetchGraphObject(this.getDataGraph(),ch))
-            .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
+            .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
             .forEach((b)=>{
                 console.log("processing behavior",b)
                 this.fetchBehaviorAssetContents(b.id).then((contents)=> {
@@ -151,6 +152,7 @@ export default class VREditor extends  SyncGraphProvider {
             // return defs
         }
 
+
         const props = this.syncdoc.getPropertiesForObject(item)
         if(props) {
             props.forEach(key => {
@@ -158,7 +160,13 @@ export default class VREditor extends  SyncGraphProvider {
                 if(key === 'children') return
                 if(key === 'parent') return
                 const value = this.syncdoc.getPropertyValue(item,key)
-                if(PROP_DEFS[key]) return defs.push(copyPropDef(PROP_DEFS[key],value))
+                if(PROP_DEFS[key]) {
+                    const def = copyPropDef(PROP_DEFS[key],value)
+                    if(PROP_DEFS.title && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
+                        def.locked = true
+                    }
+                    return defs.push(def)
+                }
                 // console.log("unknown property",key)
             })
         }
@@ -390,18 +398,31 @@ export default class VREditor extends  SyncGraphProvider {
         }))
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
     }
-    addBehaviorAssetFromURL = (url, fileType, name) => {
+    addBehaviorAssetFromURL = (info) => {
         const graph = this.getDataGraph()
         const asset = fetchGraphObject(graph,graph.createObject({
-            type:TOTAL_OBJ_TYPES.ASSET,
-            subtype:ASSET_TYPES.BEHAVIOR,
-            format:MIME_TYPES.JAVASCRIPT,
-            title:name,
-            src:url,
+            type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
+            title:info.title,
+            description:info.description,
+            src:info.url,
             parent:0
         }))
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
 
+    }
+    removeBehaviorAssetSource(name) {
+        const url = `${getScriptsURL()}delete/${name}`
+        console.log("removing",url)
+        return fetch(url,{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:name
+        }).then(res => res.json())
+            .then(res => {
+                console.log("yay. deleted!",res)
+                return res
+            })
     }
     addGLBAssetFromFile = (file) => {
         ToasterMananager.add('uploading')
@@ -445,8 +466,41 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     addCustomBehaviorAsset = () => {
-        const url = getAssetsURL()+'behavior'+(Math.floor(Math.random()*100000000))+'.js';
-        const contents = "console.log('this is a script')"
+        const randi = (Math.floor(Math.random()*100000000))
+        const fname =`behavior_${randi}.js`
+        const url = `${getScriptsURL()}${fname}`;
+        const contents = `/*
+#title Click to Nav
+#description adds click handler to navigate to a new scene
+*/
+{
+  // defines a target property. must be a scene
+  properties: {
+    scene: { 
+      type:'enum', 
+      title: 'target scene', 
+      value:null, 
+      hints: {
+        type:'node',
+        nodeType:'scene'
+      }
+    },
+  },
+  init: function() {
+  },
+  onEnter: function() {
+    //called when entering a scene
+  },
+  onExit: function() {
+    //called when exiting a scene
+  },
+  onClick: function(e) {
+    //called when object is clicked on
+    e.system.navigateScene(e.props.scene)
+  }
+}
+`
+        console.log("posting to",url)
         fetch(url,{
             method:'POST',
             mode:'cors',
@@ -455,13 +509,12 @@ export default class VREditor extends  SyncGraphProvider {
         })
             .then(res => res.json())
             .then(ans => {
-                const url = getAssetsURL()+ans.asset.id
+                console.log("got back the answer",ans)
                 const graph = this.getDataGraph()
                 const asset = fetchGraphObject(graph,graph.createObject({
-                    type:TOTAL_OBJ_TYPES.ASSET,
-                    subtype:ASSET_TYPES.BEHAVIOR,
-                    format:MIME_TYPES.JAVASCRIPT,
-                    title:'custom behavior',
+                    type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
+                    title:ans.script.title,
+                    description:ans.script.description,
                     src:url,
                     parent:0
                 }))
@@ -541,7 +594,7 @@ new MyScript()
         if(obj.type === TOTAL_OBJ_TYPES.SCENE || is3DObjectType(obj.type)) {
             this.accessObject(this.getAssetsObject()).array('children')
                 .map(ch => fetchGraphObject(this.getDataGraph(), ch))
-                .filter(a => a.subtype === ASSET_TYPES.BEHAVIOR)
+                .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
                 .forEach((beh) => {
                     cmds.push({
                         title: beh.title,
@@ -674,9 +727,7 @@ new MyScript()
         />)
     }
     showOpenBehaviorDialog = () => {
-        DialogManager.show(<OpenAssetDialog provider={this}
-                                            filter={(a => a.mimeType === MIME_TYPES.JAVASCRIPT)}
-        />)
+        DialogManager.show(<OpenScriptDialog provider={this}/>)
     }
 
 
@@ -712,6 +763,17 @@ new MyScript()
         })
             .then(res=>res.json())
     }
+    loadScriptList() {
+        return fetch(`${getScriptsURL()}list`,{
+            method:'GET',
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "access-key": AuthModule.getAccessToken()
+            }
+        })
+            .then(res=>res.json())
+    }
 
     fetchBehaviorAssetContents(id) {
         const obj = fetchGraphObject(this.getDataGraph(),id)
@@ -724,7 +786,7 @@ new MyScript()
     updateBehaviorAssetContents(id,text) {
         const obj = this.accessObject(id)
         console.log("obj is",obj)
-        return fetch(obj.src+'.js',{
+        return fetch(obj.src,{
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
@@ -732,7 +794,7 @@ new MyScript()
         }).then(res => res.json())
             .then(ans => {
                 console.log("got back the response by updating",ans)
-                obj.set('src',getAssetsURL()+ans.asset.id)
+                obj.set('title',ans.script.title)
             })
     }
 
@@ -788,6 +850,7 @@ class VREditorApp extends Component {
             if(!SelectionManager.isEmpty()) {
                 const item = this.props.provider.accessObject(SelectionManager.getSelection())
                 if(item.type === PROP_DEFS.asset.key && item.subtype === ASSET_TYPES.BEHAVIOR) return this.setState({mode:'script'})
+                if(item.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return this.setState({mode:'script'})
                 if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
                 if(item.type === TOTAL_OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
             }

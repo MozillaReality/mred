@@ -398,3 +398,13 @@ g.selected > rect.selection {
 .scale-editor input[type=number] {
     width: 3em;
 }
+
+ul.behaviors-list {
+    padding-left: 0;
+    list-style: none;
+}
+ul.behaviors-list > div {
+    border: 1px solid red;
+    margin: 0.5em 0em;
+    padding: 0.25em;
+}
