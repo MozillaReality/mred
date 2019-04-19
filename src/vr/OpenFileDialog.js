@@ -10,8 +10,7 @@ export class OpenFileDialog extends Component {
         }
     }
     componentDidMount() {
-        this.props.provider.loadDocList()
-            .then((docs) => this.setState({docList:docs}))
+        this.props.provider.loadDocList().then((docs) => this.setState({docList:docs}))
     }
     openDoc(info) {
         DialogManager.hide()
@@ -33,12 +32,14 @@ export class OpenFileDialog extends Component {
         return <Dialog visible={true}>
             <VBox grow>
                 <h3>Open document</h3>
-                <ul>{this.state.docList.map((doc, i) => {
-                    return <li key={i}>
-                        <b>{doc.title}</b> <button onClick={()=>this.openDoc(doc)}>open</button>
-                    </li>
-                })}
-                </ul>
+                <VBox scroll style={{ maxHeight:'60vh'}}>
+                    <ul>{this.state.docList.map((doc, i) => {
+                        return <li key={i}>
+                            <b>{doc.title}</b> <button onClick={()=>this.openDoc(doc)}>open</button>
+                        </li>
+                    })}
+                    </ul>
+                </VBox>
                 <HBox>
                     <button onClick={this.cancel}>cancel</button>
                     <button onClick={this.okay}>okay</button>

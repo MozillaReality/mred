@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import {Group} from "three"
 import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
 import SceneDef from './SceneDef'
-import {ACTIONS, ASSET_TYPES, get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES, TRIGGERS} from './Common'
+import {ACTIONS, ASSET_TYPES, get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES} from './Common'
 import {Pointer} from 'webxr-boilerplate/pointer'
 
 function parsePropsOfBehaviorContent(contents) {
@@ -112,8 +112,9 @@ export class ImmersivePlayer extends Component {
 
     buildRoot(graph) {
         graph.children.forEach(ch => {
-            if(ch.type === 'scene') return this.initScene(ch)
-            if(ch.type === 'assets') return this.initAssets(ch)
+            if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initScene(ch)
+            if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
+            if(ch.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return this.initBehaviors(ch)
         })
     }
 
@@ -234,29 +235,25 @@ export class ImmersivePlayer extends Component {
         this.renderer.render( this.scene, this.camera );
     }
 
-
-    initActions(acts) {
-        acts.children.forEach(act => {
-            this.action_map[act.id] = act
-        })
-    }
-
     initAssets(assets) {
         console.log("loading assets",assets.children)
         assets.children.forEach(ch => {
             console.log("loading asset",ch)
             this.obj_map[ch.id] =  ch
-            if(ch.subtype === ASSET_TYPES.BEHAVIOR) {
-                console.log("loading asset",ch)
-                // this.behavior_assets[ch.id] = ch
+        })
+    }
+
+    initBehaviors(behaviors) {
+        console.log("loading behaviors",behaviors.children)
+        behaviors.children.forEach(ch => {
+            this.obj_map[ch.id] =  ch
+            if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
+                console.log("loading behavior",ch)
                 const prom = fetch(ch.src)
                     .then(res => res.text())
                     .then(text => {
-
-
                         const info = parsePropsOfBehaviorContent(text)
                         info.text = text
-                        // ch.text = text
                         this.behavior_assets[ch.id] = info
                         return text
                     })
@@ -264,7 +261,6 @@ export class ImmersivePlayer extends Component {
             }
         })
     }
-
 
     setCurrentScene(scene) {
         // console.log('setting the current scene to',scene)

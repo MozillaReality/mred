@@ -16,6 +16,11 @@ export const PROP_DEFS = {
         name:'Title',
         type:TYPES.STRING
     },
+    description: {
+        key:'description',
+        name:'Description',
+        type:TYPES.STRING
+    },
     width: {
         key:'width',
         name:'Width',
@@ -239,6 +244,10 @@ export const TOTAL_OBJ_TYPES = {
     ASSET:'asset',
     BEHAVIOR:'behavior',
     BEHAVIOR_SCRIPT:'behavior_script',
+    ASSETS_LIST: 'assets',
+    BEHAVIORS_LIST: 'behaviors',
+    ROOT: 'root'
+
 }
 export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
@@ -284,9 +293,12 @@ export function get3DObjectDef(type) {
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
-export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript' }
+export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript', GLB: 'model/gltf-binary' }
 export const ASSET_TYPES = {
-    BEHAVIOR:'behavior'
+    BEHAVIOR:'behavior',
+    IMAGE:'image',
+    GLTF: 'gltf',
+    AUDIO:'audio',
 }
 export function isImageType(type) {
     if (!type) return false
@@ -323,6 +335,7 @@ export const ITEM_ICONS = {
     assets: 'archive',
     actions:'superpowers',
     action: 'superpowers',
+    behavior_script:'superpowers',
     scene: 'globe',
     bg360:'image',
     img2d:'image',

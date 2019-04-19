@@ -69,25 +69,26 @@ export default class VREditor extends  SyncGraphProvider {
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
     makeEmptyRoot(doc) {
         //make root
-        const root = fetchGraphObject(doc,doc.createObject({ type:'root', title:'root', defaultScene:0, children:doc.createArray() }))
+        const root = fetchGraphObject(doc,doc.createObject({ type:TOTAL_OBJ_TYPES.ROOT, title:'Untitled Project', defaultScene:0, children:doc.createArray() }))
         //make scene
         const scene1 = new SceneDef().make(doc,root)
         //make cube
         const obj = new CubeDef().make(doc,scene1)
         //make assets
-        const assets = fetchGraphObject(doc,doc.createObject({type:'assets',title:'Assets', children: doc.createArray(), parent:0}))
+        const assets = fetchGraphObject(doc,doc.createObject({type:TOTAL_OBJ_TYPES.ASSETS_LIST,
+            title:'Assets', children: doc.createArray(), parent:0}))
         //make actions
-        const actions = fetchGraphObject(doc,doc.createObject({type:'actions',title:'Actions', children: doc.createArray(), parent:0}))
+        const behaviors = fetchGraphObject(doc,doc.createObject({type:TOTAL_OBJ_TYPES.BEHAVIORS_LIST,
+            title:'Behaviors', children: doc.createArray(), parent:0}))
         //tie it all together
         insertAsFirstChild(doc,root,scene1)
         insertAsFirstChild(doc,scene1,obj)
-        insertAsLastChild(doc,root,actions)
+        insertAsLastChild(doc,root,behaviors)
         insertAsLastChild(doc,root,assets)
     }
     docLoaded = () => {
         console.log("really loaded the doc. caching the behaviors",this.getAssetsObject())
-        this.accessObject(this.getAssetsObject()).array('children')
-            .map(ch => fetchGraphObject(this.getDataGraph(),ch))
+        this.accessObject(this.getBehaviorsObject()).getChildren()
             .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
             .forEach((b)=>{
                 console.log("processing behavior",b)
@@ -106,8 +107,7 @@ export default class VREditor extends  SyncGraphProvider {
     getRendererForItem = (item) => {
         const obj = this.accessObject(item)
         if(!obj.exists()) return <div>???</div>
-        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return <div><i className={`fa fa-superpowers`}/> {obj.title}</div>
-        if(obj.type === 'asset') return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}/> {obj.title}</div>
+        if(obj.type === TOTAL_OBJ_TYPES.ASSET) return <div><i className={`fa fa-${ITEM_ICONS[obj.subtype]}`}/> {obj.title}</div>
         if(ITEM_ICONS[obj.type]) return <div><i className={`fa fa-${ITEM_ICONS[obj.type]}`}/> {obj.title}</div>
         return <div>{obj.title}</div>
     }
@@ -122,6 +122,7 @@ export default class VREditor extends  SyncGraphProvider {
         let defs = []
         if(!item) return defs
 
+        //show the ID for all objects
         defs.push({
             key:'id',
             name:"ID",
@@ -149,9 +150,7 @@ export default class VREditor extends  SyncGraphProvider {
             } else {
                 console.warn("Missing prop defs for behavior object")
             }
-            // return defs
         }
-
 
         const props = this.syncdoc.getPropertiesForObject(item)
         if(props) {
@@ -162,8 +161,8 @@ export default class VREditor extends  SyncGraphProvider {
                 const value = this.syncdoc.getPropertyValue(item,key)
                 if(PROP_DEFS[key]) {
                     const def = copyPropDef(PROP_DEFS[key],value)
-                    if(PROP_DEFS.title && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
-                        def.locked = true
+                    if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
+                        if(key === 'title' || key === 'description') def.locked = true
                     }
                     return defs.push(def)
                 }
@@ -196,19 +195,19 @@ export default class VREditor extends  SyncGraphProvider {
         //size the plane to match the aspect ratio of the asset
         if(def.key === PROP_DEFS.asset.key) {
             const asset = this.accessObject(value)
-            if(asset.subtype === 'image') {
+            if(asset.subtype === ASSET_TYPES.IMAGE) {
                 let height = (asset.height / asset.width) * this.accessObject(item).width
                 super.setPropertyValue(item, {key: 'height'}, height)
             }
-            if(asset.subtype === 'gltf') {
+            if(asset.subtype === ASSET_TYPES.GLTF) {
                 console.log("adjusting to a gtlf")
             }
         }
     }
     getValuesForEnum(key,obj,def) {
         const realobj = this.accessObject(obj)
+        //if this is a property on a behavior, then use the hints to generate a target list
         if(realobj.exists() && realobj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
-            // console.log("doing prop for behavior")
             if(def.hasHints()) {
                 const hints = def.getHints()
                 if(hints.type === 'node') {
@@ -219,37 +218,17 @@ export default class VREditor extends  SyncGraphProvider {
             }
         }
         if (key === PROP_DEFS.asset.key) {
-            const assets = this.accessObject(this.getAssetsObject()).array('children').map(ch => this.accessObject(ch))
-            const realobj = this.accessObject(obj)
-            if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === 'gltf').map(a => a.id)
-            if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === 'image').map(a => a.id)
-        }
-        if(key === PROP_DEFS.action.key) {
-            const scenes = this.accessObject(this.getSceneRoot()).array('children')
-                .map(ch => this.accessObject(ch))
-                .filter(ch => ch.type === 'scene')
-                .map(sc => sc.id)
-            const audios = this.accessObject(this.getAssetsObject()).array('children')
-                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
-                .filter(a => a.subtype === 'audio')
-                .map(a => a.id)
-            const actions = this.accessObject(this.getActionsObject()).array('children')
-                .map(ch => fetchGraphObject(this.getDataGraph(),ch))
-                .map(a => a.id)
-            return audios.concat(scenes).concat(actions)
+            const assets = this.accessObject(this.getAssetsObject()).getChildren()
+            if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.GLTF).map(a => a.id)
+            if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
         }
         if(key === PROP_DEFS.horizontalAlign.key) {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
         }
-        if(key === PROP_DEFS.trigger.key) {
-            return Object.keys(TRIGGERS).map(key => TRIGGERS[key])
-        }
         if(key === PROP_DEFS.defaultScene.key) {
-            const scenes = this.accessObject(this.getSceneRoot()).array('children')
-                .map(ch => this.accessObject(ch))
+            return this.accessObject(this.getSceneRoot()).getChildren()
                 .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
                 .map(ch => ch.id)
-            return scenes
         }
     }
     getRendererForEnum(key,obj) {
@@ -257,7 +236,6 @@ export default class VREditor extends  SyncGraphProvider {
         if(realobj.exists() && realobj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return EnumTitleRenderer
         switch(key) {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
-            case PROP_DEFS.action.key: return ActionRenderer
             case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
             default: return null
         }
@@ -267,12 +245,13 @@ export default class VREditor extends  SyncGraphProvider {
         const sel = SelectionManager.getSelection()
         if(sel === null) return this.accessObject(this.getSceneRoot()).child(0)
         const selected = this.accessObject(sel)
-        if(selected.type === 'scene') return selected
+        if(selected.type === TOTAL_OBJ_TYPES.SCENE) return selected
         if(is3DObjectType(selected.type))  return this.accessObject(selected.parent)
+        if(selected.type === TOTAL_OBJ_TYPES.BEHAVIOR) return this.accessObject(selected.parent).parent
         return -1
     }
-    getAssetsObject = () => this.getDataGraph().getObjectByProperty('type','assets')
-    getActionsObject = () => this.getDataGraph().getObjectByProperty('type','actions')
+    getAssetsObject = () => this.getDataGraph().getObjectByProperty('type',TOTAL_OBJ_TYPES.ASSETS_LIST)
+    getBehaviorsObject = () => this.getDataGraph().getObjectByProperty('type',TOTAL_OBJ_TYPES.BEHAVIORS_LIST)
 
     quick_setPropertyValue(item, key, value) {
         const ov = this.getDataGraph().getPropertyValue(item,key)
@@ -331,15 +310,15 @@ export default class VREditor extends  SyncGraphProvider {
         const name = url.substring(url.lastIndexOf('/') + 1)
         const type = name.substring(name.lastIndexOf(".") + 1)
         let fileType = "image/unknown"
-        if (type.toLowerCase() === 'png') fileType = 'image/png'
-        if (type.toLowerCase() === 'jpg') fileType = 'image/jpeg'
-        if (type.toLowerCase() === 'jpeg') fileType = 'image/jpeg'
+        if (type.toLowerCase() === 'png') fileType = MIME_TYPES.PNG
+        if (type.toLowerCase() === 'jpg') fileType = MIME_TYPES.JPEG
+        if (type.toLowerCase() === 'jpeg') fileType = MIME_TYPES.JPEG
         return this.addImageAssetFromExpandedURL(url, fileType, name)
     }
     addImageAssetFromExpandedURL(url,format,title) {
         const asset = this.accessObject(this.getDataGraph().createObject({
-            type:'asset',
-            subtype:'image',
+            type:TOTAL_OBJ_TYPES.ASSET,
+            subtype:ASSET_TYPES.IMAGE,
             format:format,
             src:url,
             width:100,
@@ -347,7 +326,6 @@ export default class VREditor extends  SyncGraphProvider {
             title:title,
             parent:0
         }))
-        console.log('adding asset',asset)
         this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         this.requestImageCache(url).then(img => {
             asset.set('width',img.width)
@@ -364,8 +342,8 @@ export default class VREditor extends  SyncGraphProvider {
             const url = getAssetsURL()+ans.asset.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
-                type:'asset',
-                subtype:'audio',
+                type:TOTAL_OBJ_TYPES.ASSET,
+                subtype:ASSET_TYPES.AUDIO,
                 format:ans.asset.mimeType,
                 src:url,
                 title:file.name,
@@ -389,8 +367,8 @@ export default class VREditor extends  SyncGraphProvider {
 
         const graph = this.getDataGraph()
         const asset = fetchGraphObject(graph,graph.createObject({
-            type:'asset',
-            subtype:'audio',
+            type: TOTAL_OBJ_TYPES.ASSET,
+            subtype:ASSET_TYPES.AUDIO,
             format:fileType,
             src:url,
             title:name,
@@ -407,7 +385,7 @@ export default class VREditor extends  SyncGraphProvider {
             src:info.url,
             parent:0
         }))
-        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
+        this.accessObject(this.getBehaviorsObject()).insertChildLast(asset)
 
     }
     removeBehaviorAssetSource(name) {
@@ -420,7 +398,6 @@ export default class VREditor extends  SyncGraphProvider {
             body:name
         }).then(res => res.json())
             .then(res => {
-                console.log("yay. deleted!",res)
                 return res
             })
     }
@@ -432,37 +409,15 @@ export default class VREditor extends  SyncGraphProvider {
             const url = getAssetsURL()+ans.id
             const graph = this.getDataGraph()
             const asset = fetchGraphObject(graph,graph.createObject({
-                type:'asset',
-                subtype:'gltf',
-                format:'model/gltf-binary',
+                type:TOTAL_OBJ_TYPES.ASSET,
+                subtype:ASSET_TYPES.GLTF,
+                format:MIME_TYPES.GLB,
                 src:url,
                 title:file.name,
                 parent:0
             }))
             this.accessObject(this.getAssetsObject()).insertChildLast(asset)
         })
-    }
-
-    addSoundAction = () => {
-        const graph = this.getDataGraph()
-        const action = fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.ACTION,
-            subtype:ACTIONS.SOUND,
-            title:'sound action',
-            parent:0
-        }))
-        this.accessObject(this.getActionsObject()).insertChildLast(action)
-    }
-
-    addAnimateAction = () => {
-        const graph = this.getDataGraph()
-        const action = fetchGraphObject(graph,graph.createObject({
-            type:TOTAL_OBJ_TYPES.ASSET,
-            subtype:ACTIONS.ANIMATE,
-            title:'animate action',
-            parent:0
-        }))
-        this.accessObject(this.getActionsObject()).insertChildLast(action)
     }
 
     addCustomBehaviorAsset = () => {
@@ -518,38 +473,9 @@ export default class VREditor extends  SyncGraphProvider {
                     src:url,
                     parent:0
                 }))
-                this.accessObject(this.getAssetsObject()).insertChildLast(asset)
+                this.accessObject(this.getBehaviorsObject()).insertChildLast(asset)
             })
             .catch(err => console.error(err))
-    }
-
-    addScriptAction = () => {
-        const graph = this.getDataGraph()
-        const action = fetchGraphObject(graph,graph.createObject({
-            type:TOTAL_OBJ_TYPES.ACTION,
-            subtype:ACTIONS.SCRIPT,
-            title:'script action',
-            scriptBody:`
-class MyScript {
-    constructor() {
-        this.name = 'MyScript'
-    }
-    create() {
-    }
-    draw() {
-    }
-    handle(e) {
-       console.log("got the event ",e);
-       e.system.getObject('cube1').setPosition(-1,0,0)
-    }
-    destroy() {
-    }
-}
-new MyScript()
-                `,
-            parent:0
-        }))
-        this.accessObject(this.getActionsObject()).insertChildLast(action)
     }
 
     deleteObject = () => {
@@ -557,17 +483,20 @@ new MyScript()
         this.accessObject(SelectionManager.getSelection()).removeFromParent()
         SelectionManager.clearSelection()
     }
+
     addBehaviorToObject = (b,item) => {
         this.fetchBehaviorAssetContents(b.id).then((contents)=>{
             try {
                 const def = {
                     type: TOTAL_OBJ_TYPES.BEHAVIOR,
                     title: b.title,
+                    description: b.description,
                     parent: 0,
                     behavior:b.id,
                 }
                 const obj = parsePropsOfBehaviorContent(contents)
                 this.setCachedBehaviorAsset(b.id,obj)
+                //copy properties to the behavior def
                 if(obj.properties) {
                     Object.keys(obj.properties).forEach(name => {
                         def[name] = obj.properties[name].value
@@ -587,26 +516,28 @@ new MyScript()
         cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: this.deleteObject });
         cmds.push({ divider:true })
         Object.keys(OBJ_TYPES).forEach(type => cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) }))
+        console.log("context for ",item,'adding scene')
         cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
-        cmds.push({ divider:true })
 
         const obj = this.accessObject(item)
         if(obj.type === TOTAL_OBJ_TYPES.SCENE || is3DObjectType(obj.type)) {
-            this.accessObject(this.getAssetsObject()).array('children')
-                .map(ch => fetchGraphObject(this.getDataGraph(), ch))
+            cmds.push({ divider:true })
+            this.accessObject(this.getBehaviorsObject()).getChildren()
                 .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
-                .forEach((beh) => {
+                .forEach((b) => {
                     cmds.push({
-                        title: beh.title,
-                        icon: ITEM_ICONS.action,
-                        fun: () => this.addBehaviorToObject(beh, item)
+                        title: b.title,
+                        icon: ITEM_ICONS.behavior_script,
+                        fun: () => this.addBehaviorToObject(b, item)
                     })
                 })
-            cmds.push({divider: true})
         }
-        cmds.push({ title:'cut',   icon:ITEM_ICONS.cut,   fun: this.cutSelection })
-        cmds.push({ title:'copy',  icon:ITEM_ICONS.copy,  fun: this.copySelection })
-        cmds.push({ title:'paste', icon:ITEM_ICONS.paste, fun: this.pasteSelection })
+        if(obj.type !== TOTAL_OBJ_TYPES.ROOT) {
+            cmds.push({divider: true})
+            cmds.push({title: 'cut', icon: ITEM_ICONS.cut, fun: this.cutSelection})
+            cmds.push({title: 'copy', icon: ITEM_ICONS.copy, fun: this.copySelection})
+            cmds.push({title: 'paste', icon: ITEM_ICONS.paste, fun: this.pasteSelection})
+        }
         return cmds
     }
 
@@ -650,25 +581,25 @@ new MyScript()
     canAddChild(parent,child) {
         const p = this.accessObject(parent)
         const c = this.accessObject(child)
-        if(p.type === 'root' && c.type === 'scene') return true
-        if(p.type === 'scene' && is3DObjectType(c.type)) return true
+        if(p.type === TOTAL_OBJ_TYPES.ROOT && c.type === TOTAL_OBJ_TYPES.SCENE) return true
+        if(p.type === TOTAL_OBJ_TYPES.SCENE && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
         const s = this.accessObject(src)
         const t = this.getDataGraph(tgt)
-        if(s.type === 'scene' && t.type === 'scene') return true
+        if(s.type === TOTAL_OBJ_TYPES.SCENE && t.type === TOTAL_OBJ_TYPES.SCENE) return true
         if(is3DObjectType(s.type) && is3DObjectType(t.type)) return true
         return false
     }
     canAddExternalChild(parent,child) {
         const obj = this.accessObject(parent)
-        if(obj.type === 'assets') return true
+        if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return true
         return false
     }
     acceptDrop(e,tgt) {
         const obj = this.accessObject(tgt)
-        if(obj.type === 'assets') {
+        if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
             listToArray(e.dataTransfer.files).forEach(file => {
                 if(isImageType(file.type)) return this.addImageAssetFromFile(file)
                 if(isGLTFFile(file)) return this.addGLBAssetFromFile(file)
@@ -686,7 +617,6 @@ new MyScript()
             }
         })
     }
-
 
     createCustomEditor(item,def,provider, value, onChange) {
         if(def.key === PROP_DEFS.color.key
@@ -708,7 +638,6 @@ new MyScript()
         return <i>no custom editor for {def.key}</i>
     }
 
-
     setColor = (color) => {
         if(SelectionManager.isEmpty()) return
         this.accessObject(SelectionManager.getSelection()).set('color',color)
@@ -720,25 +649,15 @@ new MyScript()
     showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
     showOpenDocumentDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
     showOpenAssetDialog = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
-    showAddServerImageDialog = () => {
-        DialogManager.show(<OpenAssetDialog provider={this}
-                                            filter={a => a.mimeType === MIME_TYPES.PNG
-                                                || a.mimeType === MIME_TYPES.JPEG}
-        />)
-    }
-    showOpenBehaviorDialog = () => {
-        DialogManager.show(<OpenScriptDialog provider={this}/>)
-    }
-
+    showAddServerImageDialog = () =>  DialogManager.show(<OpenAssetDialog provider={this} filter={a => isImageType(a.mimeType)}/>)
+    showOpenBehaviorDialog = () => DialogManager.show(<OpenScriptDialog provider={this}/>)
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
     }
 
     loadDocList() {
-        const url = `${getDocsURL()}list`
-        console.log("loadin hte url",url)
-        return fetch(url,{
+        return fetch(`${getDocsURL()}list`,{
             method:'GET',
             mode: "cors",
             headers: {
@@ -747,10 +666,6 @@ new MyScript()
             }
         })
             .then(res=>res.json())
-            .then(res => {
-                console.log("got the doc list",res)
-                return res
-            })
     }
     loadAssetList() {
         return fetch(`${getAssetsURL()}list`,{
@@ -776,16 +691,11 @@ new MyScript()
     }
 
     fetchBehaviorAssetContents(id) {
-        const obj = fetchGraphObject(this.getDataGraph(),id)
-        return fetch(obj.src)
-            .then(res => res.text())
-            .then(text => {
-                return text
-        })
+        const obj = this.accessObject(id)
+        return fetch(obj.src).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
         const obj = this.accessObject(id)
-        console.log("obj is",obj)
         return fetch(obj.src,{
             method:'POST',
             mode:'cors',
@@ -793,12 +703,16 @@ new MyScript()
             body:text
         }).then(res => res.json())
             .then(ans => {
-                console.log("got back the response by updating",ans)
                 obj.set('title',ans.script.title)
+                obj.set('description',ans.script.description)
             })
     }
 
     getCachedBehaviorPropDefs(behavior) {
+        if(!this.behaviorCache[behavior]) {
+            console.error("no parsed behavior in the cache",behavior)
+            return null
+        }
         return this.behaviorCache[behavior].properties;
     }
 
@@ -846,17 +760,20 @@ class VREditorApp extends Component {
 
     componentDidMount() {
         this.im.attachKeyEvents(document)
-        SelectionManager.on(SELECTION_MANAGER.CHANGED,()=>{
-            if(!SelectionManager.isEmpty()) {
-                const item = this.props.provider.accessObject(SelectionManager.getSelection())
-                if(item.type === PROP_DEFS.asset.key && item.subtype === ASSET_TYPES.BEHAVIOR) return this.setState({mode:'script'})
-                if(item.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return this.setState({mode:'script'})
-                if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
-                if(item.type === TOTAL_OBJ_TYPES.ACTION && item.subtype === ACTIONS.SCRIPT) return this.setState({mode:'script'})
-            }
-            this.setState({mode:'canvas'})
-        })
+        SelectionManager.on(SELECTION_MANAGER.CHANGED,this.selectionChanged)
         AuthModule.on(USER_CHANGE,()=>this.setState({user:AuthModule.getUsername()}))
+    }
+    componentWillUnmount() {
+        SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
+    }
+
+    selectionChanged = () => {
+        if(!SelectionManager.isEmpty()) {
+            const item = this.props.provider.accessObject(SelectionManager.getSelection())
+            if(item.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return this.setState({mode:'script'})
+            if(item.type === PROP_DEFS.asset.key) return this.setState({mode:'asset'})
+        }
+        this.setState({mode:'canvas'})
     }
 
     showAddPopup = (e) => {
@@ -871,7 +788,7 @@ class VREditorApp extends Component {
     }
     showAddAssetPopup = (e) => {
         let acts = []
-        console.log("Auth mod",AuthModule.supportsAssetUpload())
+        // console.log("Auth mod",AuthModule.supportsAssetUpload())
         if(AuthModule.supportsAssetUpload()) {
             acts = acts.concat([{
                 title: 'image',
@@ -883,17 +800,18 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.image,
                 fun: () => this.props.provider.showAddServerImageDialog()
             },
+                {divider: true},
             {
                 title: 'GLTF model',
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLTFAssetDialog()
             },
-            {divider: true},
             {
                 title: 'GLB model',
                 icon: ITEM_ICONS.model,
                 fun: () => this.props.provider.showAddGLBAssetDialog()
             },
+                {divider: true},
             {
                 title: 'audio file',
                 icon: ITEM_ICONS.audio,
@@ -913,27 +831,12 @@ class VREditorApp extends Component {
     showAddActionPopup = (e) => {
         const acts = [
             {
-                title: 'play sound',
-                icon: ITEM_ICONS.actions,
-                fun: () => this.props.provider.addSoundAction()
-            },
-            {
-                title: 'animate',
-                icon: ITEM_ICONS.actions,
-                fun: () => this.props.provider.addAnimateAction()
-            },
-            {
-                title: 'script',
-                icon: ITEM_ICONS.actions,
-                fun: () => this.props.provider.addScriptAction()
-            },
-            {
                 title:'new behavior',
                 icon: ITEM_ICONS.actions,
                 fun: () => this.props.provider.addCustomBehaviorAsset()
             },
             {
-                title:'behavior from server',
+                title:'behavior template from server',
                 icon: ITEM_ICONS.actions,
                 fun: () => this.props.provider.showOpenBehaviorDialog()
             }
@@ -1023,26 +926,6 @@ const EnumTitleRenderer = (props) => {
     return <b>{value}</b>
 }
 
-const ActionRenderer = (props) => {
-    let title = '---'
-    let action = 'go to'
-    let icon = ITEM_ICONS.asset
-    if(props.value && props.provider) {
-        const obj = props.provider.accessObject(props.value)
-        title = obj.title
-        if(obj.type === 'scene') icon = ITEM_ICONS.scene
-        if(obj.type === 'asset' && obj.subtype === 'audio') {
-            icon = ITEM_ICONS.audio
-            action = 'play'
-        }
-        if(obj.type === 'action') {
-            icon = ITEM_ICONS.action
-            action = ''
-        }
-    }
-    return <div><i className={`fa fa-${icon}`}/> {action} <b>{title}</b></div>
-}
-
 class ScaleEditor extends Component {
     constructor(props) {
         super(props)
@@ -1090,7 +973,6 @@ function acceptsImageAsset(type) {
     ) return true
     return false
 }
-
 
 const RunButton = (props) => {
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
