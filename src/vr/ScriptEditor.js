@@ -2,8 +2,10 @@ import React, {Component} from "react"
 import {fetchGraphObject} from '../syncgraph/utils'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import selMan, {SELECTION_MANAGER} from '../SelectionManager'
-import {ASSET_TYPES} from './Common'
-
+import {ASSET_TYPES, TOTAL_OBJ_TYPES} from './Common'
+import AceEditor from 'react-ace'
+import 'brace/mode/javascript'
+import 'brace/theme/github'
 export default class ScriptEditor extends Component {
     constructor(props) {
         super(props)
@@ -27,12 +29,20 @@ export default class ScriptEditor extends Component {
     componentDidMount() {
         this.refresh()
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.refresh)
+        selMan.on(SELECTION_MANAGER.CHANGED,this.swap)
     }
 
     componentWillUnmount() {
         this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.refresh)
+        selMan.off(SELECTION_MANAGER.CHANGED,this.swap)
     }
-    changeText = (e) => this.setState({text:e.target.value})
+    swap = () => {
+        const obj = this.props.provider.accessObject(selMan.getSelection())
+        if(obj.exists()  && obj.type === TOTAL_OBJ_TYPES.ASSET && obj.subtype === ASSET_TYPES.BEHAVIOR) {
+            this.refresh()
+        }
+    }
+    changeText = (value) => this.setState({text:value})
     save = (e) => {
         const acc = this.props.provider.accessObject(this.state.id)
         if(acc.subtype === ASSET_TYPES.BEHAVIOR) {
@@ -44,16 +54,14 @@ export default class ScriptEditor extends Component {
     render() {
         const prov = this.props.provider
         if(this.state.id === null) return <div>loading</div>
-        return <div>
-            <textarea value={this.state.text}
-                      style={{
-                          width:'99%',
-                          height:'600px',
-                      }}
-                      onChange={this.changeText}
-                      onBlur={this.save}
-            />
-        </div>
+        return <AceEditor mode="javascript"
+                          theme="github"
+                          name="UNIQUE_ID_OF_DIV"
+                          value={this.state.text}
+                          onChange={this.changeText}
+                          onBlur={this.save}
+                          showGutter={true}
+        />
     }
 
 }

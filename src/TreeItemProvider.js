@@ -22,6 +22,9 @@ export function getDocsURL() {
 export function getAssetsURL() {
     return URLS.BASE + 'asset/'
 }
+export function getScriptsURL() {
+    return URLS.BASE + 'scripts/'
+}
 export function getLoginURL() {
     return URLS.BASE + 'auth/github/login'
 }

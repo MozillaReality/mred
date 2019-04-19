@@ -12,6 +12,7 @@
     "pubnub": "^4.20.1",
     "qrcode": "^1.2.0",
     "react": "^16.2.0",
+    "react-ace": "^6.4.0",
     "react-dom": "^16.2.0",
     "react-scripts": "2.0.3",
     "syncing_protocol": "0.0.8",
