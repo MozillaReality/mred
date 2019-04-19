@@ -44,7 +44,7 @@ import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
-import {CUSTOM_BEHAVIOR_SCRIPT} from './Templates'
+import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 
 
 
@@ -425,13 +425,13 @@ export default class VREditor extends  SyncGraphProvider {
         })
     }
 
-    addCustomBehaviorAsset = () => {
+    addCustomBehaviorAsset = (TEMPLATE) => {
         const randi = (Math.floor(Math.random()*100000000))
         const fname =`behavior_${randi}.js`
         const url = `${getScriptsURL()}${fname}`;
-        const contents = CUSTOM_BEHAVIOR_SCRIPT
+        const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
         console.log("posting to",url)
-        fetch(url,{
+        return fetch(url,{
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
@@ -450,9 +450,15 @@ export default class VREditor extends  SyncGraphProvider {
                 }))
                 this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
                 SelectionManager.setSelection(behavior.id)
+                return behavior
 
             })
             .catch(err => console.error(err))
+    }
+
+    addSceneScript = (obj) => {
+        this.addCustomBehaviorAsset(CUSTOM_SCENE_SCRIPT)
+            .then((b)=>this.addBehaviorToObject(b,obj))
     }
 
     deleteObject = () => {
@@ -462,7 +468,7 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     addBehaviorToObject = (b,item) => {
-        this.fetchBehaviorAssetContents(b.id).then((contents)=>{
+        return this.fetchBehaviorAssetContents(b.id).then((contents)=>{
             try {
                 const def = {
                     type: TOTAL_OBJ_TYPES.BEHAVIOR,
@@ -482,6 +488,7 @@ export default class VREditor extends  SyncGraphProvider {
                 const graph = this.getDataGraph()
                 const behavior = fetchGraphObject(graph, graph.createObject(def))
                 this.accessObject(item).insertChildLast(behavior)
+                return behavior
             } catch (e) {
                 console.error(e)
             }
@@ -516,6 +523,11 @@ export default class VREditor extends  SyncGraphProvider {
                     })
                 })
         }
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            cmds.push({ divider:true })
+            cmds.push({title:'Add Scene script', icon:ITEM_ICONS.behavior, fun: ()=>this.addSceneScript(item)})
+        }
+
 
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
             cmds.push({ divider:true })
