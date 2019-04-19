@@ -309,6 +309,7 @@ export const ITEM_ICONS = {
     model: 'cube',
     asset: 'file',
     assets: 'archive',
+    behavior:'superpowers',
     behavior_script:'superpowers',
     scene: 'globe',
     bg360:'image',

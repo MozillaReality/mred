@@ -44,6 +44,7 @@ import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
+import {CUSTOM_BEHAVIOR_SCRIPT} from './Templates'
 
 
 
@@ -420,37 +421,7 @@ export default class VREditor extends  SyncGraphProvider {
         const randi = (Math.floor(Math.random()*100000000))
         const fname =`behavior_${randi}.js`
         const url = `${getScriptsURL()}${fname}`;
-        const contents = `/*
-#title Click to Nav
-#description adds click handler to navigate to a new scene
-*/
-{
-  // defines a target property. must be a scene
-  properties: {
-    scene: { 
-      type:'enum', 
-      title: 'target scene', 
-      value:null, 
-      hints: {
-        type:'node',
-        nodeType:'scene'
-      }
-    },
-  },
-  init: function() {
-  },
-  onEnter: function() {
-    //called when entering a scene
-  },
-  onExit: function() {
-    //called when exiting a scene
-  },
-  onClick: function(e) {
-    //called when object is clicked on
-    e.system.navigateScene(e.props.scene)
-  }
-}
-`
+        const contents = CUSTOM_BEHAVIOR_SCRIPT
         console.log("posting to",url)
         fetch(url,{
             method:'POST',
@@ -827,14 +798,14 @@ class VREditorApp extends Component {
     showAddActionPopup = (e) => {
         const acts = [
             {
-                title:'new behavior',
-                icon: ITEM_ICONS.behavior_script,
-                fun: () => this.props.provider.addCustomBehaviorAsset()
-            },
-            {
-                title:'behavior template from server',
+                title:'behavior from template',
                 icon: ITEM_ICONS.behavior_script,
                 fun: () => this.props.provider.showOpenBehaviorDialog()
+            },
+            {
+                title:'custom behavior',
+                icon: ITEM_ICONS.behavior_script,
+                fun: () => this.props.provider.addCustomBehaviorAsset()
             }
         ]
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
@@ -854,7 +825,7 @@ class VREditorApp extends Component {
                 <button className={"fa fa-plus"} onClick={this.showAddPopup}>obj</button>
                 <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
                 <button className={"fa fa-plus"} onClick={this.showAddAssetPopup}>asset</button>
-                <button className={"fa fa-plus"} onClick={this.showAddActionPopup}>action</button>
+                <button className={"fa fa-plus"} onClick={this.showAddActionPopup}>behavior</button>
             </Toolbar>
 
 
