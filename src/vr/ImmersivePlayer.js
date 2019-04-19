@@ -7,12 +7,8 @@ import * as THREE from 'three'
 import {Group} from "three"
 import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
 import SceneDef from './SceneDef'
-import {get3DObjectDef, is3DObjectType, TOTAL_OBJ_TYPES} from './Common'
+import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {Pointer} from 'webxr-boilerplate/pointer'
-
-function parsePropsOfBehaviorContent(contents) {
-    return Function('"use strict"; return('+contents+')')();
-}
 
 
 export class ImmersivePlayer extends Component {
@@ -245,7 +241,7 @@ export class ImmersivePlayer extends Component {
                 const prom = fetch(ch.src)
                     .then(res => res.text())
                     .then(text => {
-                        const info = parsePropsOfBehaviorContent(text)
+                        const info = parseBehaviorScript(text)
                         info.text = text
                         this.behavior_assets[ch.id] = info
                         return text

@@ -24,9 +24,10 @@ import {
     isImageType,
     ITEM_ICONS,
     MIME_TYPES,
-    OBJ_TYPES,
+    OBJ_TYPES, parseBehaviorScript,
     PROP_DEFS,
-    SIMPLE_COLORS, TOTAL_OBJ_TYPES} from './Common'
+    SIMPLE_COLORS, TOTAL_OBJ_TYPES
+} from './Common'
 import {AddImageAssetDialog} from './AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './AddGLBAssetDialog'
@@ -42,13 +43,9 @@ import {OpenFileDialog} from './OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
-import {ImmersivePlayer} from './ImmersivePlayer'
 import {OpenScriptDialog} from './OpenScriptDialog'
 
 
-function parsePropsOfBehaviorContent(contents) {
-    return Function('"use strict"; return('+contents+')')();
-}
 
 export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
@@ -93,7 +90,7 @@ export default class VREditor extends  SyncGraphProvider {
                 console.log("processing behavior",b)
                 this.fetchBehaviorAssetContents(b.id).then((contents)=> {
                     try {
-                        const info = parsePropsOfBehaviorContent(contents)
+                        const info = parseBehaviorScript(contents)
                         info.text = contents
                         this.setCachedBehaviorAsset(b.id, info)
                     } catch (e) {
@@ -493,7 +490,7 @@ export default class VREditor extends  SyncGraphProvider {
                     parent: 0,
                     behavior:b.id,
                 }
-                const obj = parsePropsOfBehaviorContent(contents)
+                const obj = parseBehaviorScript(contents)
                 this.setCachedBehaviorAsset(b.id,obj)
                 //copy properties to the behavior def
                 if(obj.properties) {

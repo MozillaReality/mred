@@ -322,3 +322,8 @@ export const ITEM_ICONS = {
     paste:'paste',
     delete:'close'
 }
+
+
+export function parseBehaviorScript(contents) {
+    return Function('"use strict"; return('+contents+')')();
+}
