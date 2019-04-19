@@ -17,7 +17,7 @@ import SceneDef from "./SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
-    ASSET_TYPES,
+    ASSET_TYPES, canHaveBehavior, canHaveScene, canHaveShape,
     get3DObjectDef,
     is3DObjectType,
     isGLTFFile,
@@ -491,13 +491,20 @@ export default class VREditor extends  SyncGraphProvider {
     calculateContextMenu(item) {
         const cmds = []
         cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: this.deleteObject });
-        cmds.push({ divider:true })
-        Object.keys(OBJ_TYPES).forEach(type => cmds.push({ title:type,icon: ITEM_ICONS[type], fun: () => this.add3DObject(type) }))
-        console.log("context for ",item,'adding scene')
-        cmds.push({ title:'scene', icon:ITEM_ICONS.scene, fun: this.addScene })
-
         const obj = this.accessObject(item)
-        if(obj.type === TOTAL_OBJ_TYPES.SCENE || is3DObjectType(obj.type)) {
+        if(canHaveShape(obj.type)) {
+            cmds.push({ divider:true })
+            Object.keys(OBJ_TYPES).forEach(type => cmds.push({
+                title: type,
+                icon: ITEM_ICONS[type],
+                fun: () => this.add3DObject(type)
+            }))
+        }
+        if(canHaveScene(obj.type)) {
+            cmds.push({title: 'scene', icon: ITEM_ICONS.scene, fun: this.addScene})
+        }
+
+        if(canHaveBehavior(obj.type)) {
             cmds.push({ divider:true })
             this.accessObject(this.getBehaviorsObject()).getChildren()
                 .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
@@ -509,6 +516,12 @@ export default class VREditor extends  SyncGraphProvider {
                     })
                 })
         }
+
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+            cmds.push({ divider:true })
+            cmds.push({title:'view code', icon: ITEM_ICONS.behavior, fun: ()=>SelectionManager.setSelection(obj.behavior)})
+        }
+
         if(obj.type !== TOTAL_OBJ_TYPES.ROOT) {
             cmds.push({divider: true})
             cmds.push({title: 'cut', icon: ITEM_ICONS.cut, fun: this.cutSelection})

@@ -256,6 +256,23 @@ export function is3DObjectType(type) {
     return false
 }
 
+export function canHaveShape(type) {
+    if(is3DObjectType(type)) return true
+    if(type === TOTAL_OBJ_TYPES.SCENE) return true
+    return false
+}
+
+export function canHaveBehavior(type) {
+    if(is3DObjectType(type)) return true
+    if(type === TOTAL_OBJ_TYPES.SCENE) return true
+    return false
+}
+
+export function canHaveScene(type) {
+    if(type === TOTAL_OBJ_TYPES.ROOT) return true
+    return false
+}
+
 export function get3DObjectDef(type) {
     if(type === 'cube') return new CubeDef()
     if(type === 'sphere') return new SphereDef()
