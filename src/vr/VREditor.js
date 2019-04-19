@@ -147,6 +147,14 @@ export default class VREditor extends  SyncGraphProvider {
             } else {
                 console.warn("Missing prop defs for behavior object")
             }
+            defs.push({
+                key:'behavior',
+                name:"Script",
+                type:TYPES.STRING,
+                value:obj.behavior,
+                locked:true,
+                custom:true,
+            })
         }
 
         const props = this.syncdoc.getPropertiesForObject(item)
@@ -604,6 +612,7 @@ export default class VREditor extends  SyncGraphProvider {
         </HBox>
 
         if(def.key === 'scale') return <ScaleEditor def={def} item={item} onChange={onChange} provider={this}/>
+        if(def.key === 'behavior') return <button onClick={()=>SelectionManager.setSelection(value)}>view code</button>
         return <i>no custom editor for {def.key}</i>
     }
 
