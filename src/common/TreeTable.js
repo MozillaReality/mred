@@ -3,6 +3,7 @@ import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
 import {PopupManager, VBox} from "appy-comps";
 import {fetchGraphObject, removeFromParent} from "../syncgraph/utils";
+import {Spacer} from '../GridEditorApp'
 
 
 const ContextMenu = (props) => {
@@ -79,17 +80,24 @@ class TreeTableItem extends Component {
                     onDragOver={this.onDragOver}
                     onDrop={this.onDrop}
         >
-            <span className={"drag fa fa-bars"}
-                  draggable
-                  onDragStart={this.onDragStart}
-                  onDragEnd={this.onDragEnd}
-            />
             <span style={{
                 width:this.props.depth*1.5+'em'
             }}></span>
             {arrow}
             {prov.getRendererForItem(node)}
+            <Spacer/>
+            {this.renderDragBars()}
         </div>
+    }
+
+    renderDragBars() {
+        if(this.props.provider.canBeMoved && !this.props.provider.canBeMoved(this.props.node))  return ""
+        return <span className={"drag fa fa-bars"}
+              draggable
+              onDragStart={this.onDragStart}
+              onDragEnd={this.onDragEnd}
+        />
+
     }
 }
 
