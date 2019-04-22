@@ -45,6 +45,7 @@ import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
+import {addScene} from './Actions'
 
 
 
@@ -287,13 +288,6 @@ export default class VREditor extends  SyncGraphProvider {
         DialogManager.show(<MakeEmbedDialog provider={this}/>)
     }
 
-    addScene = () => {
-        const root = this.accessObject(this.getSceneRoot())
-        const scene = new SceneDef().make(this.getDataGraph(),root)
-        root.insertFirstChild(scene)
-        SelectionManager.setSelection(scene.id)
-    }
-
     add3DObject = (type) => {
         const scene = this.getSelectedScene()
         const obj = get3DObjectDef(type).make(this.getDataGraph(),scene)
@@ -508,7 +502,7 @@ export default class VREditor extends  SyncGraphProvider {
             }))
         }
         if(canHaveScene(obj.type)) {
-            cmds.push({title: 'scene', icon: ITEM_ICONS.scene, fun: this.addScene})
+            cmds.push({title: 'scene', icon: ITEM_ICONS.scene, fun: ()=>addScene(this)})
         }
 
         if(canHaveBehavior(obj.type)) {

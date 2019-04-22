@@ -2,13 +2,14 @@ import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils"
 import * as THREE from "three";
 import {PROP_DEFS} from './Common'
 
+let COUNTER = 0
 
 export default class SceneDef {
     make(graph, root) {
         if(!root.id) throw new Error("can't create scene w/ missing parent")
         return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'scene',
-            title:'Scene 1',
+            title:'Scene '+COUNTER++,
             defaultFloor: true,
             parent:root.id,
             children:graph.createArray()
