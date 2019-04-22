@@ -45,7 +45,7 @@ import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject, newDoc} from './Actions'
+import {addScene, deleteObject, newDoc, showAddPopup} from './Actions'
 
 
 
@@ -288,10 +288,9 @@ export default class VREditor extends  SyncGraphProvider {
         DialogManager.show(<MakeEmbedDialog provider={this}/>)
     }
 
-    add3DObject = (type) => {
-        const scene = this.getSelectedScene()
-        const obj = get3DObjectDef(type).make(this.getDataGraph(),scene)
-        scene.insertFirstChild(obj)
+    add3DObject = (type, parent) => {
+        const obj = get3DObjectDef(type).make(this.getDataGraph(),parent)
+        parent.insertFirstChild(obj)
         SelectionManager.setSelection(obj.id)
         ToasterMananager.add('added '+type)
     }
@@ -485,14 +484,14 @@ export default class VREditor extends  SyncGraphProvider {
 
     calculateContextMenu(item) {
         const cmds = []
-        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: deleteObject });
+        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: ()=>deleteObject(this) });
         const obj = this.accessObject(item)
         if(canHaveShape(obj.type)) {
             cmds.push({ divider:true })
             Object.keys(OBJ_TYPES).forEach(type => cmds.push({
                 title: type,
                 icon: ITEM_ICONS[type],
-                fun: () => this.add3DObject(type)
+                fun: () => this.add3DObject(type,obj)
             }))
         }
         if(canHaveScene(obj.type)) {
@@ -580,6 +579,7 @@ export default class VREditor extends  SyncGraphProvider {
         const c = this.accessObject(child)
         if(p.type === TOTAL_OBJ_TYPES.ROOT && c.type === TOTAL_OBJ_TYPES.SCENE) return true
         if(p.type === TOTAL_OBJ_TYPES.SCENE && is3DObjectType(c.type)) return true
+        if(p.type === OBJ_TYPES.group && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
@@ -774,16 +774,6 @@ class VREditorApp extends Component {
         this.setState({mode:'canvas'})
     }
 
-    showAddPopup = (e) => {
-        const acts = Object.keys(OBJ_TYPES).map(type => {
-            return {
-                title: type,
-                icon: ITEM_ICONS[type],
-                fun: () => this.props.provider.add3DObject(type)
-            }
-        })
-        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
-    }
     showAddAssetPopup = (e) => {
         let acts = []
         // console.log("Auth mod",AuthModule.supportsAssetUpload())
@@ -853,7 +843,7 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button className={"fa fa-cube"} onClick={this.showAddPopup}/>
+                <button className={"fa fa-cube"} onClick={(e)=>showAddPopup(e,prov)}/>
                 <button className="fa fa-globe" onClick={()=>addScene(prov)}/>
                 <button className="fa fa-archive" onClick={this.showAddAssetPopup}/>
                 <button className="fa fa-superpowers" onClick={this.showAddActionPopup}/>

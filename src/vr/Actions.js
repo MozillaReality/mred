@@ -1,6 +1,10 @@
 import SceneDef from './SceneDef'
 import SelectionManager from '../SelectionManager'
 import {toQueryString} from '../utils'
+import {ITEM_ICONS, OBJ_TYPES} from './Common'
+import {PopupManager} from 'appy-comps'
+import {MenuPopup} from '../GridEditorApp'
+import React from 'react'
 
 export function addScene(provider) {
     const root = provider.accessObject(provider.getSceneRoot())
@@ -22,3 +26,15 @@ export function newDoc(provider) {
     window.open(`./?${toQueryString(opts)}`)
 }
 
+
+
+export function showAddPopup (e, provider) {
+    const acts = Object.keys(OBJ_TYPES).map(type => {
+        return {
+            title: type,
+            icon: ITEM_ICONS[type],
+            fun: () => provider.add3DObject(type)
+        }
+    })
+    PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+}

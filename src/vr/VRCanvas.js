@@ -101,11 +101,14 @@ export class VRCanvas extends Component {
             if(obj.type === 'scene') return this.setCurrentSceneWrapper(this.findNode(sel))
 
             if(is3DObjectType(obj.type)) {
-                this.setCurrentSceneWrapper(this.findNode(obj.parent))
+                const sc = this.findSceneObjectParent(obj)
+                this.setCurrentSceneWrapper(this.findNode(sc.id))
                 const node = this.findNode(sel)
                 if (!node) return
                 this.controls.attach(node)
+                return
             }
+            console.log("selected something not an object or scene")
 
         })
 
@@ -133,13 +136,19 @@ export class VRCanvas extends Component {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
         return this.obj_node_map[id]
     }
+    findSceneObjectParent(obj) {
+        if(obj === null) return null
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return obj
+        obj = this.props.provider.accessObject(obj.parent)
+        return this.findSceneObjectParent(obj)
+    }
 
     updateScene(op) {
         const graph = this.props.provider.getDataGraph()
         if (op.type === INSERT_ELEMENT) {
             const objid = op.value
             const obj = fetchGraphObject(graph, objid)
-            if (obj.type === 'scene') return this.populateNode(objid)
+            if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.populateNode(objid)
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
             if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
             if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return
@@ -216,7 +225,7 @@ export class VRCanvas extends Component {
             parent.add(obj3d)
             return obj3d
         }
-        if (obj.type === 'scene') {
+        if (obj.type === TOTAL_OBJ_TYPES.SCENE) {
             const scene = new SceneDef().makeNode(obj)
             this.insertNodeMapping(nodeid, scene)
             this.addSceneWrapper(scene)

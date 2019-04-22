@@ -6,6 +6,7 @@ import ModelDef from './ModelDef'
 import BG360Def from './BG360Def'
 import TextDef from './TextDef'
 import Image2DDef from './Image2DDef'
+import GroupDef from './defs/GroupDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -226,6 +227,7 @@ export const OBJ_TYPES = {
     bg360:'bg360',
     text:'text',
     img2d:'img2d',
+    group:'group',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -253,11 +255,12 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.text) return true
     if(type === OBJ_TYPES.bg360) return true
     if(type === OBJ_TYPES.img2d) return true
+    if(type === OBJ_TYPES.group) return true
     return false
 }
 
 export function canHaveShape(type) {
-    if(is3DObjectType(type)) return true
+    if(type === OBJ_TYPES.group) return true
     if(type === TOTAL_OBJ_TYPES.SCENE) return true
     return false
 }
@@ -274,13 +277,14 @@ export function canHaveScene(type) {
 }
 
 export function get3DObjectDef(type) {
-    if(type === 'cube') return new CubeDef()
-    if(type === 'sphere') return new SphereDef()
-    if(type === 'plane') return new PlaneDef()
-    if(type === 'model') return new ModelDef()
+    if(type === OBJ_TYPES.cube) return new CubeDef()
+    if(type === OBJ_TYPES.sphere) return new SphereDef()
+    if(type === OBJ_TYPES.plane) return new PlaneDef()
+    if(type === OBJ_TYPES.model) return new ModelDef()
     if(type === OBJ_TYPES.bg360) return new BG360Def()
     if(type === OBJ_TYPES.text) return new TextDef()
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
+    if(type === OBJ_TYPES.group) return new GroupDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -334,6 +338,7 @@ export const ITEM_ICONS = {
     image:'image',
     text:'font',
     audio:'music',
+    group:'object-group',
 
     cut:'cut',
     copy:'copy',
