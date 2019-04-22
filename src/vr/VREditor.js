@@ -693,6 +693,11 @@ export default class VREditor extends  SyncGraphProvider {
         return fetch(obj.src).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
+        //update the cache first
+        const info = parseBehaviorScript(text)
+        info.text = text
+        this.setCachedBehaviorAsset(id, info)
+
         const obj = this.accessObject(id)
         return fetch(obj.src,{
             method:'POST',
@@ -703,6 +708,8 @@ export default class VREditor extends  SyncGraphProvider {
             .then(ans => {
                 obj.set('title',ans.script.title)
                 obj.set('description',ans.script.description)
+
+
             })
     }
 
