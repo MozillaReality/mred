@@ -45,7 +45,7 @@ import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene} from './Actions'
+import {addScene, deleteObject} from './Actions'
 
 
 
@@ -455,12 +455,6 @@ export default class VREditor extends  SyncGraphProvider {
             .then((b)=>this.addBehaviorToObject(b,obj))
     }
 
-    deleteObject = () => {
-        if(SelectionManager.isEmpty()) return
-        this.accessObject(SelectionManager.getSelection()).removeFromParent()
-        SelectionManager.clearSelection()
-    }
-
     addBehaviorToObject = (b,item) => {
         return this.fetchBehaviorAssetContents(b.id).then((contents)=>{
             try {
@@ -491,7 +485,7 @@ export default class VREditor extends  SyncGraphProvider {
 
     calculateContextMenu(item) {
         const cmds = []
-        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: this.deleteObject });
+        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: deleteObject });
         const obj = this.accessObject(item)
         if(canHaveShape(obj.type)) {
             cmds.push({ divider:true })

@@ -7,3 +7,11 @@ export function addScene(provider) {
     root.insertFirstChild(scene)
     SelectionManager.setSelection(scene.id)
 }
+
+
+export function deleteObject(provider) {
+    if(SelectionManager.isEmpty()) return
+    provider.accessObject(SelectionManager.getSelection()).removeFromParent()
+    SelectionManager.clearSelection()
+}
+
