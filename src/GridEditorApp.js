@@ -4,16 +4,24 @@ import {makePoint} from './utils'
 
 const GridLayout = (props) => {
     let clss = "grid fill";
-    if (!props.showLeft) clss += ' hide-left';
-    if (!props.showRight) clss += ' hide-right';
+    let leftWidth = props.leftWidth
+    let rightWidth = props.rightWidth
+    if (!props.showLeft) {
+        clss += ' hide-left'
+        leftWidth = 0
+    }
+    if (!props.showRight) {
+        clss += ' hide-right'
+        rightWidth = 0
+    }
     const cols = `
-    [left] ${props.leftWidth}px
+    [left] ${leftWidth}px
     [left-resize] 2px
     [center] auto
     [right-resize] 2px
-    [right] ${props.rightWidth}px
+    [right] ${rightWidth}px
     `
-    const style = {}//gridTemplateColumns:cols}
+    const style = {gridTemplateColumns:cols}
     return <div className={clss} style={style}>{props.children}</div>
 };
 

@@ -45,7 +45,7 @@ import {OpenAssetDialog} from './OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject} from './Actions'
+import {addScene, deleteObject, newDoc} from './Actions'
 
 
 
@@ -853,15 +853,15 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button className={"fa fa-plus"} onClick={this.showAddPopup}>obj</button>
-                <button className="fa fa-plus" onClick={prov.addScene}>scene</button>
-                <button className={"fa fa-plus"} onClick={this.showAddAssetPopup}>asset</button>
-                <button className={"fa fa-plus"} onClick={this.showAddActionPopup}>behavior</button>
+                <button className={"fa fa-cube"} onClick={this.showAddPopup}/>
+                <button className="fa fa-globe" onClick={()=>addScene(prov)}/>
+                <button className="fa fa-archive" onClick={this.showAddAssetPopup}/>
+                <button className="fa fa-superpowers" onClick={this.showAddActionPopup}/>
             </Toolbar>
 
 
             <Toolbar center top>
-                <button className="fa fa-file" onClick={() => prov.newDoc()} title={'new project'}></button>
+                <button className="fa fa-file" onClick={() => newDoc(prov)} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editInVR()}>VR Edit</button>
                 <button onClick={() => prov.viewInVR()}>VR View</button>

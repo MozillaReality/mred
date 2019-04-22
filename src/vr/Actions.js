@@ -1,5 +1,6 @@
 import SceneDef from './SceneDef'
 import SelectionManager from '../SelectionManager'
+import {toQueryString} from '../utils'
 
 export function addScene(provider) {
     const root = provider.accessObject(provider.getSceneRoot())
@@ -13,5 +14,11 @@ export function deleteObject(provider) {
     if(SelectionManager.isEmpty()) return
     provider.accessObject(SelectionManager.getSelection()).removeFromParent()
     SelectionManager.clearSelection()
+}
+
+export function newDoc(provider) {
+    const opts = Object.assign({},provider.options,
+        {mode:'edit', switcher:false})
+    window.open(`./?${toQueryString(opts)}`)
 }
 
