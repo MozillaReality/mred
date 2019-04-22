@@ -14,6 +14,13 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 
 
 export class VRCanvas extends Component {
+    moveCameraFoward = () => {
+        this.camera.position.z += -0.5
+    }
+    moveCameraBackward = () => {
+        this.camera.position.z += 0.5
+    }
+
     constructor(props) {
         super(props)
         console.info("CREATED VR Canvas")
@@ -24,6 +31,7 @@ export class VRCanvas extends Component {
             running:props.running
         }
         this.scriptManager = new ScriptManager(this)
+        this.playing_audio = []
     }
 
     componentDidMount() {
@@ -211,6 +219,8 @@ export class VRCanvas extends Component {
     render() {
         return <div>
             <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
+            <button onClick={this.moveCameraFoward}>forward</button>
+            <button onClick={this.moveCameraBackward}>backward</button>
             <ToasterNotification/>
         </div>
     }
@@ -302,6 +312,14 @@ export class VRCanvas extends Component {
             sound.setVolume( 0.5 );
             sound.play();
         });
+        this.playing_audio[audio.id] = sound
+    }
+
+    stopAudioAsset(audio) {
+        if(this.playing_audio[audio.id]) {
+            this.playing_audio[audio.id].stop()
+            delete this.playing_audio[audio.id]
+        }
     }
 
     resetSceneGraph() {
@@ -336,6 +354,11 @@ export class VRCanvas extends Component {
     getGraphObjectById(id) {
         return this.props.provider.accessObject(id)
     }
+    findGraphObjectByTitle(title) {
+        const list = this.props.provider.accessObject(this.props.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
     navigateScene(id) {
         SelectionManager.setSelection(id)
     }
@@ -356,5 +379,8 @@ export class VRCanvas extends Component {
     }
     getBehaviorsForObject(scene) {
         return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getCamera() {
+        return this.camera
     }
 }

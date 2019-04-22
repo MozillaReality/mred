@@ -5,6 +5,7 @@ export default class ScriptManager {
     constructor(sceneGraphProvider) {
         this.sgp = sceneGraphProvider
         this.running = false
+        this.storage = {}
     }
 
     getCurrentScene() {
@@ -28,8 +29,14 @@ export default class ScriptManager {
     playAudioAsset(obj) {
         return this.sgp.playAudioAsset(obj)
     }
+    stopAudioAsset(obj) {
+        return this.sgp.stopAudioAsset(obj)
+    }
     navigateScene(id) {
         this.sgp.navigateScene(id)
+    }
+    getCamera() {
+        return this.sgp.getCamera()
     }
     makeScriptContext() {
         return {
@@ -69,11 +76,17 @@ export default class ScriptManager {
                 const asset = manager.getGraphObjectById(id)
                 manager.playAudioAsset(asset)
             },
-            setKeyValue(key, value) {
+            getCamera() {
+                return manager.getCamera()
             },
-            getKeyValue(key, value) {
+            setKeyValue(key, value) {
+                manager.storage[key] = value
+            },
+            getKeyValue(key, defaultValue) {
+                return manager.storage[key]
             },
             hasKeyValue(key, value) {
+                return typeof manager.storage[key] !== 'undefined'
             },
             isAR() {
                 return false
@@ -164,6 +177,7 @@ export default class ScriptManager {
         behaviors.forEach(b => {
             evt.target = new ThreeObjectFacade(this,b.parent)
             const asset = this.sgp.getParsedBehaviorAsset(b)
+            evt.props = b.props()
             if(asset.onTick) asset.onTick(evt)
         })
         this.getSceneObjects(scene).forEach(child => {
@@ -172,6 +186,7 @@ export default class ScriptManager {
                 const parent = this.sgp.getGraphObjectById(b.parent)
                 evt.target = new ThreeObjectFacade(this,b.parent)
                 const asset = this.sgp.getParsedBehaviorAsset(b)
+                evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
             })
         })
@@ -180,6 +195,7 @@ export default class ScriptManager {
 
     startRunning() {
         this.running = true
+        this.storage = {}
         console.log("script manager starting")
         const nodes = this.sgp.getAllBehaviors()
         nodes.forEach(ref => {
@@ -191,6 +207,7 @@ export default class ScriptManager {
     }
     stopRunning() {
         this.running = false
+        this.storage = {}
         console.log("script manager stopping")
     }
 }
@@ -204,11 +221,17 @@ class AssetFacade {
     play() {
         this.manager.playAudioAsset(this.obj)
     }
+    stop() {
+        this.manager.stopAudioAsset(this.obj)
+    }
 }
 class ThreeObjectFacade {
     constructor(manager,obj) {
         this.manager = manager
         this.obj = obj
+    }
+    getPosition() {
+        return this.manager.getThreeObject(this.obj).position
     }
     setPosition(x,y,z) {
         this.manager.getThreeObject(this.obj).position.set(x,y,z)
