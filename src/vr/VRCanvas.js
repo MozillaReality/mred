@@ -103,10 +103,9 @@ export class VRCanvas extends Component {
             this.controls.detach()
             const sel = SelectionManager.getSelection()
             if(!sel) return
-            const graph = this.props.provider.getDataGraph()
-            const obj = fetchGraphObject(graph, sel)
+            const obj = this.props.provider.accessObject(sel)
 
-            if(obj.type === 'scene') return this.setCurrentSceneWrapper(this.findNode(sel))
+            if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel))
 
             if(is3DObjectType(obj.type)) {
                 const sc = this.findSceneObjectParent(obj)
@@ -146,6 +145,7 @@ export class VRCanvas extends Component {
     }
     findSceneObjectParent(obj) {
         if(obj === null) return null
+        if(!obj.exists()) return null
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) return obj
         obj = this.props.provider.accessObject(obj.parent)
         return this.findSceneObjectParent(obj)
@@ -365,11 +365,7 @@ export class VRCanvas extends Component {
     getCurrentScene() {
         const sel = SelectionManager.getSelection()
         const obj = this.props.provider.accessObject(sel)
-        if(obj.type === 'scene') return obj
-        if(is3DObjectType(obj.type)) {
-            return this.props.provider.accessObject(obj.parent)
-        }
-        return null
+        return this.findSceneObjectParent(obj)
     }
     getSceneObjects(scene) {
         return scene.getChildren().filter(ch => is3DObjectType(ch.type))

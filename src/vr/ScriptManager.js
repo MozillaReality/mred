@@ -167,7 +167,7 @@ export default class ScriptManager {
     tick(time) {
         if(!this.running) return
         const scene = this.getCurrentScene()
-        if (!scene) return
+        if (!scene) return console.log("no current scene?!")
         const evt = {
             type:'tick',
             system:this.makeSystemFacade(),
@@ -200,7 +200,6 @@ export default class ScriptManager {
         const nodes = this.sgp.getAllBehaviors()
         nodes.forEach(ref => {
             const asset = this.sgp.getParsedBehaviorAsset(ref)
-            console.log("behavior asset",asset)
             if(asset.init) asset.init()
         })
 
