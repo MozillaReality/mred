@@ -57,8 +57,10 @@ export default class ImmersiveVREditor extends Component {
             },
             findThreeObject:(id) => {
                 return this.findNode(id)
+            },
+            navigateScene: (id) => {
+                this.swapScene(id)
             }
-
         })
     }
 
@@ -175,25 +177,12 @@ export default class ImmersiveVREditor extends Component {
         if (this.selectedNode && this.controls) this.controls.attach(this.selectedNode, this.pointer)
     }
 
-
-    performClickOnSelection = () => {
-        const sel = SelectionManager.getSelection()
-        if(!sel) return
-        const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
-        if(!obj) return
-    }
-
-    performProximityOnSelection = () => {
-        const sel = SelectionManager.getSelection()
-        if(!sel) return
-        const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
-        if(!obj) return
-    }
-
     standardViewClickHandler = (e)  => {
-        const id = e.target.userData.graphid
-        const obj = fetchGraphObject(this.props.provider.getDataGraph(),id)
-        if(!obj) return
+        if(this.scriptManager.isRunning()) {
+            this.scriptManager.performClickAction(this.props.provider.accessObject(e.target.userData.graphid))
+        } else {
+            SelectionManager.setSelection(e.target.userData.graphid)
+        }
     }
 
 
@@ -332,11 +321,7 @@ export default class ImmersiveVREditor extends Component {
             if (obj.type === 'scene') return // console.log("skipping insert scene")
             if(is3DObjectType(obj.type)) {
                 const nodeObj = get3DObjectDef(obj.type).makeNode(obj)
-                if(this.props.editable) {
-                    on(nodeObj, POINTER_CLICK, e => SelectionManager.setSelection(nodeObj.userData.graphid))
-                } else {
-                    on(nodeObj, POINTER_CLICK, this.standardViewClickHandler)
-                }
+                on(nodeObj, POINTER_CLICK, this.standardViewClickHandler)
                 this.insertNodeMapping(objid, nodeObj)
                 this.sceneWrappers[obj.parent].add(nodeObj)
                 return
