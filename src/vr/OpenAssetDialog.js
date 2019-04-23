@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL} from '../TreeItemProvider'
 import {isAudioType, isImageType, MIME_TYPES} from './Common'
+import {AuthModule} from './AuthModule'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {
@@ -52,7 +53,7 @@ export class OpenAssetDialog extends Component {
                             <b>{doc.title} </b>
                             <i> {doc.mimeType}</i>
                             <button onClick={()=>this.addAsset(doc)}>add</button>
-                            <button onClick={()=>this.deleteAsset(doc)}>delete</button>
+                            {this.renderDeleteButton(doc)}
                         </li>
                     })}
                     </ul>
@@ -64,4 +65,9 @@ export class OpenAssetDialog extends Component {
         </Dialog>
     }
 
+    renderDeleteButton(doc) {
+        if(!AuthModule.supportsAssetUpload()) return ""
+        return <button onClick={()=>this.deleteAsset(doc)}>delete</button>
+
+    }
 }
