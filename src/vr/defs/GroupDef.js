@@ -1,15 +1,18 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from '../ObjectDef'
+import {OBJ_TYPES} from '../Common'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
+
+let COUNTER = 0
 
 export default class GroupDef extends ObjectDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't create cube w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:'group',
-            title:'first group',
+            type:OBJ_TYPES.group,
+            title:'group '+COUNTER++,
             visible:true,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,

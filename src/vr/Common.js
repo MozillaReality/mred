@@ -7,6 +7,7 @@ import BG360Def from './BG360Def'
 import TextDef from './TextDef'
 import Image2DDef from './Image2DDef'
 import GroupDef from './defs/GroupDef'
+import ParticlesDef from './defs/ParticlesDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -228,6 +229,7 @@ export const OBJ_TYPES = {
     text:'text',
     img2d:'img2d',
     group:'group',
+    particles:'particles',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -238,7 +240,6 @@ export const TOTAL_OBJ_TYPES = {
     ASSETS_LIST: 'assets',
     BEHAVIORS_LIST: 'behaviors',
     ROOT: 'root'
-
 }
 export const HORIZONTAL_ALIGNMENT = {
     LEFT:'LEFT',
@@ -256,6 +257,7 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.bg360) return true
     if(type === OBJ_TYPES.img2d) return true
     if(type === OBJ_TYPES.group) return true
+    if(type === OBJ_TYPES.particles) return true
     return false
 }
 
@@ -285,6 +287,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.text) return new TextDef()
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
+    if(type === OBJ_TYPES.particles) return new ParticlesDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -339,6 +342,7 @@ export const ITEM_ICONS = {
     text:'font',
     audio:'music',
     group:'object-group',
+    particles:'certificate',
 
     cut:'cut',
     copy:'copy',

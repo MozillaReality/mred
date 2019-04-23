@@ -46,7 +46,7 @@ export class VRCanvas extends Component {
         this.audioListener = new THREE.AudioListener()
         this.camera.add(this.audioListener)
 
-        this.scene.background = new THREE.Color(0xff00ff);
+        this.scene.background = new THREE.Color(0x000000);
         this.camera.position.y = 1.5
         this.camera.position.x = 0
         this.camera.position.z = 0
@@ -84,6 +84,11 @@ export class VRCanvas extends Component {
 
         this.renderer.setAnimationLoop((time) => {
             if(this.state.running) this.scriptManager.tick(time)
+            const sel = SelectionManager.getSelection()
+            if(sel) {
+                const node = this.findNode(sel)
+                if(node && node.update) node.update(time)
+            }
             this.renderer.render(this.scene, this.camera)
         })
 
