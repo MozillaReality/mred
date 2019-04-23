@@ -238,6 +238,16 @@ export default class GPUParticles extends THREE.Object3D {
         this.geometry.dispose();
     }
 
+    updateSprite(sprite) {
+        if(sprite) {
+            const old = this.sprite
+            this.sprite = sprite
+            this.sprite.wrapS = this.sprite.wrapT = THREE.RepeatWrapping;
+            this.material.uniforms.tSprite.value = sprite
+            // old.dispose()
+        }
+    }
+
     /* spawn a particle
 
     This works by updating values inside of

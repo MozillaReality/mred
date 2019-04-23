@@ -69,6 +69,15 @@ export default class ParticlesDef extends ObjectDef {
     updateProperty(node, obj, op, provider) {
         if(op.name === PROP_DEFS.pointSize.key) return node.userData.options.size = obj.pointSize
         if(op.name === PROP_DEFS.lifetime.key) return node.userData.options.lifetime = obj.lifetime
+        if(op.name === PROP_DEFS.texture.key) {
+            console.log("need to update the texture",obj.texture)
+            const texture = provider.accessObject(obj.texture)
+            if(texture) {
+                const tex = new THREE.TextureLoader().load(texture.src)
+                node.updateSprite(tex)
+            }
+            return
+        }
         return super.updateProperty(node,obj,op,provider)
     }
 

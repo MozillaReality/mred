@@ -228,7 +228,12 @@ export const PROP_DEFS = {
         name:'Lifetime',
         type:TYPES.NUMBER,
         hints: stdhints,
-    }
+    },
+    texture: {
+        key:'texture',
+        name:'texture',
+        type:TYPES.ENUM,
+    },
 }
 
 export const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]

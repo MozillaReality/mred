@@ -236,6 +236,11 @@ export default class VREditor extends  SyncGraphProvider {
                 .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
                 .map(ch => ch.id)
         }
+        if(key === PROP_DEFS.texture.key) {
+            let assets = this.accessObject(this.getAssetsObject()).getChildren()
+            assets = assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
+            return assets
+        }
     }
     getRendererForEnum(key,obj) {
         const realobj = this.accessObject(obj)
@@ -243,6 +248,7 @@ export default class VREditor extends  SyncGraphProvider {
         switch(key) {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
             case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
+            case PROP_DEFS.texture.key: return EnumTitleRenderer
             default: return null
         }
     }
