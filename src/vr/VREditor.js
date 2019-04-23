@@ -846,12 +846,14 @@ class VREditorApp extends Component {
                 icon: ITEM_ICONS.behavior_script,
                 fun: () => this.props.provider.showOpenBehaviorDialog()
             },
-            {
-                title:'custom behavior',
+        ]
+        if(AuthModule.supportsScriptEdit()) {
+            acts.push({
+                title: 'custom behavior',
                 icon: ITEM_ICONS.behavior_script,
                 fun: () => this.props.provider.addCustomBehaviorAsset()
-            }
-        ]
+            })
+        }
         PopupManager.show(<MenuPopup actions={acts}/>, e.target)
     }
 
