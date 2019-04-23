@@ -44,7 +44,7 @@ export default class ScriptManager {
         }
     }
 
-    makeSystemFacade() {
+    makeSystemFacade(evt) {
         const prov = this.prov
         const manager = this
         return {
@@ -92,46 +92,21 @@ export default class ScriptManager {
                 return false
             },
             sendMessage(name,payload) {
-                console.log('sending the message',name,payload)
+                const target = evt.graphTarget
+                if(target) {
+                    manager.fireMessageAtTarget(name,payload,target)
+                }
             }
         }
     }
-    // executeScriptAction(action,obj) {
-    //     const type = obj.trigger
-    //     const evt = {
-    //         type:type,
-    //         system:this.makeSystemFacade(),
-    //     }
-    //     const txt = `
-    //         const toRadians = (deg) => deg*Math.PI/180
-    //         ${action.scriptBody}
-    //         new MyScript()
-    //     `;
-    //     console.log("running the script",txt)
-    //     const ctx = this.makeScriptContext()
-    //
-    //     function doit(ctx) {
-    //         const obj = eval(txt);
-    //         console.log("returned",obj)
-    //         obj.handle(evt)
-    //
-    //     }
-    //
-    //     try {
-    //         doit(ctx);
-    //     } catch (e) {
-    //         ToasterMananager.add('ERROR: ' + e.message)
-    //         console.error(e.message)
-    //         console.log(e)
-    //     }
-    // }
+
     performClickAction(target) {
         console.log("user clicked on",target)
         const evt = {
             type:'click',
             target:target,
-            system:this.makeSystemFacade(),
         }
+        evt.system = this.makeSystemFacade(evt)
         const behaviors = this.getBehaviorsForObject(target)
         for(let i in behaviors) {
             let b = behaviors[i]
@@ -146,8 +121,8 @@ export default class ScriptManager {
         const evt = {
             type:'exit',
             target:scene,
-            system:this.makeSystemFacade(),
         }
+        evt.system = this.makeSystemFacade(evt)
         const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
@@ -158,8 +133,8 @@ export default class ScriptManager {
         const evt = {
             type:'enter',
             target:scene,
-            system:this.makeSystemFacade(),
         }
+        evt.system = this.makeSystemFacade(evt)
         const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
@@ -173,9 +148,9 @@ export default class ScriptManager {
         if (!scene) return console.log("no current scene?!")
         const evt = {
             type:'tick',
-            system:this.makeSystemFacade(),
             time:time
         }
+        evt.system = this.makeSystemFacade(evt)
         const behaviors = this.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             evt.target = new ThreeObjectFacade(this,b.parent)
@@ -186,8 +161,8 @@ export default class ScriptManager {
         this.getSceneObjects(scene).forEach(child => {
             const behaviors = this.getBehaviorsForObject(child)
             behaviors.forEach(b => {
-                const parent = this.sgp.getGraphObjectById(b.parent)
                 evt.target = new ThreeObjectFacade(this,b.parent)
+                evt.graphTarget = child
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
@@ -211,6 +186,24 @@ export default class ScriptManager {
         this.running = false
         this.storage = {}
         console.log("script manager stopping")
+    }
+
+    fireMessageAtTarget(name, payload, target) {
+        const evt = {
+            type:'message',
+            name:name,
+            message:payload,
+            time:Date.now(),
+            target: new ThreeObjectFacade(this,target),
+            graphTarget:target,
+        }
+        evt.system = this.makeSystemFacade(evt)
+        const behaviors = this.getBehaviorsForObject(target)
+        behaviors.forEach(b => {
+            evt.props = b.props()
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if(asset.onMessage) asset.onMessage(evt)
+        })
     }
 }
 
