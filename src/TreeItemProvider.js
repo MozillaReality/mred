@@ -15,6 +15,7 @@ export const TREE_ITEM_PROVIDER = {
 
 const URLS = {
     BASE:'https://vr.josh.earth/generaled/api/'
+    // BASE:'http://localhost:8734/'
 }
 export function getDocsURL() {
     return URLS.BASE + 'doc/'

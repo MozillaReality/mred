@@ -10,16 +10,18 @@ export class OpenAssetDialog extends Component {
             assetList:[]
         }
     }
-    componentDidMount() {
+    refreshList = () => {
         this.props.provider.loadAssetList()
             .then((assets) => {
                 if(this.props.filter) assets = assets.filter(this.props.filter)
                 this.setState({assetList:assets})
             })
     }
+    componentDidMount() {
+        this.refreshList()
+    }
     addAsset(info) {
         DialogManager.hide()
-        console.log("adding info",info)
         if(isImageType(info.mimeType)) {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
             return this.props.provider.addImageAssetFromExpandedURL(info.url,info.mimeType, info.title)
@@ -29,6 +31,12 @@ export class OpenAssetDialog extends Component {
             return this.props.provider.addAudioAssetFromURL(info.url, info.mimeType, info.title)
         }
         console.log("can't add this type")
+    }
+    deleteAsset(info) {
+        return this.props.provider.removeAssetSource(info).then((res)=>{
+            console.log('removed?',res)
+            this.refreshList()
+        })
     }
 
     okay = () => {
@@ -41,9 +49,10 @@ export class OpenAssetDialog extends Component {
                 <VBox scroll style={{ maxHeight:'60vh'}}>
                     <ul>{this.state.assetList.map((doc, i) => {
                         return <li key={i}>
-                            <b>{doc.mimeType}</b> -
-                            <b>{doc.title}</b>
+                            <b>{doc.title} </b>
+                            <i> {doc.mimeType}</i>
                             <button onClick={()=>this.addAsset(doc)}>add</button>
+                            <button onClick={()=>this.deleteAsset(doc)}>delete</button>
                         </li>
                     })}
                     </ul>

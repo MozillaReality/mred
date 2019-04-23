@@ -682,6 +682,15 @@ export default class VREditor extends  SyncGraphProvider {
         })
             .then(res=>res.json())
     }
+    removeAssetSource(info) {
+        console.log("removing",info)
+        return fetch(`${getAssetsURL()}delete/${info.id}`,{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:info.id
+        }).then(res => res.json())
+    }
     loadScriptList() {
         return fetch(`${getScriptsURL()}list`,{
             method:'GET',
