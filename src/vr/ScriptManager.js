@@ -91,6 +91,9 @@ export default class ScriptManager {
             isAR() {
                 return false
             },
+            sendMessage(name,payload) {
+                console.log('sending the message',name,payload)
+            }
         }
     }
     // executeScriptAction(action,obj) {
