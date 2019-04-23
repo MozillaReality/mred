@@ -3,6 +3,7 @@ import * as THREE from "three";
 import ObjectDef from '../ObjectDef'
 import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'
+import {parseHex} from '../../utils'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
 export const rand = (min,max) => Math.random()*(max-min) + min
@@ -22,6 +23,8 @@ export default class ParticlesDef extends ObjectDef {
             children:graph.createArray(),
             pointSize:10.0,
             lifetime:3.0,
+            startColor:'#ff0000',
+            endColor:'#0000ff',
             parent:scene.id,
             texture:null,
         }))
@@ -33,7 +36,9 @@ export default class ParticlesDef extends ObjectDef {
             velocity: new THREE.Vector3(0,1,0),
             position: new THREE.Vector3(0,0,0),
             size:obj.pointSize,
-            lifetime:obj.lifetime
+            lifetime:obj.lifetime,
+            color: new THREE.Color(1.0,0.0,1.0),
+            endColor: new THREE.Color(0,1,1),
         }
 
         const node = new GPUParticles({
@@ -69,8 +74,9 @@ export default class ParticlesDef extends ObjectDef {
     updateProperty(node, obj, op, provider) {
         if(op.name === PROP_DEFS.pointSize.key) return node.userData.options.size = obj.pointSize
         if(op.name === PROP_DEFS.lifetime.key) return node.userData.options.lifetime = obj.lifetime
+        if(op.name === PROP_DEFS.startColor.key) return node.userData.options.color.set(obj.startColor)
+        if(op.name === PROP_DEFS.endColor.key) return node.userData.options.endColor.set(obj.endColor)
         if(op.name === PROP_DEFS.texture.key) {
-            console.log("need to update the texture",obj.texture)
             const texture = provider.accessObject(obj.texture)
             if(texture) {
                 const tex = new THREE.TextureLoader().load(texture.src)

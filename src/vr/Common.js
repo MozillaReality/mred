@@ -193,6 +193,18 @@ export const PROP_DEFS = {
         type:TYPES.COLOR,
         custom:true,
     },
+    startColor: {
+        key:'startColor',
+        name:'Start',
+        type:TYPES.COLOR,
+        custom:true,
+    },
+    endColor: {
+        key:'endColor',
+        name:'End',
+        type:TYPES.COLOR,
+        custom:true,
+    },
     drawBackground: {
         key:'drawBackground',
         name:'BG?',

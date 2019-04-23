@@ -626,6 +626,8 @@ export default class VREditor extends  SyncGraphProvider {
             || def.key === PROP_DEFS.backgroundColor.key
             || def.key === PROP_DEFS.borderColor.key
             || def.key === PROP_DEFS.textColor.key
+            || def.key === PROP_DEFS.startColor.key
+            || def.key === PROP_DEFS.endColor.key
         ) return <HBox>
             {
                 SIMPLE_COLORS
