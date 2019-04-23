@@ -5,7 +5,7 @@ import ObjectDef from './ObjectDef'
 
 export default class Image2DDef extends ObjectDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't create sphere w/ missing parent")
+        if(!scene.id) throw new Error("can't create Image2D with missing parent")
         return fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.img2d,
             title:'image',

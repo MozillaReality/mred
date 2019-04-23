@@ -27,13 +27,13 @@ export function newDoc(provider) {
 }
 
 
-
 export function showAddPopup (e, provider) {
+    let item = provider.getSelectedScene()
     const acts = Object.keys(OBJ_TYPES).map(type => {
         return {
             title: type,
             icon: ITEM_ICONS[type],
-            fun: () => provider.add3DObject(type)
+            fun: () => provider.add3DObject(type,item)
         }
     })
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
