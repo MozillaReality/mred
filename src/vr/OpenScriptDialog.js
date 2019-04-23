@@ -3,6 +3,7 @@ import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL, getScriptsURL} from '../TreeItemProvider'
 import {isAudioType, isImageType, MIME_TYPES} from './Common'
 import {Spacer} from '../GridEditorApp'
+import {AuthModule} from './AuthModule'
 
 export class OpenScriptDialog extends Component {
     constructor(props) {
@@ -51,7 +52,7 @@ export class OpenScriptDialog extends Component {
                             </VBox>
                             <Spacer/>
                             <button onClick={()=>this.addScript(doc)}>add</button>
-                            <button onClick={()=>this.deleteScript(doc)}>delete</button>
+                            {this.renderDeleteButton(doc)}
                         </HBox>
                     })}
                     </ul>
@@ -61,6 +62,11 @@ export class OpenScriptDialog extends Component {
                 </HBox>
             </VBox>
         </Dialog>
+    }
+
+    renderDeleteButton(doc) {
+        if(!AuthModule.supportsScriptEdit()) return ""
+        return <button onClick={()=>this.deleteScript(doc)}>delete</button>
     }
 
 }

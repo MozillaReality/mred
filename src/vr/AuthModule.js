@@ -9,6 +9,7 @@ class AuthModuleSingleton {
         this.supported = false
         this.doclistSupported = false
         this.assetUploadSupported = false
+        this.scriptEditingSupported = false
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -30,6 +31,7 @@ class AuthModuleSingleton {
                 if(info.assetUpload === true) {
                     this.assetUploadSupported = true
                 }
+                if(info.scriptEditing === true)  this.scriptEditingSupported = true
 
                 this.fire(USER_CHANGE)
             })
@@ -47,6 +49,9 @@ class AuthModuleSingleton {
     }
     supportsAssetUpload() {
         return this.assetUploadSupported
+    }
+    supportsScriptEdit() {
+        return this.scriptEditingSupported
     }
 
     login = () => {

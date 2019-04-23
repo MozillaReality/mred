@@ -708,6 +708,7 @@ export default class VREditor extends  SyncGraphProvider {
         return fetch(obj.src).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
+        if(!AuthModule.supportsScriptEdit()) return
         //update the cache first
         const info = parseBehaviorScript(text)
         info.text = text
