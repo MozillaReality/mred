@@ -34,6 +34,62 @@ export class VRCanvas extends Component {
         this.playing_audio = []
     }
 
+    pauseQueue = (e) => {
+        this.props.provider.pauseQueue()
+    }
+    unpauseQueue = (e) => {
+        this.props.provider.unpauseQueue()
+    }
+    transformChanged = (e) => {
+        const sel = SelectionManager.getSelection()
+        if(sel) {
+            const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+            if(!is3DObjectType(obj.type)) return
+            if(obj.type === OBJ_TYPES.bg360) return
+            const node = this.findNode(sel)
+            if(!node) return
+            const prov = this.props.provider
+            prov.quick_setPropertyValue(sel,'tx',node.position.x)
+            prov.quick_setPropertyValue(sel,'ty',node.position.y)
+            prov.quick_setPropertyValue(sel,'tz',node.position.z)
+        }
+    }
+    docSwapped = (e) => {
+        //nuke all the old stuff
+        this.scenes.forEach(sc => this.scene.remove(sc))
+        this.scenes = []
+        this.obj_node_map = {}
+        this.setState({scene: -1})
+        //make new stuff
+        const hist = this.props.provider.getDocHistory()
+        hist.forEach(op => this.updateScene(op))
+    }
+    selectionChanged = () => {
+        this.controls.detach()
+        const sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = this.props.provider.accessObject(sel)
+
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel))
+
+        if(is3DObjectType(obj.type)) {
+            const sc = this.findSceneObjectParent(obj)
+            this.setCurrentSceneWrapper(this.findNode(sc.id))
+            const node = this.findNode(sel)
+            if (!node) return
+            this.controls.attach(node)
+            return
+        }
+        console.log("selected something not an object or scene")
+    }
+    windowResized = () => {
+        if(this.canvas) {
+            this.camera.aspect = this.canvas.width / this.canvas.height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(this.canvas.width, this.canvas.height);
+        }
+    }
+
     componentDidMount() {
         const canvas = this.canvas
 
@@ -53,26 +109,9 @@ export class VRCanvas extends Component {
         this.scene.add(this.camera)
 
         this.controls = new TransformControls(this.camera, this.renderer.domElement)
-        this.controls.addEventListener('change',(e)=>{
-            const sel = SelectionManager.getSelection()
-            if(sel) {
-                const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
-                if(!is3DObjectType(obj.type)) return
-                if(obj.type === OBJ_TYPES.bg360) return
-                const node = this.findNode(sel)
-                if(!node) return
-                const prov = this.props.provider
-                prov.quick_setPropertyValue(sel,'tx',node.position.x)
-                prov.quick_setPropertyValue(sel,'ty',node.position.y)
-                prov.quick_setPropertyValue(sel,'tz',node.position.z)
-            }
-        })
-        this.controls.addEventListener('mouseDown',(e)=>{
-            this.props.provider.pauseQueue()
-        })
-        this.controls.addEventListener('mouseUp',(e)=>{
-            this.props.provider.unpauseQueue()
-        })
+        this.controls.addEventListener('change',this.transformChanged)
+        this.controls.addEventListener('mouseDown',this.pauseQueue)
+        this.controls.addEventListener('mouseUp',this.unpauseQueue)
         this.scene.add(this.controls)
         this.raycaster = new THREE.Raycaster();
 
@@ -93,44 +132,19 @@ export class VRCanvas extends Component {
         })
 
         this.props.provider.onRawChange(op => this.updateScene(op))
-        this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, () => {
-            //nuke all the old stuff
-            this.scenes.forEach(sc => this.scene.remove(sc))
-            this.scenes = []
-            this.obj_node_map = {}
-            this.setState({scene: -1})
-            //make new stuff
-            const hist = this.props.provider.getDocHistory()
-            hist.forEach(op => this.updateScene(op))
-        })
+        this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.docSwapped)
+        SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
-        SelectionManager.on(SELECTION_MANAGER.CHANGED, () => {
-            this.controls.detach()
-            const sel = SelectionManager.getSelection()
-            if(!sel) return
-            const obj = this.props.provider.accessObject(sel)
-
-            if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel))
-
-            if(is3DObjectType(obj.type)) {
-                const sc = this.findSceneObjectParent(obj)
-                this.setCurrentSceneWrapper(this.findNode(sc.id))
-                const node = this.findNode(sel)
-                if (!node) return
-                this.controls.attach(node)
-                return
-            }
-            console.log("selected something not an object or scene")
-
-        })
-
-        window.addEventListener('resize', () => {
-            this.camera.aspect = this.canvas.width / this.canvas.height;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(this.canvas.width, this.canvas.height);
-        }, false);
-
+        window.addEventListener('resize', this.windowResized,false)
         this.props.provider.getDocHistory().forEach(op => this.updateScene(op))
+    }
+    componentWillUnmount() {
+        this.controls.removeEventListener('change',this.transformChanged)
+        this.controls.removeEventListener('mouseDown',this.pauseQueue)
+        this.controls.removeEventListener('mouseUp',this.unpauseQueue)
+        this.props.provider.off(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,this.docSwapped)
+        SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
+        window.removeEventListener('resize',this.windowResized)
     }
 
     insertNodeMapping(id, node) {
@@ -224,6 +238,7 @@ export class VRCanvas extends Component {
     render() {
         return <div>
             <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
+            <br/>
             <button onClick={this.moveCameraFoward}>forward</button>
             <button onClick={this.moveCameraBackward}>backward</button>
             <ToasterNotification/>
