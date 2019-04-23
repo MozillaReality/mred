@@ -123,11 +123,6 @@ export class VRCanvas extends Component {
 
         this.renderer.setAnimationLoop((time) => {
             if(this.state.running) this.scriptManager.tick(time)
-            const sel = SelectionManager.getSelection()
-            if(sel) {
-                const node = this.findNode(sel)
-                if(node && node.update) node.update(time)
-            }
             this.renderer.render(this.scene, this.camera)
         })
 

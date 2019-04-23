@@ -101,7 +101,8 @@ export default class ScriptManager {
     }
 
     performClickAction(target) {
-        console.log("user clicked on",target)
+        if(!this.running) return
+        if(!target || !target.exists())return
         const evt = {
             type:'click',
             target:target,
@@ -167,6 +168,8 @@ export default class ScriptManager {
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
             })
+            const obj3 = this.getThreeObject(child.id)
+            if(obj3 && obj3.update) obj3.update(time)
         })
     }
 
@@ -175,12 +178,10 @@ export default class ScriptManager {
         this.running = true
         this.storage = {}
         console.log("script manager starting")
-        const nodes = this.sgp.getAllBehaviors()
-        nodes.forEach(ref => {
+        this.sgp.getAllBehaviors().forEach(ref => {
             const asset = this.sgp.getParsedBehaviorAsset(ref)
             if(asset.init) asset.init()
         })
-
     }
     stopRunning() {
         this.running = false

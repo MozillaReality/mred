@@ -31,7 +31,6 @@ export class ImmersivePlayer extends Component {
                 return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
             },
             getAllBehaviors: () => {
-                console.log("all behaviors",this.behavior_map)
                 return Object.keys(this.behavior_map).map(key => this.behavior_map[key])
             },
             getParsedBehaviorAsset: (b) => {
@@ -80,6 +79,9 @@ export class ImmersivePlayer extends Component {
             console.log("root is",this.root)
             if(this.root.defaultScene) {
                 const sc = this.root.children.find(ch => ch.id  === this.root.defaultScene)
+                this.setCurrentScene(sc)
+            } else {
+                const sc = this.root.children[0]
                 this.setCurrentScene(sc)
             }
             Promise.all(this.pendingAssets).then(() => {
@@ -155,7 +157,7 @@ export class ImmersivePlayer extends Component {
     initThreeJS() {
         this.tweenManager = new TweenManager()
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0xcccccc );
+        this.scene.background = new THREE.Color( 0x000000 );
         this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
