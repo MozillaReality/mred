@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from '../ObjectDef'
-import {OBJ_TYPES} from '../Common'
+import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)
@@ -20,17 +20,20 @@ export default class ParticlesDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             children:graph.createArray(),
+            pointSize:10.0,
+            lifetime:3.0,
             parent:scene.id,
             texture:null,
         }))
     }
     makeNode(obj) {
-        console.log("loading texture",obj.texture)
         let tex = null
         if(obj.texture) tex = new THREE.TextureLoader().load(obj.texture)
         const options = {
             velocity: new THREE.Vector3(0,1,0),
-            position: new THREE.Vector3(0,0,0)
+            position: new THREE.Vector3(0,0,0),
+            size:obj.pointSize,
+            lifetime:obj.lifetime
         }
 
         const node = new GPUParticles({
@@ -54,6 +57,7 @@ export default class ParticlesDef extends ObjectDef {
                 system.spawnParticle(options);
             }
         })
+        node.userData.options = options
         node.name = obj.title
         node.userData.clickable = false
         node.position.set(obj.tx, obj.ty, obj.tz)
@@ -63,6 +67,8 @@ export default class ParticlesDef extends ObjectDef {
     }
 
     updateProperty(node, obj, op, provider) {
+        if(op.name === PROP_DEFS.pointSize.key) return node.userData.options.size = obj.pointSize
+        if(op.name === PROP_DEFS.lifetime.key) return node.userData.options.lifetime = obj.lifetime
         return super.updateProperty(node,obj,op,provider)
     }
 

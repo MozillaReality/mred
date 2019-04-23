@@ -215,6 +215,19 @@ export const PROP_DEFS = {
         key:'visible',
         name:'Visible',
         type:TYPES.BOOLEAN
+    },
+
+
+    pointSize: {
+        key:'pointSize',
+        name:'Point Size',
+        type:TYPES.NUMBER,
+    },
+    lifetime: {
+        key:'lifetime',
+        name:'Lifetime',
+        type:TYPES.NUMBER,
+        hints: stdhints,
     }
 }
 

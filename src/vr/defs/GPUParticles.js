@@ -280,7 +280,6 @@ export default class GPUParticles extends THREE.Object3D {
 
         if (this.DPR !== undefined) size *= this.DPR;
 
-        console.log(size)
         const i = this.PARTICLE_CURSOR
 
         // position
