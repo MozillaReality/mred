@@ -96,6 +96,7 @@ class AuthModuleSingleton {
         return this.getAccessToken()
     }
 
+
 }
 
 export const AuthModule = new AuthModuleSingleton()

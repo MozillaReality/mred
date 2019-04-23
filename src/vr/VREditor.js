@@ -5,7 +5,7 @@ import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {getAssetsURL, getDocsURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {getAssetsURL, getDocsURL, getInfoURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {
     fetchGraphObject, insertAsFirstChild,
@@ -865,7 +865,13 @@ class VREditorApp extends Component {
 
     render() {
         const prov = this.props.provider
-        return <GridEditorApp>
+        const bot = <div>
+            <a href={getInfoURL()}>{getInfoURL()}</a>
+            <br/>
+            doc id: <b>{prov.getDocId()}</b>
+        </div>
+
+        return <GridEditorApp bottomText={bot}>
             <Toolbar left top><label>{prov.getTitle()}</label></Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 

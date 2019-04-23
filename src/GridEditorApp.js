@@ -120,6 +120,8 @@ export default class GridEditorApp extends Component {
                 <button className={'fa' + (this.state.showLeft ? ' fa-caret-left' : ' fa-caret-right')}
                         onClick={this.toggleLeftPane}/>
                 <Spacer/>
+                {this.props.bottomText}
+                <Spacer/>
                 <button className={'fa' + (this.state.showRight ? ' fa-caret-right' : ' fa-caret-left')}
                         onClick={this.toggleRightPane}/>
             </Toolbar>
