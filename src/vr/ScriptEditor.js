@@ -56,6 +56,7 @@ export default class ScriptEditor extends Component {
                           onBlur={this.save}
                           showGutter={true}
                           width={'100%'}
+                          height={'100%'}
         />
     }
 
