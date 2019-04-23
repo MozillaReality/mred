@@ -188,6 +188,9 @@ export default class ScriptManager {
         this.storage = {}
         console.log("script manager stopping")
     }
+    isRunning() {
+        return this.running
+    }
 
     fireMessageAtTarget(name, payload, target) {
         const evt = {

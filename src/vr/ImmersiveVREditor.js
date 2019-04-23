@@ -36,7 +36,30 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        this.scriptManager = new ScriptManager(this)
+        this.scriptManager = new ScriptManager({
+            getAllBehaviors: () => {
+                return this.props.provider.accessObject(this.props.provider.getSceneRoot())
+                    .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+            },
+            getParsedBehaviorAsset: (beh) => {
+                const prov = this.props.provider
+                const asset = prov.accessObject(beh.behavior)
+                return prov.getCachedBehaviorAsset(asset.id)
+            },
+            getCurrentScene: () => {
+                return this.props.provider.accessObject(this.currentScene)
+            },
+            getBehaviorsForObject: (obj) => {
+                return obj.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+            },
+            getSceneObjects: (scene) => {
+                return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+            },
+            findThreeObject:(id) => {
+                return this.findNode(id)
+            }
+
+        })
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -73,6 +96,7 @@ export default class ImmersiveVREditor extends Component {
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
+        if(this.scriptManager.isRunning()) this.scriptManager.tick(time)
         this.renderer.render( this.scene, this.camera );
     }
 
@@ -240,14 +264,18 @@ export default class ImmersiveVREditor extends Component {
             this.tools.add(new button2d()
                 .setAll({x: 5, y: 5 + 30 + 30 + 30, text: 'save'})
                 .on(POINTER_CLICK, this.props.provider.save))
-            this.tools.add(new button2d()
-                .setAll({x: 5, y: 5 + 30 * 4, text: 'click'})
-                .on(POINTER_CLICK, this.performClickOnSelection)
-            )
-            this.tools.add(new button2d()
-                .setAll({x: 60, y: 5 + 30 * 4, text: 'proximity'})
-                .on(POINTER_CLICK, this.performProximityOnSelection)
-            )
+            const runButton = new button2d()
+                .setAll({x:5, y: 5+30*4, text:'run'})
+                .on(POINTER_CLICK,() => {
+                    if(this.scriptManager.isRunning()) {
+                        runButton.set('text','run')
+                        this.scriptManager.stopRunning()
+                    } else {
+                        runButton.set('text','stop')
+                        this.scriptManager.startRunning()
+                    }
+                })
+            this.tools.add(runButton)
 
             const rowLayout = (panel) => {
                 let x = 0
@@ -360,6 +388,7 @@ export default class ImmersiveVREditor extends Component {
     }
 
     swapScene(id) {
+        this.currentScene = id
         console.log("swapping to the scene",id)
         //make all scenes invisible except the right one
         Object.keys(this.sceneWrappers).forEach(key => {
