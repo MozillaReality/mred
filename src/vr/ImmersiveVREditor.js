@@ -27,41 +27,84 @@ import {
 } from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
-import ScriptManager from './ScriptManager'
+import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
+class Adapter extends SceneGraphProvider {
+    constructor(editor, provider) {
+        super()
+        this.editor = editor
+        this.provider = provider
+    }
+    getCurrentScene ()  {
+        return this.provider.accessObject(this.editor.currentScene)
+    }
+    getSceneObjects (scene)  {
+        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+    }
+    getBehaviorsForObject (obj)  {
+        return obj.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getThreeObject(id) {
+        return this.editor.findNode(id)
+    }
+    getParsedBehaviorAsset (beh) {
+        const asset = this.provider.accessObject(beh.behavior)
+        return this.provider.getCachedBehaviorAsset(asset.id)
+    }
+    getAllBehaviors ()  {
+        return this.provider.accessObject(this.provider.getSceneRoot())
+            .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getGraphObjectByName(title) {
+        const list = this.provider.accessObject(this.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
+    navigateScene(id) {
+        return this.editor.swapScene(id)
+    }
+    playAudioAsset(audio) {
+        const sound = new THREE.Audio(this.editor.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+    }
+    playAudioAsset(audio) {
+        const sound = new THREE.Audio(this.editor.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( false );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+        this.editor.playing_audio[audio.id] = sound
+    }
+
+    stopAudioAsset(audio) {
+        if(this.editor.playing_audio[audio.id]) {
+            this.editor.playing_audio[audio.id].stop()
+            delete this.editor.playing_audio[audio.id]
+        }
+    }
+
+    getGraphObjectById(id) {
+        return this.provider.accessObject(id)
+    }
+}
 
 export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
-        this.scriptManager = new ScriptManager({
-            getAllBehaviors: () => {
-                return this.props.provider.accessObject(this.props.provider.getSceneRoot())
-                    .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-            },
-            getParsedBehaviorAsset: (beh) => {
-                const prov = this.props.provider
-                const asset = prov.accessObject(beh.behavior)
-                return prov.getCachedBehaviorAsset(asset.id)
-            },
-            getCurrentScene: () => {
-                return this.props.provider.accessObject(this.currentScene)
-            },
-            getBehaviorsForObject: (obj) => {
-                return obj.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-            },
-            getSceneObjects: (scene) => {
-                return scene.getChildren().filter(ch => is3DObjectType(ch.type))
-            },
-            findThreeObject:(id) => {
-                return this.findNode(id)
-            },
-            navigateScene: (id) => {
-                this.swapScene(id)
-            }
-        })
+        this.playing_audio = []
+        this.scriptManager = new ScriptManager(new Adapter(this, this.props.provider))
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -401,17 +444,6 @@ export default class ImmersiveVREditor extends Component {
         return this.obj_node_map[id]
     }
 
-    playAudioAsset(audio, target) {
-        console.log("playing the audio",audio,'on the target',target)
-        const sound = new THREE.Audio(this.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( true );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-    }
 
 }
 

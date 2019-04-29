@@ -95,8 +95,8 @@ export class VRCanvas extends Component {
             scene: -1,
             running:props.running
         }
-        this.scriptManager = new ScriptManager(new Adapter(this))
         this.playing_audio = []
+        this.scriptManager = new ScriptManager(new Adapter(this))
     }
 
     pauseQueue = (e) => {
