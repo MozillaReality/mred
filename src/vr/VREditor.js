@@ -37,7 +37,6 @@ import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
 import {MakeEmbedDialog} from './dialogs/MakeEmbedDialog'
-import VREmbedViewApp from './VREmbedViewApp'
 import {toQueryString} from '../utils'
 import {OpenFileDialog} from './dialogs/OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
@@ -45,7 +44,7 @@ import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject, newDoc, showAddPopup} from './Actions'
+import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
 
 
 
@@ -85,11 +84,9 @@ export default class VREditor extends  SyncGraphProvider {
         insertAsLastChild(doc,root,assets)
     }
     docLoaded = () => {
-        console.log("really loaded the doc. caching the behaviors",this.getAssetsObject())
         this.accessObject(this.getBehaviorsObject()).getChildren()
             .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
             .forEach((b)=>{
-                console.log("processing behavior",b)
                 this.fetchBehaviorAssetContents(b.id).then((contents)=> {
                     try {
                         const info = parseBehaviorScript(contents)
@@ -271,6 +268,7 @@ export default class VREditor extends  SyncGraphProvider {
         op.prevValue = ov
         if(op.value === op.prevValue) return
         this.getRawGraph().process(op)
+        //TODO: this should be fired through the graph already. I shouldn't need to fire this
         this.fire(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,{
             provider: this,
             child:item,
@@ -651,12 +649,12 @@ export default class VREditor extends  SyncGraphProvider {
 
     showAddImageAssetDialog = () => DialogManager.show(<AddImageAssetDialog provider={this}/>)
     showAddAudioAssetDialog = () => DialogManager.show(<AddAudioAssetDialog provider={this}/>)
-    showAddGLTFAssetDialog = () =>  DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
-    showAddGLBAssetDialog = () =>   DialogManager.show(<AddGLBAssetDialog provider={this}/>)
-    showOpenDocumentDialog = () => DialogManager.show(<OpenFileDialog provider={this}/>)
-    showOpenAssetDialog = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
-    showAddServerImageDialog = () =>  DialogManager.show(<OpenAssetDialog provider={this} filter={a => isImageType(a.mimeType)}/>)
-    showOpenBehaviorDialog = () => DialogManager.show(<OpenScriptDialog provider={this}/>)
+    showAddGLTFAssetDialog  = () => DialogManager.show(<AddGLTFAssetDialog provider={this}/>)
+    showAddGLBAssetDialog   = () => DialogManager.show(<AddGLBAssetDialog provider={this}/>)
+    showOpenDocumentDialog  = () => DialogManager.show(<OpenFileDialog provider={this}/>)
+    showOpenAssetDialog     = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
+    showAddServerImageDialog= () => DialogManager.show(<OpenAssetDialog provider={this} filter={a => isImageType(a.mimeType)}/>)
+    showOpenBehaviorDialog  = () => DialogManager.show(<OpenScriptDialog provider={this}/>)
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
@@ -799,66 +797,6 @@ class VREditorApp extends Component {
         this.setState({mode:'canvas'})
     }
 
-    showAddAssetPopup = (e) => {
-        let acts = []
-        // console.log("Auth mod",AuthModule.supportsAssetUpload())
-        if(AuthModule.supportsAssetUpload()) {
-            acts = acts.concat([{
-                title: 'image',
-                icon: ITEM_ICONS.image,
-                fun: () => this.props.provider.showAddImageAssetDialog()
-            },
-            {
-                title: 'server image',
-                icon: ITEM_ICONS.image,
-                fun: () => this.props.provider.showAddServerImageDialog()
-            },
-                {divider: true},
-            {
-                title: 'GLTF model',
-                icon: ITEM_ICONS.model,
-                fun: () => this.props.provider.showAddGLTFAssetDialog()
-            },
-            {
-                title: 'GLB model',
-                icon: ITEM_ICONS.model,
-                fun: () => this.props.provider.showAddGLBAssetDialog()
-            },
-                {divider: true},
-            {
-                title: 'audio file',
-                icon: ITEM_ICONS.audio,
-                fun: () => this.props.provider.showAddAudioAssetDialog()
-            }])
-        }
-
-        acts.push({
-            title: 'existing asset on server',
-            icon: ITEM_ICONS.assets,
-            fun: () => this.props.provider.showOpenAssetDialog()
-        })
-
-        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
-    }
-
-    showAddActionPopup = (e) => {
-        const acts = [
-            {
-                title:'behavior from template',
-                icon: ITEM_ICONS.behavior_script,
-                fun: () => this.props.provider.showOpenBehaviorDialog()
-            },
-        ]
-        if(AuthModule.supportsScriptEdit()) {
-            acts.push({
-                title: 'custom behavior',
-                icon: ITEM_ICONS.behavior_script,
-                fun: () => this.props.provider.addCustomBehaviorAsset()
-            })
-        }
-        PopupManager.show(<MenuPopup actions={acts}/>, e.target)
-    }
-
     toggleRunning = () => {
         this.setState({running:!this.state.running})
     }
@@ -876,10 +814,10 @@ class VREditorApp extends Component {
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
-                <button className={"fa fa-cube"} onClick={(e)=>showAddPopup(e,prov)}/>
-                <button className="fa fa-globe" onClick={()=>addScene(prov)}/>
-                <button className="fa fa-archive" onClick={this.showAddAssetPopup}/>
-                <button className="fa fa-superpowers" onClick={this.showAddActionPopup}/>
+                <button className="fa fa-cube"        onClick={(e)=>showAddPopup(e,prov)}/>
+                <button className="fa fa-globe"       onClick={(e)=>addScene(prov)}/>
+                <button className="fa fa-archive"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
+                <button className="fa fa-superpowers" onClick={(e)=>showAddActionPopup(e,prov)}/>
             </Toolbar>
 
 
@@ -928,13 +866,13 @@ class VREditorApp extends Component {
 
         if(AuthModule.supportsAuth()) {
             if(AuthModule.isLoggedIn()) {
-                buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout}>logout</button>)
+                buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout} title={'logout'}>logout</button>)
             } else {
-                buttons.push(<button key="login" className="fa fa-user" onClick={AuthModule.login} title={'login'}></button>)
+                buttons.push(<button key="login" className="fa fa-user" onClick={AuthModule.login} title={'login'}/>)
             }
         }
         if(AuthModule.supportsDocList()) {
-            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}></button>)
+            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}/>)
         }
         return buttons
     }
@@ -997,5 +935,5 @@ function acceptsImageAsset(type) {
 
 const RunButton = (props) => {
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
-    return <button onClick={props.onClick} className={clss}></button>
+    return <button onClick={props.onClick} className={clss}/>
 }

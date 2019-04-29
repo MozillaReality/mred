@@ -5,6 +5,7 @@ import {ITEM_ICONS, OBJ_TYPES} from './Common'
 import {PopupManager} from 'appy-comps'
 import {MenuPopup} from '../GridEditorApp'
 import React from 'react'
+import {AuthModule} from './AuthModule'
 
 export function addScene(provider) {
     const root = provider.accessObject(provider.getSceneRoot())
@@ -36,5 +37,66 @@ export function showAddPopup (e, provider) {
             fun: () => provider.add3DObject(type,item)
         }
     })
+    PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+}
+
+
+export function showAddAssetPopup(e, provider) {
+    let acts = []
+    // console.log("Auth mod",AuthModule.supportsAssetUpload())
+    if(AuthModule.supportsAssetUpload()) {
+        acts = acts.concat([{
+            title: 'image',
+            icon: ITEM_ICONS.image,
+            fun: () => this.props.provider.showAddImageAssetDialog()
+        },
+            {
+                title: 'server image',
+                icon: ITEM_ICONS.image,
+                fun: () => this.props.provider.showAddServerImageDialog()
+            },
+            {divider: true},
+            {
+                title: 'GLTF model',
+                icon: ITEM_ICONS.model,
+                fun: () => this.props.provider.showAddGLTFAssetDialog()
+            },
+            {
+                title: 'GLB model',
+                icon: ITEM_ICONS.model,
+                fun: () => this.props.provider.showAddGLBAssetDialog()
+            },
+            {divider: true},
+            {
+                title: 'audio file',
+                icon: ITEM_ICONS.audio,
+                fun: () => this.props.provider.showAddAudioAssetDialog()
+            }])
+    }
+
+    acts.push({
+        title: 'existing asset on server',
+        icon: ITEM_ICONS.assets,
+        fun: () => this.props.provider.showOpenAssetDialog()
+    })
+
+    PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+}
+
+export function showAddActionPopup (e) {
+    const acts = [
+        {
+            title:'behavior from template',
+            icon: ITEM_ICONS.behavior_script,
+            fun: () => this.props.provider.showOpenBehaviorDialog()
+        },
+    ]
+    if(AuthModule.supportsScriptEdit()) {
+        acts.push({
+            title: 'custom behavior',
+            icon: ITEM_ICONS.behavior_script,
+            fun: () => this.props.provider.addCustomBehaviorAsset()
+        })
+    }
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
 }
