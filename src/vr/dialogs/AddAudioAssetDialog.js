@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {listToArray} from '../syncgraph/utils'
-import {ToggleButton, Toolbar} from '../GridEditorApp'
+import {listToArray} from '../../syncgraph/utils'
+import {ToggleButton, Toolbar} from '../../GridEditorApp'
 
 export class AddAudioAssetDialog extends Component {
     constructor(props) {

@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {toQueryString} from '../utils'
+import {toQueryString} from '../../utils'
 
 export class OpenFileDialog extends Component {
     constructor(props) {

@@ -1,8 +1,8 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {getAssetsURL} from '../TreeItemProvider'
-import {isAudioType, isImageType, MIME_TYPES} from './Common'
-import {AuthModule} from './AuthModule'
+import {getAssetsURL} from '../../TreeItemProvider'
+import {isAudioType, isImageType, MIME_TYPES} from '../Common'
+import {AuthModule} from '../AuthModule'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {

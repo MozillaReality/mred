@@ -1,9 +1,9 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {getAssetsURL, getScriptsURL} from '../TreeItemProvider'
-import {isAudioType, isImageType, MIME_TYPES} from './Common'
-import {Spacer} from '../GridEditorApp'
-import {AuthModule} from './AuthModule'
+import {getAssetsURL, getScriptsURL} from '../../TreeItemProvider'
+import {isAudioType, isImageType, MIME_TYPES} from '../Common'
+import {Spacer} from '../../GridEditorApp'
+import {AuthModule} from '../AuthModule'
 
 export class OpenScriptDialog extends Component {
     constructor(props) {

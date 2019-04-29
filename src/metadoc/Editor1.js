@@ -26,7 +26,7 @@ import {
     VERTICAL_ALIGNMENT
 } from "./Common";
 import AssetView from './AssetView'
-import {AddImageAssetDialog} from '../vr/AddImageAssetDialog'
+import {AddImageAssetDialog} from '../vr/dialogs/AddImageAssetDialog'
 import {DEFAULT_DPI, parseDimension, UNITS} from "./Dimension"
 import {EnumEditor} from "../common/EnumEditor";
 import PresentationApp from './PresentationApp'
