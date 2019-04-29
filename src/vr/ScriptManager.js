@@ -84,7 +84,7 @@ export default class ScriptManager {
 
     performClickAction(target) {
         if(!this.running) return
-        if(!target || !target.exists())return
+        if(!target || !target.exists || !target.exists())return
         const evt = {
             type:'click',
             target:target,

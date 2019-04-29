@@ -135,10 +135,29 @@ export const PROP_DEFS = {
         type:TYPES.STRING,
         locked:true,
     },
-    imageOffset: {
-        key:'offset',
-        name:'Image Offset',
+    imageOffsetAngle: {
+        key:'imageOffsetAngle',
+        name:'Image Offset Angle',
         type:TYPES.NUMBER,
+        hints: {
+            incrementValue:0.05,
+        }
+    },
+    imageCropStartAngle: {
+        key:'imageCropStartAngle',
+        name:'Image Crop Start Angle',
+        type:TYPES.NUMBER,
+        hints: {
+            incrementValue:0.05,
+        }
+    },
+    imageCropEndAngle: {
+        key:'imageCropEndAngle',
+        name:'Image Crop End Angle',
+        type:TYPES.NUMBER,
+        hints: {
+            incrementValue:0.05,
+        }
     },
 
     text: {
