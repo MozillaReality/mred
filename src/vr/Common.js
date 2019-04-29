@@ -373,6 +373,7 @@ export const ITEM_ICONS = {
     audio:'music',
     group:'object-group',
     particles:'certificate',
+    gltf:'cube',
 
     cut:'cut',
     copy:'copy',
