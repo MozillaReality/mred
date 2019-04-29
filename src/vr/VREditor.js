@@ -53,6 +53,7 @@ export default class VREditor extends  SyncGraphProvider {
     constructor(options) {
         super(options)
         this.imagecache = {}
+        this.videocache = {}
         this.behaviorCache = {}
     }
     getDocType() { return "vr" }
@@ -221,6 +222,9 @@ export default class VREditor extends  SyncGraphProvider {
                 }
                 if(hints.type === 'audio') {
                     return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.AUDIO).map(a => a.id)
+                }
+                if(hints.type === 'video') {
+                    return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
                 }
             }
         }

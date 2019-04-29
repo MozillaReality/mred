@@ -16,6 +16,7 @@ export default class PlaneDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#ffffff',
+            children:graph.createArray(),
             asset:0,
             parent:scene.id
         }))
@@ -45,9 +46,15 @@ export default class PlaneDef extends ObjectDef {
                     node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
                 }
                 if(asset.subtype === ASSET_TYPES.VIDEO) {
-                    const video = document.createElement('video')
-                    video.crossOrigin = 'anonymous'
-                    video.src = asset.src
+                    let video
+                    if(!provider.videocache[asset.src]) {
+                        video = document.createElement('video')
+                        video.crossOrigin = 'anonymous'
+                        video.src = asset.src
+                        provider.videocache[asset.src] = video
+                    } else {
+                        video = provider.videocache[asset.src]
+                    }
                     const tex = new THREE.VideoTexture(video)
                     node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
                 }

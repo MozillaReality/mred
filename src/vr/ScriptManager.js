@@ -11,8 +11,8 @@ export class SceneGraphProvider {
     //navigate to the specified scene
     navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
 
-    playAudioAsset(id) { throw new Error("playAudioAsset(id) not implemented")}
-    stopAudioAsset(id) { throw new Error("stopAudioAsset(id) not implemented")}
+    playMediaAsset(id) { throw new Error("playMediaAsset(id) not implemented")}
+    stopMediaAsset(id) { throw new Error("stopMediaAsset(id) not implemented")}
     getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
@@ -200,10 +200,10 @@ class AssetFacade {
         this.obj = obj
     }
     play() {
-        this.manager.sgp.playAudioAsset(this.obj)
+        this.manager.sgp.playMediaAsset(this.obj)
     }
     stop() {
-        this.manager.sgp.stopAudioAsset(this.obj)
+        this.manager.sgp.stopMediaAsset(this.obj)
     }
 }
 class ThreeObjectFacade {

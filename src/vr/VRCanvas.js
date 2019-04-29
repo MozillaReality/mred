@@ -5,7 +5,7 @@ import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./defs/SceneDef"
-import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 
@@ -57,16 +57,22 @@ class Adapter extends SceneGraphProvider {
     getCamera() {
         return this.canvas.camera
     }
-    playAudioAsset(audio) {
-        const sound = new THREE.Audio(this.canvas.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-        this.canvas.playing_audio[audio.id] = sound
+    playMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            const sound = new THREE.Audio(this.canvas.audioListener)
+            const audioLoader = new THREE.AudioLoader()
+            audioLoader.load(asset.src, function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+            this.canvas.playing_audio[asset.id] = sound
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const cache = this.canvas.props.provider.videocache
+            if(cache[asset.src]) cache[asset.src].play()
+        }
     }
 
     stopAudioAsset(audio) {
