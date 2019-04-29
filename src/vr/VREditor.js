@@ -12,8 +12,8 @@ import {
     insertAsLastChild,
     listToArray,
 } from '../syncgraph/utils'
-import CubeDef from "./CubeDef";
-import SceneDef from "./SceneDef";
+import CubeDef from "./defs/CubeDef";
+import SceneDef from "./defs/SceneDef";
 import InputManager from "../common/InputManager";
 import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {

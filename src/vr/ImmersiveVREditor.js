@@ -14,7 +14,7 @@ import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d";
 import button2d from "./panel2d/button2d";
 import group2d from "./panel2d/group2d"
-import SceneDef from "./SceneDef"
+import SceneDef from "./defs/SceneDef"
 import {on} from "../utils"
 import {TweenManager} from "../common/tween"
 import {

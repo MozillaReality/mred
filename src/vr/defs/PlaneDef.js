@@ -1,6 +1,6 @@
-import {fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS} from './Common'
+import {PROP_DEFS} from '../Common'
 import ObjectDef from './ObjectDef'
 
 export default class PlaneDef extends ObjectDef {

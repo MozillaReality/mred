@@ -1,48 +1,39 @@
-import {fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from './ObjectDef'
-import {OBJ_TYPES} from './Common'
 
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
-
-let COUNTER = 0
-
-export default class CubeDef extends ObjectDef {
+export default class SphereDef extends ObjectDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't create cube w/ missing parent")
+        if(!scene.id) throw new Error("can't create sphere w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.cube,
-            title:'cube '+COUNTER++,
+            type:'sphere',
+            title:'a sphere',
             visible:true,
-            width:1, height:1, depth:1,
+            radius: 0.5,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
-            color:'#00ff00',
+            color:'#0000ff',
             children:graph.createArray(),
             parent:scene.id
         }))
     }
     makeNode(obj) {
         const node = new THREE.Mesh(
-            new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
+            new THREE.SphereBufferGeometry(obj.radius),
             new THREE.MeshLambertMaterial({color: obj.color})
         )
         node.name = obj.title
         node.userData.clickable = true
+        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         return node
     }
 
-
-
     updateProperty(node, obj, op, provider) {
-        if (op.name === 'width' || op.name === 'height' || op.name === 'depth') {
-            node.geometry = new THREE.BoxGeometry(obj.width, obj.height, obj.depth)
-            return
-        }
+        if (op.name === 'radius') node.geometry = new THREE.SphereGeometry(op.value)
         return super.updateProperty(node,obj,op,provider)
     }
 

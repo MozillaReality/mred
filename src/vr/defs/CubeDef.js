@@ -1,39 +1,48 @@
-import {fetchGraphObject} from "../syncgraph/utils";
+import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import ObjectDef from './ObjectDef'
+import {OBJ_TYPES} from '../Common'
 
-export default class SphereDef extends ObjectDef {
+const on = (elem,type,cb) => elem.addEventListener(type,cb)
+
+let COUNTER = 0
+
+export default class CubeDef extends ObjectDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't create sphere w/ missing parent")
+        if(!scene.id) throw new Error("can't create cube w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:'sphere',
-            title:'a sphere',
+            type:OBJ_TYPES.cube,
+            title:'cube '+COUNTER++,
             visible:true,
-            radius: 0.5,
+            width:1, height:1, depth:1,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
-            color:'#0000ff',
+            color:'#00ff00',
             children:graph.createArray(),
             parent:scene.id
         }))
     }
     makeNode(obj) {
         const node = new THREE.Mesh(
-            new THREE.SphereBufferGeometry(obj.radius),
+            new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
             new THREE.MeshLambertMaterial({color: obj.color})
         )
         node.name = obj.title
         node.userData.clickable = true
-        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         return node
     }
 
+
+
     updateProperty(node, obj, op, provider) {
-        if (op.name === 'radius') node.geometry = new THREE.SphereGeometry(op.value)
+        if (op.name === 'width' || op.name === 'height' || op.name === 'depth') {
+            node.geometry = new THREE.BoxGeometry(obj.width, obj.height, obj.depth)
+            return
+        }
         return super.updateProperty(node,obj,op,provider)
     }
 

@@ -1,5 +1,5 @@
-import {fetchGraphObject} from '../syncgraph/utils'
-import {OBJ_TYPES, PROP_DEFS} from './Common'
+import {fetchGraphObject} from '../../syncgraph/utils'
+import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
 
 export default class BG360Def {

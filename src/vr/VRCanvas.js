@@ -4,7 +4,7 @@ import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
 import {fetchGraphObject} from '../syncgraph/utils'
-import SceneDef from "./SceneDef"
+import SceneDef from "./defs/SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager from './ScriptManager'

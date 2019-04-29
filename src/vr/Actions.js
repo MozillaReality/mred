@@ -1,4 +1,4 @@
-import SceneDef from './SceneDef'
+import SceneDef from './defs/SceneDef'
 import SelectionManager from '../SelectionManager'
 import {toQueryString} from '../utils'
 import {ITEM_ICONS, OBJ_TYPES} from './Common'

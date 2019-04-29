@@ -1,6 +1,6 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import ObjectDef from '../ObjectDef'
+import ObjectDef from './ObjectDef'
 import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'
 import {parseHex} from '../../utils'

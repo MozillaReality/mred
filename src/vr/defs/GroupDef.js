@@ -1,6 +1,6 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import ObjectDef from '../ObjectDef'
+import ObjectDef from './ObjectDef'
 import {OBJ_TYPES} from '../Common'
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)

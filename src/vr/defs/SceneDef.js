@@ -1,6 +1,6 @@
-import {createGraphObjectFromObject, fetchGraphObject} from "../syncgraph/utils";
+import {createGraphObjectFromObject, fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS} from './Common'
+import {PROP_DEFS} from '../Common'
 
 let COUNTER = 0
 
