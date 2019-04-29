@@ -342,12 +342,13 @@ export function get3DObjectDef(type) {
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
-export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript', GLB: 'model/gltf-binary' }
+export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript', GLB: 'model/gltf-binary', MP4:'video/mp4' }
 export const ASSET_TYPES = {
     BEHAVIOR:'behavior',
     IMAGE:'image',
     GLTF: 'gltf',
     AUDIO:'audio',
+    VIDEO:'video',
 }
 export function isImageType(type) {
     if (!type) return false
@@ -359,6 +360,12 @@ export function isAudioType(type) {
     if(!type) return false
     if(type.toLowerCase() === MIME_TYPES.MP3) return true
     if(type.toLowerCase() === MIME_TYPES.AAC) return true
+    return false
+}
+
+export function isVideoType(type) {
+    if(!type) return false
+    if(type.toLowerCase() === MIME_TYPES.MP4) return true
     return false
 }
 
@@ -390,6 +397,7 @@ export const ITEM_ICONS = {
     image:'image',
     text:'font',
     audio:'music',
+    video:'video-camera',
     group:'object-group',
     particles:'certificate',
     gltf:'cube',

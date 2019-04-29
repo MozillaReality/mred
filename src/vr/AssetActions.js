@@ -101,3 +101,29 @@ export function addAudioAssetFromURL (url, fileType, name, prov) {
     }))
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
 }
+
+export function addVideoAssetFromURL (url, fileType, name, prov) {
+    //TODO: make this format detection code more robust
+    if(!name) {
+        name = url.substring(url.lastIndexOf('/') + 1)
+    }
+    /*
+    if(!fileType) {
+        const type = name.substring(name.lastIndexOf(".") + 1)
+        fileType = "audio/unknown"
+        if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
+        if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
+    }
+    */
+
+    const graph = prov.getDataGraph()
+    const asset = fetchGraphObject(graph,graph.createObject({
+        type: TOTAL_OBJ_TYPES.ASSET,
+        subtype:ASSET_TYPES.VIDEO,
+        format:fileType,
+        src:url,
+        title:name,
+        parent:0
+    }))
+    prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
+}

@@ -13,8 +13,9 @@ export default class AssetView extends Component {
     }
 
     renderAsset(asset) {
-        if(asset.subtype === 'image') return <img src={asset.src} alt={asset.title}/>
-        if(asset.subtype === 'audio') return <audio src={asset.src} controls/>
+        if(asset.subtype === ASSET_TYPES.IMAGE) return <img src={asset.src} alt={asset.title}/>
+        if(asset.subtype === ASSET_TYPES.AUDIO) return <audio src={asset.src} controls/>
+        if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={asset.src} controls/>
         if(asset.subtype === ASSET_TYPES.BEHAVIOR) return <div>{asset.src}</div>
         return <div>unknown type</div>
     }
