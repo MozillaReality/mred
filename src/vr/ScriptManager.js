@@ -127,32 +127,38 @@ export default class ScriptManager {
 
     tick(time) {
         if(!this.running) return
-        const scene = this.sgp.getCurrentScene()
-        if (!scene) return console.log("no current scene?!")
-        const evt = {
-            type:'tick',
-            time:time
-        }
-        evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(scene)
-        behaviors.forEach(b => {
-            evt.target = new ThreeObjectFacade(this,b.parent)
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            evt.props = b.props()
-            if(asset.onTick) asset.onTick(evt)
-        })
-        this.sgp.getSceneObjects(scene).forEach(child => {
-            const behaviors = this.sgp.getBehaviorsForObject(child)
+        try {
+            const scene = this.sgp.getCurrentScene()
+            if (!scene) return console.log("no current scene?!")
+            const evt = {
+                type:'tick',
+                time:time
+            }
+            evt.system = this.makeSystemFacade(evt)
+            const behaviors = this.sgp.getBehaviorsForObject(scene)
             behaviors.forEach(b => {
                 evt.target = new ThreeObjectFacade(this,b.parent)
-                evt.graphTarget = child
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
             })
-            const obj3 = this.sgp.getThreeObject(child.id)
-            if(obj3 && obj3.update) obj3.update(time)
-        })
+            this.sgp.getSceneObjects(scene).forEach(child => {
+                const behaviors = this.sgp.getBehaviorsForObject(child)
+                behaviors.forEach(b => {
+                    evt.target = new ThreeObjectFacade(this,b.parent)
+                    evt.graphTarget = child
+                    const asset = this.sgp.getParsedBehaviorAsset(b)
+                    evt.props = b.props()
+                    if(asset.onTick) asset.onTick(evt)
+                })
+                const obj3 = this.sgp.getThreeObject(child.id)
+                if(obj3 && obj3.update) obj3.update(time)
+            })
+        } catch (err) {
+            console.error("error in script",err.message)
+            console.info(err)
+            this.stopRunning()
+        }
     }
 
 
@@ -211,20 +217,20 @@ class ThreeObjectFacade {
         this.manager = manager
         this.obj = obj
     }
-    getPosition() {
+    get position() {
         return this.manager.sgp.getThreeObject(this.obj).position
     }
-    setPosition(x,y,z) {
-        this.manager.sgp.getThreeObject(this.obj).position.set(x,y,z)
+    set position(val) {
+        this.manager.sgp.getThreeObject(this.obj).position.copy(val)
     }
-    getRotation() {
+
+    get rotation() {
         return this.manager.sgp.getThreeObject(this.obj).rotation
     }
-    setVisible(visible) {
-        const threeobj = this.manager.sgp.getThreeObject(this.obj)
-        threeobj.visible = visible
-    }
-    isVisible() {
+    get visible() {
         return this.manager.sgp.getThreeObject(this.obj).visible
+    }
+    set visible(val) {
+        return this.manager.sgp.getThreeObject(this.obj).visible = val
     }
 }
