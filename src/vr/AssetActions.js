@@ -1,4 +1,4 @@
-import * as ToasterMananager from './ToasterManager'
+import * as ToasterManager from './ToasterManager'
 import {getAssetsURL} from '../TreeItemProvider'
 import {ASSET_TYPES, MIME_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {fetchGraphObject} from '../syncgraph/utils'
@@ -23,9 +23,9 @@ export function addImageAssetFromExpandedURL(url,format,title, prov) {
 
 
 export function addImageAssetFromFile (file, prov) {
-    ToasterMananager.add('uploading ' + file.name)
+    ToasterManager.add('uploading ' + file.name)
     prov.uploadFile(file).then((ans)=>{
-        ToasterMananager.add('uploaded')
+        ToasterManager.add('uploaded')
         if(ans.success === false) return console.log("there was an error uploading! :(")
         return addImageAssetFromExpandedURL(getAssetsURL()+ans.asset.id, ans.asset.mimeType, file.name, prov)
     })
@@ -41,11 +41,11 @@ export function addImageAssetFromURL  (url, prov) {
     return addImageAssetFromExpandedURL(url, fileType, name, prov)
 }
 export function addGLBAssetFromFile (file, prov) {
-    ToasterMananager.add('uploading')
+    ToasterManager.add('uploading '+ file.name)
     prov.uploadFile(file).then((ans)=>{
-        ToasterMananager.add('uploaded')
-        console.log("uploaded file with answer",ans)
-        const url = getAssetsURL()+ans.id
+        ToasterManager.add('uploaded')
+        if(ans.success === false) return console.log("there was an error uploading! :(")
+        const url = getAssetsURL()+ans.asset.id
         const graph = prov.getDataGraph()
         const asset = fetchGraphObject(graph,graph.createObject({
             type:TOTAL_OBJ_TYPES.ASSET,
@@ -60,9 +60,9 @@ export function addGLBAssetFromFile (file, prov) {
 }
 
 export function addAudioAssetFromFile (file, prov) {
-    ToasterMananager.add('uploading')
+    ToasterManager.add('uploading')
     prov.uploadFile(file).then((ans)=>{
-        ToasterMananager.add('uploaded')
+        ToasterManager.add('uploaded')
         console.log("uploaded file with answer",ans)
         if(ans.success === false) return console.log("there was an error uploading! :(")
         const url = getAssetsURL()+ans.asset.id
