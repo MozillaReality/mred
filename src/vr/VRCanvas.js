@@ -7,10 +7,75 @@ import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./defs/SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
-import ScriptManager from './ScriptManager'
+import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
+
+// ================  SGP implementation =====================
+class Adapter extends SceneGraphProvider {
+    constructor(canvas) {
+        super()
+        this.canvas = canvas
+    }
+
+    getAllBehaviors() {
+        return this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot())
+            .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+
+    getParsedBehaviorAsset(beh) {
+        const prov = this.canvas.props.provider
+        const asset = prov.accessObject(beh.behavior)
+        return prov.getCachedBehaviorAsset(asset.id)
+    }
+    getGraphObjectById(id) {
+        return this.canvas.props.provider.accessObject(id)
+    }
+    getGraphObjectByName(title) {
+        const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
+    navigateScene(id) {
+        SelectionManager.setSelection(id)
+    }
+    getCurrentScene() {
+        const sel = SelectionManager.getSelection()
+        const obj = this.canvas.props.provider.accessObject(sel)
+        return this.canvas.findSceneObjectParent(obj)
+    }
+    getSceneObjects(scene) {
+        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+    }
+    getThreeObject(id) {
+        return this.canvas.findNode(id)
+    }
+    getBehaviorsForObject(scene) {
+        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getCamera() {
+        return this.canvas.camera
+    }
+    playAudioAsset(audio) {
+        const sound = new THREE.Audio(this.canvas.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( false );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+        this.canvas.playing_audio[audio.id] = sound
+    }
+
+    stopAudioAsset(audio) {
+        if(this.canvas.playing_audio[audio.id]) {
+            this.canvas.playing_audio[audio.id].stop()
+            delete this.canvas.playing_audio[audio.id]
+        }
+    }
+}
 
 
 export class VRCanvas extends Component {
@@ -30,7 +95,7 @@ export class VRCanvas extends Component {
             scene: -1,
             running:props.running
         }
-        this.scriptManager = new ScriptManager(this)
+        this.scriptManager = new ScriptManager(new Adapter(this))
         this.playing_audio = []
     }
 
@@ -318,24 +383,6 @@ export class VRCanvas extends Component {
         }
     }
 
-    playAudioAsset(audio) {
-        const sound = new THREE.Audio(this.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-        this.playing_audio[audio.id] = sound
-    }
-
-    stopAudioAsset(audio) {
-        if(this.playing_audio[audio.id]) {
-            this.playing_audio[audio.id].stop()
-            delete this.playing_audio[audio.id]
-        }
-    }
 
     resetSceneGraph() {
         Object.keys(this.obj_node_map).forEach(id => {
@@ -355,43 +402,4 @@ export class VRCanvas extends Component {
     }
 
 
-    // ================  SGP implementation
-    getAllBehaviors() {
-        return this.props.provider.accessObject(this.props.provider.getSceneRoot())
-            .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-
-    getParsedBehaviorAsset(beh) {
-        const prov = this.props.provider
-        const asset = prov.accessObject(beh.behavior)
-        return prov.getCachedBehaviorAsset(asset.id)
-    }
-    getGraphObjectById(id) {
-        return this.props.provider.accessObject(id)
-    }
-    findGraphObjectByTitle(title) {
-        const list = this.props.provider.accessObject(this.props.provider.getSceneRoot()).find((o)=>o.title === title)
-        if(!list || list.length<1) return null
-        return list[0]
-    }
-    navigateScene(id) {
-        SelectionManager.setSelection(id)
-    }
-    getCurrentScene() {
-        const sel = SelectionManager.getSelection()
-        const obj = this.props.provider.accessObject(sel)
-        return this.findSceneObjectParent(obj)
-    }
-    getSceneObjects(scene) {
-        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
-    }
-    findThreeObject(id) {
-        return this.findNode(id)
-    }
-    getBehaviorsForObject(scene) {
-        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-    getCamera() {
-        return this.camera
-    }
 }

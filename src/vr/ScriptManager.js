@@ -1,5 +1,22 @@
-import * as ToasterMananager from './ToasterManager'
-import {TOTAL_OBJ_TYPES} from './Common'
+export class SceneGraphProvider {
+    //return the current scene. provider is in charge of tracking which scene is considered 'current'
+    //including the default scene when the project loads
+    getCurrentScene() { throw new Error("getCurrentScene not implemented")}
+    getSceneObjects(scene) { throw new Error("getSceneObjects not implemented")}
+    getBehaviorsForObject(obj) { throw new Error("getBehaviorsForObject(obj) not implemented")}
+    getThreeObject(id) { throw new Error("getThreeObject(id) not implemented")}
+    getParsedBehaviorAsset(beh) { throw new Error("getParsedBehaviorAsset(behavior) not implemented")}
+    getAllBehaviors() { throw new Error("getAllBehaviors() not implemented")}
+
+    //navigate to the specified scene
+    navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
+
+    playAudioAsset(id) { throw new Error("playAudioAsset(id) not implemented")}
+    stopAudioAsset(id) { throw new Error("stopAudioAsset(id) not implemented")}
+    getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
+    getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
+    getCamera() { throw new Error("getCamera() not implemented")}
+}
 
 export default class ScriptManager {
     constructor(sceneGraphProvider) {
@@ -8,76 +25,41 @@ export default class ScriptManager {
         this.storage = {}
     }
 
-    getCurrentScene() {
-        return this.sgp.getCurrentScene()
-    }
-    getSceneObjects(scene) {
-        return this.sgp.getSceneObjects(scene)
-    }
-    getBehaviorsForObject(scene) {
-        return this.sgp.getBehaviorsForObject(scene)
-    }
-    getGraphObjectByName(title) {
-        return this.sgp.findGraphObjectByTitle(title)
-    }
-    getGraphObjectById(id) {
-        return this.sgp.getGraphObjectById(id)
-    }
-    getThreeObject(id) {
-        return this.sgp.findThreeObject(id)
-    }
-    playAudioAsset(obj) {
-        return this.sgp.playAudioAsset(obj)
-    }
-    stopAudioAsset(obj) {
-        return this.sgp.stopAudioAsset(obj)
-    }
-    navigateScene(id) {
-        this.sgp.navigateScene(id)
-    }
-    getCamera() {
-        return this.sgp.getCamera()
-    }
-    makeScriptContext() {
-        return {
-
-        }
-    }
-
     makeSystemFacade(evt) {
         const prov = this.prov
         const manager = this
+        const sgp = this.sgp
         return {
             getCurrentScene() {
-                return manager.getCurrentScene()
+                return sgp.getCurrentScene()
             },
             getScene(name) {
                 return null
             },
             getObject(name) {
-                const obj = manager.getGraphObjectByName(name)
+                const obj = sgp.getGraphObjectByName(name)
                 if(!obj) throw new Error(`object '${name}' not found`)
                 return new ThreeObjectFacade(manager,obj)
             },
             getAsset(name) {
-                const obj = manager.getGraphObjectByName(name)
+                const obj = sgp.getGraphObjectByName(name)
                 if(!obj) throw new Error(`asset '${name}' not found`)
                 return new AssetFacade(manager,obj)
             },
             getObjectById(id) {
-                return manager.getGraphObjectById(id)
+                return sgp.getGraphObjectById(id)
             },
             navigateScene(id) {
                 manager.fireSceneExit(this.getCurrentScene())
-                manager.navigateScene(id)
+                sgp.navigateScene(id)
                 manager.fireSceneEnter(this.getCurrentScene())
             },
             playSound(id) {
-                const asset = manager.getGraphObjectById(id)
+                const asset = sgp.getGraphObjectById(id)
                 manager.playAudioAsset(asset)
             },
             getCamera() {
-                return manager.getCamera()
+                return sgp.getCamera()
             },
             setKeyValue(key, value) {
                 manager.storage[key] = value
@@ -108,7 +90,7 @@ export default class ScriptManager {
             target:target,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.getBehaviorsForObject(target)
+        const behaviors = this.sgp.getBehaviorsForObject(target)
         for(let i in behaviors) {
             let b = behaviors[i]
             evt.props = b.props()
@@ -124,7 +106,7 @@ export default class ScriptManager {
             target:scene,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.getBehaviorsForObject(scene)
+        const behaviors = this.sgp.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onExit) asset.onExit(evt)
@@ -136,7 +118,7 @@ export default class ScriptManager {
             target:scene,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.getBehaviorsForObject(scene)
+        const behaviors = this.sgp.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onEnter) asset.onEnter(evt)
@@ -145,22 +127,22 @@ export default class ScriptManager {
 
     tick(time) {
         if(!this.running) return
-        const scene = this.getCurrentScene()
+        const scene = this.sgp.getCurrentScene()
         if (!scene) return console.log("no current scene?!")
         const evt = {
             type:'tick',
             time:time
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.getBehaviorsForObject(scene)
+        const behaviors = this.sgp.getBehaviorsForObject(scene)
         behaviors.forEach(b => {
             evt.target = new ThreeObjectFacade(this,b.parent)
             const asset = this.sgp.getParsedBehaviorAsset(b)
             evt.props = b.props()
             if(asset.onTick) asset.onTick(evt)
         })
-        this.getSceneObjects(scene).forEach(child => {
-            const behaviors = this.getBehaviorsForObject(child)
+        this.sgp.getSceneObjects(scene).forEach(child => {
+            const behaviors = this.sgp.getBehaviorsForObject(child)
             behaviors.forEach(b => {
                 evt.target = new ThreeObjectFacade(this,b.parent)
                 evt.graphTarget = child
@@ -168,7 +150,7 @@ export default class ScriptManager {
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
             })
-            const obj3 = this.getThreeObject(child.id)
+            const obj3 = this.sgp.getThreeObject(child.id)
             if(obj3 && obj3.update) obj3.update(time)
         })
     }
@@ -202,7 +184,7 @@ export default class ScriptManager {
             graphTarget:target,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.getBehaviorsForObject(target)
+        const behaviors = this.sgp.getBehaviorsForObject(target)
         behaviors.forEach(b => {
             evt.props = b.props()
             const asset = this.sgp.getParsedBehaviorAsset(b)
@@ -218,10 +200,10 @@ class AssetFacade {
         this.obj = obj
     }
     play() {
-        this.manager.playAudioAsset(this.obj)
+        this.manager.sgp.playAudioAsset(this.obj)
     }
     stop() {
-        this.manager.stopAudioAsset(this.obj)
+        this.manager.sgp.stopAudioAsset(this.obj)
     }
 }
 class ThreeObjectFacade {
@@ -230,19 +212,19 @@ class ThreeObjectFacade {
         this.obj = obj
     }
     getPosition() {
-        return this.manager.getThreeObject(this.obj).position
+        return this.manager.sgp.getThreeObject(this.obj).position
     }
     setPosition(x,y,z) {
-        this.manager.getThreeObject(this.obj).position.set(x,y,z)
+        this.manager.sgp.getThreeObject(this.obj).position.set(x,y,z)
     }
     getRotation() {
-        return this.manager.getThreeObject(this.obj).rotation
+        return this.manager.sgp.getThreeObject(this.obj).rotation
     }
     setVisible(visible) {
-        const threeobj = this.manager.getThreeObject(this.obj)
+        const threeobj = this.manager.sgp.getThreeObject(this.obj)
         threeobj.visible = visible
     }
     isVisible() {
-        return this.manager.getThreeObject(this.obj).visible
+        return this.manager.sgp.getThreeObject(this.obj).visible
     }
 }

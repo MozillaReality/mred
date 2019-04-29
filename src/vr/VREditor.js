@@ -219,6 +219,9 @@ export default class VREditor extends  SyncGraphProvider {
                         .find(obj => obj.type === hints.nodeType)
                         .map(ch => ch.id)
                 }
+                if(hints.type === 'audio') {
+                    return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.AUDIO).map(a => a.id)
+                }
             }
         }
         if (key === PROP_DEFS.asset.key) {
@@ -285,8 +288,10 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     viewInVR = () => {
+        this.save().then(()=>{
             const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
             window.open(`./?${toQueryString(opts)}`)
+        })
     }
 
     embedView = () => {

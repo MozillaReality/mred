@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import ScriptManager from './ScriptManager'
+import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {getDocsURL} from '../TreeItemProvider'
 import {GET_JSON, on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
@@ -22,52 +22,7 @@ export class ImmersivePlayer extends Component {
         this.behavior_map = {}
         this.behavior_assets = {}
         this.pendingAssets = []
-        this.scriptManager = new ScriptManager({
-            getCurrentScene: () => {
-                return this.current_scene
-            },
-            getBehaviorsForObject: (obj) => {
-                if(!obj.children) return []
-                return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-            },
-            getAllBehaviors: () => {
-                return Object.keys(this.behavior_map).map(key => this.behavior_map[key])
-            },
-            getParsedBehaviorAsset: (b) => {
-                // console.log("trying to load",b)
-                const asset = this.behavior_assets[b.behavior]
-                // console.log("found the asset",asset)
-                return asset
-                // console.log("pending assets",this.pendingAssets)
-            },
-            navigateScene: (sceneid) => {
-                console.log("navigating to ",sceneid)
-                const scene = this.obj_map[sceneid]
-                if(!scene) return console.warn("couldn't find scene for",sceneid)
-                this.setCurrentScene(scene)
-            },
-            getSceneObjects:(sc) => {
-                // console.log("getting children for",sc)
-                return sc.children.filter(ch => is3DObjectType(ch.type))
-            },
-            getGraphObjectById: (id) => {
-                return this.obj_map[id]
-            },
-            findThreeObject: (id) => {
-                return this.three_map[id]
-            },
-            playAudioAsset: (audio) => {
-                console.log("trying to play",audio)
-                const sound = new THREE.Audio(this.audioListener)
-                const audioLoader = new THREE.AudioLoader()
-                audioLoader.load(audio.src, function( buffer ) {
-                    sound.setBuffer( buffer );
-                    sound.setLoop( false );
-                    sound.setVolume( 0.5 );
-                    sound.play();
-                });
-            }
-        })
+        this.scriptManager = new ScriptManager(new Adapter(this))
     }
 
     componentDidMount() {
@@ -260,11 +215,56 @@ export class ImmersivePlayer extends Component {
         this.current_scene = scene
     }
 
-    findGraphObjectByTitle(title) {
-        return this.title_map[title]
+}
+
+// ================  SGP implementation =====================
+
+class Adapter extends SceneGraphProvider {
+    constructor(player) {
+        super()
+        this.player = player
     }
 
-    findThreeObject(obj) {
-        return this.three_map[obj.id]
+    getCurrentScene() {
+        return this.player.current_scene
+    }
+    getBehaviorsForObject (obj) {
+        if(!obj.children) return []
+        return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getSceneObjects(sc) {
+        return sc.children.filter(ch => is3DObjectType(ch.type))
+    }
+    getThreeObject (id)  {
+        return this.player.three_map[id]
+    }
+    getParsedBehaviorAsset (b) {
+        return this.player.behavior_assets[b.behavior]
+    }
+    getAllBehaviors () {
+        return Object.keys(this.player.behavior_map).map(key => this.player.behavior_map[key])
+    }
+    navigateScene (sceneid) {
+        console.log("navigating to ",sceneid)
+        const scene = this.obj_map[sceneid]
+        if(!scene) return console.warn("couldn't find scene for",sceneid)
+        this.setCurrentScene(scene)
+    }
+    playAudioAsset (audio)  {
+        console.log("trying to play",audio)
+        const sound = new THREE.Audio(this.player.audioListener)
+        const audioLoader = new THREE.AudioLoader()
+        audioLoader.load(audio.src, function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( false );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+    }
+    getGraphObjectByName(title) {
+        return this.player.title_map[title]
+    }
+    getGraphObjectById (id) {
+        return this.player.obj_map[id]
     }
 }
