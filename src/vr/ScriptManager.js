@@ -16,6 +16,7 @@ export class SceneGraphProvider {
     getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
+    getTweenManager() { throw new Error("getTweenManager() not implemented")}
 }
 
 export default class ScriptManager {
@@ -78,24 +79,33 @@ export default class ScriptManager {
                 if(target) {
                     manager.fireMessageAtTarget(name,payload,target)
                 }
+            },
+            getTweenManager() {
+                return sgp.getTweenManager()
             }
         }
     }
 
     performClickAction(target) {
         if(!this.running) return
-        if(!target || !target.exists || !target.exists())return
-        const evt = {
-            type:'click',
-            target:target,
-        }
-        evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(target)
-        for(let i in behaviors) {
-            let b = behaviors[i]
-            evt.props = b.props()
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            if(asset.onClick) asset.onClick(evt)
+        try {
+            if (!target || !target.exists || !target.exists()) return
+            const evt = {
+                type: 'click',
+                target: target,
+            }
+            evt.system = this.makeSystemFacade(evt)
+            const behaviors = this.sgp.getBehaviorsForObject(target)
+            for (let i in behaviors) {
+                let b = behaviors[i]
+                evt.props = b.props()
+                const asset = this.sgp.getParsedBehaviorAsset(b)
+                if (asset.onClick) asset.onClick(evt)
+            }
+        } catch (error) {
+            console.error("error in script",error.message)
+            console.info(error)
+            this.stopRunning()
         }
     }
 

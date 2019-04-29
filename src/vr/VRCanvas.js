@@ -8,6 +8,7 @@ import SceneDef from "./defs/SceneDef"
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
+import {TweenManager} from '../common/tween'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -48,8 +49,9 @@ class Adapter extends SceneGraphProvider {
     getSceneObjects(scene) {
         return scene.getChildren().filter(ch => is3DObjectType(ch.type))
     }
-    getThreeObject(id) {
-        return this.canvas.findNode(id)
+    getThreeObject(obj) {
+        if(obj.id) return this.canvas.findNode(obj.id)
+        return this.canvas.findNode(obj)
     }
     getBehaviorsForObject(scene) {
         return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
@@ -80,6 +82,9 @@ class Adapter extends SceneGraphProvider {
             this.canvas.playing_audio[audio.id].stop()
             delete this.canvas.playing_audio[audio.id]
         }
+    }
+    getTweenManager() {
+        return this.canvas.tweenManager
     }
 }
 
@@ -192,8 +197,11 @@ export class VRCanvas extends Component {
 
         this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
 
+        this.tweenManager = new TweenManager()
+
         this.renderer.setAnimationLoop((time) => {
             if(this.state.running) this.scriptManager.tick(time)
+            if(this.tweenManager) this.tweenManager.update(time)
             this.renderer.render(this.scene, this.camera)
         })
 
