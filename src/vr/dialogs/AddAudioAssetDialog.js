@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {ToggleButton, Toolbar} from '../../GridEditorApp'
+import {addAudioAssetFromFile, addAudioAssetFromURL} from '../AssetActions'
 
 export class AddAudioAssetDialog extends Component {
     constructor(props) {
@@ -20,11 +21,11 @@ export class AddAudioAssetDialog extends Component {
         DialogManager.hide()
         if(this.state.view === 'remote') {
             console.log("adding the url",this.state.url)
-            this.props.provider.addAudioAssetFromURL(this.state.url)
+            addAudioAssetFromURL(this.state.url, this.props.provider)
         } else {
             console.log("the file input is",this.fileInput)
             listToArray(this.fileInput.current.files).forEach(file => {
-                this.props.provider.addAudioAssetFromFile(file)
+                addAudioAssetFromFile(file, this.props.provider)
             })
         }
     }

@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {ToggleButton, Toolbar} from '../../GridEditorApp'
+import {addImageAssetFromFile, addImageAssetFromURL} from '../AssetActions'
 
 export class AddImageAssetDialog extends Component {
     constructor(props) {
@@ -20,11 +21,11 @@ export class AddImageAssetDialog extends Component {
         DialogManager.hide()
         if(this.state.view === 'remote') {
             console.log("adding the url",this.state.url)
-            this.props.provider.addImageAssetFromURL(this.state.url)
+            addImageAssetFromURL(this.state.url, this.props.provider)
         } else {
             console.log("the file input is",this.fileInput)
             listToArray(this.fileInput.current.files).forEach(file => {
-                this.props.provider.addImageAssetFromFile(file)
+                addImageAssetFromFile(file, this.props.provider)
             })
         }
     }

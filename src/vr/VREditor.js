@@ -45,6 +45,7 @@ import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
+import {addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 
 
 
@@ -299,193 +300,6 @@ export default class VREditor extends  SyncGraphProvider {
         ToasterMananager.add('added '+type)
     }
 
-    addImageAssetFromFile = (file) => {
-        ToasterMananager.add('uploading ' + file.name)
-        this.uploadFile(file).then((ans)=>{
-            ToasterMananager.add('uploaded')
-            if(ans.success === false) return console.log("there was an error uploading! :(")
-            return this.addImageAssetFromExpandedURL(getAssetsURL()+ans.asset.id, ans.asset.mimeType, file.name)
-        })
-    }
-    addImageAssetFromURL = (url) => {
-        //TODO: make this format detection code more robust
-        const name = url.substring(url.lastIndexOf('/') + 1)
-        const type = name.substring(name.lastIndexOf(".") + 1)
-        let fileType = "image/unknown"
-        if (type.toLowerCase() === 'png') fileType = MIME_TYPES.PNG
-        if (type.toLowerCase() === 'jpg') fileType = MIME_TYPES.JPEG
-        if (type.toLowerCase() === 'jpeg') fileType = MIME_TYPES.JPEG
-        return this.addImageAssetFromExpandedURL(url, fileType, name)
-    }
-    addImageAssetFromExpandedURL(url,format,title) {
-        const asset = this.accessObject(this.getDataGraph().createObject({
-            type:TOTAL_OBJ_TYPES.ASSET,
-            subtype:ASSET_TYPES.IMAGE,
-            format:format,
-            src:url,
-            width:100,
-            height:100,
-            title:title,
-            parent:0
-        }))
-        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
-        this.requestImageCache(url).then(img => {
-            asset.set('width',img.width)
-            asset.set('height',img.height)
-        })
-    }
-
-    addAudioAssetFromFile = (file) => {
-        ToasterMananager.add('uploading')
-        this.uploadFile(file).then((ans)=>{
-            ToasterMananager.add('uploaded')
-            console.log("uploaded file with answer",ans)
-            if(ans.success === false) return console.log("there was an error uploading! :(")
-            const url = getAssetsURL()+ans.asset.id
-            const graph = this.getDataGraph()
-            const asset = fetchGraphObject(graph,graph.createObject({
-                type:TOTAL_OBJ_TYPES.ASSET,
-                subtype:ASSET_TYPES.AUDIO,
-                format:ans.asset.mimeType,
-                src:url,
-                title:file.name,
-                parent:0
-            }))
-            this.accessObject(this.getAssetsObject()).insertChildLast(asset)
-        })
-    }
-
-    addAudioAssetFromURL = (url, fileType, name) => {
-        //TODO: make this format detection code more robust
-        if(!name) {
-            name = url.substring(url.lastIndexOf('/') + 1)
-        }
-        if(!fileType) {
-            const type = name.substring(name.lastIndexOf(".") + 1)
-            fileType = "audio/unknown"
-            if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
-            if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
-        }
-
-        const graph = this.getDataGraph()
-        const asset = fetchGraphObject(graph,graph.createObject({
-            type: TOTAL_OBJ_TYPES.ASSET,
-            subtype:ASSET_TYPES.AUDIO,
-            format:fileType,
-            src:url,
-            title:name,
-            parent:0
-        }))
-        this.accessObject(this.getAssetsObject()).insertChildLast(asset)
-    }
-    addBehaviorAssetFromURL = (info) => {
-        const graph = this.getDataGraph()
-        const behavior = fetchGraphObject(graph,graph.createObject({
-            type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
-            title:info.title,
-            description:info.description,
-            src:info.url,
-            parent:0
-        }))
-        this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
-        SelectionManager.setSelection(behavior.id)
-    }
-    removeBehaviorAssetSource(name) {
-        const url = `${getScriptsURL()}delete/${name}`
-        console.log("removing",url)
-        return fetch(url,{
-            method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
-            body:name
-        }).then(res => res.json())
-            .then(res => {
-                return res
-            })
-    }
-    addGLBAssetFromFile = (file) => {
-        ToasterMananager.add('uploading')
-        this.uploadFile(file).then((ans)=>{
-            ToasterMananager.add('uploaded')
-            console.log("uploaded file with answer",ans)
-            const url = getAssetsURL()+ans.id
-            const graph = this.getDataGraph()
-            const asset = fetchGraphObject(graph,graph.createObject({
-                type:TOTAL_OBJ_TYPES.ASSET,
-                subtype:ASSET_TYPES.GLTF,
-                format:MIME_TYPES.GLB,
-                src:url,
-                title:file.name,
-                parent:0
-            }))
-            this.accessObject(this.getAssetsObject()).insertChildLast(asset)
-        })
-    }
-
-    addCustomBehaviorAsset = (TEMPLATE) => {
-        const randi = (Math.floor(Math.random()*100000000))
-        const fname =`behavior_${randi}.js`
-        const url = `${getScriptsURL()}${fname}`;
-        const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
-        console.log("posting to",url)
-        return fetch(url,{
-            method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
-            body:contents
-        })
-            .then(res => res.json())
-            .then(ans => {
-                console.log("got back the answer",ans)
-                const graph = this.getDataGraph()
-                const behavior = fetchGraphObject(graph,graph.createObject({
-                    type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
-                    title:ans.script.title,
-                    description:ans.script.description,
-                    src:url,
-                    parent:0
-                }))
-                this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
-                SelectionManager.setSelection(behavior.id)
-                return behavior
-
-            })
-            .catch(err => console.error(err))
-    }
-
-    addSceneScript = (obj) => {
-        this.addCustomBehaviorAsset(CUSTOM_SCENE_SCRIPT)
-            .then((b)=>this.addBehaviorToObject(b,obj))
-    }
-
-    addBehaviorToObject = (b,item) => {
-        return this.fetchBehaviorAssetContents(b.id).then((contents)=>{
-            try {
-                const def = {
-                    type: TOTAL_OBJ_TYPES.BEHAVIOR,
-                    title: b.title,
-                    description: b.description,
-                    parent: 0,
-                    behavior:b.id,
-                }
-                const obj = parseBehaviorScript(contents)
-                this.setCachedBehaviorAsset(b.id,obj)
-                //copy properties to the behavior def
-                if(obj.properties) {
-                    Object.keys(obj.properties).forEach(name => {
-                        def[name] = obj.properties[name].value
-                    })
-                }
-                const graph = this.getDataGraph()
-                const behavior = fetchGraphObject(graph, graph.createObject(def))
-                this.accessObject(item).insertChildLast(behavior)
-                return behavior
-            } catch (e) {
-                console.error(e)
-            }
-        })
-    }
-
     calculateContextMenu(item) {
         const cmds = []
         cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: ()=>deleteObject(this) });
@@ -602,8 +416,8 @@ export default class VREditor extends  SyncGraphProvider {
         const obj = this.accessObject(tgt)
         if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
             listToArray(e.dataTransfer.files).forEach(file => {
-                if(isImageType(file.type)) return this.addImageAssetFromFile(file)
-                if(isGLTFFile(file)) return this.addGLBAssetFromFile(file)
+                if(isImageType(file.type)) return addImageAssetFromFile(file,this)
+                if(isGLTFFile(file)) return addGLBAssetFromFile(file,this)
             })
         }
     }
@@ -703,6 +517,94 @@ export default class VREditor extends  SyncGraphProvider {
             .then(res=>res.json())
     }
 
+
+    // ======== behaviors ===============
+    addBehaviorAssetFromURL = (info) => {
+        const graph = this.getDataGraph()
+        const behavior = fetchGraphObject(graph,graph.createObject({
+            type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
+            title:info.title,
+            description:info.description,
+            src:info.url,
+            parent:0
+        }))
+        this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
+        SelectionManager.setSelection(behavior.id)
+    }
+    removeBehaviorAssetSource(name) {
+        const url = `${getScriptsURL()}delete/${name}`
+        console.log("removing",url)
+        return fetch(url,{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:name
+        }).then(res => res.json())
+            .then(res => {
+                return res
+            })
+    }
+    addCustomBehaviorAsset = (TEMPLATE) => {
+        const randi = (Math.floor(Math.random()*100000000))
+        const fname =`behavior_${randi}.js`
+        const url = `${getScriptsURL()}${fname}`;
+        const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
+        console.log("posting to",url)
+        return fetch(url,{
+            method:'POST',
+            mode:'cors',
+            cache: 'no-cache',
+            body:contents
+        })
+            .then(res => res.json())
+            .then(ans => {
+                console.log("got back the answer",ans)
+                const graph = this.getDataGraph()
+                const behavior = fetchGraphObject(graph,graph.createObject({
+                    type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
+                    title:ans.script.title,
+                    description:ans.script.description,
+                    src:url,
+                    parent:0
+                }))
+                this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
+                SelectionManager.setSelection(behavior.id)
+                return behavior
+
+            })
+            .catch(err => console.error(err))
+    }
+    addSceneScript = (obj) => {
+        this.addCustomBehaviorAsset(CUSTOM_SCENE_SCRIPT)
+            .then((b)=>this.addBehaviorToObject(b,obj))
+    }
+    addBehaviorToObject = (b,item) => {
+        return this.fetchBehaviorAssetContents(b.id).then((contents)=>{
+            try {
+                const def = {
+                    type: TOTAL_OBJ_TYPES.BEHAVIOR,
+                    title: b.title,
+                    description: b.description,
+                    parent: 0,
+                    behavior:b.id,
+                }
+                const obj = parseBehaviorScript(contents)
+                this.setCachedBehaviorAsset(b.id,obj)
+                //copy properties to the behavior def
+                if(obj.properties) {
+                    Object.keys(obj.properties).forEach(name => {
+                        def[name] = obj.properties[name].value
+                    })
+                }
+                const graph = this.getDataGraph()
+                const behavior = fetchGraphObject(graph, graph.createObject(def))
+                this.accessObject(item).insertChildLast(behavior)
+                return behavior
+            } catch (e) {
+                console.error(e)
+            }
+        })
+    }
     fetchBehaviorAssetContents(id) {
         const obj = this.accessObject(id)
         return fetch(obj.src).then(res => res.text())
@@ -728,7 +630,6 @@ export default class VREditor extends  SyncGraphProvider {
 
             })
     }
-
     getCachedBehaviorPropDefs(behavior) {
         if(!this.behaviorCache[behavior]) {
             console.error("no parsed behavior in the cache",behavior)
@@ -736,11 +637,9 @@ export default class VREditor extends  SyncGraphProvider {
         }
         return this.behaviorCache[behavior].properties;
     }
-
     getCachedBehaviorAsset(id) {
         return this.behaviorCache[id]
     }
-
     setCachedBehaviorAsset(id, asset) {
         this.behaviorCache[id] = asset
     }

@@ -3,6 +3,7 @@ import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL} from '../../TreeItemProvider'
 import {isAudioType, isImageType, MIME_TYPES} from '../Common'
 import {AuthModule} from '../AuthModule'
+import {addAudioAssetFromURL, addImageAssetFromExpandedURL} from '../AssetActions'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {
@@ -25,11 +26,11 @@ export class OpenAssetDialog extends Component {
         DialogManager.hide()
         if(isImageType(info.mimeType)) {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return this.props.provider.addImageAssetFromExpandedURL(info.url,info.mimeType, info.title)
+            return addImageAssetFromExpandedURL(info.url,info.mimeType, info.title, this.props.provider)
         }
         if(isAudioType(info.mimeType)) {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return this.props.provider.addAudioAssetFromURL(info.url, info.mimeType, info.title)
+            return addAudioAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
         }
         console.log("can't add this type")
     }

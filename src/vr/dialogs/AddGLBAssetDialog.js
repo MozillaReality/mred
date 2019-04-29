@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
+import {addGLBAssetFromFile} from '../AssetActions'
 
 export class AddGLBAssetDialog extends Component {
     cancel = () => {
@@ -9,7 +10,7 @@ export class AddGLBAssetDialog extends Component {
     okay = () => {
         DialogManager.hide()
         listToArray(this.fileinput.files).forEach(file => {
-            this.props.provider.addGLBAssetFromFile(file)
+            addGLBAssetFromFile(file, this.props.provider)
         })
     }
 

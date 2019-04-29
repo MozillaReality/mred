@@ -48,54 +48,54 @@ export function showAddAssetPopup(e, provider) {
         acts = acts.concat([{
             title: 'image',
             icon: ITEM_ICONS.image,
-            fun: () => this.props.provider.showAddImageAssetDialog()
+            fun: () => provider.showAddImageAssetDialog()
         },
             {
                 title: 'server image',
                 icon: ITEM_ICONS.image,
-                fun: () => this.props.provider.showAddServerImageDialog()
+                fun: () => provider.showAddServerImageDialog()
             },
             {divider: true},
             {
                 title: 'GLTF model',
                 icon: ITEM_ICONS.model,
-                fun: () => this.props.provider.showAddGLTFAssetDialog()
+                fun: () => provider.showAddGLTFAssetDialog()
             },
             {
                 title: 'GLB model',
                 icon: ITEM_ICONS.model,
-                fun: () => this.props.provider.showAddGLBAssetDialog()
+                fun: () => provider.showAddGLBAssetDialog()
             },
             {divider: true},
             {
                 title: 'audio file',
                 icon: ITEM_ICONS.audio,
-                fun: () => this.props.provider.showAddAudioAssetDialog()
+                fun: () => provider.showAddAudioAssetDialog()
             }])
     }
 
     acts.push({
         title: 'existing asset on server',
         icon: ITEM_ICONS.assets,
-        fun: () => this.props.provider.showOpenAssetDialog()
+        fun: () => provider.showOpenAssetDialog()
     })
 
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
 }
 
-export function showAddActionPopup (e) {
+export function showAddActionPopup (e, provider) {
     const acts = [
         {
             title:'behavior from template',
             icon: ITEM_ICONS.behavior_script,
-            fun: () => this.props.provider.showOpenBehaviorDialog()
+            fun: () => provider.showOpenBehaviorDialog()
         },
     ]
     if(AuthModule.supportsScriptEdit()) {
         acts.push({
             title: 'custom behavior',
             icon: ITEM_ICONS.behavior_script,
-            fun: () => this.props.provider.addCustomBehaviorAsset()
+            fun: () => provider.addCustomBehaviorAsset()
         })
     }
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
