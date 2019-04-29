@@ -2,12 +2,12 @@ import {fetchGraphObject} from '../../syncgraph/utils'
 import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
 
-function customize(node,mat) {
+function customize(node,mat,obj) {
     mat.onBeforeCompile = (shader) => {
         //add uniform
-        shader.uniforms.imageOffsetAngle    = { value: 0.0 }
-        shader.uniforms.imageCropStartAngle = { value: 0.0 }
-        shader.uniforms.imageCropEndAngle   = { value: 1.0 }
+        shader.uniforms.imageOffsetAngle    = { value: obj.imageOffsetAngle }
+        shader.uniforms.imageCropStartAngle = { value: obj.imageCropStartAngle }
+        shader.uniforms.imageCropEndAngle   = { value: obj.imageCropEndAngle }
         //prepend to the shader the defs
         shader.vertexShader = `
             uniform float imageOffsetAngle;
@@ -62,7 +62,7 @@ export default class BG360Def {
     makeNode(obj) {
         const mat = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide})
         const node = new THREE.Mesh(new THREE.SphereBufferGeometry(20.0, 50,50),mat)
-        customize(node,mat)
+        customize(node,mat,obj)
         node.name = obj.title
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
@@ -75,7 +75,7 @@ export default class BG360Def {
             if(asset) {
                 const tex = new THREE.TextureLoader().load(asset.src)
                 node.material = new THREE.MeshLambertMaterial({color:'white', side: THREE.BackSide, map:tex})
-                customize(node,node.material)
+                customize(node,node.material,obj)
             }
         }
         if(node.userData.matShader) {
