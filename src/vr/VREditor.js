@@ -283,8 +283,10 @@ export default class VREditor extends  SyncGraphProvider {
     }
 
     editInVR = () => {
-        const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
-        window.open(`./?${toQueryString(opts)}`)
+        this.save().then(()=>{
+            const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
+            window.open(`./?${toQueryString(opts)}`)
+        })
     }
 
     viewInVR = () => {
