@@ -1,5 +1,5 @@
 import {fetchGraphObject} from '../../syncgraph/utils'
-import {OBJ_TYPES, PROP_DEFS} from '../Common'
+import {ASSET_TYPES, OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
 
 function customize(node,mat,obj) {
@@ -73,13 +73,21 @@ export default class BG360Def {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)
             if(asset) {
-                const tex = new THREE.TextureLoader().load(asset.src)
-                node.material = new THREE.MeshLambertMaterial({color:'white', side: THREE.BackSide, map:tex})
-                customize(node,node.material,obj)
+                if(asset.subtype === ASSET_TYPES.IMAGE) {
+                    const tex = new THREE.TextureLoader().load(asset.src)
+                    node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
+                    customize(node, node.material, obj)
+                }
+                if(asset.subtype === ASSET_TYPES.VIDEO) {
+                    const video = document.createElement('video')
+                    video.crossOrigin = 'anonymous'
+                    video.src = asset.src
+                    const tex = new THREE.VideoTexture(video)
+                    node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
+                }
             }
         }
         if(node.userData.matShader) {
-
             if (op.name === 'imageOffsetAngle') node.userData.matShader.uniforms.imageOffsetAngle.value = op.value
             if (op.name === 'imageCropStartAngle') node.userData.matShader.uniforms.imageCropStartAngle.value = op.value
             if (op.name === 'imageCropEndAngle') node.userData.matShader.uniforms.imageCropEndAngle.value = op.value

@@ -226,6 +226,8 @@ export default class VREditor extends  SyncGraphProvider {
         }
         if (key === PROP_DEFS.asset.key) {
             const assets = this.accessObject(this.getAssetsObject()).getChildren()
+            if(acceptsImageAsset(realobj.type) && acceptsVideoAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.VIDEO || a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
+            if(acceptsVideoAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
             if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.GLTF).map(a => a.id)
             if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
         }
@@ -832,6 +834,13 @@ function acceptsModelAsset(type) {
     return false
 }
 function acceptsImageAsset(type) {
+    if(type === OBJ_TYPES.plane
+        || type === OBJ_TYPES.bg360
+        || type === OBJ_TYPES.img2d
+    ) return true
+    return false
+}
+function acceptsVideoAsset(type) {
     if(type === OBJ_TYPES.plane
         || type === OBJ_TYPES.bg360
         || type === OBJ_TYPES.img2d

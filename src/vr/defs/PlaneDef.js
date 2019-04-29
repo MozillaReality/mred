@@ -1,6 +1,6 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS} from '../Common'
+import {ASSET_TYPES, PROP_DEFS} from '../Common'
 import ObjectDef from './ObjectDef'
 
 export default class PlaneDef extends ObjectDef {
@@ -40,8 +40,17 @@ export default class PlaneDef extends ObjectDef {
             const g = provider.getDataGraph()
             const asset = fetchGraphObject(g,op.value)
             if(asset) {
-                const tex = new THREE.TextureLoader().load(asset.src)
-                node.material = new THREE.MeshLambertMaterial({color:obj.color, side: THREE.DoubleSide, map:tex})
+                if(asset.subtype === ASSET_TYPES.IMAGE) {
+                    const tex = new THREE.TextureLoader().load(asset.src)
+                    node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
+                }
+                if(asset.subtype === ASSET_TYPES.VIDEO) {
+                    const video = document.createElement('video')
+                    video.crossOrigin = 'anonymous'
+                    video.src = asset.src
+                    const tex = new THREE.VideoTexture(video)
+                    node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
+                }
             }
         }
         return super.updateProperty(node,obj,op,provider)
