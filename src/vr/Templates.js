@@ -3,7 +3,7 @@ export const CUSTOM_BEHAVIOR_SCRIPT = `
  #title untitled behavior
  #description does something
 */
-{
+({
   // defines a target property. must be a scene
   properties: {
     scene: { 
@@ -23,7 +23,7 @@ export const CUSTOM_BEHAVIOR_SCRIPT = `
     //called when object is clicked on
     //e.system.navigateScene(e.props.scene)
   }
-}
+})
 `
 
 
@@ -33,7 +33,7 @@ export const CUSTOM_SCENE_SCRIPT = `
  #title scene script
  #description does something
 */
-{
+({
   // defines a target property. must be a scene
   properties: {
     scene: { 
@@ -55,5 +55,5 @@ export const CUSTOM_SCENE_SCRIPT = `
   onExit: function() {
     //called when exiting a scene
   },
-}
+})
 `
