@@ -68,7 +68,7 @@ export default class ScriptManager {
             getKeyValue(key, defaultValue) {
                 return manager.storage[key]
             },
-            hasKeyValue(key, value) {
+            hasKeyValue(key) {
                 return typeof manager.storage[key] !== 'undefined'
             },
             isAR() {
@@ -82,6 +82,12 @@ export default class ScriptManager {
             },
             getTweenManager() {
                 return sgp.getTweenManager()
+            },
+            on(target,type,cb) {
+                manager.on(target,type,cb)
+            },
+            fireEvent(target,type, payload) {
+                manager.fireEventFromTarget(target,type,payload)
             }
         }
     }
@@ -162,7 +168,7 @@ export default class ScriptManager {
                     if(asset.onTick) asset.onTick(evt)
                 })
                 const obj3 = this.sgp.getThreeObject(child.id)
-                if(obj3 && obj3.update) obj3.update(time)
+                if(obj3 && obj3.update) obj3.update(time,evt)
             })
         } catch (err) {
             console.error("error in script",err.message)
@@ -176,14 +182,27 @@ export default class ScriptManager {
         this.running = true
         this.storage = {}
         console.log("script manager starting")
-        this.sgp.getAllBehaviors().forEach(ref => {
-            const asset = this.sgp.getParsedBehaviorAsset(ref)
-            if(asset.init) asset.init()
-        })
+        try {
+            this.sgp.getAllBehaviors().forEach(ref => {
+                const evt = {
+                    type:'init',
+                }
+                evt.system = this.makeSystemFacade(evt)
+                evt.target = new ThreeObjectFacade(this,ref.parent)
+                evt.props = ref.props()
+                const asset = this.sgp.getParsedBehaviorAsset(ref)
+                if (asset.init) asset.init(evt)
+            })
+        } catch(err) {
+            console.error("error in script",err.message)
+            console.info(err)
+            this.stopRunning()
+        }
     }
     stopRunning() {
         this.running = false
         this.storage = {}
+        this.destroyListeners()
         console.log("script manager stopping")
     }
     isRunning() {
@@ -206,6 +225,23 @@ export default class ScriptManager {
             const asset = this.sgp.getParsedBehaviorAsset(b)
             if(asset.onMessage) asset.onMessage(evt)
         })
+    }
+
+    destroyListeners() {
+        this.listeners = {}
+    }
+    on(target,type,cb) {
+        if(!this.listeners) this.listeners = {}
+        if(!this.listeners[target.id]) this.listeners[target.id] = {}
+        if(!this.listeners[target.id][type]) this.listeners[target.id][type] = []
+        this.listeners[target.id][type].push(cb)
+    }
+
+    fireEventFromTarget(target, type, payload) {
+        if(!this.listeners) return
+        if(!this.listeners[target.id]) return
+        if(!this.listeners[target.id][type]) return
+        this.listeners[target.id][type].forEach(cb => cb(payload))
     }
 }
 
