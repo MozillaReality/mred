@@ -127,3 +127,17 @@ export function addVideoAssetFromURL (url, fileType, name, prov) {
     }))
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
 }
+
+
+export function addGLBAssetFromURL(url, fileType, name, prov) {
+    const graph = prov.getDataGraph()
+    const asset = fetchGraphObject(graph, graph.createObject({
+        type: TOTAL_OBJ_TYPES.ASSET,
+        subtype:ASSET_TYPES.GLTF,
+        format:fileType,
+        src:url,
+        title:name,
+        parent:0
+    }))
+    prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
+}

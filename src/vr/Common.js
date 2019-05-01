@@ -392,6 +392,11 @@ export function isVideoType(type) {
     if(type.toLowerCase() === MIME_TYPES.MP4) return true
     return false
 }
+export function isGLTFType(type) {
+    if(!type) return false
+    if(type.toLowerCase() === MIME_TYPES.GLB) return true
+    return false
+}
 
 
 export function isGLTFFile(file) {

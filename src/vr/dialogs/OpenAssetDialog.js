@@ -1,9 +1,14 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL} from '../../TreeItemProvider'
-import {isAudioType, isImageType, isVideoType} from '../Common'
+import {isAudioType, isGLTFType, isImageType, isVideoType} from '../Common'
 import {AuthModule} from '../AuthModule'
-import {addAudioAssetFromURL, addImageAssetFromExpandedURL, addVideoAssetFromURL} from '../AssetActions'
+import {
+    addAudioAssetFromURL,
+    addGLBAssetFromURL,
+    addImageAssetFromExpandedURL,
+    addVideoAssetFromURL
+} from '../AssetActions'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {
@@ -35,6 +40,10 @@ export class OpenAssetDialog extends Component {
         if(isVideoType(info.mimeType)) {
             if(!info.url) info.url = `${getAssetsURL()}${info.id}`
             return addVideoAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
+        }
+        if(isGLTFType(info.mimeType)) {
+            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
+            return addGLBAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
         }
         console.log("can't add this type")
     }

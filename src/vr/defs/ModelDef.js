@@ -50,17 +50,19 @@ export default class ModelDef extends ObjectDef {
                     console.log("loaded", gltf)
                     //swap the model
                     if(node.userData.model) node.remove(node.userData.model)
-                    node.userData.model = gltf.scene.children[0].clone()
+                    node.userData.model = gltf.scene.clone()
                     node.add(node.userData.model)
 
                     //calculate the size of the model
-                    node.userData.model.geometry.computeBoundingSphere()
-                    const bs = node.userData.model.geometry.boundingSphere
-                    const model = node.userData.model
-                    model.position.x = -bs.center.x
-                    model.position.y = -bs.center.y
-                    model.position.z = -bs.center.z
-                    node.userData.clicker.geometry = new THREE.SphereBufferGeometry(bs.radius)
+                    if(node.userData.model.geometry) {
+                        node.userData.model.geometry.computeBoundingSphere()
+                        const bs = node.userData.model.geometry.boundingSphere
+                        const model = node.userData.model
+                        model.position.x = -bs.center.x
+                        model.position.y = -bs.center.y
+                        model.position.z = -bs.center.z
+                        node.userData.clicker.geometry = new THREE.SphereBufferGeometry(bs.radius)
+                    }
                 })
 
             }
