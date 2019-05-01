@@ -17,6 +17,7 @@ export class SceneGraphProvider {
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
     getTweenManager() { throw new Error("getTweenManager() not implemented")}
+    startImageRecognizer(info) { throw new Error("startImageRecognizer not implemented")}
 }
 
 export default class ScriptManager {
@@ -88,6 +89,9 @@ export default class ScriptManager {
             },
             fireEvent(target,type, payload) {
                 manager.fireEventFromTarget(target,type,payload)
+            },
+            startImageRecognizer(info) {
+                return sgp.startImageRecognizer(info)
             }
         }
     }
@@ -197,8 +201,12 @@ export default class ScriptManager {
             })
             const scene = this.sgp.getCurrentScene()
             this.sgp.getSceneObjects(scene).forEach(child => {
+                const evt = {
+                    type:'init',
+                }
+                evt.system = this.makeSystemFacade(evt)
                 const node = this.sgp.getThreeObject(child.id)
-                if(node.init) node.init()
+                if(node.init) node.init(evt)
             })
         } catch(err) {
             console.error("error in script",err.message)

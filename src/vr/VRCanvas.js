@@ -86,6 +86,9 @@ class Adapter extends SceneGraphProvider {
     getTweenManager() {
         return this.canvas.tweenManager
     }
+    startImageRecognizer(info) {
+        return this.canvas.startImageRecognizer(info)
+    }
 }
 
 
@@ -299,8 +302,10 @@ export class VRCanvas extends Component {
                 if(nextProps.running === false) {
                     this.scriptManager.stopRunning()
                     this.resetSceneGraph()
+                    this.stopRecognizer()
                 } else {
                     //start the script manager
+                    this.startRecognizer()
                     this.scriptManager.startRunning()
                 }
                 return false
@@ -416,4 +421,28 @@ export class VRCanvas extends Component {
     }
 
 
+    startRecognizer() {
+        //called when script running is started
+    }
+
+    startImageRecognizer(info) {
+        //TODO: Anselm
+        //called when an anchor is started that wants to recognize an image
+        //info contains
+        // * callback: to call when the image is found
+        // * image: info about the image to recognize. src is at image.src
+        // * imageRealworldWidth: width of the image in meters
+        // * object: the anchor object
+        // * node: the ThreeJS group which represents the anchor. It should be updated as the scene changes
+        // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
+
+        console.log("start recognizing with this image",info)
+        setTimeout(()=>{
+            info.callback({message:'found an anchor image'})
+        },2000)
+    }
+
+    stopRecognizer() {
+
+    }
 }

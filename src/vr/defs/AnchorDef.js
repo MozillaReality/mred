@@ -42,25 +42,25 @@ export default class AnchorDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
-        node.init = () => {
+        node.init = (evt) => {
             clicker.visible = false
             node.visible = false
+            // evt.system.getObjectById(obj.)
+            evt.system.startImageRecognizer({
+                image:evt.system.getObjectById(obj.targetImage),
+                imageRealworldWidth: obj.imageRealworldWidth,
+                recType:obj.recType,
+                object:obj,
+                node:node,
+                callback:(info) => {
+                    evt.system.fireEvent(obj, 'recognized', info)
+                    node.visible = true
+                }
+            })
         }
         node.stop = () => {
             clicker.visible = true
         }
-        node.update = (time,evt) => {
-            if(evt.type === 'tick' && evt.time > 2000) {
-                if(!evt.system.hasKeyValue('recognized')) {
-                    evt.system.setKeyValue('recognized',true)
-                    evt.system.fireEvent(obj, 'recognized',{
-                        message:'we found it'
-                    })
-                    node.visible = true
-                }
-            }
-        }
-
         return node
     }
 
