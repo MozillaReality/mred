@@ -8,6 +8,7 @@ import TextDef from './defs/TextDef'
 import Image2DDef from './defs/Image2DDef'
 import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
+import AnchorDef from './defs/AnchorDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -159,6 +160,25 @@ export const PROP_DEFS = {
             incrementValue:0.05,
         }
     },
+    imageRealworldWidth: {
+        key:'imageRealworldWidth',
+        name:'Image width in meters',
+        type: TYPES.NUMBER,
+        hints: {
+            incrementValue:0.01
+        }
+    },
+    recType: {
+        key:'recType',
+        name:'Recognition Type',
+        type: TYPES.ENUM,
+    },
+
+    targetImage: {
+        key:'targetImage',
+        name:'Image to Recognize',
+        type: TYPES.ENUM,
+    },
 
     text: {
         key:'text',
@@ -279,6 +299,7 @@ export const OBJ_TYPES = {
     img2d:'img2d',
     group:'group',
     particles:'particles',
+    anchor:'anchor',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -307,11 +328,13 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.img2d) return true
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.particles) return true
+    if(type === OBJ_TYPES.anchor) return true
     return false
 }
 
 export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
+    if(type === OBJ_TYPES.anchor) return true
     if(type === TOTAL_OBJ_TYPES.SCENE) return true
     return false
 }
@@ -337,6 +360,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
+    if(type === OBJ_TYPES.anchor) return new AnchorDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -401,6 +425,7 @@ export const ITEM_ICONS = {
     group:'object-group',
     particles:'certificate',
     gltf:'cube',
+    anchor:'anchor',
 
     cut:'cut',
     copy:'copy',
@@ -411,4 +436,8 @@ export const ITEM_ICONS = {
 
 export function parseBehaviorScript(contents) {
     return Function('"use strict"; return('+contents+')')();
+}
+
+export const REC_TYPES = {
+    SCENE_START:'SCENE_START'
 }

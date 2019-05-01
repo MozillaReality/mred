@@ -25,7 +25,7 @@ import {
     ITEM_ICONS,
     MIME_TYPES,
     OBJ_TYPES, parseBehaviorScript,
-    PROP_DEFS,
+    PROP_DEFS, REC_TYPES,
     SIMPLE_COLORS, TOTAL_OBJ_TYPES
 } from './Common'
 import {AddImageAssetDialog} from './dialogs/AddImageAssetDialog'
@@ -248,6 +248,14 @@ export default class VREditor extends  SyncGraphProvider {
             assets = assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
             return assets
         }
+        if(key === PROP_DEFS.targetImage.key) {
+            let assets = this.accessObject(this.getAssetsObject()).getChildren()
+            assets = assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
+            return assets
+        }
+        if(key === PROP_DEFS.recType.key) {
+            return Object.keys(REC_TYPES)
+        }
     }
     getRendererForEnum(key,obj) {
         const realobj = this.accessObject(obj)
@@ -256,6 +264,7 @@ export default class VREditor extends  SyncGraphProvider {
             case PROP_DEFS.asset.key: return EnumTitleRenderer
             case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
             case PROP_DEFS.texture.key: return EnumTitleRenderer
+            case PROP_DEFS.targetImage.key: return EnumTitleRenderer
             default: return null
         }
     }
