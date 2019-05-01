@@ -42,14 +42,21 @@ export default class AnchorDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
+        node.init = () => {
+            clicker.visible = false
+            node.visible = false
+        }
+        node.stop = () => {
+            clicker.visible = true
+        }
         node.update = (time,evt) => {
-            if(evt.type === 'tick') {
+            if(evt.type === 'tick' && evt.time > 2000) {
                 if(!evt.system.hasKeyValue('recognized')) {
-                    console.log("sending recognition event")
                     evt.system.setKeyValue('recognized',true)
                     evt.system.fireEvent(obj, 'recognized',{
                         message:'we found it'
                     })
+                    node.visible = true
                 }
             }
         }

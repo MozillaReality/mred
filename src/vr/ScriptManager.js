@@ -143,12 +143,13 @@ export default class ScriptManager {
 
     tick(time) {
         if(!this.running) return
+        if(this.startTime ===0) this.startTime = time
         try {
             const scene = this.sgp.getCurrentScene()
             if (!scene) return console.log("no current scene?!")
             const evt = {
                 type:'tick',
-                time:time
+                time:time-this.startTime
             }
             evt.system = this.makeSystemFacade(evt)
             const behaviors = this.sgp.getBehaviorsForObject(scene)
@@ -180,6 +181,7 @@ export default class ScriptManager {
 
     startRunning() {
         this.running = true
+        this.startTime = 0
         this.storage = {}
         console.log("script manager starting")
         try {
@@ -193,6 +195,11 @@ export default class ScriptManager {
                 const asset = this.sgp.getParsedBehaviorAsset(ref)
                 if (asset.init) asset.init(evt)
             })
+            const scene = this.sgp.getCurrentScene()
+            this.sgp.getSceneObjects(scene).forEach(child => {
+                const node = this.sgp.getThreeObject(child.id)
+                if(node.init) node.init()
+            })
         } catch(err) {
             console.error("error in script",err.message)
             console.info(err)
@@ -203,6 +210,12 @@ export default class ScriptManager {
         this.running = false
         this.storage = {}
         this.destroyListeners()
+        const scene = this.sgp.getCurrentScene()
+        this.sgp.getSceneObjects(scene).forEach(child => {
+            const node = this.sgp.getThreeObject(child.id)
+            if(node.stop) node.stop()
+        })
+
         console.log("script manager stopping")
     }
     isRunning() {
