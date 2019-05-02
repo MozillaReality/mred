@@ -28,6 +28,7 @@ import {
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
+import {deleteObject} from './Actions'
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -286,13 +287,21 @@ export default class ImmersiveVREditor extends Component {
 
             this.tools.add(new button2d()
                 .setAll({x: 5, y: 5, text: 'add box'})
-                .on(POINTER_CLICK, () => this.props.provider.add3DObject(OBJ_TYPES.cube)))
+                .on(POINTER_CLICK, () => {
+                    const scene = this.props.provider.accessObject(this.currentScene)
+                    this.props.provider.add3DObject(OBJ_TYPES.cube,scene)
+                }))
             this.tools.add(new button2d()
                 .setAll({x: 5, y: 5 + 30, text: 'add sphere'})
-                .on(POINTER_CLICK, () => this.props.provider.add3DObject(OBJ_TYPES.sphere)))
+                .on(POINTER_CLICK, () => {
+                    const scene = this.props.provider.accessObject(this.currentScene)
+                    this.props.provider.add3DObject(OBJ_TYPES.sphere,scene)
+                }))
             this.tools.add(new button2d()
                 .setAll({x: 5, y: 5 + 30 + 30, text: 'delete'})
-                .on(POINTER_CLICK, this.props.provider.deleteObject))
+                .on(POINTER_CLICK, ()=>{
+                    deleteObject(this.props.provider)
+                }))
             this.tools.add(new button2d()
                 .setAll({x: 5, y: 5 + 30 + 30 + 30, text: 'save'})
                 .on(POINTER_CLICK, this.props.provider.save))
@@ -335,7 +344,6 @@ export default class ImmersiveVREditor extends Component {
 
 
     updateSceneOp(op) {
-        const graph = this.props.provider.getDataGraph()
         //only do scenes with create_object
         if (op.type === CREATE_OBJECT) {
             if(op.defaults) {
@@ -346,7 +354,7 @@ export default class ImmersiveVREditor extends Component {
                         // console.log("scene already exists. skipping", node.name)
                     } else {
                         // console.log("Making a real scene", op)
-                        const obj = fetchGraphObject(graph, op.id)
+                        const obj = this.props.provider.accessObject(op.id)
                         node = new SceneDef().makeNode(obj)
                         this.insertNodeMapping(op.id,node)
                         this.sceneWrappers[op.id] = node
@@ -359,23 +367,25 @@ export default class ImmersiveVREditor extends Component {
         }
         // other objects are done with insert_element
         if (op.type === INSERT_ELEMENT) {
-            const objid = op.value
-            const obj = fetchGraphObject(graph, objid)
+            const obj = this.props.provider.accessObject(op.value)
             if (obj.type === 'scene') return // console.log("skipping insert scene")
             if(is3DObjectType(obj.type)) {
                 const nodeObj = get3DObjectDef(obj.type).makeNode(obj)
                 on(nodeObj, POINTER_CLICK, this.standardViewClickHandler)
-                this.insertNodeMapping(objid, nodeObj)
-                this.sceneWrappers[obj.parent].add(nodeObj)
+                this.insertNodeMapping(obj.id, nodeObj)
+                this.findNode(obj.parent).add(nodeObj)
                 return
             }
-            if(obj.type === 'assets') return
-            if(obj.type === 'asset') return
+            if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return
+            if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return
             console.warn("unknown object type", obj)
             return
         }
         if (op.type === SET_PROPERTY) {
-            const obj = fetchGraphObject(graph, op.object)
+            const obj = this.props.provider.accessObject(op.object)
             if(obj.type === 'asset') return
             if(obj.type === 'assets') return
             const node = this.findNode(op.object)
@@ -390,10 +400,10 @@ export default class ImmersiveVREditor extends Component {
             return
         }
         if(op.type === DELETE_ELEMENT) {
-            const obj = fetchGraphObject(graph,op.value)
+            const obj = this.props.provider.accessObject(op.value)
             if(is3DObjectType(obj.type)) {
-                const node = this.findNode(op.value)
-                this.sceneWrappers[obj.parent].remove(node)
+                const node = this.findNode(obj.id)
+                this.findNode(obj.parent).remove(node)
             }
             return
         }

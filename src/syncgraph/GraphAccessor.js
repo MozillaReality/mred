@@ -34,7 +34,10 @@ export default class GraphAccessor {
                 }
                 return ch
             }
-            obj.getChildren = () => obj.array('children').map(id => this.object(id))
+            obj.getChildren = () => {
+                if(obj.children) return obj.array('children').map(id => this.object(id))
+                return []
+            }
             obj.insertChildLast = (child) => {
                 this.graph.setProperty(child.id,'parent',obj.id)
                 const CH = this.graph.getPropertyValue(obj.id,'children')
