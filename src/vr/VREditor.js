@@ -412,6 +412,7 @@ export default class VREditor extends  SyncGraphProvider {
         parent.insertChildLast(obj1.clone())
     }
 
+    // ============ drag and drop ============
     canBeMoved(node) {
         const p = this.accessObject(node)
         if(p.type === TOTAL_OBJ_TYPES.ROOT) return false
@@ -424,7 +425,7 @@ export default class VREditor extends  SyncGraphProvider {
         const c = this.accessObject(child)
         if(p.type === TOTAL_OBJ_TYPES.ROOT && c.type === TOTAL_OBJ_TYPES.SCENE) return true
         if(p.type === TOTAL_OBJ_TYPES.SCENE && is3DObjectType(c.type)) return true
-        if(p.type === OBJ_TYPES.group && is3DObjectType(c.type)) return true
+        if(canHaveShape(p.type) && is3DObjectType(c.type)) return true
         return false
     }
     canBeSibling(src,tgt) {
