@@ -18,6 +18,10 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 class XRSupport {
 
     static supportsARKit() {
+        if(navigator.xr && navigator.xr._mozillaXRViewer) {
+            console.error("found mozilla xr viewer")
+            return true
+        }
         if(typeof window.webkit === 'undefined' || !navigator.xr) return false
         return true
     }
