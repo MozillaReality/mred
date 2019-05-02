@@ -9,9 +9,12 @@ function short(op) {
 
 export class PubnubSyncWrapper {
     constructor(provider, graph) {
+        if(!provider) throw new Error('created PubnubSyncWrapper without a provider')
+        if(!graph) throw new Error('created PubnubSyncWrapper without a graph')
         this.paused = false
         this.buffer = []
         this.provider = provider
+
         graph.onChange(this.handleGraphChange)
 
         const settings = {
@@ -34,7 +37,7 @@ export class PubnubSyncWrapper {
                     this.sendHistoryRequest()
                 }
             },
-            message: this.handleMessage,
+            message: (m)=>this.handleMessage(m),
         })
 
         this.pubnub.subscribe({channels: [this.calculateChannelName()]})
@@ -69,7 +72,7 @@ export class PubnubSyncWrapper {
 
     }
 
-    handleGraphChange = (e) => {
+    handleGraphChange (e) {
         // console.log("graph changed",e)
         const host = this.provider.getDataGraph().getHostId()
         if (e.host !== host) return
@@ -123,7 +126,7 @@ export class PubnubSyncWrapper {
     }
 
 
-    handleMessage = (evt) => {
+    handleMessage (evt) {
         if (this.paused) return
         const graph = this.provider.getDataGraph()
         // console.log('PN_REMOTE',evt)
