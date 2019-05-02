@@ -15,7 +15,7 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 
 
 
-export class XRSupport {
+class XRSupport {
 
     static supportsARKit() {
         if(typeof window.webkit === 'undefined' || !navigator.xr) return false
@@ -39,7 +39,7 @@ export class XRSupport {
                     this.session = xrSession
                     if(!this.canvas) this.canvas = document.createElement('canvas')
                     if(!this.context) this.context = this.canvas.getContext('webgl', { compatibleXRDevice: this.device })
-                    this.session.baseLayer = new XRWebGLLayer(this.session, this.context)
+                    this.session.baseLayer = new window.XRWebGLLayer(this.session, this.context)
                     resolve(this.context)
                 }).catch(err => {
                     console.error('Session setup error', err)
@@ -272,7 +272,7 @@ export class VRCanvas extends Component {
                 console.error('Error', err)
             })
         } else {
-            this.setupRenderer(canvas,context)
+            this.setupRenderer(canvas,0)
             this.renderer.setAnimationLoop( this.animationLoop.bind(this) )
             document.body.appendChild( this.canvas )
         }
