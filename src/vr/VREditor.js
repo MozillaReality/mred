@@ -46,6 +46,7 @@ import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
 import {addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
+import {QRDialog} from './dialogs/QRDialog'
 
 
 
@@ -309,6 +310,10 @@ export default class VREditor extends  SyncGraphProvider {
             const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
             window.open(`./?${toQueryString(opts)}`)
         })
+    }
+
+    showQRCode = () => {
+        DialogManager.show(<QRDialog/>)
     }
 
     embedView = () => {
@@ -747,6 +752,7 @@ class VREditorApp extends Component {
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editInVR()}>VR Edit</button>
                 <button onClick={() => prov.viewInVR()}>VR View</button>
+                <button onClick={() => prov.showQRCode()}>QR</button>
                 {/*<button onClick={()=>prov.embedView()}>Embed</button>*/}
                 <Spacer/>
                 <RunButton onClick={this.toggleRunning} active={this.state.running}/>
