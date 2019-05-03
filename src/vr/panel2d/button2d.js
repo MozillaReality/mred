@@ -1,4 +1,4 @@
-import {POINTER_ENTER, POINTER_EXIT} from 'webxr-boilerplate/pointer'
+import {POINTER_ENTER, POINTER_EXIT} from 'webxr-boilerplate'
 import Component2D from "./component2d";
 
 

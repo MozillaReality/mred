@@ -1,6 +1,6 @@
 {
   "name": "general-editor",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "private": false,
   "dependencies": {
     "appy-comps": "^0.1.15",
@@ -18,18 +18,23 @@
     "syncing_protocol": "0.0.8",
     "three": "^0.100.0",
     "three-gltf2-loader": "^1.2.0",
-    "webxr-boilerplate": "^0.1.2"
+    "webxr-boilerplate": "^0.1.9"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build-components": "nwb build-react-component"
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "nwb": "^0.23.0"
+  },
+  "jest": {}
 }

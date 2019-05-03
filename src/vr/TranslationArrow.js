@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import {POINTER_ENTER, POINTER_EXIT, POINTER_MOVE, POINTER_PRESS, POINTER_RELEASE} from 'webxr-boilerplate/pointer'
+import {POINTER_ENTER, POINTER_EXIT, POINTER_MOVE, POINTER_PRESS, POINTER_RELEASE} from 'webxr-boilerplate'
+
 
 
 const on = (elem,type,cb) => elem.addEventListener(type,cb)

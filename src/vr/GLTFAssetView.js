@@ -3,9 +3,8 @@ import React, {Component} from "react"
 import {fetchGraphObject} from '../syncgraph/utils'
 import {ASSET_TYPES} from '../vr/Common'
 import {TweenManager} from '../common/tween'
-import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
+import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import {Group} from 'three'
-import {Pointer} from 'webxr-boilerplate/pointer'
 import GLTFLoader from '../gltfinspector/GLTFLoader'
 
 export default class AssetView extends Component {

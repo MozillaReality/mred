@@ -5,10 +5,9 @@ import {GET_JSON, on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
 import {Group} from "three"
-import VRManager, {VR_DETECTED} from 'webxr-boilerplate/vrmanager'
+import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
 import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
-import {Pointer} from 'webxr-boilerplate/pointer'
 
 
 export class ImmersivePlayer extends Component {
