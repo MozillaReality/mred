@@ -278,7 +278,6 @@ export class VRCanvas extends Component {
         } else {
             this.setupRenderer(canvas,0)
             this.renderer.setAnimationLoop( this.animationLoop.bind(this) )
-            document.body.appendChild( this.canvas )
         }
     }
 
