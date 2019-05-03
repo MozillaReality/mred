@@ -18,7 +18,7 @@
     "syncing_protocol": "0.0.8",
     "three": "^0.100.0",
     "three-gltf2-loader": "^1.2.0",
-    "webxr-boilerplate": "^0.1.2"
+    "webxr-boilerplate": "^0.1.9"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -35,5 +35,6 @@
   ],
   "devDependencies": {
     "nwb": "^0.23.0"
-  }
+  },
+  "jest": {}
 }

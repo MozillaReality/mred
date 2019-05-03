@@ -2,11 +2,9 @@ import React, {Component} from 'react'
 import * as THREE from 'three'
 
 import './VREditor.css'
-// for pointer (mouse, controller, touch) support
-import {Pointer, POINTER_CLICK, POINTER_MOVE} from 'webxr-boilerplate/pointer'
-import VRStats from "webxr-boilerplate/vrstats"
-// enter and exit VR
-import VRManager, {VR_DETECTED} from "webxr-boilerplate/vrmanager"
+
+import {VRStats, VRManager, VR_DETECTED, Pointer, POINTER_CLICK, POINTER_MOVE} from "webxr-boilerplate"
+
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {fetchGraphObject} from '../syncgraph/utils'

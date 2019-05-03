@@ -65,7 +65,7 @@ export default class VREditor extends  SyncGraphProvider {
         if(this.mode === 'vrview') return <ImmersiveVREditor provider={this} editable={false}/>
         console.log("no mode!")
     }
-    getTitle = () => "VR Builder"
+    getTitle = () => "MrEd"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
     makeEmptyRoot(doc) {
         //make root
