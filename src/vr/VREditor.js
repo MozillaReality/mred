@@ -765,7 +765,7 @@ class VREditorApp extends Component {
             </Toolbar>
 
 
-            <Panel center middle scroll>
+            <Panel center middle scroll transparent>
                 {this.renderCenterPane(this.state.mode)}
             </Panel>
 

@@ -31,7 +31,7 @@ button:hover {
     padding:0;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
-    background-color: var(--bd);
+    background-color: transparent;
 }
 
 .grid .left-resize, .grid .right-resize {
@@ -98,6 +98,9 @@ button:hover {
 
 .panel {
     background-color: var(--bg);
+}
+.transparent {
+    background-color: transparent;
 }
 .scroll {
     overflow: auto;
