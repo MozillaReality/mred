@@ -110,7 +110,7 @@ class TreeItemProviderInterface {
     }
     setPropertyValueByName(child,name,value) { throw new Error(`interface 'setPropertyValueByName() not implemented'`)}
     /** return an array of property definitions for the specified tree item */
-    getProperties(item) { throw new Error('interface `getProperties()` not implemented') }
+    getProperties(item) { throw new Error(`interface 'getProperties()' not implemented`) }
 
 
     // ================ doc def stuff

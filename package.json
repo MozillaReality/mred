@@ -2,6 +2,7 @@
   "name": "general-editor",
   "version": "0.1.4",
   "private": false,
+  "main": "lib",
   "dependencies": {
     "appy-comps": "^0.1.15",
     "appy-style": "0.0.7",
