@@ -45,6 +45,7 @@ export const Panel = (props) => {
     if (props.center) cls += " center";
     if (props.middle) cls += " middle";
     if (props.scroll) cls += " scroll";
+    if(props.transparent) cls += " transparent"
     return <div className={cls}>{props.children}</div>
 };
 export const Spacer = (props) => {
