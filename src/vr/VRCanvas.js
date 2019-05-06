@@ -200,6 +200,7 @@ export class VRCanvas extends Component {
         super(props)
         console.info("CREATED VR Canvas")
         this.obj_node_map = {}
+        this.previewUpdateNodes = []
         this.scenes = []
         this.state = {
             scene: -1,
@@ -333,6 +334,7 @@ export class VRCanvas extends Component {
     animationLoop(time) {
         if(this.state.running) this.scriptManager.tick(time)
         if(this.tweenManager) this.tweenManager.update(time)
+        this.previewUpdateNodes.forEach(n => n.previewUpdate())
         this.renderer.render(this.scene, this.camera)
     }
 
@@ -349,10 +351,12 @@ export class VRCanvas extends Component {
         if (typeof id !== 'string') throw new Error("cannot map an object to an object. invalid call in insertNodeMapping")
         this.obj_node_map[id] = node
         node.userData.graphid = id
+        if(node.previewUpdate) this.previewUpdateNodes.push(node)
     }
     removeNodeMapping(id,node) {
         delete this.obj_node_map[id]
         delete node.userData.graphid
+        this.previewUpdateNodes = this.previewUpdateNodes.filter(n => n !== node)
     }
 
 

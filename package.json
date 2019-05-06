@@ -19,6 +19,7 @@
     "syncing_protocol": "0.0.8",
     "three": "^0.100.0",
     "three-gltf2-loader": "^1.2.0",
+    "three-web-layer": "0.0.21",
     "webxr-boilerplate": "^0.1.9"
   },
   "scripts": {
