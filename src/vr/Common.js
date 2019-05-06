@@ -285,6 +285,14 @@ export const PROP_DEFS = {
         name:'texture',
         type:TYPES.ENUM,
     },
+    cssStyle: {
+        key:'cssStyle',
+        name:'Style',
+        type:TYPES.STRING,
+        hints: {
+            multiline:true
+        }
+    }
 }
 
 export const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
