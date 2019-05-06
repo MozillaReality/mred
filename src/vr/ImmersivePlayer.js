@@ -161,7 +161,7 @@ export class ImmersivePlayer extends Component {
 
 
         //class which handles mouse and VR controller
-        this.pointer = new Pointer(this.scene,this.renderer,this.camera, {
+        this.pointer = new Pointer(this, {
             intersectionFilter: ((o) => o.userData.clickable),
             cameraFollowMouse:false,
             mouseSimulatesController:false,
