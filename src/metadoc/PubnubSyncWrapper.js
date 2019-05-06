@@ -15,7 +15,7 @@ export class PubnubSyncWrapper {
         this.buffer = []
         this.provider = provider
 
-        graph.onChange(this.handleGraphChange)
+        graph.onChange((e)=>this.handleGraphChange(e))
 
         const settings = {
             publishKey: 'pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd',
