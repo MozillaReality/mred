@@ -138,8 +138,7 @@ class Adapter extends SceneGraphProvider {
         SelectionManager.setSelection(id)
     }
     getCurrentScene() {
-        const obj = this.canvas.props.provider.getSelectedScene()
-        return this.canvas.findSceneObjectParent(obj)
+        return this.canvas.props.provider.getSelectedSceneObject()
     }
     getSceneObjects(scene) {
         return scene.getChildren().filter(ch => is3DObjectType(ch.type))
@@ -268,7 +267,7 @@ export class VRCanvas extends Component {
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel))
 
         if(is3DObjectType(obj.type)) {
-            const sc = this.findSceneObjectParent(obj)
+            const sc = this.props.provider.findSceneObjectParent(obj)
             this.setCurrentSceneWrapper(this.findNode(sc.id))
             const node = this.findNode(sel)
             if (!node) return
@@ -382,13 +381,6 @@ export class VRCanvas extends Component {
     findNode(id) {
         if (!this.obj_node_map[id]) console.warn("could not find node for id", id)
         return this.obj_node_map[id]
-    }
-    findSceneObjectParent(obj) {
-        if(obj === null) return null
-        if(!obj.exists()) return null
-        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return obj
-        obj = this.props.provider.accessObject(obj.parent)
-        return this.findSceneObjectParent(obj)
     }
 
     updateScene(op) {

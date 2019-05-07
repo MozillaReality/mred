@@ -270,15 +270,26 @@ export default class VREditor extends SyncGraphProvider {
         }
     }
 
-    getSelectedScene() {
+    getSelectedSceneObject() {
         const sel = SelectionManager.getSelection()
-        if(sel === null) return this.accessObject(this.getSceneRoot()).child(0)
+        if(sel === null) return this.getFirstSceneObject()
         const selected = this.accessObject(sel)
         if(selected.type === TOTAL_OBJ_TYPES.SCENE) return selected
-        if(is3DObjectType(selected.type))  return this.accessObject(selected.parent)
-        if(selected.type === TOTAL_OBJ_TYPES.BEHAVIOR) return this.accessObject(selected.parent).parent
-        return -1
+        if(is3DObjectType(selected.type))  return this.findSceneObjectParent(selected)
+        if(selected.type === TOTAL_OBJ_TYPES.BEHAVIOR) return this.findSceneObjectParent(selected)
+        return null
     }
+    getFirstSceneObject() {
+        return this.accessObject(this.getSceneRoot()).getChildren()[0]
+    }
+    findSceneObjectParent(obj) {
+        if(obj === null) return null
+        if(!obj.exists()) return null
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return obj
+        obj = this.accessObject(obj.parent)
+        return this.findSceneObjectParent(obj)
+    }
+
     getAssetsObject = () => this.getDataGraph().getObjectByProperty('type',TOTAL_OBJ_TYPES.ASSETS_LIST)
     getBehaviorsObject = () => this.getDataGraph().getObjectByProperty('type',TOTAL_OBJ_TYPES.BEHAVIORS_LIST)
 
@@ -406,7 +417,7 @@ export default class VREditor extends SyncGraphProvider {
         }
         const obj1 = this.accessObject(SelectionManager.getClipboard())
         let parent = null
-        if(is3DObjectType(obj1.type)) parent = this.getSelectedScene()
+        if(is3DObjectType(obj1.type)) parent = this.getSelectedSceneObject().id
         if(obj1.type === 'scene') parent = this.accessObject(this.getSceneRoot())
         if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
         parent.insertChildLast(obj1.clone())
