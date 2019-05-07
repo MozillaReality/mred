@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {PopupManager} from 'appy-comps'
 
 import selMan, {SELECTION_MANAGER} from "../SelectionManager";
-import HSLUVColorPicker from "../HSLUVColorPicker";
+import HSLUVColorPicker from "./HSLUVColorPicker";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {StringEditor} from "./StringEditor";
 import {EnumEditor} from "./EnumEditor";

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {makePoint} from "./utils"
+import {makePoint} from "../utils"
 import hsluv from 'hsluv'
 import {PopupManager} from "appy-comps"
 

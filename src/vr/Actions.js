@@ -3,7 +3,7 @@ import SelectionManager from '../SelectionManager'
 import {toQueryString} from '../utils'
 import {ITEM_ICONS, OBJ_TYPES} from './Common'
 import {PopupManager} from 'appy-comps'
-import {MenuPopup} from '../GridEditorApp'
+import {MenuPopup} from '../common/GridEditorApp'
 import React from 'react'
 import {AuthModule} from './AuthModule'
 

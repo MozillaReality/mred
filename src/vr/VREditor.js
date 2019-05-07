@@ -1,6 +1,6 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../common/GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'

@@ -3,7 +3,7 @@ import selMan, {SELECTION_MANAGER} from "../SelectionManager";
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider';
 import {PopupManager, VBox} from "appy-comps";
 import {fetchGraphObject, removeFromParent} from "../syncgraph/utils";
-import {Spacer} from '../GridEditorApp'
+import {Spacer} from './GridEditorApp'
 
 
 const ContextMenu = (props) => {

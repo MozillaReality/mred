@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {makePoint} from "./utils";
+import {makePoint} from "../utils";
 
 export default class RGBColorPicker extends Component {
     constructor(props) {

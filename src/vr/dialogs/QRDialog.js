@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import QRCanvas from '../../h3d/QRCanvas'
+import QRCanvas from '../../common/QRCanvas'
 
 export class QRDialog extends Component {
     constructor(props) {

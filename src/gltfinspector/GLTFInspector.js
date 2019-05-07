@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import TreeItemProvider, {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import GridEditorApp, {Panel, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {Panel, Toolbar} from '../common/GridEditorApp'
 import PropSheet from '../common/PropSheet'
 import * as THREE from 'three'
 import GLTFLoader from './GLTFLoader'

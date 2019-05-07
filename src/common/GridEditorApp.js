@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {PopupManager, VBox} from 'appy-comps'
-import {makePoint} from './utils'
+import {makePoint} from '../utils'
 
 const GridLayout = (props) => {
     let clss = "grid fill";

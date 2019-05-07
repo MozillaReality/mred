@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../common/GridEditorApp'
 import PropSheet from '../common/PropSheet'
 import TreeTable from '../common/TreeTable'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
