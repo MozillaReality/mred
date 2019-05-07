@@ -1,5 +1,15 @@
-import * as THREE from "three";
-import {CanvasTexture} from 'three'
+import {
+    BufferAttribute,
+    BufferGeometry,
+    CanvasTexture,
+    Color,
+    NormalBlending,
+    Object3D,
+    Points,
+    RepeatWrapping,
+    ShaderMaterial,
+    Vector3
+} from 'three'
 
 /*
 * modified from the version from the ThreeJS examples repo
@@ -91,13 +101,13 @@ const UPDATEABLE_ATTRIBUTES = [
     'color', 'endColor',
     'size', 'lifeTime']
 
-export default class GPUParticles extends THREE.Object3D {
+export default class GPUParticles extends Object3D {
     constructor(options) {
         super()
         options = options || {};
 
 
-        this.blending = options.blending? options.blending : THREE.NormalBlending
+        this.blending = options.blending? options.blending : NormalBlending
         this.PARTICLE_COUNT = options.maxParticles || 1000000;
         this.PARTICLE_CURSOR = 0;
         this.time = 0;
@@ -134,13 +144,12 @@ export default class GPUParticles extends THREE.Object3D {
             ctx.beginPath()
             ctx.arc(8,8,8,0,Math.PI*2)
             ctx.fill()
-            this.sprite = new THREE.CanvasTexture(can)
-            // throw new Error("No particle sprite texture specified")
+            this.sprite = new CanvasTexture(can)
         }
-        this.sprite.wrapS = this.sprite.wrapT = THREE.RepeatWrapping;
+        this.sprite.wrapS = this.sprite.wrapT = RepeatWrapping;
 
         //setup the shader material
-        this.material = new THREE.ShaderMaterial( {
+        this.material = new ShaderMaterial( {
             transparent: true,
             depthWrite: false,
             uniforms: {
@@ -174,23 +183,23 @@ export default class GPUParticles extends THREE.Object3D {
 
 
         // geometry
-        this.geometry = new THREE.BufferGeometry();
+        this.geometry = new BufferGeometry();
 
         //vec3 attributes
-        this.geometry.addAttribute('position',      new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
-        this.geometry.addAttribute('positionStart', new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
-        this.geometry.addAttribute('velocity',      new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
-        this.geometry.addAttribute('acceleration',  new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
-        this.geometry.addAttribute('color',         new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
-        this.geometry.addAttribute('endColor',      new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('position',      new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('positionStart', new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('velocity',      new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('acceleration',  new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('color',         new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
+        this.geometry.addAttribute('endColor',      new BufferAttribute(new Float32Array(this.PARTICLE_COUNT * 3), 3).setDynamic(true));
 
         //scalar attributes
-        this.geometry.addAttribute('startTime',     new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
-        this.geometry.addAttribute('size',          new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
-        this.geometry.addAttribute('lifeTime',      new THREE.BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
+        this.geometry.addAttribute('startTime',     new BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
+        this.geometry.addAttribute('size',          new BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
+        this.geometry.addAttribute('lifeTime',      new BufferAttribute(new Float32Array(this.PARTICLE_COUNT), 1).setDynamic(true));
 
 
-        this.particleSystem = new THREE.Points(this.geometry, this.material);
+        this.particleSystem = new Points(this.geometry, this.material);
         this.particleSystem.frustumCulled = false;
         this.add(this.particleSystem);
     }
@@ -242,9 +251,9 @@ export default class GPUParticles extends THREE.Object3D {
         if(sprite) {
             const old = this.sprite
             this.sprite = sprite
-            this.sprite.wrapS = this.sprite.wrapT = THREE.RepeatWrapping;
+            this.sprite.wrapS = this.sprite.wrapT = RepeatWrapping;
             this.material.uniforms.tSprite.value = sprite
-            // old.dispose()
+            if(old) old.dispose()
         }
     }
 
@@ -259,11 +268,11 @@ export default class GPUParticles extends THREE.Object3D {
      */
     spawnParticle ( options ) {
         // console.log('spawnparticle')
-        let position = new THREE.Vector3()
-        let velocity = new THREE.Vector3()
-        let acceleration = new THREE.Vector3()
-        let color = new THREE.Color()
-        let endColor = new THREE.Color()
+        let position = new Vector3()
+        let velocity = new Vector3()
+        let acceleration = new Vector3()
+        let color = new Color()
+        let endColor = new Color()
 
         const positionStartAttribute = this.geometry.getAttribute('positionStart')
         const startTimeAttribute = this.geometry.getAttribute('startTime')

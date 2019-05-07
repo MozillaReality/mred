@@ -28,7 +28,6 @@ export default class ScriptManager {
     }
 
     makeSystemFacade(evt) {
-        const prov = this.prov
         const manager = this
         const sgp = this.sgp
         return {

@@ -3,9 +3,6 @@ import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import QRCanvas from '../../common/QRCanvas'
 
 export class QRDialog extends Component {
-    constructor(props) {
-        super(props)
-    }
 
     okay = () => {
         DialogManager.hide()

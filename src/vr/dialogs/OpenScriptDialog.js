@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {getAssetsURL, getScriptsURL} from '../../TreeItemProvider'
-import {isAudioType, isImageType, MIME_TYPES} from '../Common'
+import {getScriptsURL} from '../../TreeItemProvider'
 import {Spacer} from '../../common/GridEditorApp'
 import {AuthModule} from '../AuthModule'
 

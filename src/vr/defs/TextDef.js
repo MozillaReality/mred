@@ -1,6 +1,6 @@
 import ObjectDef from './ObjectDef'
 import {fetchGraphObject} from '../../syncgraph/utils'
-import {HORIZONTAL_ALIGNMENT, OBJ_TYPES, PROP_DEFS} from '../Common'
+import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
 import WebLayer3D from 'three-web-layer'
 

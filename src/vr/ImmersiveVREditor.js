@@ -1,28 +1,33 @@
 import React, {Component} from 'react'
-import * as THREE from 'three'
+import {
+    AmbientLight,
+    Audio,
+    AudioLoader,
+    Color,
+    CylinderBufferGeometry,
+    DirectionalLight,
+    Group,
+    Mesh,
+    MeshLambertMaterial,
+    PerspectiveCamera,
+    Scene,
+    WebGLRenderer
+} from 'three'
 
 import './VREditor.css'
 
-import {VRStats, VRManager, VR_DETECTED, Pointer, POINTER_CLICK, POINTER_MOVE} from "webxr-boilerplate"
+import {Pointer, POINTER_CLICK, VR_DETECTED, VRManager, VRStats} from "webxr-boilerplate"
 
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
-import {fetchGraphObject} from '../syncgraph/utils'
 import {TranslateControl} from './TranslateControl'
-import panel2d from "./panel2d/panel2d";
-import button2d from "./panel2d/button2d";
+import panel2d from "./panel2d/panel2d"
+import button2d from "./panel2d/button2d"
 import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
 import {on} from "../utils"
 import {TweenManager} from "../common/tween"
-import {
-    get3DObjectDef,
-    is3DObjectType,
-    OBJ_TYPES,
-    SIMPLE_COLORS,
-    toRad,
-    TOTAL_OBJ_TYPES,
-} from './Common'
+import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
@@ -66,18 +71,8 @@ class Adapter extends SceneGraphProvider {
         return this.editor.swapScene(id)
     }
     playAudioAsset(audio) {
-        const sound = new THREE.Audio(this.editor.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( true );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-    }
-    playAudioAsset(audio) {
-        const sound = new THREE.Audio(this.editor.audioListener)
-        const audioLoader = new THREE.AudioLoader()
+        const sound = new Audio(this.editor.audioListener)
+        const audioLoader = new AudioLoader()
         audioLoader.load(audio.src, function( buffer ) {
             sound.setBuffer( buffer );
             sound.setLoop( false );
@@ -153,13 +148,13 @@ export default class ImmersiveVREditor extends Component {
 
         const container = this.wrapper
         this.tweenManager = new TweenManager()
-        this.scene = new THREE.Scene();
-        this.stageRot = new THREE.Group()
+        this.scene = new Scene();
+        this.stageRot = new Group()
         this.scene.add(this.stageRot)
-        this.stagePos = new THREE.Group()
+        this.stagePos = new Group()
         this.stageRot.add(this.stagePos)
-        this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        this.camera = new PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
+        this.renderer = new WebGLRenderer( { antialias: true } );
         const renderer = this.renderer
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -168,7 +163,7 @@ export default class ImmersiveVREditor extends Component {
         container.appendChild( renderer.domElement );
         this.vrmanager = new VRManager(renderer)
 
-        this.audioListener = new THREE.AudioListener()
+        this.audioListener = new AudioListener()
         this.camera.add(this.audioListener)
 
         this.initContent()
@@ -231,11 +226,11 @@ export default class ImmersiveVREditor extends Component {
 
 
     initContent() {
-        this.scene.background = new THREE.Color( 0xcccccc );
-        const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        this.scene.background = new Color( 0xcccccc );
+        const light = new DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
-        this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
+        this.scene.add(new AmbientLight(0xffffff,0.2))
 
         // enable stats visible inside VR
         this.stats = new VRStats({renderer:this.renderer})
@@ -255,9 +250,9 @@ export default class ImmersiveVREditor extends Component {
 
 
         const STICK_HEIGHT = 1.0
-        const stick = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.1,0.1,STICK_HEIGHT),
-            new THREE.MeshLambertMaterial({color:'aqua'})
+        const stick = new Mesh(
+            new CylinderBufferGeometry(0.1,0.1,STICK_HEIGHT),
+            new MeshLambertMaterial({color:'aqua'})
         )
         stick.position.z = -STICK_HEIGHT/2;
         stick.rotation.x = toRad(-90)

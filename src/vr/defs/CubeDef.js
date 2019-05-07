@@ -1,9 +1,7 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
+import {fetchGraphObject} from "../../syncgraph/utils"
+import {BoxGeometry, Mesh, MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
 import {OBJ_TYPES} from '../Common'
-
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
 let COUNTER = 0
 
@@ -24,9 +22,9 @@ export default class CubeDef extends ObjectDef {
         }))
     }
     makeNode(obj) {
-        const node = new THREE.Mesh(
-            new THREE.BoxGeometry(obj.width, obj.height, obj.depth),
-            new THREE.MeshLambertMaterial({color: obj.color})
+        const node = new Mesh(
+            new BoxGeometry(obj.width, obj.height, obj.depth),
+            new MeshLambertMaterial({color: obj.color})
         )
         node.name = obj.title
         node.userData.clickable = true
@@ -40,7 +38,7 @@ export default class CubeDef extends ObjectDef {
 
     updateProperty(node, obj, op, provider) {
         if (op.name === 'width' || op.name === 'height' || op.name === 'depth') {
-            node.geometry = new THREE.BoxGeometry(obj.width, obj.height, obj.depth)
+            node.geometry = new BoxGeometry(obj.width, obj.height, obj.depth)
             return
         }
         return super.updateProperty(node,obj,op,provider)

@@ -1,38 +1,39 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../common/GridEditorApp'
+import GridEditorApp, {Panel, Spacer, Toolbar} from '../common/GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
 import {getAssetsURL, getDocsURL, getInfoURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
+import {fetchGraphObject, insertAsFirstChild, insertAsLastChild, listToArray} from '../syncgraph/utils'
+import CubeDef from "./defs/CubeDef"
+import SceneDef from "./defs/SceneDef"
+import InputManager from "../common/InputManager"
+import {DialogContainer, DialogManager, HBox, PopupContainer} from "appy-comps"
 import {
-    fetchGraphObject, insertAsFirstChild,
-    insertAsLastChild,
-    listToArray,
-} from '../syncgraph/utils'
-import CubeDef from "./defs/CubeDef";
-import SceneDef from "./defs/SceneDef";
-import InputManager from "../common/InputManager";
-import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
-import {
-    ASSET_TYPES, canHaveBehavior, canHaveScene, canHaveShape,
+    ASSET_TYPES,
+    canHaveBehavior,
+    canHaveScene,
+    canHaveShape,
     get3DObjectDef,
+    HORIZONTAL_ALIGNMENT,
     is3DObjectType,
     isGLTFFile,
     isImageType,
     ITEM_ICONS,
-    MIME_TYPES,
-    OBJ_TYPES, parseBehaviorScript,
-    PROP_DEFS, REC_TYPES,
-    SIMPLE_COLORS, TOTAL_OBJ_TYPES
+    OBJ_TYPES,
+    parseBehaviorScript,
+    PROP_DEFS,
+    REC_TYPES,
+    SIMPLE_COLORS,
+    TOTAL_OBJ_TYPES
 } from './Common'
 import {AddImageAssetDialog} from './dialogs/AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './dialogs/AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './dialogs/AddGLBAssetDialog'
 import {AddAudioAssetDialog} from './dialogs/AddAudioAssetDialog'
-import {HORIZONTAL_ALIGNMENT} from './Common'
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
@@ -47,7 +48,6 @@ import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
 import {addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
-
 
 
 export default class VREditor extends SyncGraphProvider {

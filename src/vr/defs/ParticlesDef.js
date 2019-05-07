@@ -1,11 +1,9 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
+import {fetchGraphObject} from "../../syncgraph/utils"
+import {AdditiveBlending, Color, TextureLoader, Vector3} from 'three'
 import ObjectDef from './ObjectDef'
 import {OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'
-import {parseHex} from '../../utils'
 
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
 export const rand = (min,max) => Math.random()*(max-min) + min
 
 let COUNTER = 0
@@ -31,32 +29,32 @@ export default class ParticlesDef extends ObjectDef {
     }
     makeNode(obj) {
         let tex = null
-        if(obj.texture) tex = new THREE.TextureLoader().load(obj.texture)
+        if(obj.texture) tex = new TextureLoader().load(obj.texture)
         const options = {
-            velocity: new THREE.Vector3(0,1,0),
-            position: new THREE.Vector3(0,0,0),
+            velocity: new Vector3(0,1,0),
+            position: new Vector3(0,0,0),
             size:obj.pointSize,
             lifetime:obj.lifetime,
-            color: new THREE.Color(1.0,0.0,1.0),
-            endColor: new THREE.Color(0,1,1),
+            color: new Color(1.0,0.0,1.0),
+            endColor: new Color(0,1,1),
         }
 
         const node = new GPUParticles({
             maxParticles: 10000,
-            position: new THREE.Vector3(0,0,0),
+            position: new Vector3(0,0,0),
             positionRandomness: 0.0,
-            baseVelocity: new THREE.Vector3(0.0, 0.0, -1),
-            velocity: new THREE.Vector3(0.0, 0.0, 0.0),
+            baseVelocity: new Vector3(0.0, 0.0, -1),
+            velocity: new Vector3(0.0, 0.0, 0.0),
             velocityRandomness: 1.0,
-            acceleration: new THREE.Vector3(0,0.0,0),
-            baseColor: new THREE.Color(1.0,1.0,0.5),
-            color: new THREE.Color(1.0,0,0),
+            acceleration: new Vector3(0,0.0,0),
+            baseColor: new Color(1.0,1.0,0.5),
+            color: new Color(1.0,0,0),
             colorRandomness: 0.5,
             lifetime: 3,
             size: 10,
             sizeRandomness: 1.0,
             particleSpriteTex: tex,
-            blending: THREE.AdditiveBlending,
+            blending: AdditiveBlending,
             onTick: (system, time) => {
                 options.velocity.set(rand(-1,1),1,rand(-1,1))
                 system.spawnParticle(options);
@@ -79,7 +77,7 @@ export default class ParticlesDef extends ObjectDef {
         if(op.name === PROP_DEFS.texture.key) {
             const texture = provider.accessObject(obj.texture)
             if(texture) {
-                const tex = new THREE.TextureLoader().load(texture.src)
+                const tex = new TextureLoader().load(texture.src)
                 node.updateSprite(tex)
             }
             return

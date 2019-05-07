@@ -1,11 +1,11 @@
 import React, {Component} from "react"
-import {fetchGraphObject} from '../syncgraph/utils'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import selMan, {SELECTION_MANAGER} from '../SelectionManager'
-import {ASSET_TYPES, TOTAL_OBJ_TYPES} from './Common'
+import {TOTAL_OBJ_TYPES} from './Common'
 import AceEditor from 'react-ace'
 import 'brace/mode/javascript'
 import 'brace/theme/github'
+
 export default class ScriptEditor extends Component {
     constructor(props) {
         super(props)
@@ -46,7 +46,6 @@ export default class ScriptEditor extends Component {
         this.props.provider.updateBehaviorAssetContents(this.state.id,this.state.text)
     }
     render() {
-        const prov = this.props.provider
         if(this.state.id === null) return <div>loading</div>
         return <AceEditor mode="javascript"
                           theme="github"

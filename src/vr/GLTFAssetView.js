@@ -1,10 +1,6 @@
 import * as THREE from 'three'
 import React, {Component} from "react"
-import {fetchGraphObject} from '../syncgraph/utils'
-import {ASSET_TYPES} from '../vr/Common'
-import {TweenManager} from '../common/tween'
-import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
-import {Group} from 'three'
+import {VRManager} from 'webxr-boilerplate'
 import GLTFLoader from './GLTFLoader'
 
 export default class AssetView extends Component {
@@ -50,11 +46,6 @@ export default class AssetView extends Component {
 
     }
     renderThree = (time) => {
-        // if(this.tweenManager) this.tweenManager.update(time)
-        // if(this.pointer) this.pointer.tick(time)
-        // if(this.stats) this.stats.update(time)
-        // if(this.controller) this.controller.update(time)
-        // this.scriptManager.tick(time)
         this.renderer.render( this.scene, this.camera );
     }
 

@@ -1,9 +1,7 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
+import {fetchGraphObject} from "../../syncgraph/utils"
+import {Group} from 'three'
 import ObjectDef from './ObjectDef'
 import {OBJ_TYPES} from '../Common'
-
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
 let COUNTER = 0
 
@@ -23,7 +21,7 @@ export default class GroupDef extends ObjectDef {
         }))
     }
     makeNode(obj) {
-        const node = new THREE.Group()
+        const node = new Group()
         node.name = obj.title
         node.userData.clickable = true
         node.position.set(obj.tx, obj.ty, obj.tz)

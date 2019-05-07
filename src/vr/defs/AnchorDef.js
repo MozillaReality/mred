@@ -1,10 +1,7 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
+import {fetchGraphObject} from "../../syncgraph/utils"
+import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
 import ObjectDef from './ObjectDef'
 import {OBJ_TYPES, REC_TYPES} from '../Common'
-import {MeshLambertMaterial} from 'three'
-
-const on = (elem,type,cb) => elem.addEventListener(type,cb)
 
 let COUNTER = 0
 
@@ -27,15 +24,15 @@ export default class AnchorDef extends ObjectDef {
         }))
     }
     makeNode(obj) {
-        const node = new THREE.Group()
+        const node = new Group()
         node.name = obj.title
         node.userData.clickable = true
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
 
-        const clicker =  new THREE.Mesh(
-            new THREE.SphereBufferGeometry(1),
+        const clicker =  new Mesh(
+            new SphereBufferGeometry(1),
             new MeshLambertMaterial({color:"red", transparent:true, opacity: 0.2})
         )
         clicker.material.visible = true
@@ -45,7 +42,6 @@ export default class AnchorDef extends ObjectDef {
         node.init = (evt) => {
             clicker.visible = false
             node.visible = false
-            // evt.system.getObjectById(obj.)
             evt.system.startImageRecognizer({
                 image:evt.system.getObjectById(obj.targetImage),
                 imageRealworldWidth: obj.imageRealworldWidth,

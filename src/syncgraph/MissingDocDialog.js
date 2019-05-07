@@ -2,9 +2,6 @@ import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 
 export class MissingDocDialog extends Component {
-    constructor(props) {
-        super(props)
-    }
 
     cancel = () => {
         DialogManager.hide()
