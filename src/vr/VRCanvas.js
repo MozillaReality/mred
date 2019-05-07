@@ -201,6 +201,12 @@ export class VRCanvas extends Component {
         if(e.key === 'ArrowDown') {
             this.camera.position.z += 0.5
         }
+        if(e.key === 'a') {
+            this.camera.position.x -= 0.5
+        }
+        if(e.key === 'd') {
+            this.camera.position.x += 0.5
+        }
         if(e.key === 'ArrowLeft') {
             this.camera.rotation.y += 0.1
         }
