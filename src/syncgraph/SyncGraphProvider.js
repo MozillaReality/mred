@@ -9,6 +9,7 @@ import * as ToasterMananager from '../vr/ToasterManager'
 import {DialogManager} from 'appy-comps'
 import {MissingDocDialog} from './MissingDocDialog'
 import React from 'react'
+import {AuthModule} from '../vr/AuthModule'
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
@@ -98,26 +99,43 @@ export default class SyncGraphProvider extends TreeItemProvider {
         }
         const url = getDocsURL()+this.getDocId()+'?'+toQueryString(opts)
         console.log(`saving ${payload_string.length} chars to ${url}`, payload_obj)
-        return POST_JSON(url,payload_string).then(res => {
-            console.log("got back result",res)
-            setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
-            ToasterMananager.add(res.message)
-            this.fire(TREE_ITEM_PROVIDER.SAVED,true)
-        }).catch((e)=> console.log("error",e))
+        return fetch(url,{
+            method:'POST',
+            mode:'cors',
+            cache:'no-cache',
+            body:payload_string,
+            headers: {
+                "Content-Type": "application/json",
+                "access-key": AuthModule.getAccessToken()
+            }
+        })
+            .then(res=>res.json())
+            .then(res => {
+                console.log("got back result",res)
+                setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
+                ToasterMananager.add(res.message)
+                this.fire(TREE_ITEM_PROVIDER.SAVED,true)
+            }).catch((e)=> console.log("error",e))
     }
 
     loadDoc(docid) {
         console.log("loading",docid)
-        return GET_JSON(getDocsURL()+docid).then((payload)=>{
-            console.log("got the payload",payload)
-            if(payload.success === false) {
-                return this.showMissingDocDialog(docid)
+        return fetch(getDocsURL()+docid,{
+            method:'GET',
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "access-key": AuthModule.getAccessToken()
             }
-            const doc = this.makeDocFromServerHistory(payload.history)
-            this.setupDocFlow(doc,docid)
-        }).catch((e)=>{
-            return this.showMissingDocDialog(docid)
         })
+            .then(res => res.json())
+            .then((payload)=>{
+                console.log("got the payload",payload)
+                if(payload.success === false) return this.showMissingDocDialog(docid)
+                const doc = this.makeDocFromServerHistory(payload.history)
+                this.setupDocFlow(doc,docid)
+            })
+            .catch((e)=> this.showMissingDocDialog(docid))
     }
 
     createNewDocument(docid) {
