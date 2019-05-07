@@ -138,8 +138,7 @@ class Adapter extends SceneGraphProvider {
         SelectionManager.setSelection(id)
     }
     getCurrentScene() {
-        const sel = SelectionManager.getSelection()
-        const obj = this.canvas.props.provider.accessObject(sel)
+        const obj = this.canvas.props.provider.getSelectedScene()
         return this.canvas.findSceneObjectParent(obj)
     }
     getSceneObjects(scene) {

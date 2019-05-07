@@ -200,14 +200,16 @@ export default class ScriptManager {
                 if (asset.init) asset.init(evt)
             })
             const scene = this.sgp.getCurrentScene()
-            this.sgp.getSceneObjects(scene).forEach(child => {
-                const evt = {
-                    type:'init',
-                }
-                evt.system = this.makeSystemFacade(evt)
-                const node = this.sgp.getThreeObject(child.id)
-                if(node.init) node.init(evt)
-            })
+            if(scene) {
+                this.sgp.getSceneObjects(scene).forEach(child => {
+                    const evt = {
+                        type: 'init',
+                    }
+                    evt.system = this.makeSystemFacade(evt)
+                    const node = this.sgp.getThreeObject(child.id)
+                    if (node.init) node.init(evt)
+                })
+            }
         } catch(err) {
             console.error("error in script",err.message)
             console.info(err)
@@ -215,14 +217,21 @@ export default class ScriptManager {
         }
     }
     stopRunning() {
-        this.running = false
-        this.storage = {}
-        this.destroyListeners()
-        const scene = this.sgp.getCurrentScene()
-        this.sgp.getSceneObjects(scene).forEach(child => {
-            const node = this.sgp.getThreeObject(child.id)
-            if(node.stop) node.stop()
-        })
+        try {
+            this.running = false
+            this.storage = {}
+            this.destroyListeners()
+            const scene = this.sgp.getCurrentScene()
+            if(scene) {
+                this.sgp.getSceneObjects(scene).forEach(child => {
+                    const node = this.sgp.getThreeObject(child.id)
+                    if (node.stop) node.stop()
+                })
+            }
+        } catch(err) {
+            console.log("error stopping scripts", err.message)
+            console.info(err)
+        }
 
         console.log("script manager stopping")
     }
