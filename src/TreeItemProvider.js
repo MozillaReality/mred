@@ -257,6 +257,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             console.info("uploading to ", url)
             xml.responseType = 'json'
             xml.open('POST',url)
+            xml.setRequestHeader('access-key',AuthModule.getAccessToken())
             xml.send(file)
         })
     }
