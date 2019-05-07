@@ -529,7 +529,10 @@ export default class VREditor extends SyncGraphProvider {
             method:'POST',
             mode:'cors',
             cache:'no-cache',
-            body:doc.id
+            body:doc.id,
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
         }).then(res => res.json())
     }
     loadAssetList() {
@@ -549,7 +552,10 @@ export default class VREditor extends SyncGraphProvider {
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
-            body:info.id
+            body:info.id,
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
         }).then(res => res.json())
     }
     loadScriptList() {
@@ -585,7 +591,10 @@ export default class VREditor extends SyncGraphProvider {
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
-            body:name
+            body:name,
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
         }).then(res => res.json())
             .then(res => {
                 return res
@@ -596,12 +605,15 @@ export default class VREditor extends SyncGraphProvider {
         const fname =`behavior_${randi}.js`
         const url = `${getScriptsURL()}${fname}`;
         const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
-        console.log("posting to",url)
+        console.log("posting it to",url)
         return fetch(url,{
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
-            body:contents
+            body:contents,
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
         })
             .then(res => res.json())
             .then(ans => {
@@ -654,7 +666,13 @@ export default class VREditor extends SyncGraphProvider {
     }
     fetchBehaviorAssetContents(id) {
         const obj = this.accessObject(id)
-        return fetch(obj.src).then(res => res.text())
+        return fetch(obj.src,{
+            method:'GET',
+            mode: "cors",
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
+        }).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
         if(!AuthModule.supportsScriptEdit()) return
@@ -668,7 +686,10 @@ export default class VREditor extends SyncGraphProvider {
             method:'POST',
             mode:'cors',
             cache: 'no-cache',
-            body:text
+            body:text,
+            headers: {
+                "access-key": AuthModule.getAccessToken()
+            }
         }).then(res => res.json())
             .then(ans => {
                 obj.set('title',ans.script.title)
