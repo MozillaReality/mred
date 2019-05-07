@@ -6,6 +6,9 @@ import SelectionManager from '../SelectionManager'
 import {PubnubSyncWrapper} from './PubnubSyncWrapper'
 import {propToArray} from "./utils";
 import * as ToasterMananager from '../vr/ToasterManager'
+import {DialogManager} from 'appy-comps'
+import {MissingDocDialog} from './MissingDocDialog'
+import React from 'react'
 
 const {DocGraph, CommandGenerator} = require("syncing_protocol");
 
@@ -104,24 +107,23 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     loadDoc(docid) {
-        console.log("loading")
+        console.log("loading",docid)
         return GET_JSON(getDocsURL()+docid).then((payload)=>{
             console.log("got the payload",payload)
             if(payload.success === false) {
-                console.log("no such doc. :(")
-                const doc = new DocGraph()
-                this.makeEmptyRoot(doc)
-                this.setupDocFlow(doc,this.genID('doc'))
-                return
+                return this.showMissingDocDialog(docid)
             }
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,docid)
         }).catch((e)=>{
-            console.log("missing doc. create a new doc",e)
-            const doc = new DocGraph()
-            this.makeEmptyRoot(doc)
-            this.setupDocFlow(doc,this.genID('doc'))
+            return this.showMissingDocDialog(docid)
         })
+    }
+
+    createNewDocument(docid) {
+        const doc = new DocGraph()
+        this.makeEmptyRoot(doc)
+        this.setupDocFlow(doc,docid)
     }
 
     setupDocFlow(doc,docid) {
@@ -208,4 +210,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
 
+    showMissingDocDialog(docid) {
+        DialogManager.show(<MissingDocDialog docid={docid} provider={this}/>)
+    }
 }

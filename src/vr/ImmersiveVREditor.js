@@ -27,6 +27,7 @@ import {
 import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {deleteObject} from './Actions'
+import {DialogContainer} from 'appy-comps'
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -124,6 +125,7 @@ export default class ImmersiveVREditor extends Component {
                 </div>
             </div>
             <div ref={c => this.wrapper = c}></div>
+            <DialogContainer/>
         </div>
     }
 
@@ -236,7 +238,6 @@ export default class ImmersiveVREditor extends Component {
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
         // enable stats visible inside VR
-        console.log("makign stats with renderer",this.renderer)
         this.stats = new VRStats({renderer:this.renderer})
         if(this.props.editable) {
             this.camera.add(this.stats)

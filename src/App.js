@@ -15,7 +15,7 @@ export default class App extends Component {
         }
         this.providers = ['vr','metadoc']
         const sw = this.props.options.switcher
-        if(typeof sw !== 'undefined' && sw === true || sw === 'true') {
+        if(typeof sw !== 'undefined' && (sw === true || sw === 'true')) {
             this.state.switcher = true
         }
     }

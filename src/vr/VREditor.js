@@ -50,7 +50,7 @@ import {QRDialog} from './dialogs/QRDialog'
 
 
 
-export default class VREditor extends  SyncGraphProvider {
+export default class VREditor extends SyncGraphProvider {
     constructor(options) {
         super(options)
         this.imagecache = {}
