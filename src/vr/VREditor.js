@@ -524,6 +524,14 @@ export default class VREditor extends SyncGraphProvider {
         })
             .then(res=>res.json())
     }
+    removeDoc(doc) {
+        return fetch(`${getDocsURL()}delete/${doc.id}`,{
+            method:'POST',
+            mode:'cors',
+            cache:'no-cache',
+            body:doc.id
+        }).then(res => res.json())
+    }
     loadAssetList() {
         return fetch(`${getAssetsURL()}list`,{
             method:'GET',

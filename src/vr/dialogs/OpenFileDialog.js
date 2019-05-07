@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
 import {toQueryString} from '../../utils'
+import {AuthModule} from '../AuthModule'
 
 export class OpenFileDialog extends Component {
     constructor(props) {
@@ -9,8 +10,11 @@ export class OpenFileDialog extends Component {
             docList:[]
         }
     }
-    componentDidMount() {
+    refreshList = () => {
         this.props.provider.loadDocList().then((docs) => this.setState({docList:docs}))
+    }
+    componentDidMount() {
+        this.refreshList()
     }
     openDoc(info) {
         DialogManager.hide()
@@ -20,6 +24,12 @@ export class OpenFileDialog extends Component {
             doc:info.id
         })
         window.open(`./?${toQueryString(opts)}`)
+    }
+    deleteDoc(info) {
+        return this.props.provider.removeDoc(info).then((res)=>{
+            console.log('removed?',res)
+            this.refreshList()
+        })
     }
 
     cancel = () => {
@@ -35,7 +45,9 @@ export class OpenFileDialog extends Component {
                 <VBox scroll style={{ maxHeight:'60vh'}}>
                     <ul>{this.state.docList.map((doc, i) => {
                         return <li key={i}>
-                            <b>{doc.title}</b> <button onClick={()=>this.openDoc(doc)}>open</button>
+                            <b>{doc.title}</b>
+                            <button onClick={()=>this.openDoc(doc)}>open</button>
+                            {this.renderDeleteButton(doc)}
                         </li>
                     })}
                     </ul>
@@ -46,6 +58,12 @@ export class OpenFileDialog extends Component {
                 </HBox>
             </VBox>
         </Dialog>
+    }
+
+    renderDeleteButton(doc) {
+        if(!AuthModule.supportsDocDelete()) return ""
+        return <button onClick={()=>this.deleteDoc(doc)}>delete</button>
+
     }
 
 }

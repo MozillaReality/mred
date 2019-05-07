@@ -8,6 +8,7 @@ class AuthModuleSingleton {
         this.listeners = {}
         this.supported = false
         this.doclistSupported = false
+        this.docDeleteSupported = false
         this.assetUploadSupported = false
         this.scriptEditingSupported = false
     }
@@ -32,6 +33,7 @@ class AuthModuleSingleton {
                     this.assetUploadSupported = true
                 }
                 if(info.scriptEditing === true)  this.scriptEditingSupported = true
+                if(info.docDeleteSupported === true) this.docDeleteSupported = true
 
                 this.fire(USER_CHANGE)
             })
@@ -52,6 +54,9 @@ class AuthModuleSingleton {
     }
     supportsScriptEdit() {
         return this.scriptEditingSupported
+    }
+    supportsDocDelete() {
+        return this.docDeleteSupported
     }
 
     login = () => {
