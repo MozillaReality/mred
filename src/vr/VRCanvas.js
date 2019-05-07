@@ -188,11 +188,25 @@ class Adapter extends SceneGraphProvider {
 
 
 export class VRCanvas extends Component {
-    moveCameraFoward = () => {
+    moveCameraForward = () => {
         this.camera.position.z += -0.5
     }
     moveCameraBackward = () => {
         this.camera.position.z += 0.5
+    }
+    handleKeyPress = (e) => {
+        if(e.key === 'ArrowUp') {
+            this.camera.position.z -= 0.5
+        }
+        if(e.key === 'ArrowDown') {
+            this.camera.position.z += 0.5
+        }
+        if(e.key === 'ArrowLeft') {
+            this.camera.rotation.y += 0.1
+        }
+        if(e.key === 'ArrowRight') {
+            this.camera.rotation.y -= 0.1
+        }
     }
 
     constructor(props) {
@@ -440,9 +454,13 @@ export class VRCanvas extends Component {
 
     render() {
         return <div>
-            <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}></canvas>
+            <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}
+                    className="editable-canvas"
+                    onKeyDown={this.handleKeyPress}
+                    tabIndex={0}
+            ></canvas>
             <br/>
-            <button onClick={this.moveCameraFoward}>forward</button>
+            <button onClick={this.moveCameraForward}>forward</button>
             <button onClick={this.moveCameraBackward}>backward</button>
             <ToasterNotification/>
         </div>
@@ -506,6 +524,8 @@ export class VRCanvas extends Component {
     }
 
     clickedCanvas = (e) => {
+        console.log("clicked on the canvas")
+        this.canvas.focus()
         const rect = this.canvas.getBoundingClientRect();
         const pointer = {
             x: ( e.clientX - rect.left ) / rect.width * 2 - 1,

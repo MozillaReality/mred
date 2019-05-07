@@ -295,6 +295,12 @@ svg path.connection-line {
     position: relative;
 }
 
+.editable-canvas {
+    border: 3px solid black;
+}
+.editable-canvas:focus {
+    border: 3px solid aqua;
+}
 rect.selection {
     stroke: #888;
     stroke-width: 3px;
