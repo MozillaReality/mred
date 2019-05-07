@@ -17,7 +17,7 @@ export class QRDialog extends Component {
             <VBox grow>
                 <h3>Scan</h3>
                 <VBox grow>
-                    <label>URL</label>
+                    <label>{url}</label>
                     <QRCanvas url={url} width={160} height={160}/>
                 </VBox>
                 <HBox>

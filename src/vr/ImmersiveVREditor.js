@@ -236,7 +236,8 @@ export default class ImmersiveVREditor extends Component {
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
         // enable stats visible inside VR
-        this.stats = new VRStats(this.renderer)
+        console.log("makign stats with renderer",this.renderer)
+        this.stats = new VRStats({renderer:this.renderer})
         if(this.props.editable) {
             this.camera.add(this.stats)
         }
