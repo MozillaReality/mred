@@ -5,7 +5,7 @@ import {ASSET_TYPES} from '../vr/Common'
 import {TweenManager} from '../common/tween'
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import {Group} from 'three'
-import GLTFLoader from '../gltfinspector/GLTFLoader'
+import GLTFLoader from './GLTFLoader'
 
 export default class AssetView extends Component {
     componentDidMount() {

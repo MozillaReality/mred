@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import {PROP_DEFS} from '../Common'
-import GLTFLoader from '../../gltfinspector/GLTFLoader'
+import GLTFLoader from '../GLTFLoader'
 import {MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
 

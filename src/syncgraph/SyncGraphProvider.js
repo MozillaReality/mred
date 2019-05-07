@@ -1,9 +1,9 @@
 import TreeItemProvider, {getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {GET_JSON, POST_JSON, setQuery, toQueryString} from '../utils'
-import {UndoQueue} from '../metadoc/UndoQueue'
+import {UndoQueue} from './UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
-import {PubnubSyncWrapper} from '../metadoc/PubnubSyncWrapper'
+import {PubnubSyncWrapper} from './PubnubSyncWrapper'
 import {propToArray} from "./utils";
 import * as ToasterMananager from '../vr/ToasterManager'
 
