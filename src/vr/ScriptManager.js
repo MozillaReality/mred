@@ -290,6 +290,7 @@ class AssetFacade {
 class ThreeObjectFacade {
     constructor(manager,obj) {
         this.manager = manager
+        this._TYPE = 'ThreeObjectFacade'
         this.obj = obj
     }
     get position() {
@@ -307,5 +308,8 @@ class ThreeObjectFacade {
     }
     set visible(val) {
         return this.manager.sgp.getThreeObject(this.obj).visible = val
+    }
+    lookAt(vec) {
+        return this.manager.sgp.getThreeObject(this.obj).lookAt(vec)
     }
 }
