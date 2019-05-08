@@ -45,11 +45,12 @@ export function showAddAssetPopup(e, provider) {
     let acts = []
     // console.log("Auth mod",AuthModule.supportsAssetUpload())
     if(AuthModule.supportsAssetUpload()) {
-        acts = acts.concat([{
-            title: 'image',
-            icon: ITEM_ICONS.image,
-            fun: () => provider.showAddImageAssetDialog()
-        },
+        acts = acts.concat([
+            {
+                title: 'image',
+                icon: ITEM_ICONS.image,
+                fun: () => provider.showAddImageAssetDialog()
+            },
             {
                 title: 'server image',
                 icon: ITEM_ICONS.image,
@@ -71,7 +72,13 @@ export function showAddAssetPopup(e, provider) {
                 title: 'audio file',
                 icon: ITEM_ICONS.audio,
                 fun: () => provider.showAddAudioAssetDialog()
-            }])
+            },
+            {
+                title:'geo location',
+                icon: ITEM_ICONS.geoanchor,
+                fun: () => provider.showAddGeoLocationAssetDialog()
+            }
+        ])
     }
 
     acts.push({

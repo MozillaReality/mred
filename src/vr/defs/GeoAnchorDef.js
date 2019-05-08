@@ -2,25 +2,23 @@ import {fetchGraphObject} from "../../syncgraph/utils"
 import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
 import ObjectDef from './ObjectDef'
 import {OBJ_TYPES, REC_TYPES} from '../Common'
-
 let COUNTER = 0
 
 export default class AnchorDef extends ObjectDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't anchor w/ missing parent")
-        return fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.anchor,
-            title:'anchor '+COUNTER++,
-            visible:true,
-            tx:0, ty:1.5, tz:-5,
-            rx:0, ry:0, rz:0,
-            sx:1, sy:1, sz:1,
-            color:'#00ff00',
-            children:graph.createArray(),
-            targetImage:null,
-            imageRealworldWidth:1,
-            recType:REC_TYPES.SCENE_START,
-            parent:scene.id
+        if (!scene.id) throw new Error("can't create geo anchor w/ missing parent")
+        return fetchGraphObject(graph, graph.createObject({
+            type: OBJ_TYPES.geoanchor,
+            title: 'geo-anchor ' + COUNTER++,
+            visible: true,
+            tx: 0, ty: 1.5, tz: -5,
+            rx: 0, ry: 0, rz: 0,
+            sx: 1, sy: 1, sz: 1,
+            color: '#00ff00',
+            children: graph.createArray(),
+            targetGeoLocation: null,
+            recType: REC_TYPES.SCENE_START,
+            parent: scene.id
         }))
     }
     makeNode(obj) {
@@ -42,9 +40,8 @@ export default class AnchorDef extends ObjectDef {
         node.init = (evt) => {
             clicker.visible = false
             node.visible = false
-            evt.system.startImageRecognizer({
-                image:evt.system.getObjectById(obj.targetImage),
-                imageRealworldWidth: obj.imageRealworldWidth,
+            evt.system.startGeoRecognizer({
+                location:evt.system.getObjectById(obj.targetGeoLocation),
                 recType:obj.recType,
                 object:obj,
                 node:node,
@@ -59,9 +56,4 @@ export default class AnchorDef extends ObjectDef {
         }
         return node
     }
-
-    updateProperty(node, obj, op, provider) {
-        return super.updateProperty(node,obj,op,provider)
-    }
-
 }

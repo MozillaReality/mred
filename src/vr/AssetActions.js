@@ -21,6 +21,19 @@ export function addImageAssetFromExpandedURL(url,format,title, prov) {
     })
 }
 
+export function addGeoAnchorAsset(info,title,prov) {
+    const asset = prov.accessObject(prov.getDataGraph().createObject({
+        type:TOTAL_OBJ_TYPES.ASSET,
+        subtype:ASSET_TYPES.GEOLOCATION,
+        title:title,
+        latitude:info.latitude,
+        longitude:info.longitude,
+        altitude:info.altitude,
+        useAltitude:info.useAltitude,
+        parent:0
+    }))
+    prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
+}
 
 export function addImageAssetFromFile (file, prov) {
     ToasterManager.add('uploading ' + file.name)

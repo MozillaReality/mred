@@ -183,6 +183,9 @@ class Adapter extends SceneGraphProvider {
     startImageRecognizer(info) {
         return this.canvas.startImageRecognizer(info)
     }
+    startGeoRecognizer(info) {
+        return this.canvas.startGeoRecognizer(info)
+    }
 }
 
 
@@ -646,5 +649,18 @@ export class VRCanvas extends Component {
 
     stopRecognizer() {
 
+    }
+
+
+    startGeoRecognizer(info) {
+        console.log("starting the geo recognizer")
+        /*
+        info contains
+         location:  a geo location asset, has properties for latitude, longitude, altitude, useAltitude
+         recType: the recognition type. for now always SCENE_START
+         object: the anchor object. It reresents the anchor in the 3D scene. has tx,ty,tz, rotation, etc.
+         node: the actual ThreeJS object that mirrors the propertites of the `object` above
+         callback: a function to be called once the geo anchor is recognized. By default this callback will fire a 'recognized' event and make the anchor visible in the scene
+         */
     }
 }

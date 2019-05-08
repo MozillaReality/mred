@@ -9,6 +9,7 @@ import Image2DDef from './defs/Image2DDef'
 import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
 import AnchorDef from './defs/AnchorDef'
+import GeoAnchorDef from './defs/GeoAnchorDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -180,6 +181,12 @@ export const PROP_DEFS = {
         type: TYPES.ENUM,
     },
 
+    targetGeoLocation: {
+        key:'targetGeoLocation',
+        name:'Target Location',
+        type: TYPES.ENUM,
+    },
+
     text: {
         key:'text',
         name:'Text',
@@ -292,6 +299,26 @@ export const PROP_DEFS = {
         hints: {
             multiline:true
         }
+    },
+    latitude: {
+        key:'latitude',
+        name:"Latitude",
+        type:TYPES.NUMBER, //value in degrees
+    },
+    longitude: {
+        key:'longitude',
+        name:"Longitude",
+        type:TYPES.NUMBER, //value in degrees
+    },
+    altitude: {
+        key:'altitude',
+        name:"altitude",
+        type:TYPES.NUMBER, //value in meters
+    },
+    useAltitude: {
+        key:'useAltitude',
+        name:"use altitude?",
+        type:TYPES.BOOLEAN,
     }
 }
 
@@ -308,6 +335,7 @@ export const OBJ_TYPES = {
     group:'group',
     particles:'particles',
     anchor:'anchor',
+    geoanchor:'geoanchor',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -337,12 +365,14 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.particles) return true
     if(type === OBJ_TYPES.anchor) return true
+    if(type === OBJ_TYPES.geoanchor) return true
     return false
 }
 
 export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.anchor) return true
+    if(type === OBJ_TYPES.geoanchor) return true
     if(type === TOTAL_OBJ_TYPES.SCENE) return true
     return false
 }
@@ -369,6 +399,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
     if(type === OBJ_TYPES.anchor) return new AnchorDef()
+    if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
@@ -381,6 +412,7 @@ export const ASSET_TYPES = {
     GLTF: 'gltf',
     AUDIO:'audio',
     VIDEO:'video',
+    GEOLOCATION: 'geolocation'
 }
 export function isImageType(type) {
     if (!type) return false
@@ -439,6 +471,7 @@ export const ITEM_ICONS = {
     particles:'certificate',
     gltf:'cube',
     anchor:'anchor',
+    geoanchor:'globe',
 
     cut:'cut',
     copy:'copy',

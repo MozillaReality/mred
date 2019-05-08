@@ -46,7 +46,7 @@ import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
-import {addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
+import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 
 
@@ -254,6 +254,11 @@ export default class VREditor extends SyncGraphProvider {
             assets = assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
             return assets
         }
+        if(key === PROP_DEFS.targetGeoLocation.key) {
+            let assets = this.accessObject(this.getAssetsObject()).getChildren()
+            assets = assets.filter(a => a.subtype === ASSET_TYPES.GEOLOCATION).map(a => a.id)
+            return assets
+        }
         if(key === PROP_DEFS.recType.key) {
             return Object.keys(REC_TYPES)
         }
@@ -266,6 +271,7 @@ export default class VREditor extends SyncGraphProvider {
             case PROP_DEFS.defaultScene.key: return EnumTitleRenderer
             case PROP_DEFS.texture.key: return EnumTitleRenderer
             case PROP_DEFS.targetImage.key: return EnumTitleRenderer
+            case PROP_DEFS.targetGeoLocation.key: return EnumTitleRenderer
             default: return null
         }
     }
@@ -508,6 +514,14 @@ export default class VREditor extends SyncGraphProvider {
     showOpenAssetDialog     = () => DialogManager.show(<OpenAssetDialog provider={this}/>)
     showAddServerImageDialog= () => DialogManager.show(<OpenAssetDialog provider={this} filter={a => isImageType(a.mimeType)}/>)
     showOpenBehaviorDialog  = () => DialogManager.show(<OpenScriptDialog provider={this}/>)
+    showAddGeoLocationAssetDialog = () => {
+        addGeoAnchorAsset({
+            latitude:0,
+            longitude:0,
+            altitude:0,
+            useAltitude:false,
+        },"new geo location",this)
+    }
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)

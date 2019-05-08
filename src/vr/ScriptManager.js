@@ -18,6 +18,7 @@ export class SceneGraphProvider {
     getCamera() { throw new Error("getCamera() not implemented")}
     getTweenManager() { throw new Error("getTweenManager() not implemented")}
     startImageRecognizer(info) { throw new Error("startImageRecognizer not implemented")}
+    startGeoRecognizer(info) { throw new Error("startGeoRecognizer not implemented")}
 }
 
 export default class ScriptManager {
