@@ -66,7 +66,7 @@ class AuthModuleSingleton {
             .then((res)=>{
                 this.win = window.open(res.url,'_blank')
                 window.addEventListener('message',this.authCallback)
-                this.win.focus()
+                if(this.win) this.win.focus()
             })
     }
     logout = () => {
