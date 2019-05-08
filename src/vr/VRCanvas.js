@@ -324,6 +324,7 @@ export class VRCanvas extends Component {
         this.camera.position.y = 1.5
         this.camera.position.x = 0
         this.camera.position.z = 0
+        this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
 
         this.controls = new TransformControls(this.camera, this.renderer.domElement)
@@ -358,8 +359,8 @@ export class VRCanvas extends Component {
 
     animationLoopWithCamera(bounds,projectionMatrix,viewMatrix) {
         if(!this.scene || !this.camera) return
-        this.camera.matrixAutoUpdate = false
         this.camera.matrix.fromArray(viewMatrix)
+        this.camera.matrixWorldNeedsUpdate = true
         this.camera.updateMatrixWorld()
         this.camera.projectionMatrix.fromArray(projectionMatrix)
         this.animationLoop()
@@ -568,8 +569,15 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        //TODO: Anselm
+
         //called when an anchor is started that wants to recognize an image
+
+        // WebXR loaded?
+        if(!this.xr || !this.xr.session) {
+            console.error("XR is not active?")
+            return
+        }
+
         //info contains
         // * callback: to call when the image is found
         // * image: info about the image to recognize. src is at image.src
@@ -578,10 +586,62 @@ export class VRCanvas extends Component {
         // * node: the ThreeJS group which represents the anchor. It should be updated as the scene changes
         // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
 
-        console.log("start recognizing with this image",info)
-        setTimeout(()=>{
-            info.callback({message:'found an anchor image'})
-        },2000)
+        let session = this.xr.session
+
+        let callback = info.callback
+        let image = info.image
+        let imageRealworldWidth = 0 // unused
+        let object = info.object // anchor object?
+        let node = info.node
+        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+
+        if(!image || !node) {
+            console.error("Missing image or threejs node")
+            return
+        }
+
+        // random name from https://gist.github.com/6174/6062387
+        let name = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('')
+
+        // Get ImageData
+        let canvas = document.createElement('canvas')
+        let context = canvas.getContext('2d')
+        canvas.width = image.width
+        canvas.height = image.height
+        context.drawImage(image,0,0)
+        image.data = context.getImageData(0,0,image.width,image.height)
+
+        // Attach image observer handler
+        session.nonStandard_createDetectionImage(name, image.data, image.width, image.height, 0.2).then(() => {
+            session.nonStandard_activateDetectionImage(name).then(anchor => {
+                // this gets invoked after the image is seen for the first time
+                if(callback) {
+                    callback(info)
+                }
+                node.matrixAutoUpdate = false
+                node.anchor = anchor
+                node.anchorName = name
+                anchor.node = node
+                node.anchor.addEventListener("remove", (args) => {
+                    // this is not quite supported yet
+                })
+                node.anchor.addEventListener("update", (args) => {
+                    // this is not called every frame
+                })
+            }).catch(error => {
+                console.error(`error activating detection image: ${error}`)
+            })
+        }).catch(error => {
+            console.error(`error creating detection image: ${error}`)
+        })
+    }
+
+    refreshNodeWithAnchor(node) {
+        if(node.anchor) {
+            node.matrix.fromArray(node.anchor.modelMatrix)
+            node.matrixWorldNeedsUpdate = true
+            node.updateMatrixWorld(true)
+        }
     }
 
     stopRecognizer() {
