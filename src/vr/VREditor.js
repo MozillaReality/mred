@@ -48,6 +48,7 @@ import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
+import {PasswordDialog} from './dialogs/PasswordDialog'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -524,6 +525,7 @@ export default class VREditor extends SyncGraphProvider {
             useAltitude:false,
         },"new geo location",this)
     }
+    showPasswordDialog = () => DialogManager.show(<PasswordDialog provider={this}/>)
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
@@ -793,7 +795,13 @@ class VREditorApp extends Component {
             if(AuthModule.isLoggedIn()) {
                 buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout} title={'logout'}>logout</button>)
             } else {
-                buttons.push(<button key="login" className="fa fa-user" onClick={AuthModule.login} title={'login'}/>)
+                buttons.push(<button key="login" className="fa fa-user" onClick={()=>{
+                    if(AuthModule.supportsPassword()) {
+                        this.props.provider.showPasswordDialog()
+                    } else {
+                        AuthModule.login()
+                    }
+                }} title={'login'}/>)
             }
         }
         if(AuthModule.supportsDocList()) {

@@ -2,6 +2,7 @@ import {} from '../TreeItemProvider'
 import {getLoginURL} from '../TreeItemProvider'
 import {getInfoURL} from '../TreeItemProvider'
 import {getUserURL} from '../TreeItemProvider'
+import * as ToasterMananager from './ToasterManager'
 
 export const USER_CHANGE = 'USER_CHANGE'
 class AuthModuleSingleton {
@@ -12,6 +13,7 @@ class AuthModuleSingleton {
         this.docDeleteSupported = false
         this.assetUploadSupported = false
         this.scriptEditingSupported = false
+        this.passwordSupported = false
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -30,6 +32,9 @@ class AuthModuleSingleton {
                 if(info.authentication === true) {
                     this.supported = true
                 }
+                if(info.passwordSupported === true) {
+                    this.passwordSupported = true
+                }
                 if(info.assetUpload === true) {
                     this.assetUploadSupported = true
                 }
@@ -44,6 +49,7 @@ class AuthModuleSingleton {
                         this.logout()
                     } else {
                         this.fire(USER_CHANGE)
+                        this.doclistSupported = true
                     }
                 })
             })
@@ -52,6 +58,9 @@ class AuthModuleSingleton {
     isLoggedIn() {
         if(localStorage.getItem('access-token')) return true
         return false
+    }
+    supportsPassword() {
+        return this.passwordSupported
     }
     supportsAuth() {
         return this.supported
@@ -83,6 +92,21 @@ class AuthModuleSingleton {
         localStorage.clear()
         this.doclistSupported = false
         this.fire(USER_CHANGE)
+    }
+    doPasswordLogin (password) {
+        localStorage.setItem('access-token',password)
+        return this.getJSON(getUserURL()).then(res=>{
+            if(res.success === true) {
+                console.log("the logged in response is", res)
+                this.doclistSupported = true
+                ToasterMananager.add("login succeeded")
+                this.fire(USER_CHANGE)
+            } else {
+                ToasterMananager.add("login failed")
+                this.fire(USER_CHANGE)
+            }
+        })
+
     }
     authCallback = (msg) => {
         console.log("got an event from the external window",msg)
