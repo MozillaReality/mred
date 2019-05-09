@@ -13,17 +13,19 @@ import {TweenManager} from '../common/tween'
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
 
+let Cesium = document.Cesium
+let XRGeospatialAnchor = document.XRGeospatialAnchor
 
 
 class XRSupport {
 
     static supportsARKit() {
         if(navigator.xr && navigator.xr._mozillaXRViewer) {
-            console.error("found mozilla xr viewer")
+            console.log("*** Found mozilla xr viewer")
             return true
         }
-        if(typeof window.webkit === 'undefined' || !navigator.xr) return false
-        return true
+        console.log("*** Did not find WebXR")
+        return false
     }
 
     getContext(canvas=0) {
@@ -35,11 +37,17 @@ class XRSupport {
         this.context = 0
         this.xrCanvas = document.createElement('canvas')
         this.xrContext = this.xrCanvas.getContext('xrpresent')
-        let p = new Promise((resolve, reject) => {
+        this._anchoredNodes = new Map() // { XRAnchorOffset, Three.js Object3D }
+        let prom = new Promise((resolve, reject) => {
             // document.body.insertBefore(this.xrCanvas, document.body.firstChild) <- not needed?
             navigator.xr.requestDevice().then((xrDevice)=>{
                 this.device = xrDevice
-                this.device.requestSession({ outputContext: this.xrContext }).then((xrSession)=>{
+                this.device.requestSession({
+                    outputContext: this.xrContext,
+                    alignEUS: true,
+                    geolocation: true,
+                    worldSensing: true
+                }).then((xrSession)=>{
                     this.session = xrSession
                     if(!this.canvas) this.canvas = document.createElement('canvas')
                     if(!this.context) this.context = this.canvas.getContext('webgl', { compatibleXRDevice: this.device })
@@ -54,29 +62,34 @@ class XRSupport {
                 reject()
             })
         })
-        return p
+        return prom
     }
 
     setAnimationLoop(userAnimationCallback) {
-        this.userAnimationCallback = userAnimationCallback
-        this.__handleAnimationFrame = this._handleAnimationFrame.bind(this)
+
+        if(!userAnimationCallback) {
+            console.error("Supply a callback")
+            return
+        }
 
         // head-model is the coordinate system that tracks the position of the display
         this.session.requestFrameOfReference('head-model').then(frameOfReference =>{
             this.headFrameOfReference = frameOfReference
-
-            // get eye level which is somehow different from head level?
-            this.session.requestFrameOfReference('eye-level').then(frameOfReference => {
-                this.eyeLevelFrameOfReference = frameOfReference
-                this.session.requestAnimationFrame(this.__handleAnimationFrame)
-            }).catch(err => {
-                console.error('Error finding eye frame of reference', err)
-            })
-
         }).catch(err => {
             console.error('Error finding head frame of reference', err)
         })
 
+        // get eye level which is somehow different from head level?
+        this.session.requestFrameOfReference('eye-level').then(frameOfReference => {
+            this.eyeLevelFrameOfReference = frameOfReference
+        }).catch(err => {
+            console.error('Error finding eye frame of reference', err)
+        })
+
+        // setup callback
+        this.userAnimationCallback = userAnimationCallback
+        this.__handleAnimationFrame = this._handleAnimationFrame.bind(this)
+        this.session.requestAnimationFrame(this.__handleAnimationFrame)
     }
 
     _handleAnimationFrame(time=0, frame=0){
@@ -84,6 +97,8 @@ class XRSupport {
         if(!this.session || this.session.ended) return
 
         this.session.requestAnimationFrame(this.__handleAnimationFrame)
+
+        if(!this.headFrameOfReference || !this.eyeLevelFrameOfReference) return
 
         let pose = frame.getDevicePose(this.eyeLevelFrameOfReference)
         if(!pose){
@@ -101,9 +116,166 @@ class XRSupport {
         }
     }
 
-    getAnchor(xyz) {
-        // returns a promise
-        return this.session.addAnchor(xyz, this.headFrameOfReference)
+    addAnchoredNode(anchor, node){
+        if (!anchor || !anchor.uid) {
+            console.error("not a valid anchor", anchor)
+            return;
+        }
+        this._anchoredNodes.set(anchor.uid, {
+            anchor: anchor,
+            node: node
+        })
+        node.anchor = anchor
+        node.matrixAutoUpdate = false
+        node.matrix.fromArray(anchor.modelMatrix)
+        node.updateMatrixWorld(true)    
+        //this._scene.add(node) -> presumably this is already done
+        anchor.addEventListener("update", this._handleAnchorUpdate.bind(this))
+        anchor.addEventListener("removed", this._handleAnchorDelete.bind(this))
+        return node
+    }
+
+    addImageAnchoredNode(info) {
+
+        console.log("adding an image recognizer")
+
+        if(!info.image || !info.node) {
+            console.error("Missing image or threejs node")
+            return
+        }
+
+        if(!this.session) {
+            console.error("no session")
+            return
+        }
+
+        //info contains
+        // * callback: to call when the image is found
+        // * image: info about the image to recognize. src is at image.src
+        // * imageRealworldWidth: width of the image in meters
+        // * object: the anchor object
+        // * node: the ThreeJS group which represents the anchor. It should be updated as the scene changes
+        // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
+
+        let callback = info.callback
+        let image = info.image
+        let imageRealworldWidth = 0 // unused
+        let object = info.object // object that represents anchor variables that users can edit in general-editor
+        let node = info.node
+        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+
+        // random name from https://gist.github.com/6174/6062387
+        let name = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('')
+
+        // Get ImageData
+        let canvas = document.createElement('canvas')
+        let context = canvas.getContext('2d')
+        canvas.width = image.width
+        canvas.height = image.height
+        context.drawImage(image,0,0)
+        image.data = context.getImageData(0,0,image.width,image.height)
+
+        // Attach image observer handler
+        this.session.nonStandard_createDetectionImage(name, image.data, image.width, image.height, 0.2).then(() => {
+            this.session.nonStandard_activateDetectionImage(name).then(anchor => {
+                // this gets invoked after the image is seen for the first time
+                node.anchorName = name
+                this.addAnchoredNode(anchor,node)
+                if(callback) {
+                    callback(info)
+                }
+            }).catch(error => {
+                console.error(`error activating detection image: ${error}`)
+            })
+        }).catch(error => {
+            console.error(`error creating detection image: ${error}`)
+        })
+    }
+
+    addGeoAnchoredNode(info) {
+
+        console.log("adding a geo recognizer")
+
+        if(!info.node) {
+            console.error("Missing threejs node")
+            return
+        }
+
+        if(!this.session) {
+            console.error("no session")
+            return
+        }
+
+        /*
+        info contains
+         location:  a geo location asset, has properties for latitude, longitude, altitude, useAltitude
+         recType: the recognition type. for now always SCENE_START
+         object: the anchor object. It reresents the anchor in the 3D scene. has tx,ty,tz, rotation, etc.
+         node: the actual ThreeJS object that mirrors the propertites of the `object` above
+         callback: a function to be called once the geo anchor is recognized. By default this callback will fire a 'recognized' event and make the anchor visible in the scene
+         */
+
+        let callback = info.callback
+        let object = info.object // object that represents anchor variables that users can edit in general-editor
+        let node = info.node
+        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+
+        // Preferentially use a supplied place if any
+
+        if(info.hasOwnProperty("latitude") && info.hasOwnProperty("longitude")) {
+
+            // use supplied altitude?
+
+            if(info.hasOwnProperty("useAltitude") && info.useAltitude) {
+                let lla = new Cesium.Cartographic(info.longitude, info.latitude, info.altitude )
+                XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                    this.addAnchoredNode(anchor,node)
+                })
+            } else {
+                XRGeospatialAnchor.getDeviceElevation().then(altitude => {
+                    console.log("device elevation: ", altitude)
+                    let lla = new Cesium.Cartographic(info.longitude, info.latitude, altitude )
+                    XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                        this.addAnchoredNode(anchor,node)
+                    })
+                })
+            }
+        }
+
+        // else find current position
+
+        else {
+            XRGeospatialAnchor.getDeviceCartographic().then(cartographic => {
+                XRGeospatialAnchor.getDeviceElevation().then(altitude => {
+                    console.log("device elevation: ", altitude)
+                    let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude )
+                    XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                        this.addAnchoredNode(anchor,node)
+                    })
+                })
+            })
+        }
+    }
+
+    _handleAnchorDelete(details) {
+        let anchor = details.source
+        const anchoredNode = this._anchoredNodes.get(anchor.uid)
+        if (anchoredNode) {
+            const node = anchoredNode.node
+            // NOTIFY SOMEBODY? TODO
+            this._anchoredNodes.delete(anchor.uid)
+        }
+    }
+
+    _handleAnchorUpdate(details) {
+        const anchor = details.source
+        const anchoredNode = this._anchoredNodes.get(anchor.uid)
+        if (anchoredNode) {
+            const node = anchoredNode.node
+            node.matrixAutoUpdate = false
+            node.matrix.fromArray(anchor.modelMatrix)
+            node.updateMatrixWorld(true)
+        }
     }
 
 }
@@ -566,7 +738,6 @@ export class VRCanvas extends Component {
         })
     }
 
-
     startRecognizer() {
         //called when script running is started
     }
@@ -581,86 +752,23 @@ export class VRCanvas extends Component {
             return
         }
 
-        //info contains
-        // * callback: to call when the image is found
-        // * image: info about the image to recognize. src is at image.src
-        // * imageRealworldWidth: width of the image in meters
-        // * object: the anchor object
-        // * node: the ThreeJS group which represents the anchor. It should be updated as the scene changes
-        // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
+        // decorate the info.node with an xr anchor
+        this.xr.addImageAnchoredNode(info)
+    }
 
-        let session = this.xr.session
+    startGeoRecognizer(info) {
 
-        let callback = info.callback
-        let image = info.image
-        let imageRealworldWidth = 0 // unused
-        let object = info.object // anchor object?
-        let node = info.node
-        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
-
-        if(!image || !node) {
-            console.error("Missing image or threejs node")
+        // WebXR loaded?
+        if(!this.xr || !this.xr.session) {
+            console.error("XR is not active?")
             return
         }
 
-        // random name from https://gist.github.com/6174/6062387
-        let name = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('')
-
-        // Get ImageData
-        let canvas = document.createElement('canvas')
-        let context = canvas.getContext('2d')
-        canvas.width = image.width
-        canvas.height = image.height
-        context.drawImage(image,0,0)
-        image.data = context.getImageData(0,0,image.width,image.height)
-
-        // Attach image observer handler
-        session.nonStandard_createDetectionImage(name, image.data, image.width, image.height, 0.2).then(() => {
-            session.nonStandard_activateDetectionImage(name).then(anchor => {
-                // this gets invoked after the image is seen for the first time
-                if(callback) {
-                    callback(info)
-                }
-                node.matrixAutoUpdate = false
-                node.anchor = anchor
-                node.anchorName = name
-                anchor.node = node
-                node.anchor.addEventListener("remove", (args) => {
-                    // this is not quite supported yet
-                })
-                node.anchor.addEventListener("update", (args) => {
-                    // this is not called every frame
-                })
-            }).catch(error => {
-                console.error(`error activating detection image: ${error}`)
-            })
-        }).catch(error => {
-            console.error(`error creating detection image: ${error}`)
-        })
-    }
-
-    refreshNodeWithAnchor(node) {
-        if(node.anchor) {
-            node.matrix.fromArray(node.anchor.modelMatrix)
-            node.matrixWorldNeedsUpdate = true
-            node.updateMatrixWorld(true)
-        }
+        // decorate the info.node with an xr anchor
+        this.xr.addGeoAnchoredNode(info)
     }
 
     stopRecognizer() {
-
     }
 
-
-    startGeoRecognizer(info) {
-        console.log("starting the geo recognizer")
-        /*
-        info contains
-         location:  a geo location asset, has properties for latitude, longitude, altitude, useAltitude
-         recType: the recognition type. for now always SCENE_START
-         object: the anchor object. It reresents the anchor in the 3D scene. has tx,ty,tz, rotation, etc.
-         node: the actual ThreeJS object that mirrors the propertites of the `object` above
-         callback: a function to be called once the geo anchor is recognized. By default this callback will fire a 'recognized' event and make the anchor visible in the scene
-         */
-    }
 }
