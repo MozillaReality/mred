@@ -439,8 +439,31 @@ export class VRCanvas extends Component {
         this.obj_node_map = {}
         this.setState({scene: -1})
         //make new stuff
-        const hist = this.props.provider.getDocHistory()
-        hist.forEach(op => this.updateScene(op))
+        const graph = this.props.provider.getDocGraph()
+        console.log("we are rebuilding using this graph",graph)
+        this.rebuildNode(graph,"")
+        // const hist = this.props.provider.getDocHistory()
+        // hist.forEach(op => this.updateScene(op))
+    }
+    rebuildNode(obj, inset) {
+        console.log(inset,"rebuilding",obj.type)
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            const node = new SceneDef().makeNode(obj)
+            this.insertNodeMapping(obj.id,node)
+            this.addSceneWrapper(node)
+            this.setCurrentSceneWrapper(node)
+        }
+        if(is3DObjectType(obj.type)) {
+            const node = get3DObjectDef(obj.type).makeNode(obj)
+            this.insertNodeMapping(obj.id,node)
+            const parent = this.findNode(obj.parent)
+            parent.add(node)
+        }
+        if(obj.children) {
+            obj.children.forEach(ch => {
+                this.rebuildNode(ch,inset+"   ")
+            })
+        }
     }
     selectionChanged = () => {
         this.controls.detach()

@@ -5,7 +5,7 @@ import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {getAssetsURL, getDocsURL, getInfoURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {getAssetsURL, getDocsURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {fetchGraphObject, insertAsFirstChild, insertAsLastChild, listToArray} from '../syncgraph/utils'
 import CubeDef from "./defs/CubeDef"

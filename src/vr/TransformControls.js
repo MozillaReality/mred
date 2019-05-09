@@ -1,3 +1,4 @@
+/* eslint-disable */
 const THREE = require('three');//requireimport * as THREE from 'three'
 
 /**

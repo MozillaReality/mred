@@ -417,8 +417,31 @@ export default class ImmersiveVREditor extends Component {
         this.obj_node_map = {}
         // this.setState({scene: -1})
         //make new stuff
-        const hist = this.props.provider.getDocHistory()
-        hist.forEach(op => this.updateSceneOp(op))
+        const graph = this.props.provider.getDocGraph()
+        console.log("we are rebuilding using this graph",graph)
+        this.rebuildNode(graph,"")
+    }
+
+    rebuildNode(obj, inset) {
+        console.log(inset,"rebuilding",obj.type)
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            const node = new SceneDef().makeNode(obj)
+            this.insertNodeMapping(obj.id,node)
+            this.sceneWrappers[obj.id] = node
+            this.stagePos.add(node)
+            this.swapScene(obj.id)
+        }
+        if(is3DObjectType(obj.type)) {
+            const node = get3DObjectDef(obj.type).makeNode(obj)
+            on(node, POINTER_CLICK, this.standardViewClickHandler)
+            this.insertNodeMapping(obj.id, node)
+            this.findNode(obj.parent).add(node)
+        }
+        if(obj.children) {
+            obj.children.forEach(ch => {
+                this.rebuildNode(ch,inset+"   ")
+            })
+        }
     }
 
     swapScene(id) {

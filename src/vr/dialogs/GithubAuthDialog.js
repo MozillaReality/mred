@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
-import {toQueryString} from '../../utils'
 import {AuthModule} from '../AuthModule'
 import {getLoginURL} from '../../TreeItemProvider'
 
