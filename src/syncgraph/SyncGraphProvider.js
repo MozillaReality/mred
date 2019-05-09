@@ -102,6 +102,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
         return AuthModule.fetch(url,{
             method:'POST',
             body:payload_string,
+            headers: {
+                "Content-Type": "application/json"
+            },
         })
             .then(res=>res.json())
             .then(res => {

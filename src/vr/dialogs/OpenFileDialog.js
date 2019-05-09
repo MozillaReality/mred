@@ -23,7 +23,9 @@ export class OpenFileDialog extends Component {
             switcher:false,
             doc:info.id
         })
-        window.open(`./?${toQueryString(opts)}`)
+        const url = `./?${toQueryString(opts)}`
+        console.log("opening the url",url)
+        window.open(url)
     }
     deleteDoc(info) {
         return this.props.provider.removeDoc(info).then((res)=>{
