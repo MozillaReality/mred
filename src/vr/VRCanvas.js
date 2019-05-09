@@ -517,7 +517,7 @@ export class VRCanvas extends Component {
     }
 
     setupRenderer(canvas,context) {
-
+        console.log("=========== setup renderer")
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
@@ -554,7 +554,7 @@ export class VRCanvas extends Component {
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
         window.addEventListener('resize', this.windowResized,false)
-        this.props.provider.getDocHistory().forEach(op => this.updateScene(op))
+        this.docSwapped()
     }
 
     animationLoop(time) {

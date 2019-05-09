@@ -10,6 +10,7 @@ export class QRDialog extends Component {
 
     render() {
         let url = document.documentURI
+        url = url.replace("https","wxrv")
         url = url.replace("http","wxrv")
         console.log("URL is",url)
         return <Dialog visible={true}>
