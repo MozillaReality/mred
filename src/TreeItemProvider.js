@@ -15,6 +15,7 @@ export const TREE_ITEM_PROVIDER = {
 
 const URLS = {
     BASE:'https://vr.josh.earth/generaled/api/'
+    // BASE:'https://buttered-elk.glitch.me/'
     // BASE:'http://localhost:1234/'
 }
 export function getDocsURL() {
