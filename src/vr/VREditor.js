@@ -734,8 +734,8 @@ class VREditorApp extends Component {
     render() {
         const prov = this.props.provider
         const bot = <div>
-            <a href={getInfoURL()}>{getInfoURL()}</a>
-            <br/>
+            {/*<a href={getInfoURL()}>{getInfoURL()}</a>*/}
+            {/*<br/>*/}
             doc id: <b>{prov.getDocId()}</b>
         </div>
 
