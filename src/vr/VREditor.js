@@ -528,60 +528,28 @@ export default class VREditor extends SyncGraphProvider {
     }
 
     loadDocList() {
-        return fetch(`${getDocsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getDocsURL()}list`)
     }
     removeDoc(doc) {
-        return fetch(`${getDocsURL()}delete/${doc.id}`,{
+        return AuthModule.fetch(`${getDocsURL()}delete/${doc.id}`,{
             method:'POST',
-            mode:'cors',
-            cache:'no-cache',
             body:doc.id,
             headers: {
-                "access-key": AuthModule.getAccessToken()
+                "Content-Type": "application/json",
             }
         }).then(res => res.json())
     }
     loadAssetList() {
-        return fetch(`${getAssetsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getAssetsURL()}list`)
     }
     removeAssetSource(info) {
-        console.log("removing",info)
-        return fetch(`${getAssetsURL()}delete/${info.id}`,{
+        return AuthModule.fetch(`${getAssetsURL()}delete/${info.id}`,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:info.id,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
     }
     loadScriptList() {
-        return fetch(`${getScriptsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getScriptsURL()}list`)
     }
 
 
@@ -601,18 +569,10 @@ export default class VREditor extends SyncGraphProvider {
     removeBehaviorAssetSource(name) {
         const url = `${getScriptsURL()}delete/${name}`
         console.log("removing",url)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:name,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
-            .then(res => {
-                return res
-            })
     }
     addCustomBehaviorAsset = (TEMPLATE) => {
         const randi = (Math.floor(Math.random()*100000000))
@@ -620,14 +580,9 @@ export default class VREditor extends SyncGraphProvider {
         const url = `${getScriptsURL()}${fname}`;
         const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
         console.log("posting it to",url)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:contents,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         })
             .then(res => res.json())
             .then(ans => {
@@ -680,12 +635,8 @@ export default class VREditor extends SyncGraphProvider {
     }
     fetchBehaviorAssetContents(id) {
         const obj = this.accessObject(id)
-        return fetch(obj.src,{
+        return AuthModule.fetch(obj.src,{
             method:'GET',
-            mode: "cors",
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
@@ -696,20 +647,13 @@ export default class VREditor extends SyncGraphProvider {
         this.setCachedBehaviorAsset(id, info)
 
         const obj = this.accessObject(id)
-        return fetch(obj.src,{
+        return AuthModule.fetch(obj.src,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:text,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
             .then(ans => {
                 obj.set('title',ans.script.title)
                 obj.set('description',ans.script.description)
-
-
             })
     }
     getCachedBehaviorPropDefs(behavior) {

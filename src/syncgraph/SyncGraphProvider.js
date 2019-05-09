@@ -99,15 +99,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
         }
         const url = getDocsURL()+this.getDocId()+'?'+toQueryString(opts)
         console.log(`saving ${payload_string.length} chars to ${url}`, payload_obj)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache:'no-cache',
             body:payload_string,
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
         })
             .then(res=>res.json())
             .then(res => {
@@ -120,15 +114,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     loadDoc(docid) {
         console.log("loading",docid)
-        return fetch(getDocsURL()+docid,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res => res.json())
+        return AuthModule.getJSON(getDocsURL()+docid)
             .then((payload)=>{
                 console.log("got the payload",payload)
                 if(payload.success === false) return this.showMissingDocDialog(docid)

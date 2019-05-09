@@ -8,6 +8,7 @@ import {Group} from "three"
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
 import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
+import {AuthModule} from './AuthModule'
 
 
 export class ImmersivePlayer extends Component {
@@ -194,7 +195,7 @@ export class ImmersivePlayer extends Component {
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 console.log("loading behavior",ch)
-                const prom = fetch(ch.src)
+                const prom = AuthModule.fetch(ch.src)
                     .then(res => res.text())
                     .then(text => {
                         const info = parseBehaviorScript(text)

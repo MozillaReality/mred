@@ -101,6 +101,20 @@ class AuthModuleSingleton {
         return this.getAccessToken()
     }
 
+    fetch(url, options) {
+        options.mode = 'cors'
+        options.cache = 'no-cache'
+        if(!options.headers) options.headers = {}
+        options.headers["access-key"] =  AuthModule.getAccessToken()
+        console.log("fetching",url,'with options',options)
+        return fetch(url,options)
+    }
+    getJSON(url) {
+        return this.fetch(url,{method:'GET', headers: {
+                "Content-Type": "application/json",
+            }
+        }).then(res => res.json())
+    }
 
 }
 
