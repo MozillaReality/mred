@@ -318,21 +318,21 @@ export default class VREditor extends SyncGraphProvider {
     }
 
     editInVR = () => {
-        this.save().then(()=>{
+        // this.save().then(()=>{
             const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
             const url = `./?${toQueryString(opts)}`
-            console.log("opening the url",url)
+            console.log("edit In VR: opening the url",url)
             window.open(url)
-        })
+        // })
     }
 
     viewInVR = () => {
-        this.save().then(()=>{
+        // this.save().then(()=>{
             const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
             const url = `./?${toQueryString(opts)}`
             console.log("opening the url",url)
             window.open(url)
-        })
+        // })
     }
 
     showQRCode = () => {
