@@ -116,15 +116,17 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     loadDoc(docid) {
-        console.log("loading",docid)
         return AuthModule.getJSON(getDocsURL()+docid)
             .then((payload)=>{
                 console.log("got the payload",payload)
-                if(payload.success === false) return this.showMissingDocDialog(docid)
+                if(!payload.id) return this.showMissingDocDialog(docid)
                 const doc = this.makeDocFromServerHistory(payload.history)
                 this.setupDocFlow(doc,docid)
             })
-            .catch((e)=> this.showMissingDocDialog(docid))
+            .catch((e)=> {
+                console.error("there was an error loading doc",docid,e)
+                // this.showMissingDocDialog(docid)
+            })
     }
 
     createNewDocument(docid) {
