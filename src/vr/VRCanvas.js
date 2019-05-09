@@ -176,7 +176,7 @@ class XRSupport {
         image.data = context.getImageData(0,0,image.width,image.height)
 
         // Attach image observer handler
-        this.session.nonStandard_createDetectionImage(name, image.data, image.width, image.height, 0.2).then(() => {
+        this.session.nonStandard_createDetectionImage(name, image.data.data, image.width, image.height, 0.2).then(() => {
             this.session.nonStandard_activateDetectionImage(name).then(anchor => {
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
