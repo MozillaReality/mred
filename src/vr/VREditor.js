@@ -534,9 +534,6 @@ export default class VREditor extends SyncGraphProvider {
         return AuthModule.fetch(`${getDocsURL()}delete/${doc.id}`,{
             method:'POST',
             body:doc.id,
-            headers: {
-                "Content-Type": "application/json",
-            }
         }).then(res => res.json())
     }
     loadAssetList() {

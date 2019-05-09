@@ -1,6 +1,7 @@
 import {} from '../TreeItemProvider'
 import {getLoginURL} from '../TreeItemProvider'
 import {getInfoURL} from '../TreeItemProvider'
+import {getUserURL} from '../TreeItemProvider'
 
 export const USER_CHANGE = 'USER_CHANGE'
 class AuthModuleSingleton {
@@ -35,7 +36,16 @@ class AuthModuleSingleton {
                 if(info.scriptEditing === true)  this.scriptEditingSupported = true
                 if(info.docDeleteSupported === true) this.docDeleteSupported = true
 
-                this.fire(USER_CHANGE)
+
+                this.getJSON(getUserURL()).then(res=>{
+                    console.log("user info is",res)
+                    if(!res.success) {
+                        console.log("user not logged in")
+                        this.logout()
+                    } else {
+                        this.fire(USER_CHANGE)
+                    }
+                })
             })
     }
 
@@ -107,7 +117,10 @@ class AuthModuleSingleton {
         if(!options.headers) options.headers = {}
         options.headers["access-key"] =  AuthModule.getAccessToken()
         console.log("fetching",url,'with options',options)
-        return fetch(url,options)
+        return fetch(url,options).then(res => {
+            console.log("got a response",res)
+            return res
+        })
     }
     getJSON(url) {
         return this.fetch(url,{method:'GET', headers: {

@@ -3,6 +3,7 @@ import {
     AmbientLight,
     Audio,
     AudioLoader,
+    AudioListener,
     Color,
     CylinderBufferGeometry,
     DirectionalLight,
