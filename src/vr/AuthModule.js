@@ -78,15 +78,15 @@ class AuthModuleSingleton {
         return this.docDeleteSupported
     }
 
-    login = () => {
-        console.log("getting",getLoginURL())
-        fetch(`${getLoginURL()}`)
-            .then((res)=>res.json())
-            .then((res)=>{
-                this.win = window.open(res.url,'_blank')
-                window.addEventListener('message',this.authCallback)
-                if(this.win) this.win.focus()
-            })
+    login = (res) => {
+        // console.log("getting",getLoginURL())
+        // fetch(`${getLoginURL()}`)
+        //     .then((res)=>res.json())
+        //     .then((res)=>{
+        this.win = window.open(res.url,'_blank')
+        window.addEventListener('message',this.authCallback)
+        if(this.win) this.win.focus()
+            // })
     }
     logout = () => {
         localStorage.clear()
@@ -152,6 +152,11 @@ class AuthModuleSingleton {
                 "Content-Type": "application/json",
             }
         }).then(res => res.json())
+            .then(res => {
+                console.log("got response to",url)
+                console.log(res)
+                return res
+            })
     }
 
 }

@@ -9,7 +9,9 @@ export class QRDialog extends Component {
     }
 
     render() {
-        const url = document.documentURI
+        let url = document.documentURI
+        url = url.replace("http","wxrv")
+        console.log("URL is",url)
         return <Dialog visible={true}>
             <VBox grow>
                 <h3>Scan</h3>

@@ -49,6 +49,7 @@ import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, s
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
+import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -528,6 +529,7 @@ export default class VREditor extends SyncGraphProvider {
         },"new geo location",this)
     }
     showPasswordDialog = () => DialogManager.show(<PasswordDialog provider={this}/>)
+    showGithubDialog = () => DialogManager.show(<GithubAuthDialog provider={this}/>)
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
@@ -801,7 +803,8 @@ class VREditorApp extends Component {
                     if(AuthModule.supportsPassword()) {
                         this.props.provider.showPasswordDialog()
                     } else {
-                        AuthModule.login()
+                        this.props.provider.showGithubDialog()
+//                        AuthModule.login()
                     }
                 }} title={'login'}/>)
             }
