@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import {getDocsURL} from '../TreeItemProvider'
+import TreeItemProvider, {getDocsURL} from '../TreeItemProvider'
 import {on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
@@ -14,6 +14,7 @@ import {AuthModule} from './AuthModule'
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
+        new TreeItemProvider(props.options)
         this.obj_map = {}
         this.three_map = {}
         this.title_map = {}

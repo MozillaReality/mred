@@ -25,7 +25,7 @@ export default class App extends Component {
         if(doctype === 'vr') {
             if(this.props.options.mode === 'play') {
                 console.log("doing play instead")
-                return <ImmersivePlayer/>
+                return <ImmersivePlayer options={this.props.options}/>
             }
             this.provider = new VREditor(this.props.options)
             return this.provider.getApp()

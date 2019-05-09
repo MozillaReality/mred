@@ -327,8 +327,10 @@ export default class VREditor extends SyncGraphProvider {
 
     viewInVR = () => {
         this.save().then(()=>{
-        const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
-        window.open(`./?${toQueryString(opts)}`)
+            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
+            const url = `./?${toQueryString(opts)}`
+            console.log("opening the url",url)
+            window.open(url)
         })
     }
 
