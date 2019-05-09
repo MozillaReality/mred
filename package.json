@@ -38,5 +38,6 @@
   "devDependencies": {
     "nwb": "^0.23.0"
   },
+  "homepage": "./",
   "jest": {}
 }

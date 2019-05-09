@@ -1,4 +1,4 @@
-import {GET_JSON, POST_JSON, setQuery} from './utils'
+import {setQuery} from './utils'
 import Selection from './SelectionManager'
 import {AuthModule} from './vr/AuthModule'
 
@@ -15,7 +15,8 @@ export const TREE_ITEM_PROVIDER = {
 
 const URLS = {
     BASE:'https://vr.josh.earth/generaled/api/'
-    // BASE:'http://localhost:8734/'
+    // BASE:'https://buttered-elk.glitch.me/'
+    // BASE:'http://localhost:1234/'
 }
 export function getDocsURL() {
     return URLS.BASE + 'doc/'
@@ -31,6 +32,9 @@ export function getLoginURL() {
 }
 export function getInfoURL() {
     return URLS.BASE +'info'
+}
+export function getUserURL() {
+    return URLS.BASE + 'userinfo'
 }
 
 // export const SERVER_URL = "http://localhost:30065/doc/"
@@ -192,7 +196,15 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
             return value
         })
         console.info("doc is",payload_string)
-        return POST_JSON(getDocsURL()+this.docid,payload_string).then((res)=>{
+        return AuthModule.fetch(getDocsURL()+this.docid, {
+            method:'POST',
+            body: payload_string,
+            headers: {
+                "Content-Type": "application/json"
+            },
+        })
+            .then(res => res.json())
+            .then((res)=>{
             console.log("Success result is",res)
             setQuery({mode:'edit',doc:this.docid, doctype:this.getDocType()})
             this.fire(TREE_ITEM_PROVIDER.SAVED,true)
@@ -200,7 +212,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     }
     loadDoc(docid) {
         console.log("need to load the doc",docid)
-        GET_JSON(getDocsURL()+docid).then((payload)=>{
+        AuthModule.getJSON(getDocsURL()+docid).then((payload)=>{
             console.log("got the doc",payload)
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
@@ -213,7 +225,7 @@ export default class TreeItemProvider extends TreeItemProviderInterface {
     reloadDocument() {
         const spath = this.generateSelectionPath(Selection.getSelection());
         console.log("got the path",spath)
-        GET_JSON(getDocsURL()+this.docid).then((payload)=>{
+        AuthModule.getJSON(getDocsURL()+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             this.setDocument(payload.doc,payload.id)
             this.fire(TREE_ITEM_PROVIDER.CLEAR_DIRTY,true)

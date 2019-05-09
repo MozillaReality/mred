@@ -1,18 +1,20 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import {getDocsURL} from '../TreeItemProvider'
-import {GET_JSON, on, parseOptions} from '../utils'
+import TreeItemProvider, {getDocsURL} from '../TreeItemProvider'
+import {on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
 import {Group} from "three"
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
 import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
+import {AuthModule} from './AuthModule'
 
 
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
+        new TreeItemProvider(props.options)
         this.obj_map = {}
         this.three_map = {}
         this.title_map = {}
@@ -27,7 +29,7 @@ export class ImmersivePlayer extends Component {
     componentDidMount() {
         this.initThreeJS()
         const opts = parseOptions({})
-        GET_JSON(getDocsURL()+opts.doc).then((payload)=>{
+        AuthModule.getJSON(getDocsURL()+opts.doc).then((payload)=>{
             this.root = payload.graph
             this.buildRoot(this.root)
             console.log("root is",this.root)
@@ -194,7 +196,7 @@ export class ImmersivePlayer extends Component {
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 console.log("loading behavior",ch)
-                const prom = fetch(ch.src)
+                const prom = AuthModule.fetch(ch.src)
                     .then(res => res.text())
                     .then(text => {
                         const info = parseBehaviorScript(text)

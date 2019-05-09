@@ -48,6 +48,8 @@ import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
+import {PasswordDialog} from './dialogs/PasswordDialog'
+import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -316,17 +318,21 @@ export default class VREditor extends SyncGraphProvider {
     }
 
     editInVR = () => {
-        this.save().then(()=>{
-        const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
-        window.open(`./?${toQueryString(opts)}`)
-        })
+        // this.save().then(()=>{
+            const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
+            const url = `./?${toQueryString(opts)}`
+            console.log("edit In VR: opening the url",url)
+            window.open(url)
+        // })
     }
 
     viewInVR = () => {
-        this.save().then(()=>{
-        const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
-        window.open(`./?${toQueryString(opts)}`)
-        })
+        // this.save().then(()=>{
+            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
+            const url = `./?${toQueryString(opts)}`
+            console.log("opening the url",url)
+            window.open(url)
+        // })
     }
 
     showQRCode = () => {
@@ -522,66 +528,33 @@ export default class VREditor extends SyncGraphProvider {
             useAltitude:false,
         },"new geo location",this)
     }
+    showPasswordDialog = () => DialogManager.show(<PasswordDialog provider={this}/>)
+    showGithubDialog = () => DialogManager.show(<GithubAuthDialog provider={this}/>)
 
     accessObject = (id) => {
         return new GraphAccessor(this.getDataGraph()).object(id)
     }
 
     loadDocList() {
-        return fetch(`${getDocsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getDocsURL()}list`)
     }
     removeDoc(doc) {
-        return fetch(`${getDocsURL()}delete/${doc.id}`,{
+        return AuthModule.fetch(`${getDocsURL()}delete/${doc.id}`,{
             method:'POST',
-            mode:'cors',
-            cache:'no-cache',
             body:doc.id,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
     }
     loadAssetList() {
-        return fetch(`${getAssetsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getAssetsURL()}list`)
     }
     removeAssetSource(info) {
-        console.log("removing",info)
-        return fetch(`${getAssetsURL()}delete/${info.id}`,{
+        return AuthModule.fetch(`${getAssetsURL()}delete/${info.id}`,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:info.id,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
     }
     loadScriptList() {
-        return fetch(`${getScriptsURL()}list`,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res=>res.json())
+        return AuthModule.getJSON(`${getScriptsURL()}list`)
     }
 
 
@@ -601,18 +574,10 @@ export default class VREditor extends SyncGraphProvider {
     removeBehaviorAssetSource(name) {
         const url = `${getScriptsURL()}delete/${name}`
         console.log("removing",url)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:name,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
-            .then(res => {
-                return res
-            })
     }
     addCustomBehaviorAsset = (TEMPLATE) => {
         const randi = (Math.floor(Math.random()*100000000))
@@ -620,14 +585,9 @@ export default class VREditor extends SyncGraphProvider {
         const url = `${getScriptsURL()}${fname}`;
         const contents = TEMPLATE?TEMPLATE:CUSTOM_BEHAVIOR_SCRIPT
         console.log("posting it to",url)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:contents,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         })
             .then(res => res.json())
             .then(ans => {
@@ -680,12 +640,8 @@ export default class VREditor extends SyncGraphProvider {
     }
     fetchBehaviorAssetContents(id) {
         const obj = this.accessObject(id)
-        return fetch(obj.src,{
+        return AuthModule.fetch(obj.src,{
             method:'GET',
-            mode: "cors",
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
@@ -696,20 +652,13 @@ export default class VREditor extends SyncGraphProvider {
         this.setCachedBehaviorAsset(id, info)
 
         const obj = this.accessObject(id)
-        return fetch(obj.src,{
+        return AuthModule.fetch(obj.src,{
             method:'POST',
-            mode:'cors',
-            cache: 'no-cache',
             body:text,
-            headers: {
-                "access-key": AuthModule.getAccessToken()
-            }
         }).then(res => res.json())
             .then(ans => {
                 obj.set('title',ans.script.title)
                 obj.set('description',ans.script.description)
-
-
             })
     }
     getCachedBehaviorPropDefs(behavior) {
@@ -785,8 +734,8 @@ class VREditorApp extends Component {
     render() {
         const prov = this.props.provider
         const bot = <div>
-            <a href={getInfoURL()}>{getInfoURL()}</a>
-            <br/>
+            {/*<a href={getInfoURL()}>{getInfoURL()}</a>*/}
+            {/*<br/>*/}
             doc id: <b>{prov.getDocId()}</b>
         </div>
 
@@ -850,7 +799,14 @@ class VREditorApp extends Component {
             if(AuthModule.isLoggedIn()) {
                 buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout} title={'logout'}>logout</button>)
             } else {
-                buttons.push(<button key="login" className="fa fa-user" onClick={AuthModule.login} title={'login'}/>)
+                buttons.push(<button key="login" className="fa fa-user" onClick={()=>{
+                    if(AuthModule.supportsPassword()) {
+                        this.props.provider.showPasswordDialog()
+                    } else {
+                        this.props.provider.showGithubDialog()
+//                        AuthModule.login()
+                    }
+                }} title={'login'}/>)
             }
         }
         if(AuthModule.supportsDocList()) {

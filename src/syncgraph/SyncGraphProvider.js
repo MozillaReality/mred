@@ -1,5 +1,5 @@
 import TreeItemProvider, {getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import {GET_JSON, POST_JSON, setQuery, toQueryString} from '../utils'
+import {setQuery, toQueryString} from '../utils'
 import {UndoQueue} from './UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
@@ -99,15 +99,12 @@ export default class SyncGraphProvider extends TreeItemProvider {
         }
         const url = getDocsURL()+this.getDocId()+'?'+toQueryString(opts)
         console.log(`saving ${payload_string.length} chars to ${url}`, payload_obj)
-        return fetch(url,{
+        return AuthModule.fetch(url,{
             method:'POST',
-            mode:'cors',
-            cache:'no-cache',
             body:payload_string,
             headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
+                "Content-Type": "application/json"
+            },
         })
             .then(res=>res.json())
             .then(res => {
@@ -119,23 +116,17 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     loadDoc(docid) {
-        console.log("loading",docid)
-        return fetch(getDocsURL()+docid,{
-            method:'GET',
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                "access-key": AuthModule.getAccessToken()
-            }
-        })
-            .then(res => res.json())
+        return AuthModule.getJSON(getDocsURL()+docid)
             .then((payload)=>{
                 console.log("got the payload",payload)
-                if(payload.success === false) return this.showMissingDocDialog(docid)
+                if(!payload.id) return this.showMissingDocDialog(docid)
                 const doc = this.makeDocFromServerHistory(payload.history)
                 this.setupDocFlow(doc,docid)
             })
-            .catch((e)=> this.showMissingDocDialog(docid))
+            .catch((e)=> {
+                console.error("there was an error loading doc",docid,e)
+                // this.showMissingDocDialog(docid)
+            })
     }
 
     createNewDocument(docid) {
@@ -177,7 +168,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     reloadDocument() {
-        return GET_JSON(getDocsURL()+this.docid).then((payload)=>{
+        return AuthModule.getJSON(getDocsURL()+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)
