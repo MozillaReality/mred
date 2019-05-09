@@ -20,6 +20,7 @@ export const on = (elem,type,cb) => elem.addEventListener(type,cb)
 export function genID(prefix) {
     return `${prefix}_${Math.floor(Math.random() * 10000)}`
 }
+/*
 export function GET_JSON(path, cb) {
     return new Promise((res,rej) => {
         console.log("fetching",path);
@@ -65,6 +66,7 @@ export function POST_JSON(path, payload) {
         }
     })
 }
+ */
 
 
 export function makePoint(x,y) {

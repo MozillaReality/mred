@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {getDocsURL} from '../TreeItemProvider'
-import {GET_JSON, on, parseOptions} from '../utils'
+import {on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
 import {Group} from "three"
@@ -28,7 +28,7 @@ export class ImmersivePlayer extends Component {
     componentDidMount() {
         this.initThreeJS()
         const opts = parseOptions({})
-        GET_JSON(getDocsURL()+opts.doc).then((payload)=>{
+        AuthModule.getJSON(getDocsURL()+opts.doc).then((payload)=>{
             this.root = payload.graph
             this.buildRoot(this.root)
             console.log("root is",this.root)

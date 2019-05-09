@@ -1,5 +1,5 @@
 import TreeItemProvider, {getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import {GET_JSON, POST_JSON, setQuery, toQueryString} from '../utils'
+import {setQuery, toQueryString} from '../utils'
 import {UndoQueue} from './UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
 import SelectionManager from '../SelectionManager'
@@ -166,7 +166,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     reloadDocument() {
-        return GET_JSON(getDocsURL()+this.docid).then((payload)=>{
+        return AuthModule.getJSON(getDocsURL()+this.docid).then((payload)=>{
             if(payload.type !== this.getDocType()) throw new Error("incorrect doctype for this provider",payload.type)
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)
