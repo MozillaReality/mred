@@ -2639,5 +2639,4 @@ const GLTFLoader = ( function () {
 
 } )();
 
-console.log("GLTF = ", GLTFLoader)
 export default GLTFLoader

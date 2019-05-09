@@ -423,6 +423,15 @@ export class VRCanvas extends Component {
             prov.quick_setPropertyValue(sel,'tz',node.position.z)
         }
     }
+    /*
+    the problem is that the updateScene and populateNode functions are going through history
+    to recreate the ThreeJS scene. The problem is that they are using old operations but applying
+    it to the graph as it is now. Thus if you create an object and make it a child of another
+    object that is created later, this will fail when we recreate everything.
+
+    the solution is to not recreate the scene graph using history. instead recreate
+    it using just the current document, then continue updating from there
+     */
     docSwapped = (e) => {
         //nuke all the old stuff
         this.scenes.forEach(sc => this.scene.remove(sc))
