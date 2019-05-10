@@ -10,7 +10,7 @@ export default class AnchorDef extends ObjectDef {
         if(!scene.id) throw new Error("can't anchor w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
             type:OBJ_TYPES.anchor,
-            title:'anchor '+COUNTER++,
+            title:'image anchor '+COUNTER++,
             visible:true,
             tx:0, ty:1.5, tz:-5,
             rx:0, ry:0, rz:0,

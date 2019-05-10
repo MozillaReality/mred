@@ -29,7 +29,7 @@ export function newDoc(provider) {
 
 
 export function showAddPopup (e, provider) {
-    let item = provider.getSelectedScene()
+    let item = provider.getSelectedSceneObject()
     const acts = Object.keys(OBJ_TYPES).map(type => {
         return {
             title: type,
