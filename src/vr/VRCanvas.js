@@ -296,10 +296,12 @@ class XRSupport {
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
+            logger.log(`anchored node ${toFlatString(anchoredNode)}`)
             const node = anchoredNode.node
             node.matrixAutoUpdate = false
             node.matrix.fromArray(anchor.modelMatrix)
             node.updateMatrixWorld(true)
+            logger.log("moved the node. is visible?" + node.visible)
         }
     }
 
