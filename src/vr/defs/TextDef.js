@@ -31,6 +31,9 @@ export default class TextDef extends ObjectDef {
         if(obj.cssStyle) div.setAttribute('style',obj.cssStyle)
         const divLayer = new WebLayer3D(div,{
             pixelRatio: window.devicePixelRatio,
+            onLayerCreate(layer) {
+                layer.mesh.material.side = THREE.DoubleSide
+            }
         })
 
         divLayer.refresh(true)

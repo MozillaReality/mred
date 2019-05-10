@@ -179,10 +179,9 @@ class XRSupport {
         let context = canvas.getContext('2d')
         canvas.width = image.width
         canvas.height = image.height
-        logger.log(`doing the image ${toFlatString(image)} ${image.src}`)
+        logger.log(`looking for image ${toFlatString(image)} ${image.src}`)
 
         context.drawImage(image, 0, 0)
-        logger.log("drew the image okay")
         let idata
         try {
             idata = context.getImageData(0,0,image.width,image.height)
@@ -195,8 +194,7 @@ class XRSupport {
             ToasterMananager.add("error drawing image",e.toString())
             throw new Error("foo")
         }
-        logger.log("got the image data")
-        logger.log(`using image width and height ${image.width} ${image.height}`)
+        logger.log(`calling createDetectionImage with image width and height ${image.width} ${image.height}`)
 
         // Attach image observer handler
         this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, 0.2).then(() => {
@@ -205,7 +203,6 @@ class XRSupport {
                 logger.log("started activate detection image")
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
-                logger.log('adding an anchor node')
                 this.addAnchoredNode(anchor,node,logger)
                 if(callback) {
                     callback(info)
@@ -284,7 +281,7 @@ class XRSupport {
     }
 
     _handleAnchorDelete(details, logger) {
-        logger.log("got an anchor update")
+        logger.log("delete anchor")
         let anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
@@ -295,16 +292,14 @@ class XRSupport {
     }
 
     _handleAnchorUpdate(details, logger) {
-        logger.log("got an anchor update")
+        logger.log("anchor update")
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
-            logger.log(`anchored node ${toFlatString(anchoredNode)}`)
             const node = anchoredNode.node
             node.matrixAutoUpdate = false
             node.matrix.fromArray(anchor.modelMatrix)
             node.updateMatrixWorld(true)
-            logger.log("moved the node. is visible?" + node.visible)
         }
     }
 
@@ -690,13 +685,12 @@ export class VRCanvas extends Component {
 
     render() {
         const logger = this.props.provider.pubnub.getLogger()
-        logger.log("rendering")
         return <div>
             <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}
                     className="editable-canvas"
                     onKeyDown={this.handleKeyPress}
                     tabIndex={0}
-            ></canvas>
+            />
             <br/>
             <button onClick={this.moveCameraForward}>forward</button>
             <button onClick={this.moveCameraBackward}>backward</button>
@@ -762,7 +756,6 @@ export class VRCanvas extends Component {
     }
 
     clickedCanvas = (e) => {
-        console.log("clicked on the canvas")
         this.canvas.focus()
         const rect = this.canvas.getBoundingClientRect();
         const pointer = {

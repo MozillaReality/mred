@@ -163,7 +163,7 @@ export default class ScriptManager {
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
             })
-            this.sgp.getSceneObjects(scene).forEach(child => {
+            scene.find(child => {
                 const behaviors = this.sgp.getBehaviorsForObject(child)
                 behaviors.forEach(b => {
                     evt.target = new ThreeObjectFacade(this,b.parent)

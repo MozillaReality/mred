@@ -133,7 +133,9 @@ export class PubnubSyncWrapper {
         if (this.paused) return
 //        console.log("channel is",evt.channel)
         if(evt.channel === this.calculateLoggerChannelName()) {
-            console.log("REMOTE LOGGER",evt.message)
+            if(evt.publisher !== this.pubnub.getUUID()) {
+                console.log("REMOTE LOGGER", evt.message)
+            }
             return
         }
         const graph = this.provider.getDataGraph()
@@ -172,7 +174,7 @@ export class PubnubSyncWrapper {
                 })
             },
             error: (msg) => {
-                console.log("LOGGER ERROR",msg)
+                console.error("LOGGER ERROR",msg)
                 this.pubnub.publish({
                     channel:this.calculateLoggerChannelName(),
                     message:msg
