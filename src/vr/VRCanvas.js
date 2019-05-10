@@ -142,17 +142,15 @@ class XRSupport {
 
     addImageAnchoredNode(info, image, logger) {
 
-        logger.log("adding an image recognizer")
+        logger.log("addImageAnchoredNode")
 
         if(!info.image || !info.node) {
-            console.error("Missing image or threejs node")
             logger.log("missing image or threejs node")
             return
         }
 
         if(!this.session) {
             logger.log("no session")
-            console.error("no session")
             return
         }
 
@@ -192,10 +190,12 @@ class XRSupport {
         }
         logger.log("drew the image okay")
         const idata = context.getImageData(0,0,image.width,image.height)
+        logger.log("got the image data")
+        logger.log(`using image width and height ${image.width} ${image.height}`)
 
         // Attach image observer handler
         this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, 0.2).then(() => {
-            logger.log("created a non-standard createdetectionimage")
+            logger.log("created a createdetectionimage")
             this.session.nonStandard_activateDetectionImage(name).then(anchor => {
                 logger.log("started activate detection image")
                 // this gets invoked after the image is seen for the first time
@@ -203,15 +203,13 @@ class XRSupport {
                 logger.log('adding an anchor node')
                 this.addAnchoredNode(anchor,node)
                 if(callback) {
-                    console.log("calling the callback")
+                    logger.log("calling the callback")
                     callback(info)
                 }
             }).catch(error => {
-                ToasterMananager.add("error activating")
                 logger.error(`error activating detection image: ${error}`)
             })
         }).catch(error => {
-            ToasterMananager.add("error creating")
             logger.error(`error creating detection image: ${error}`)
         })
     }
@@ -801,25 +799,23 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        console.log("starting image rec with info",info)
+        const logger = this.props.provider.pubnub.getLogger()
         return new Promise((res,rej) => {
             const img = new Image()
             img.src = info.image.src
-            console.log("Loading image",img.src)
+            logger.log("Loading image",img.src)
             img.onload = () => {
                 res(img)
             }
         }).then(img => {
-            console.log("got the image",img)
+            logger.log("got the image",toFlatString(img))
             //called when an anchor is started that wants to recognize an image
             // WebXR loaded?
             if(!this.xr || !this.xr.session) {
-                console.error("XR is not active?")
+                logger.log("XR is not active?")
                 return
             }
 
-            const logger = this.props.provider.pubnub.getLogger()
-            logger.log("starting the image rec")
             // decorate the info.node with an xr anchor
             this.xr.addImageAnchoredNode(info, img, logger)
         })
