@@ -28,6 +28,9 @@ export class PubnubSyncWrapper {
     calculateChannelName() {
         return "metadoc-docupdate-" + this.provider.getDocId()
     }
+    calculateLoggerChannelName() {
+        return "metadoc-log-" + this.provider.getDocId()
+    }
 
     start() {
         this.pubnub.addListener({
@@ -40,7 +43,7 @@ export class PubnubSyncWrapper {
             message: (m)=>this.handleMessage(m),
         })
 
-        this.pubnub.subscribe({channels: [this.calculateChannelName()]})
+        this.pubnub.subscribe({channels: [this.calculateChannelName(),this.calculateLoggerChannelName()]})
     }
 
     pause() {
@@ -128,6 +131,11 @@ export class PubnubSyncWrapper {
 
     handleMessage (evt) {
         if (this.paused) return
+//        console.log("channel is",evt.channel)
+        if(evt.channel === this.calculateLoggerChannelName()) {
+            console.log("REMOTE LOGGER",evt.message)
+            return
+        }
         const graph = this.provider.getDataGraph()
         // console.log('PN_REMOTE',evt)
         if (evt.message.type === 'GET_HISTORY') {
@@ -152,5 +160,24 @@ export class PubnubSyncWrapper {
         }
         console.log("REMOTE", op)
         graph.process(op)
+    }
+
+    getLogger() {
+        return {
+            log: (msg)=> {
+                console.log("LOGGER",msg)
+                this.pubnub.publish({
+                    channel:this.calculateLoggerChannelName(),
+                    message:msg
+                })
+            },
+            error: (msg) => {
+                console.log("LOGGER ERROR",msg)
+                this.pubnub.publish({
+                    channel:this.calculateLoggerChannelName(),
+                    message:msg
+                })
+            }
+        }
     }
 }

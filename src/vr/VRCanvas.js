@@ -18,6 +18,10 @@ let Cesium = document.Cesium
 let XRGeospatialAnchor = document.XRGeospatialAnchor
 
 
+function toFlatString(obj) {
+    return JSON.stringify(obj)
+}
+
 class XRSupport {
 
     static supportsARKit() {
@@ -136,16 +140,18 @@ class XRSupport {
         return node
     }
 
-    addImageAnchoredNode(info) {
+    addImageAnchoredNode(info, image, logger) {
 
-        console.log("adding an image recognizer")
+        logger.log("adding an image recognizer")
 
         if(!info.image || !info.node) {
             console.error("Missing image or threejs node")
+            logger.log("missing image or threejs node")
             return
         }
 
         if(!this.session) {
+            logger.log("no session")
             console.error("no session")
             return
         }
@@ -159,7 +165,7 @@ class XRSupport {
         // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
 
         let callback = info.callback
-        let image = info.image
+        // let image = info.image
         let imageRealworldWidth = 0 // unused
         let object = info.object // object that represents anchor variables that users can edit in general-editor
         let node = info.node
@@ -173,16 +179,22 @@ class XRSupport {
         let context = canvas.getContext('2d')
         canvas.width = image.width
         canvas.height = image.height
+        logger.log(`doing the image ${toFlatString(image)} ${image.src}`)
+
         try {
             context.drawImage(image, 0, 0)
         } catch(e) {
+            logger.log(`error drawing image ${toFlatString(e)}`)
+            logger.log(`name ${e.name}`)
+            logger.log(`name ${e.message}`)
             ToasterMananager.add("error drawing image",e.toString())
             throw new Error("foo")
         }
-        image.data = context.getImageData(0,0,image.width,image.height)
+        logger.log("drew the image okay")
+        const idata = context.getImageData(0,0,image.width,image.height)
 
         // Attach image observer handler
-        this.session.nonStandard_createDetectionImage(name, image.data.data, image.width, image.height, 0.2).then(() => {
+        this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, 0.2).then(() => {
             this.session.nonStandard_activateDetectionImage(name).then(anchor => {
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
@@ -192,11 +204,11 @@ class XRSupport {
                 }
             }).catch(error => {
                 ToasterMananager.add("error activating")
-                console.error(`error activating detection image: ${error}`)
+                logger.error(`error activating detection image: ${error}`)
             })
         }).catch(error => {
             ToasterMananager.add("error creating")
-            console.error(`error creating detection image: ${error}`)
+            logger.error(`error creating detection image: ${error}`)
         })
     }
 
@@ -667,6 +679,8 @@ export class VRCanvas extends Component {
     }
 
     render() {
+        const logger = this.props.provider.pubnub.getLogger()
+        logger.log("rendering")
         return <div>
             <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}
                     className="editable-canvas"
@@ -783,17 +797,28 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
+        console.log("starting image rec with info",info)
+        return new Promise((res,rej) => {
+            const img = new Image()
+            img.src = info.image.src
+            console.log("Loading image",img.src)
+            img.onload = () => {
+                res(img)
+            }
+        }).then(img => {
+            console.log("got the image",img)
+            //called when an anchor is started that wants to recognize an image
+            // WebXR loaded?
+            if(!this.xr || !this.xr.session) {
+                console.error("XR is not active?")
+                return
+            }
 
-        //called when an anchor is started that wants to recognize an image
-
-        // WebXR loaded?
-        if(!this.xr || !this.xr.session) {
-            console.error("XR is not active?")
-            return
-        }
-
-        // decorate the info.node with an xr anchor
-        this.xr.addImageAnchoredNode(info)
+            const logger = this.props.provider.pubnub.getLogger()
+            logger.log("starting the image rec")
+            // decorate the info.node with an xr anchor
+            this.xr.addImageAnchoredNode(info, img, logger)
+        })
     }
 
     startGeoRecognizer(info) {
