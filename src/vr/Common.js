@@ -472,6 +472,7 @@ export const ITEM_ICONS = {
     gltf:'cube',
     anchor:'anchor',
     geoanchor:'globe',
+    geolocation:'globe',
 
     cut:'cut',
     copy:'copy',
