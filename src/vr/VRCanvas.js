@@ -121,9 +121,10 @@ class XRSupport {
         }
     }
 
-    addAnchoredNode(anchor, node){
+    addAnchoredNode(anchor, node, logger){
         if (!anchor || !anchor.uid) {
             console.error("not a valid anchor", anchor)
+            logger.error(`not a valid anchor ${toFlatString(anchor)}`)
             return;
         }
         this._anchoredNodes.set(anchor.uid, {
@@ -133,7 +134,8 @@ class XRSupport {
         node.anchor = anchor
         node.matrixAutoUpdate = false
         node.matrix.fromArray(anchor.modelMatrix)
-        node.updateMatrixWorld(true)    
+        node.updateMatrixWorld(true)
+        logger.log("put the anchor in the scene, added node")
         //this._scene.add(node) -> presumably this is already done
         anchor.addEventListener("update", this._handleAnchorUpdate.bind(this))
         anchor.addEventListener("removed", this._handleAnchorDelete.bind(this))
@@ -201,9 +203,8 @@ class XRSupport {
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
                 logger.log('adding an anchor node')
-                this.addAnchoredNode(anchor,node)
+                this.addAnchoredNode(anchor,node,logger)
                 if(callback) {
-                    logger.log("calling the callback")
                     callback(info)
                 }
             }).catch(error => {
