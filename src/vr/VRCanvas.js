@@ -9,6 +9,7 @@ import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES}
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {TweenManager} from '../common/tween'
+import * as ToasterMananager from './ToasterManager'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -172,7 +173,12 @@ class XRSupport {
         let context = canvas.getContext('2d')
         canvas.width = image.width
         canvas.height = image.height
-        context.drawImage(image,0,0)
+        try {
+            context.drawImage(image, 0, 0)
+        } catch(e) {
+            ToasterMananager.add("error drawing image",e.message)
+            throw new Error("foo")
+        }
         image.data = context.getImageData(0,0,image.width,image.height)
 
         // Attach image observer handler
@@ -185,9 +191,11 @@ class XRSupport {
                     callback(info)
                 }
             }).catch(error => {
+                ToasterMananager.add("error activating")
                 console.error(`error activating detection image: ${error}`)
             })
         }).catch(error => {
+            ToasterMananager.add("error creating")
             console.error(`error creating detection image: ${error}`)
         })
     }
