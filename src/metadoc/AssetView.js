@@ -2,6 +2,7 @@ import React, {Component} from "react"
 import {fetchGraphObject} from '../syncgraph/utils'
 import {ASSET_TYPES} from '../vr/Common'
 import GLTFAssetView from '../vr/GLTFAssetView'
+import GeoAssetView from '../vr/GeoAssetView'
 
 export default class AssetView extends Component {
     render() {
@@ -19,6 +20,7 @@ export default class AssetView extends Component {
         if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={asset.src} controls crossOrigin="anonymous"/>
         if(asset.subtype === ASSET_TYPES.BEHAVIOR) return <div>{asset.src}</div>
         if(asset.subtype === ASSET_TYPES.GLTF) return <GLTFAssetView asset={asset}/>
+        if(asset.subtype === ASSET_TYPES.GEOLOCATION) return <GeoAssetView asset={asset} provider={this.props.provider}/>
         return <div>unknown type</div>
     }
 }

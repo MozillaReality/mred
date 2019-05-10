@@ -428,3 +428,6 @@ ul.behaviors-list > div {
     background-color: black;
 }
 
+.map-icon {
+    border: 5px solid red;
+}

@@ -3,7 +3,7 @@ import React, {Component} from "react"
 import {VRManager} from 'webxr-boilerplate'
 import GLTFLoader from './GLTFLoader'
 
-export default class AssetView extends Component {
+export default class GLTFAssetView extends Component {
     componentDidMount() {
         this.initThreeJS()
     }
