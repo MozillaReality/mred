@@ -195,11 +195,15 @@ class XRSupport {
 
         // Attach image observer handler
         this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, 0.2).then(() => {
+            logger.log("created a non-standard createdetectionimage")
             this.session.nonStandard_activateDetectionImage(name).then(anchor => {
+                logger.log("started activate detection image")
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
+                logger.log('adding an anchor node')
                 this.addAnchoredNode(anchor,node)
                 if(callback) {
+                    console.log("calling the callback")
                     callback(info)
                 }
             }).catch(error => {
