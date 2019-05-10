@@ -176,7 +176,7 @@ class XRSupport {
         try {
             context.drawImage(image, 0, 0)
         } catch(e) {
-            ToasterMananager.add("error drawing image",e.message)
+            ToasterMananager.add("error drawing image",e.toString())
             throw new Error("foo")
         }
         image.data = context.getImageData(0,0,image.width,image.height)
