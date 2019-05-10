@@ -122,28 +122,23 @@ class XRSupport {
     }
 
     addAnchoredNode(anchor, node, logger){
-        logger.log("inside here")
         if (!anchor || !anchor.uid) {
             console.error("not a valid anchor", anchor)
             logger.error(`not a valid anchor ${toFlatString(anchor)}`)
             return;
         }
-        logger.log("more")
         this._anchoredNodes.set(anchor.uid, {
             anchor: anchor,
             node: node
         })
         node.anchor = anchor
         node.matrixAutoUpdate = false
-        logger.log("more 2")
         node.matrix.fromArray(anchor.modelMatrix)
-        logger.log("more 3")
         node.updateMatrixWorld(true)
-        logger.log("put the anchor in the scene, added node")
         //this._scene.add(node) -> presumably this is already done
-        anchor.addEventListener("update", this._handleAnchorUpdate.bind(this))
-        anchor.addEventListener("removed", this._handleAnchorDelete.bind(this))
-        logger.log("more 4")
+        anchor.addEventListener("update", (e) => this._handleAnchorUpdate(e,logger))
+        anchor.addEventListener("removed",(e)=>  this._handleAnchorDelete(e,logger))
+        logger.log("done adding anchored node")
         return node
     }
 
@@ -285,7 +280,8 @@ class XRSupport {
         }
     }
 
-    _handleAnchorDelete(details) {
+    _handleAnchorDelete(details, logger) {
+        logger.log("got an anchor update")
         let anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
@@ -295,7 +291,8 @@ class XRSupport {
         }
     }
 
-    _handleAnchorUpdate(details) {
+    _handleAnchorUpdate(details, logger) {
+        logger.log("got an anchor update")
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
