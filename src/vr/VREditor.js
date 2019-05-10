@@ -14,6 +14,7 @@ import InputManager from "../common/InputManager"
 import {DialogContainer, DialogManager, HBox, PopupContainer} from "appy-comps"
 import {
     ASSET_TYPES,
+    canBeDeleted,
     canHaveBehavior,
     canHaveScene,
     canHaveShape,
@@ -352,8 +353,17 @@ export default class VREditor extends SyncGraphProvider {
 
     calculateContextMenu(item) {
         const cmds = []
-        cmds.push({ title:'delete', icon:ITEM_ICONS.delete, fun: ()=>deleteObject(this) });
         const obj = this.accessObject(item)
+        if(canBeDeleted(obj.type)) {
+            cmds.push({title: 'delete', icon: ITEM_ICONS.delete, fun: () => deleteObject(this)});
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
+            cmds.push({
+                title: 'existing asset on server',
+                icon: ITEM_ICONS.assets,
+                fun: () => this.showOpenAssetDialog()
+            })
+        }
         if(canHaveShape(obj.type)) {
             cmds.push({ divider:true })
             Object.keys(OBJ_TYPES).forEach(type => cmds.push({
@@ -389,7 +399,7 @@ export default class VREditor extends SyncGraphProvider {
             cmds.push({title:'view code', icon: ITEM_ICONS.behavior, fun: ()=>SelectionManager.setSelection(obj.behavior)})
         }
 
-        if(obj.type !== TOTAL_OBJ_TYPES.ROOT) {
+        if(canBeDeleted(obj.type)) {
             cmds.push({divider: true})
             cmds.push({title: 'cut', icon: ITEM_ICONS.cut, fun: this.cutSelection})
             cmds.push({title: 'copy', icon: ITEM_ICONS.copy, fun: this.copySelection})

@@ -388,6 +388,13 @@ export function canHaveScene(type) {
     return false
 }
 
+export function canBeDeleted(type) {
+    if(type === TOTAL_OBJ_TYPES.ROOT) return false
+    if(type === TOTAL_OBJ_TYPES.ASSETS_LIST) return false
+    if(type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return false
+    return true
+}
+
 export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.cube) return new CubeDef()
     if(type === OBJ_TYPES.sphere) return new SphereDef()
