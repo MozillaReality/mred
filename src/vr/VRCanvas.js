@@ -181,17 +181,20 @@ class XRSupport {
         canvas.height = image.height
         logger.log(`doing the image ${toFlatString(image)} ${image.src}`)
 
+        context.drawImage(image, 0, 0)
+        logger.log("drew the image okay")
+        let idata
         try {
-            context.drawImage(image, 0, 0)
+            idata = context.getImageData(0,0,image.width,image.height)
         } catch(e) {
             logger.log(`error drawing image ${toFlatString(e)}`)
             logger.log(`name ${e.name}`)
             logger.log(`name ${e.message}`)
+            logger.log("local url is " + document.documentURI)
+            logger.log("image url from " + image.src)
             ToasterMananager.add("error drawing image",e.toString())
             throw new Error("foo")
         }
-        logger.log("drew the image okay")
-        const idata = context.getImageData(0,0,image.width,image.height)
         logger.log("got the image data")
         logger.log(`using image width and height ${image.width} ${image.height}`)
 
@@ -807,6 +810,7 @@ export class VRCanvas extends Component {
         const logger = this.props.provider.pubnub.getLogger()
         return new Promise((res,rej) => {
             const img = new Image()
+            img.crossOrigin = "Anonymous"
             img.src = info.image.src
             logger.log("Loading image",img.src)
             img.onload = () => {
