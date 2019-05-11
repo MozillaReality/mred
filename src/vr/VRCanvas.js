@@ -3,13 +3,12 @@ import * as THREE from 'three'
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import TransformControls from './TransformControls.js'
-import {fetchGraphObject} from '../syncgraph/utils'
 import SceneDef from "./defs/SceneDef"
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {ToasterNotification} from './ToasterNotification'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {TweenManager} from '../common/tween'
-import * as ToasterMananager from './ToasterManager'
+import * as ToasterManager from './ToasterManager'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -191,7 +190,7 @@ class XRSupport {
             logger.log(`name ${e.message}`)
             logger.log("local url is " + document.documentURI)
             logger.log("image url from " + image.src)
-            ToasterMananager.add("error drawing image",e.toString())
+            ToasterManager.add("error drawing image",e.toString())
             throw new Error("foo")
         }
         logger.log(`calling createDetectionImage with image width and height ${image.width} ${image.height}`)
@@ -416,7 +415,6 @@ export class VRCanvas extends Component {
 
     constructor(props) {
         super(props)
-        console.info("CREATED VR Canvas")
         this.obj_node_map = {}
         this.previewUpdateNodes = []
         this.scenes = []
@@ -437,7 +435,7 @@ export class VRCanvas extends Component {
     transformChanged = (e) => {
         const sel = SelectionManager.getSelection()
         if(sel) {
-            const obj = fetchGraphObject(this.props.provider.getDataGraph(),sel)
+            const obj = this.props.provider.accessObject(sel)
             if(!is3DObjectType(obj.type)) return
             if(obj.type === OBJ_TYPES.bg360) return
             const node = this.findNode(sel)
@@ -448,15 +446,7 @@ export class VRCanvas extends Component {
             prov.quick_setPropertyValue(sel,'tz',node.position.z)
         }
     }
-    /*
-    the problem is that the updateScene and populateNode functions are going through history
-    to recreate the ThreeJS scene. The problem is that they are using old operations but applying
-    it to the graph as it is now. Thus if you create an object and make it a child of another
-    object that is created later, this will fail when we recreate everything.
 
-    the solution is to not recreate the scene graph using history. instead recreate
-    it using just the current document, then continue updating from there
-     */
     docSwapped = (e) => {
         //nuke all the old stuff
         this.scenes.forEach(sc => this.scene.remove(sc))
@@ -465,13 +455,10 @@ export class VRCanvas extends Component {
         this.setState({scene: -1})
         //make new stuff
         const graph = this.props.provider.getDocGraph()
-        console.log("we are rebuilding using this graph",graph)
         this.rebuildNode(graph,"")
-        // const hist = this.props.provider.getDocHistory()
-        // hist.forEach(op => this.updateScene(op))
     }
     rebuildNode(obj, inset) {
-        console.log(inset,"rebuilding",obj.type)
+        // console.log(inset,"rebuilding",obj.type)
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             const node = new SceneDef().makeNode(obj)
             this.insertNodeMapping(obj.id,node)
@@ -542,7 +529,6 @@ export class VRCanvas extends Component {
     }
 
     setupRenderer(canvas,context) {
-        console.log("=========== setup renderer")
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
@@ -617,10 +603,10 @@ export class VRCanvas extends Component {
     }
 
     updateScene(op) {
-        const graph = this.props.provider.getDataGraph()
+        const prov = this.props.provider
         if (op.type === INSERT_ELEMENT) {
             const objid = op.value
-            const obj = fetchGraphObject(graph, objid)
+            const obj = prov.accessObject(op.value)
             if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.populateNode(objid)
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
             if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
@@ -632,11 +618,9 @@ export class VRCanvas extends Component {
         if (op.type === SET_PROPERTY) {
             //skip setting parents. done through insert_element
             if(op.name === 'parent') return
-            // console.log('setting property', op.object, op.name, '=',op.value)
-            // console.log('real graph', fetchGraphObject(graph,op.object))
             const node = this.findNode(op.object)
             if (node) {
-                const obj = fetchGraphObject(graph, op.object)
+                const obj = prov.accessObject(op.object)
                 if(obj.type === 'scene') {
                     new SceneDef().updateProperty(node,obj,op,this.props.provider)
                     return
@@ -649,16 +633,11 @@ export class VRCanvas extends Component {
         }
         if (op.type === DELETE_ELEMENT) {
             this.controls.detach()
-            console.log("doing delete for object", op.value)
             const node = this.findNode(op.value)
-            console.log("removing the node",node)
             if(node) {
                 this.removeNodeMapping(op.value,node)
-                const obj = fetchGraphObject(graph,op.value)
-                if(is3DObjectType(obj.type)) {
-                    node.parent.remove(node)
-                    // this.dumpScenes()
-                }
+                const obj = prov.accessObject(op.value)
+                if(is3DObjectType(obj.type)) node.parent.remove(node)
             }
             return
         }
@@ -684,7 +663,6 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        const logger = this.props.provider.pubnub.getLogger()
         return <div>
             <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}
                     className="editable-canvas"
@@ -699,8 +677,7 @@ export class VRCanvas extends Component {
     }
 
     populateNode(nodeid) {
-        const graph = this.props.provider.getDataGraph()
-        const obj = fetchGraphObject(graph, nodeid)
+        const obj = this.props.provider.accessObject(nodeid)
         if (is3DObjectType(obj.type)) {
             const obj3d = get3DObjectDef(obj.type).makeNode(obj)
             this.insertNodeMapping(nodeid, obj3d)
@@ -719,7 +696,6 @@ export class VRCanvas extends Component {
         console.warn("cannot populate node for type", obj.type)
     }
 
-
     addSceneWrapper(scene) {
         this.scenes.push(scene)
         this.scene.add(scene)
@@ -733,7 +709,6 @@ export class VRCanvas extends Component {
                 sc.visible = false
             }
         })
-        // this.dumpScenes()
     }
 
     dumpScenes() {
@@ -780,7 +755,7 @@ export class VRCanvas extends Component {
 
     resetSceneGraph() {
         Object.keys(this.obj_node_map).forEach(id => {
-            const graphObj = fetchGraphObject(this.props.provider.getDataGraph(),id)
+            const graphObj = this.props.provider.accessObject(id)
             const threeObj = this.obj_node_map[id]
             if(graphObj.type === 'scene') {
                 // new SceneDef().updateProperty(node,obj,op,this.props.provider)
