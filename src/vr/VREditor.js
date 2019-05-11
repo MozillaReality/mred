@@ -90,6 +90,7 @@ export default class VREditor extends SyncGraphProvider {
         insertAsLastChild(doc,root,assets)
     }
     docLoaded = () => {
+        //pre-cache all of the behaviors
         this.accessObject(this.getBehaviorsObject()).getChildren()
             .filter(a => a.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT)
             .forEach((b)=>{
