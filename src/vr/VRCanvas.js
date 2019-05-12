@@ -165,7 +165,7 @@ class XRSupport {
 
         let callback = info.callback
         // let image = info.image
-        let imageRealworldWidth = 0 // unused
+        let imageRealworldWidth = info.imageRealworldWidth || 1
         let object = info.object // object that represents anchor variables that users can edit in general-editor
         let node = info.node
         let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
@@ -196,7 +196,7 @@ class XRSupport {
         logger.log(`calling createDetectionImage with image width and height ${image.width} ${image.height}`)
 
         // Attach image observer handler
-        this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, 0.2).then(() => {
+        this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, imageRealworldWidth ).then(() => {
             logger.log("created a createdetectionimage")
             this.session.nonStandard_activateDetectionImage(name).then(anchor => {
                 logger.log("started activate detection image")
