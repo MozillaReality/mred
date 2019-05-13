@@ -111,7 +111,8 @@ export default class ScriptManager {
             if (!target || !target.exists || !target.exists()) return
             const evt = {
                 type: 'click',
-                target: target,
+                target: this.sgp.getThreeObject(target),
+                graphTarget: target
             }
             evt.system = this.makeSystemFacade(evt)
             const behaviors = this.sgp.getBehaviorsForObject(target)
@@ -170,6 +171,7 @@ export default class ScriptManager {
             const behaviors = this.sgp.getBehaviorsForObject(scene)
             behaviors.forEach(b => {
                 evt.target = this.sgp.getThreeObject(b.parent)
+                evt.graphTarget = b.parent
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
@@ -206,6 +208,7 @@ export default class ScriptManager {
                 }
                 evt.system = this.makeSystemFacade(evt)
                 evt.target = this.sgp.getThreeObject(b.parent)
+                evt.graphTarget = b.parent
                 evt.props = b.props()
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 if (asset.init) asset.init(evt)

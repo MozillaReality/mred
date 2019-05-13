@@ -656,7 +656,8 @@ export class VRCanvas extends Component {
                 if(nextProps.running === false) {
                     this.scriptManager.stopRunning()
                     this.resetSceneGraph()
-                    this.stopRecognizer()
+                    this.stopImageRecognizer()
+                    this.stopGeoRecognizer()
                 } else {
                     //start the script manager
                     this.startRecognizer()
