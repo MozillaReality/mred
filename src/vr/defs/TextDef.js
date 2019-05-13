@@ -12,7 +12,7 @@ export default class TextDef extends ObjectDef {
             title:'some text',
             visible:true,
             text:'cool <b>formatted</b> <i>text</i>',
-            cssStyle:`color:white;`,
+            cssStyle:`color:black;`,
 
             tx:0, ty:0, tz:-0.4,
             rx:0, ry:0, rz:0,
