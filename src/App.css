@@ -419,14 +419,6 @@ ul.behaviors-list > div {
 }
 
 
-.weblayer-div {
-    border:3px solid red;
-    color: white;
-    font-size: 30pt;
-    width: 10em;
-    padding: 1em;
-    background-color: black;
-}
 
 .map-icon {
     border: 5px solid red;
