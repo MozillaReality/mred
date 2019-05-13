@@ -40,7 +40,7 @@ import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
 import {toQueryString} from '../utils'
 import {OpenFileDialog} from './dialogs/OpenFileDialog'
-import {AuthModule, USER_CHANGE} from './AuthModule'
+import {AuthModule, CONNECTED, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
@@ -688,6 +688,7 @@ class VREditorApp extends Component {
             mode:'canvas',
             user:null,
             running:false,
+            connected:false
         }
 
         this.im = new InputManager()
@@ -716,6 +717,8 @@ class VREditorApp extends Component {
         this.im.attachKeyEvents(document)
         SelectionManager.on(SELECTION_MANAGER.CHANGED,this.selectionChanged)
         AuthModule.on(USER_CHANGE,()=>this.setState({user:AuthModule.getUsername()}))
+        AuthModule.on(CONNECTED,()=>this.setState({connected:true}))
+        if(AuthModule.isConnected()) this.setState({connected:true})
     }
     componentWillUnmount() {
         SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
@@ -735,6 +738,9 @@ class VREditorApp extends Component {
     }
 
     render() {
+        if(this.state.connected === false) {
+            return <div><h1>connecting to server</h1></div>
+        }
         const prov = this.props.provider
         const bot = <div>
             {/*<a href={getInfoURL()}>{getInfoURL()}</a>*/}

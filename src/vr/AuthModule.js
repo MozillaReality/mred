@@ -4,6 +4,7 @@ import {getUserURL} from '../TreeItemProvider'
 import * as ToasterMananager from './ToasterManager'
 
 export const USER_CHANGE = 'USER_CHANGE'
+export const CONNECTED = "CONNECTED"
 class AuthModuleSingleton {
     constructor() {
         this.listeners = {}
@@ -13,6 +14,7 @@ class AuthModuleSingleton {
         this.assetUploadSupported = false
         this.scriptEditingSupported = false
         this.passwordSupported = false
+        this.connected = false
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -41,8 +43,14 @@ class AuthModuleSingleton {
                         this.fire(USER_CHANGE)
                         this.doclistSupported = true
                     }
+                }).then(()=>{
+                    this.connected = true
+                    this.fire(CONNECTED)
                 })
             })
+    }
+    isConnected() {
+        return this.connected
     }
 
     isLoggedIn() {
