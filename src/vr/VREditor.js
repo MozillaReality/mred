@@ -396,7 +396,9 @@ export default class VREditor extends SyncGraphProvider {
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             cmds.push({ divider:true })
-            cmds.push({title:'Add Scene script', icon:ITEM_ICONS.behavior, fun: ()=>this.addSceneScript(item)})
+            if(AuthModule.scriptEditingSupported) {
+                cmds.push({title: 'Add Scene script', icon: ITEM_ICONS.behavior, fun: () => this.addSceneScript(item)})
+            }
         }
 
 
