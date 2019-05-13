@@ -145,7 +145,7 @@ export default class ScriptManager {
         })
     }
 
-    tick(time, session) {
+    tick(time, session, frame) {
         if(!this.running) return
         if(this.startTime ===0) this.startTime = time
         try {
@@ -157,6 +157,7 @@ export default class ScriptManager {
             }
             evt.system = this.makeSystemFacade(evt)
             evt.system.session = session
+            evt.system.frame = frame
             const behaviors = this.sgp.getBehaviorsForObject(scene)
             behaviors.forEach(b => {
                 evt.target = this.sgp.getThreeObject(b.parent)
