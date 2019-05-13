@@ -42,20 +42,22 @@ export default class ImageAnchorDef extends ObjectDef {
         node.init = (evt) => {
             clicker.visible = false
             node.visible = false
-            evt.system.startImageRecognizer({
-                image:evt.system.getObjectById(obj.targetImage),
+            node.userData.info = {
+                image: evt.system.getObjectById(obj.targetImage),
                 imageRealworldWidth: obj.imageRealworldWidth,
-                recType:obj.recType,
-                object:obj,
-                node:node,
-                callback:(info) => {
+                recType: obj.recType,
+                object: obj,
+                node: node,
+                callback: (info) => {
                     evt.system.fireEvent(obj, 'recognized', info)
                     node.visible = true
                 }
-            })
+            }
+            evt.system.startImageRecognizer(node.userData.info)
         }
-        node.stop = () => {
+        node.stop = (evt) => {
             clicker.visible = true
+            evt.system.stopImageRecognizer(node.userData.info)
         }
         return node
     }

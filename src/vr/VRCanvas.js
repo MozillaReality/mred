@@ -379,8 +379,14 @@ class Adapter extends SceneGraphProvider {
     startImageRecognizer(info) {
         return this.canvas.startImageRecognizer(info)
     }
+    stopImageRecognizer(info) {
+        return this.canvas.stopImageRecognizer(info)
+    }
     startGeoRecognizer(info) {
         return this.canvas.startGeoRecognizer(info)
+    }
+    stopGeoRecognizer(info) {
+        return this.canvas.stopGeoRecognizer(info)
     }
 }
 
@@ -798,6 +804,11 @@ export class VRCanvas extends Component {
         })
     }
 
+    stopImageRecognizer() {
+        //TODO: @ahook
+        console.log("WE NEED TO STOP ALL image recognizers here")
+    }
+
     startGeoRecognizer(info) {
 
         // WebXR loaded?
@@ -810,7 +821,9 @@ export class VRCanvas extends Component {
         this.xr.addGeoAnchoredNode(info)
     }
 
-    stopRecognizer() {
+    stopGeoRecognizer() {
+        //TODO: @ahook
+        console.log("WE NEED TO STOP ALL geo recognizers here")
     }
 
 }

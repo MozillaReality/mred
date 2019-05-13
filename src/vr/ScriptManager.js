@@ -92,6 +92,15 @@ export default class ScriptManager {
             },
             startImageRecognizer(info) {
                 return sgp.startImageRecognizer(info)
+            },
+            stopImageRecognizer(info) {
+                return sgp.stopImageRecognizer(info)
+            },
+            startGeoRecognizer(info) {
+                return sgp.startGeoRecognizer(info)
+            },
+            stopGeoRecognizer(info) {
+                return sgp.stopGeoRecognizer(info)
             }
         }
     }
@@ -226,8 +235,12 @@ export default class ScriptManager {
             const scene = this.sgp.getCurrentScene()
             if(scene) {
                 this.sgp.getSceneObjects(scene).forEach(child => {
+                    const evt = {
+                        type: 'stop',
+                    }
+                    evt.system = this.makeSystemFacade(evt)
                     const node = this.sgp.getThreeObject(child.id)
-                    if (node.stop) node.stop()
+                    if (node.stop) node.stop(evt)
                 })
             }
         } catch(err) {

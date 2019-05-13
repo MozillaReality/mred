@@ -40,7 +40,7 @@ export default class GeoAnchorDef extends ObjectDef {
         node.init = (evt) => {
             clicker.visible = false
             node.visible = false
-            evt.system.startGeoRecognizer({
+            node.userData.info = {
                 location:evt.system.getObjectById(obj.targetGeoLocation),
                 recType:obj.recType,
                 object:obj,
@@ -49,10 +49,12 @@ export default class GeoAnchorDef extends ObjectDef {
                     evt.system.fireEvent(obj, 'recognized', info)
                     node.visible = true
                 }
-            })
+            }
+            evt.system.startGeoRecognizer(node.userData.info)
         }
-        node.stop = () => {
+        node.stop = (evt) => {
             clicker.visible = true
+            evt.system.stopGeoRecognizer(node.userData.info)
         }
         return node
     }
