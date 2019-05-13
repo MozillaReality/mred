@@ -38,7 +38,6 @@ import {AddAudioAssetDialog} from './dialogs/AddAudioAssetDialog'
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
-import {MakeEmbedDialog} from './dialogs/MakeEmbedDialog'
 import {toQueryString} from '../utils'
 import {OpenFileDialog} from './dialogs/OpenFileDialog'
 import {AuthModule, USER_CHANGE} from './AuthModule'
@@ -320,30 +319,23 @@ export default class VREditor extends SyncGraphProvider {
     }
 
     editInVR = () => {
-        // this.save().then(()=>{
+        this.save().then(()=>{
             const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
-            const url = `./?${toQueryString(opts)}`
-            console.log("edit In VR: opening the url",url)
-            window.open(url)
-        // })
+            const loc = document.location
+            const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
+            DialogManager.show(<QRDialog text={"Edit in AR/VR"} url={url}/>)
+        })
     }
 
     viewInVR = () => {
-        // this.save().then(()=>{
+        this.save().then(()=> {
             const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
-            const url = `./?${toQueryString(opts)}`
-            console.log("opening the url",url)
-            window.open(url)
-        // })
+            const loc = document.location
+            const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
+            DialogManager.show(<QRDialog text={"View in AR/VR"} url={url}/>)
+        })
     }
 
-    showQRCode = () => {
-        DialogManager.show(<QRDialog/>)
-    }
-
-    embedView = () => {
-        DialogManager.show(<MakeEmbedDialog provider={this}/>)
-    }
 
     add3DObject = (type, parent) => {
         const obj = get3DObjectDef(type).make(this.getDataGraph(),parent)
@@ -767,8 +759,6 @@ class VREditorApp extends Component {
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editInVR()}>VR Edit</button>
                 <button onClick={() => prov.viewInVR()}>VR View</button>
-                <button onClick={() => prov.showQRCode()}>QR</button>
-                {/*<button onClick={()=>prov.embedView()}>Embed</button>*/}
                 <Spacer/>
                 <RunButton onClick={this.toggleRunning} active={this.state.running}/>
                 <Spacer/>
