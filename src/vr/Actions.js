@@ -90,10 +90,10 @@ export function showAddAssetPopup(e, provider) {
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
 }
 
-export function showAddActionPopup (e, provider) {
+export function showAddBehaviorPopup (e, provider) {
     const acts = [
         {
-            title:'behavior from template',
+            title:'Add Behavior from Server',
             icon: ITEM_ICONS.behavior_script,
             fun: () => provider.showOpenBehaviorDialog()
         },

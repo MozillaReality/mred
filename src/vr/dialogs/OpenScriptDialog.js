@@ -23,7 +23,8 @@ export class OpenScriptDialog extends Component {
     addScript(info) {
         DialogManager.hide()
         if(!info.url) info.url = `${getScriptsURL()}${info.name}`
-        return this.props.provider.addBehaviorAssetFromURL(info)
+        const beh = this.props.provider.addBehaviorAssetFromURL(info)
+        if(this.props.onAdd) this.props.onAdd(beh)
     }
     deleteScript(info) {
         return this.props.provider.removeBehaviorAssetSource(info.name).then((res)=>{

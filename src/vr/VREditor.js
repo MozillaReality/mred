@@ -45,7 +45,7 @@ import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject, newDoc, showAddActionPopup, showAddAssetPopup, showAddPopup} from './Actions'
+import {addScene, deleteObject, newDoc, showAddBehaviorPopup, showAddAssetPopup, showAddPopup} from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
@@ -380,6 +380,19 @@ export default class VREditor extends SyncGraphProvider {
                         fun: () => this.addBehaviorToObject(b, item)
                     })
                 })
+            if(AuthModule.isLoggedIn()) {
+                cmds.push({
+                    title: 'Add Behavior from server',
+                    icon: ITEM_ICONS.behavior_script,
+                    fun: () => {
+                        DialogManager.show(<OpenScriptDialog provider={this} onAdd={(beh)=>{
+                            this.addBehaviorToObject(beh,item).then(b=>{
+                                SelectionManager.setSelection(b.id)
+                            })
+                        }}/>)
+                    }
+                })
+            }
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             cmds.push({ divider:true })
@@ -573,6 +586,7 @@ export default class VREditor extends SyncGraphProvider {
         }))
         this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
         SelectionManager.setSelection(behavior.id)
+        return behavior
     }
     removeBehaviorAssetSource(name) {
         const url = `${getScriptsURL()}delete/${name}`
@@ -756,7 +770,7 @@ class VREditorApp extends Component {
                 <button className="fa fa-cube"        onClick={(e)=>showAddPopup(e,prov)}/>
                 <button className="fa fa-globe"       onClick={(e)=>addScene(prov)}/>
                 <button className="fa fa-archive"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
-                <button className="fa fa-superpowers" onClick={(e)=>showAddActionPopup(e,prov)}/>
+                <button className="fa fa-superpowers" onClick={(e)=>showAddBehaviorPopup(e,prov)}/>
             </Toolbar>
 
 
