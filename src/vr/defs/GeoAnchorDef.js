@@ -9,7 +9,7 @@ export default class GeoAnchorDef extends ObjectDef {
         if (!scene.id) throw new Error("can't create geo anchor w/ missing parent")
         return fetchGraphObject(graph, graph.createObject({
             type: OBJ_TYPES.geoanchor,
-            title: 'geo-anchor ' + COUNTER++,
+            title: 'geo anchor ' + COUNTER++,
             visible: true,
             tx: 0, ty: 0, tz: -5,
             rx: 0, ry: 0, rz: 0,

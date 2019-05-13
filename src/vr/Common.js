@@ -477,7 +477,7 @@ export const ITEM_ICONS = {
     group:'object-group',
     particles:'certificate',
     gltf:'cube',
-    anchor:'imageanchor',
+    imageanchor:'anchor',
     geoanchor:'globe',
     geolocation:'globe',
 
