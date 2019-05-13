@@ -569,7 +569,7 @@ export class VRCanvas extends Component {
     }
 
     animationLoop(time) {
-        if(this.state.running) this.scriptManager.tick(time)
+        if(this.state.running) this.scriptManager.tick(time, this.session)
         if(this.tweenManager) this.tweenManager.update(time)
         this.previewUpdateNodes.forEach(n => n.previewUpdate())
         this.renderer.render(this.scene, this.camera)
