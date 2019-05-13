@@ -41,7 +41,7 @@ export default class ScriptManager {
             getObject(name) {
                 const obj = sgp.getGraphObjectByName(name)
                 if(!obj) throw new Error(`object '${name}' not found`)
-                return new ThreeObjectFacade(manager,obj)
+                return sgp.getThreeObject(obj)
             },
             getAsset(name) {
                 const obj = sgp.getGraphObjectByName(name)
@@ -158,7 +158,7 @@ export default class ScriptManager {
             evt.system = this.makeSystemFacade(evt)
             const behaviors = this.sgp.getBehaviorsForObject(scene)
             behaviors.forEach(b => {
-                evt.target = new ThreeObjectFacade(this,b.parent)
+                evt.target = this.sgp.getThreeObject(b.parent)
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 evt.props = b.props()
                 if(asset.onTick) asset.onTick(evt)
@@ -166,7 +166,7 @@ export default class ScriptManager {
             scene.find(child => {
                 const behaviors = this.sgp.getBehaviorsForObject(child)
                 behaviors.forEach(b => {
-                    evt.target = new ThreeObjectFacade(this,b.parent)
+                    evt.target = this.sgp.getThreeObject(b.parent)
                     evt.graphTarget = child
                     const asset = this.sgp.getParsedBehaviorAsset(b)
                     evt.props = b.props()
@@ -189,14 +189,14 @@ export default class ScriptManager {
         this.storage = {}
         console.log("script manager starting")
         try {
-            this.sgp.getAllBehaviors().forEach(ref => {
+            this.sgp.getAllBehaviors().forEach(b => {
                 const evt = {
                     type:'init',
                 }
                 evt.system = this.makeSystemFacade(evt)
-                evt.target = new ThreeObjectFacade(this,ref.parent)
-                evt.props = ref.props()
-                const asset = this.sgp.getParsedBehaviorAsset(ref)
+                evt.target = this.sgp.getThreeObject(b.parent)
+                evt.props = b.props()
+                const asset = this.sgp.getParsedBehaviorAsset(b)
                 if (asset.init) asset.init(evt)
             })
             const scene = this.sgp.getCurrentScene()
@@ -245,7 +245,7 @@ export default class ScriptManager {
             name:name,
             message:payload,
             time:Date.now(),
-            target: new ThreeObjectFacade(this,target),
+            target: this.sgp.getThreeObject(target),
             graphTarget:target,
         }
         evt.system = this.makeSystemFacade(evt)
