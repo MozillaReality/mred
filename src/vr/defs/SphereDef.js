@@ -10,7 +10,7 @@ export default class SphereDef extends ObjectDef {
             title:'a sphere',
             visible:true,
             radius: 0.5,
-            tx:0, ty:1.5, tz:-5,
+            tx:0, ty:0, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#0000ff',

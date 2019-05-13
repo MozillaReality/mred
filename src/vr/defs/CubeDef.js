@@ -13,7 +13,7 @@ export default class CubeDef extends ObjectDef {
             title:'cube '+COUNTER++,
             visible:true,
             width:1, height:1, depth:1,
-            tx:0, ty:1.5, tz:-5,
+            tx:0, ty:0, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#00ff00',

@@ -12,7 +12,7 @@ export default class PlaneDef extends ObjectDef {
             visible:true,
             width: 3,
             height: 3,
-            tx:0, ty:1.5, tz:-5,
+            tx:0, ty:0, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#ffffff',

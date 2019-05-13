@@ -14,7 +14,7 @@ export default class TextDef extends ObjectDef {
             text:'cool <b>formatted</b> <i>text</i>',
             cssStyle:`color:white;`,
 
-            tx:0, ty:1.5, tz:-0.6,
+            tx:0, ty:0, tz:-0.4,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
 

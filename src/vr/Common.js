@@ -334,7 +334,7 @@ export const OBJ_TYPES = {
     img2d:'img2d',
     group:'group',
     particles:'particles',
-    anchor:'anchor',
+    imageanchor:'imageanchor',
     geoanchor:'geoanchor',
 }
 
@@ -364,14 +364,14 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.img2d) return true
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.particles) return true
-    if(type === OBJ_TYPES.anchor) return true
+    if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
     return false
 }
 
 export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
-    if(type === OBJ_TYPES.anchor) return true
+    if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
     if(type === TOTAL_OBJ_TYPES.SCENE) return true
     return false
@@ -405,7 +405,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
-    if(type === OBJ_TYPES.anchor) return new AnchorDef()
+    if(type === OBJ_TYPES.imageanchor) return new AnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
@@ -477,7 +477,7 @@ export const ITEM_ICONS = {
     group:'object-group',
     particles:'certificate',
     gltf:'cube',
-    anchor:'anchor',
+    anchor:'imageanchor',
     geoanchor:'globe',
     geolocation:'globe',
 

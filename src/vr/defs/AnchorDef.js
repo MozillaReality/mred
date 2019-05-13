@@ -5,14 +5,14 @@ import {OBJ_TYPES, REC_TYPES} from '../Common'
 
 let COUNTER = 0
 
-export default class AnchorDef extends ObjectDef {
+export default class ImageAnchorDef extends ObjectDef {
     make(graph, scene) {
-        if(!scene.id) throw new Error("can't anchor w/ missing parent")
+        if(!scene.id) throw new Error("can't imageanchor w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.anchor,
+            type:OBJ_TYPES.imageanchor,
             title:'image anchor '+COUNTER++,
             visible:true,
-            tx:0, ty:1.5, tz:-5,
+            tx:0, ty:0, tz:-5,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#00ff00',
