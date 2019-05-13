@@ -8,7 +8,7 @@ import TextDef from './defs/TextDef'
 import Image2DDef from './defs/Image2DDef'
 import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
-import AnchorDef from './defs/AnchorDef'
+import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
 
 const stdhints = {
@@ -405,7 +405,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
-    if(type === OBJ_TYPES.imageanchor) return new AnchorDef()
+    if(type === OBJ_TYPES.imageanchor) return new ImageAnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
