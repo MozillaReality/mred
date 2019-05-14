@@ -381,7 +381,7 @@ export default class ImmersiveVREditor extends Component {
                     } else {
                         // console.log("Making a real scene", op)
                         const obj = this.props.provider.accessObject(op.id)
-                        node = new SceneDef().makeNode(obj)
+                        node = new SceneDef().makeNode(obj, this.props.provider)
                         this.insertNodeMapping(op.id,node)
                         this.sceneWrappers[op.id] = node
                         this.stagePos.add(node)
@@ -396,7 +396,7 @@ export default class ImmersiveVREditor extends Component {
             const obj = this.props.provider.accessObject(op.value)
             if (obj.type === 'scene') return // console.log("skipping insert scene")
             if(is3DObjectType(obj.type)) {
-                const nodeObj = get3DObjectDef(obj.type).makeNode(obj)
+                const nodeObj = get3DObjectDef(obj.type).makeNode(obj, this.props.provider)
                 on(nodeObj, POINTER_CLICK, this.standardViewClickHandler)
                 this.insertNodeMapping(obj.id, nodeObj)
                 this.findNode(obj.parent).add(nodeObj)
@@ -455,14 +455,14 @@ export default class ImmersiveVREditor extends Component {
     rebuildNode(obj, inset) {
         console.log(inset,"rebuilding",obj.type)
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
-            const node = new SceneDef().makeNode(obj)
+            const node = new SceneDef().makeNode(obj, this.props.provider)
             this.insertNodeMapping(obj.id,node)
             this.sceneWrappers[obj.id] = node
             this.stagePos.add(node)
             this.swapScene(obj.id)
         }
         if(is3DObjectType(obj.type)) {
-            const node = get3DObjectDef(obj.type).makeNode(obj)
+            const node = get3DObjectDef(obj.type).makeNode(obj, this.props.provider)
             on(node, POINTER_CLICK, this.standardViewClickHandler)
             this.insertNodeMapping(obj.id, node)
             this.findNode(obj.parent).add(node)

@@ -463,13 +463,13 @@ export class VRCanvas extends Component {
     rebuildNode(obj, inset) {
         // console.log(inset,"rebuilding",obj.type)
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
-            const node = new SceneDef().makeNode(obj)
+            const node = new SceneDef().makeNode(obj,this.props.provider)
             this.insertNodeMapping(obj.id,node)
             this.addSceneWrapper(node)
             this.setCurrentSceneWrapper(node)
         }
         if(is3DObjectType(obj.type)) {
-            const node = get3DObjectDef(obj.type).makeNode(obj)
+            const node = get3DObjectDef(obj.type).makeNode(obj,this.props.provider)
             this.insertNodeMapping(obj.id,node)
             const parent = this.findNode(obj.parent)
             parent.add(node)
@@ -683,14 +683,14 @@ export class VRCanvas extends Component {
     populateNode(nodeid) {
         const obj = this.props.provider.accessObject(nodeid)
         if (is3DObjectType(obj.type)) {
-            const obj3d = get3DObjectDef(obj.type).makeNode(obj)
+            const obj3d = get3DObjectDef(obj.type).makeNode(obj,this.props.provider)
             this.insertNodeMapping(nodeid, obj3d)
             const parent = this.findNode(obj.parent)
             parent.add(obj3d)
             return obj3d
         }
         if (obj.type === TOTAL_OBJ_TYPES.SCENE) {
-            const scene = new SceneDef().makeNode(obj)
+            const scene = new SceneDef().makeNode(obj,this.props.provider)
             this.insertNodeMapping(nodeid, scene)
             this.addSceneWrapper(scene)
             this.setCurrentSceneWrapper(scene)

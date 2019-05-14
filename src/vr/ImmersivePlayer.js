@@ -20,6 +20,7 @@ function attachUtilFunctions(obj) {
         })
         return list
     }
+    obj.exists = ()=>true
 }
 
 export class ImmersivePlayer extends Component {
@@ -35,6 +36,11 @@ export class ImmersivePlayer extends Component {
         this.behavior_assets = {}
         this.pendingAssets = []
         this.scriptManager = new ScriptManager(new Adapter(this))
+        this.provider = {
+            accessObject:(id)=>{
+                return this.obj_map[id]
+            }
+        }
     }
 
     componentDidMount() {
@@ -75,10 +81,13 @@ export class ImmersivePlayer extends Component {
     }
 
     buildRoot(graph) {
+        //init assets first
+        graph.children.forEach(ch => {
+            if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
+        })
         graph.children.forEach(ch => {
             attachUtilFunctions(ch)
             if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initScene(ch)
-            if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return this.initBehaviors(ch)
         })
     }
@@ -86,7 +95,7 @@ export class ImmersivePlayer extends Component {
     initScene(def) {
         // console.log("making a scene",def)
         this.obj_map[def.id] = def
-        const scene = new SceneDef().makeNode(def)
+        const scene = new SceneDef().makeNode(def, this.provider)
         this.three_map[def.id] = scene
         this.scenes.add(scene)
         this.title_map[def.title] = def
@@ -98,7 +107,7 @@ export class ImmersivePlayer extends Component {
                 return ch
             }
             if(is3DObjectType(ch.type)) {
-                const child = get3DObjectDef(ch.type).makeNode(ch)
+                const child = get3DObjectDef(ch.type).makeNode(ch, this.provider)
                 this.three_map[ch.id] = child
                 on(child, 'click', () => {
                     this.scriptManager.performClickAction(ch)
