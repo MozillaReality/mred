@@ -38,6 +38,9 @@ export class ImmersivePlayer extends Component {
         this.scriptManager = new ScriptManager(new Adapter(this))
         this.provider = {
             accessObject:(id)=>{
+                if(!this.obj_map[id]) return {
+                    exists:()=>false,
+                }
                 return this.obj_map[id]
             }
         }
