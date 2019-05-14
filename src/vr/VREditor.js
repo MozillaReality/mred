@@ -318,6 +318,15 @@ export default class VREditor extends SyncGraphProvider {
         })
     }
 
+    editIn2D = () => {
+        this.save().then(()=>{
+            const opts = Object.assign({},this.options,{mode:'edit', switcher:false})
+            const loc = document.location
+            const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
+            DialogManager.show(<QRDialog text={"Edit in 2D"} url={url}/>)
+        })
+    }
+
     editInVR = () => {
         this.save().then(()=>{
             const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
@@ -779,8 +788,9 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-file" onClick={() => newDoc(prov)} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
-                <button onClick={() => prov.editInVR()}>VR Edit</button>
-                <button onClick={() => prov.viewInVR()}>VR View</button>
+                <button onClick={() => prov.editIn2D()}>2D Edit</button>
+                <button onClick={() => prov.editInVR()}>AR Edit</button>
+                <button onClick={() => prov.viewInVR()}>AR View</button>
                 <Spacer/>
                 <RunButton onClick={this.toggleRunning} active={this.state.running}/>
                 <Spacer/>
