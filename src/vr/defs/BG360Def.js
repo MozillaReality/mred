@@ -59,33 +59,21 @@ export default class BG360Def {
             imageCropEndAngle:1.0, //crop right edge of image
         }))
     }
-    makeNode(obj) {
+    makeNode(obj, provider) {
         const mat = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide})
         const node = new THREE.Mesh(new THREE.SphereBufferGeometry(20.0, 50,50),mat)
         customize(node,mat,obj)
         node.name = obj.title
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
+        const asset = provider.accessObject(obj.asset)
+        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
         return node
     }
     updateProperty(node, obj, op, provider) {
         if (op.name === PROP_DEFS.asset.key) {
-            const g = provider.getDataGraph()
-            const asset = fetchGraphObject(g,op.value)
-            if(asset) {
-                if(asset.subtype === ASSET_TYPES.IMAGE) {
-                    const tex = new THREE.TextureLoader().load(asset.src)
-                    node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
-                    customize(node, node.material, obj)
-                }
-                if(asset.subtype === ASSET_TYPES.VIDEO) {
-                    const video = document.createElement('video')
-                    video.crossOrigin = 'anonymous'
-                    video.src = asset.src
-                    const tex = new THREE.VideoTexture(video)
-                    node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
-                }
-            }
+            const asset = provider.accessObject(obj.asset)
+            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
         }
         if(node.userData.matShader) {
             if (op.name === 'imageOffsetAngle') node.userData.matShader.uniforms.imageOffsetAngle.value = op.value
@@ -96,4 +84,18 @@ export default class BG360Def {
         }
     }
 
+    attachAsset(asset, obj, node, provider) {
+        if(asset.subtype === ASSET_TYPES.IMAGE) {
+            const tex = new THREE.TextureLoader().load(asset.src)
+            node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
+            customize(node, node.material, obj)
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const video = document.createElement('video')
+            video.crossOrigin = 'anonymous'
+            video.src = asset.src
+            const tex = new THREE.VideoTexture(video)
+            node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
+        }
+    }
 }
