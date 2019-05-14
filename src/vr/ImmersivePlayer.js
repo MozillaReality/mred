@@ -11,6 +11,17 @@ import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} fr
 import {AuthModule} from './AuthModule'
 
 
+function attachUtilFunctions(obj) {
+    obj.find = (match,list) => {
+        if(!list) list = []
+        if(match(obj)) list.push(obj)
+        if(obj.children) obj.children.forEach(ch => {
+            ch.find(match,list)
+        })
+        return list
+    }
+}
+
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
@@ -65,6 +76,7 @@ export class ImmersivePlayer extends Component {
 
     buildRoot(graph) {
         graph.children.forEach(ch => {
+            attachUtilFunctions(ch)
             if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initScene(ch)
             if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return this.initBehaviors(ch)
@@ -79,6 +91,7 @@ export class ImmersivePlayer extends Component {
         this.scenes.add(scene)
         this.title_map[def.title] = def
         def.children.forEach(ch => {
+            attachUtilFunctions(ch)
             this.obj_map[ch.id] = ch
             this.title_map[ch.title] = ch
             ch.props = () => {
@@ -94,6 +107,7 @@ export class ImmersivePlayer extends Component {
                 //TODO: Make this recursive
                 if(ch.children) {
                     ch.children.forEach(cch => {
+                        attachUtilFunctions(cch)
                         if(cch.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
                             this.behavior_map[cch.id] = cch
                             cch.props = () => {
@@ -186,6 +200,7 @@ export class ImmersivePlayer extends Component {
         console.log("loading assets",assets.children)
         assets.children.forEach(ch => {
             console.log("loading asset",ch)
+            attachUtilFunctions(ch)
             this.obj_map[ch.id] =  ch
         })
     }
@@ -193,11 +208,13 @@ export class ImmersivePlayer extends Component {
     initBehaviors(behaviors) {
         console.log("loading behaviors",behaviors.children)
         behaviors.children.forEach(ch => {
+            attachUtilFunctions(ch)
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 console.log("loading behavior",ch)
-                const prom = AuthModule.fetch(ch.src)
-                    .then(res => res.text())
+                const prom = AuthModule.fetch(ch.src,{
+                    method:'GET'
+                }) .then(res => res.text())
                     .then(text => {
                         const info = parseBehaviorScript(text)
                         info.text = text
@@ -210,7 +227,6 @@ export class ImmersivePlayer extends Component {
     }
 
     setCurrentScene(scene) {
-        // console.log('setting the current scene to',scene)
         this.scenes.children.forEach(sc => sc.visible = false)
         if(this.three_map[scene.id]) this.three_map[scene.id].visible = true
         this.current_scene = scene
@@ -267,5 +283,8 @@ class Adapter extends SceneGraphProvider {
     }
     getGraphObjectById (id) {
         return this.player.obj_map[id]
+    }
+    startImageRecognizer(info) {
+        console.log("PRETENDING to START THE IMAGE RECOGNIZER")
     }
 }
