@@ -124,7 +124,7 @@ export class PubnubSyncWrapper {
     }
 
     handleReceiveHistory(msg) {
-        console.log("got some history", msg.history.length)
+        // console.log("got some history", msg.history.length)
         msg.history.forEach(op => this.provider.getDataGraph().process(op))
     }
 

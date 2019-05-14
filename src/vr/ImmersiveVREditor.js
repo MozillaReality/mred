@@ -26,7 +26,7 @@ import panel2d from "./panel2d/panel2d"
 import button2d from "./panel2d/button2d"
 import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
-import {on} from "../utils"
+import {on, toFlatString} from "../utils"
 import {TweenManager} from "../common/tween"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
@@ -92,6 +92,36 @@ class Adapter extends SceneGraphProvider {
 
     getGraphObjectById(id) {
         return this.provider.accessObject(id)
+    }
+
+    startImageRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
+        return new Promise((res,rej) => {
+            const img = new Image()
+            img.crossOrigin = "Anonymous"
+            img.src = info.image.src
+            logger.log("Loading image",img.src)
+            img.onload = () => {
+                res(img)
+            }
+        }).then(img => {
+            logger.log("got the image",toFlatString(img))
+            //called when an anchor is started that wants to recognize an image
+            // WebXR loaded?
+            if(!this.xr || !this.xr.session) {
+                logger.log("XR is not active?")
+                return
+            }
+
+            // decorate the info.node with an xr anchor
+            this.xr.addImageAnchoredNode(info, img, logger)
+        })
+
+    }
+
+    stopImageRecognizer(info) {
+        //TODO: @ahook
+        console.log("WE NEED TO STOP ALL image recognizers here")
     }
 }
 

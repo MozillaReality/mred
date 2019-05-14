@@ -20,6 +20,11 @@ export const on = (elem,type,cb) => elem.addEventListener(type,cb)
 export function genID(prefix) {
     return `${prefix}_${Math.floor(Math.random() * 10000)}`
 }
+
+export function toFlatString(obj) {
+    return JSON.stringify(obj)
+}
+
 /*
 export function GET_JSON(path, cb) {
     return new Promise((res,rej) => {

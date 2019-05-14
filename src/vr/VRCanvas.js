@@ -9,6 +9,7 @@ import {ToasterNotification} from './ToasterNotification'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {TweenManager} from '../common/tween'
 import * as ToasterManager from './ToasterManager'
+import {toFlatString} from '../utils'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -16,10 +17,6 @@ const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol
 let Cesium = document.Cesium
 let XRGeospatialAnchor = document.XRGeospatialAnchor
 
-
-function toFlatString(obj) {
-    return JSON.stringify(obj)
-}
 
 class XRSupport {
 
