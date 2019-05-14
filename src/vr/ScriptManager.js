@@ -1,3 +1,5 @@
+import {canHaveBehavior} from './Common'
+
 export class SceneGraphProvider {
     //return the current scene. provider is in charge of tracking which scene is considered 'current'
     //including the default scene when the project loads
@@ -177,6 +179,7 @@ export default class ScriptManager {
                 if(asset.onTick) asset.onTick(evt)
             })
             scene.find(child => {
+                if(!canHaveBehavior(child.type)) return
                 const behaviors = this.sgp.getBehaviorsForObject(child)
                 behaviors.forEach(b => {
                     evt.target = this.sgp.getThreeObject(b.parent)
