@@ -32,10 +32,7 @@ export class OpenFileDialog extends Component {
         })
     }
 
-    cancel = () => {
-        DialogManager.hide()
-    }
-    okay = () => {
+    dismiss = () => {
         DialogManager.hide()
     }
     render() {
@@ -54,8 +51,7 @@ export class OpenFileDialog extends Component {
                     </ul>
                 </VBox>
                 <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
+                    <button onClick={this.dismiss}>dismiss</button>
                 </HBox>
             </VBox>
         </Dialog>
