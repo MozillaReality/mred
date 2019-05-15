@@ -239,21 +239,24 @@ class XRSupport {
         let node = info.node
         let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
-        // Preferentially use a supplied place if any
+        // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
 
-        if(info.hasOwnProperty("latitude") && info.hasOwnProperty("longitude")) {
+        if(info.latitude || info.longitude) {
 
             // use supplied altitude?
 
-            if(info.hasOwnProperty("useAltitude") && info.useAltitude) {
-                let lla = new Cesium.Cartographic(info.longitude, info.latitude, info.altitude )
+            if(info.useAltitude || info.altitude) {
+                let lla = new Cesium.Cartographic(info.longitude*Math.PI/180, info.latitude*Math.PI/180, info.altitude )
+                console.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
+                console.log(lla)
                 XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                     this.addAnchoredNode(anchor,node)
                 })
             } else {
                 XRGeospatialAnchor.getDeviceElevation().then(altitude => {
-                    console.log("device elevation: ", altitude)
-                    let lla = new Cesium.Cartographic(info.longitude, info.latitude, altitude )
+                    let lla = new Cesium.Cartographic(info.longitude*Math.PI/180, info.latitude*Math.PI/180, altitude )
+                    console.log("XRGeoAnchor: Placing an object at specified lla and your altitude")
+                    console.log(lla)
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                         this.addAnchoredNode(anchor,node)
                     })
@@ -261,13 +264,14 @@ class XRSupport {
             }
         }
 
-        // else find current position
+        // else find current position and altitude
 
         else {
             XRGeospatialAnchor.getDeviceCartographic().then(cartographic => {
                 XRGeospatialAnchor.getDeviceElevation().then(altitude => {
-                    console.log("device elevation: ", altitude)
                     let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude )
+                    console.log("XRGeoAnchor: Placing an object at your lla")
+                    console.log(lla)
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                         this.addAnchoredNode(anchor,node)
                     })
