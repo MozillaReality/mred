@@ -124,6 +124,25 @@ class Adapter extends SceneGraphProvider {
         //TODO: @ahook
         console.log("WE NEED TO STOP ALL image recognizers here")
     }
+
+    startGeoRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
+
+        // WebXR loaded?
+        if(!this.xr || !this.xr.session) {
+            logger.log("XR is not active?")
+            return
+        }
+
+        // decorate the info.node with an xr anchor
+        this.xr.addGeoAnchoredNode(info, logger)
+    }
+
+    stopGeoRecognizer() {
+        //TODO: @ahook
+        console.log("WE NEED TO STOP ALL geo recognizers here")
+    }
+
 }
 
 export default class ImmersiveVREditor extends Component {

@@ -59,14 +59,14 @@ export class ImmersivePlayer extends Component {
             this.xr = new XRSupport()
             this.xr.getContext(canvas).then((context) => {
                 this.initThreeJS(canvas,context)
-                this.xr.setAnimationLoop( this.renderThreeWithCamera)
+                this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
                 this.startScene()
             }).catch(err => {
                 console.error('Error', err)
             })
         } else {
             this.initThreeJS(canvas,0)
-            this.renderer.setAnimationLoop(this.renderThree)
+            this.renderer.setAnimationLoop(this.renderThree.bind(this))
             this.startScene()
         }
 
@@ -362,7 +362,26 @@ class Adapter extends SceneGraphProvider {
             this.player.xr.addImageAnchoredNode(info, img, this.logger)
         })
     }
+
     stopImageRecognizer(info) {
         this.logger.log("stopping the image recognizer")
     }
+
+    startGeoRecognizer(info) {
+
+        // WebXR loaded?
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        // decorate the info.node with an xr anchor
+        this.player.xr.addGeoAnchoredNode(info, this.logger)
+    }
+
+    stopGeoRecognizer() {
+        //TODO: @ahook
+        console.log("WE NEED TO STOP ALL geo recognizers here")
+    }
+
 }
