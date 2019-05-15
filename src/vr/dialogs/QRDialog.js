@@ -17,7 +17,7 @@ export class QRDialog extends Component {
             <VBox grow>
                 <h3>{this.props.text?this.props.text:'Scan'}</h3>
                 <VBox grow>
-                    <label><a target={"_blank"} href={url}>{url}</a></label>
+                    <label><a href={url}>{url}</a></label>
                     <QRCanvas url={wurl} width={160} height={160}/>
                 </VBox>
                 <HBox>

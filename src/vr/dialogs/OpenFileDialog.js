@@ -16,16 +16,14 @@ export class OpenFileDialog extends Component {
     componentDidMount() {
         this.refreshList()
     }
-    openDoc(info) {
-        DialogManager.hide()
+    generateDocUrl(doc) {
         const opts = Object.assign({},this.props.provider.options,{
             mode:'edit',
             switcher:false,
-            doc:info.id
+            doc:doc.id
         })
         const url = `./?${toQueryString(opts)}`
-        console.log("opening the url",url)
-        window.open(url)
+        return url
     }
     deleteDoc(info) {
         return this.props.provider.removeDoc(info).then((res)=>{
@@ -46,9 +44,10 @@ export class OpenFileDialog extends Component {
                 <h3>Open document</h3>
                 <VBox scroll style={{ maxHeight:'60vh'}}>
                     <ul>{this.state.docList.map((doc, i) => {
+
                         return <li key={i}>
                             <b>{doc.title}</b>
-                            <button onClick={()=>this.openDoc(doc)}>open</button>
+                            <a className={"button"} href={this.generateDocUrl(doc)}>open</a>
                             {this.renderDeleteButton(doc)}
                         </li>
                     })}

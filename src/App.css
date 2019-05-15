@@ -7,12 +7,12 @@ html, body {
     --fg: #5b5b5b;
     --bd: #909090;
 }
-button {
+button, .button {
     font-size: 100%;
     color: black;
     background-color: white;
 }
-button:hover {
+button:hover, .button:hover {
     background-color: lightblue;
 }
 

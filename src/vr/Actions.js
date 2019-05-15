@@ -24,7 +24,7 @@ export function deleteObject(provider) {
 export function newDoc(provider) {
     const opts = Object.assign({},provider.options,
         {mode:'edit', switcher:false, doc:provider.genID('doc')})
-    window.open(`./?${toQueryString(opts)}`)
+    document.location =  `./?${toQueryString(opts)}`
 }
 
 
