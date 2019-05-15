@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
-import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
+import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry, PlaneBufferGeometry, TextureLoader, DoubleSide} from 'three'
 import ObjectDef from './ObjectDef'
-import {OBJ_TYPES, REC_TYPES} from '../Common'
+import {ASSET_TYPES, OBJ_TYPES, REC_TYPES, PROP_DEFS} from '../Common'
 
 let COUNTER = 0
 
@@ -23,7 +23,7 @@ export default class ImageAnchorDef extends ObjectDef {
             parent:scene.id
         }))
     }
-    makeNode(obj) {
+    makeNode(obj, provider) {
         const node = new Group()
         node.name = obj.title
         node.userData.clickable = true
@@ -39,6 +39,15 @@ export default class ImageAnchorDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
+
+        const preview = new Mesh(
+            new PlaneBufferGeometry(2,2),
+            new MeshLambertMaterial({color:'white',transparent:true, opacity: 0.5, side: DoubleSide})
+        )
+        node.add(preview)
+        node.userData.preview = preview
+        this.updateImagePreview(node,obj,provider)
+
         node.enter = (evt) => {
             clicker.visible = false
             node.visible = false
@@ -63,7 +72,27 @@ export default class ImageAnchorDef extends ObjectDef {
     }
 
     updateProperty(node, obj, op, provider) {
+        if(op.name === PROP_DEFS.targetImage.key) {
+            return this.updateImagePreview(node,obj,provider)
+        }
         return super.updateProperty(node,obj,op,provider)
+    }
+
+    updateImagePreview(node,obj,provider) {
+        const targetImage = provider.accessObject(obj.targetImage)
+        if(targetImage.exists()) {
+            const tex = new TextureLoader().load(targetImage.src)
+            node.userData.preview.material = new MeshLambertMaterial({color:'white',transparent:true, opacity:0.5, side:DoubleSide, map:tex})
+            let height = (targetImage.height / targetImage.width) * 2
+            node.userData.preview.geometry = new PlaneBufferGeometry(2,height)
+        }
+        if(provider.accessObject(obj.targetImage).exists()) {
+            node.userData.preview.visible = true
+            node.userData.clicker.visible = false
+        } else {
+            node.userData.preview.visible = false
+            node.userData.clicker.visible = true
+        }
     }
 
 }
