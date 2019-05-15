@@ -317,10 +317,10 @@ class Adapter extends SceneGraphProvider {
     }
 
     navigateScene (sceneid) {
-        console.log("navigating to ",sceneid)
-        const scene = this.obj_map[sceneid]
-        if(!scene) return console.warn("couldn't find scene for",sceneid)
-        this.setCurrentScene(scene)
+        this.logger.log("navigating to ",sceneid)
+        const scene = this.player.obj_map[sceneid]
+        if(!scene) return this.logger.error("couldn't find scene for",sceneid)
+        this.player.setCurrentScene(scene)
     }
     playAudioAsset (audio)  {
         console.log("trying to play",audio)

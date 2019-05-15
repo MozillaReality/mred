@@ -115,6 +115,7 @@ export default class ScriptManager {
     performClickAction(target) {
         if(!this.running) return
         try {
+            this.logger.log("script manager, got a click event",target)
             if (!target || !target.exists || !target.exists()) return
             const evt = {
                 type: 'click',
@@ -130,8 +131,8 @@ export default class ScriptManager {
                 if (asset.click) asset.click(evt)
             }
         } catch (error) {
-            console.error("error in script",error.message)
-            console.info(error)
+            this.logger.error("error in performClickAction",error.message)
+            this.logger.error(error)
             this.stopRunning()
         }
     }
@@ -181,9 +182,8 @@ export default class ScriptManager {
             } else {
                 evt.target = this.sgp.getThreeObject(child)
                 evt.graphTarget = child
-                this.logger.log("target is", evt.target)
                 if(evt.target && evt.target[type]) {
-                    this.logger.log("we are readlly doing",type,'on',child.type)
+                    // this.logger.log(`we are readly doing ${type}`,type,'on',child.type)
                     evt.target[type](evt)
                 }
             }

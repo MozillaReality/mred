@@ -175,6 +175,7 @@ export class PubnubSyncWrapper {
 
 export class PubnubLogger {
     constructor(docid, pubnub) {
+        this.count = 0
         this.docid = docid
         if(!pubnub) {
             this.pubnub = new PubNub(settings)
@@ -189,14 +190,14 @@ export class PubnubLogger {
         console.log("LOGGER",...arguments)
         this.pubnub.publish({
             channel:this.calculateLoggerChannelName(),
-            message:Array.from(arguments)
+            message:Array.from(arguments).concat(this.count++)
         })
     }
     error () {
         console.log("LOGGER ERROR",...arguments)
         this.pubnub.publish({
             channel:this.calculateLoggerChannelName(),
-            message:Array.from(arguments)
+            message:Array.from(arguments).concat(this.count++)
         })
     }
 }

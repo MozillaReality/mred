@@ -39,6 +39,7 @@ font-size: 200%;
             onLayerCreate(layer) {
                 layer.mesh.material.side = THREE.DoubleSide
                 layer.mesh.userData.graphid = obj.id
+                layer.mesh.userData.clickable = true
             }
         })
 
