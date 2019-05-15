@@ -10,7 +10,8 @@ export default class SceneDef {
         return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'scene',
             title:'Scene '+COUNTER++,
-            defaultFloor: true,
+            autoRecenter:true,
+            defaultFloor: false,
             parent:root.id,
             children:graph.createArray()
         }))

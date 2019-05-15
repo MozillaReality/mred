@@ -319,6 +319,11 @@ export const PROP_DEFS = {
         key:'useAltitude',
         name:"use altitude?",
         type:TYPES.BOOLEAN,
+    },
+    autoRecenter: {
+        key:'autoRecenter',
+        name:"Recenter on Load",
+        type:TYPES.BOOLEAN
     }
 }
 

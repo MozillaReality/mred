@@ -208,6 +208,8 @@ export class VRCanvas extends Component {
             const node = this.findNode(sel)
             if (!node) return
             this.transformControls.attach(node)
+            // this.orbitControls.target = node.position
+            // this.orbitControls.reset()
             return
         }
         console.log("selected something not an object or scene")
@@ -269,6 +271,7 @@ export class VRCanvas extends Component {
         this.scene.add(this.transformControls)
 
         this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
+        // this.orbitControls.autoRotate = true
         this.raycaster = new THREE.Raycaster();
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
