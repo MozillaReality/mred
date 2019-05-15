@@ -115,50 +115,44 @@ export class ImmersivePlayer extends Component {
         })
         graph.children.forEach(ch => {
             attachUtilFunctions(ch)
-            if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initScene(ch)
+            if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initObject(ch)
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return this.initBehaviors(ch)
         })
     }
 
-    initScene(def) {
-        // console.log("making a scene",def)
-        this.obj_map[def.id] = def
-        const scene = new SceneDef().makeNode(def, this.provider)
-        this.three_map[def.id] = scene
-        this.scenes.add(scene)
-        this.title_map[def.title] = def
-        def.children.forEach(ch => {
-            attachUtilFunctions(ch)
-            this.obj_map[ch.id] = ch
-            this.title_map[ch.title] = ch
-            ch.props = () => {
-                return ch
-            }
-            if(is3DObjectType(ch.type)) {
-                const child = get3DObjectDef(ch.type).makeNode(ch, this.provider)
-                this.three_map[ch.id] = child
-                on(child, 'click', () => {
-                    this.scriptManager.performClickAction(ch)
-                })
-                scene.add(child)
-                //TODO: Make this recursive
-                if(ch.children) {
-                    ch.children.forEach(cch => {
-                        attachUtilFunctions(cch)
-                        if(cch.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
-                            this.behavior_map[cch.id] = cch
-                            cch.props = () => {
-                                return cch
-                            }
-                        }
-                    })
-                }
-            }
-            if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
-                this.behavior_map[ch.id] = ch
-            }
-        })
-        scene.visible = false
+    initObject(obj) {
+        attachUtilFunctions(obj)
+        this.obj_map[obj.id] = obj
+        if(obj.title) this.title_map[obj.title] = obj
+        let node = null
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            const scene = new SceneDef().makeNode(obj, this.provider)
+            this.three_map[obj.id] = scene
+            this.scenes.add(scene)
+            scene.visible = false
+            node = scene
+        }
+        obj.props = () => obj
+
+        if(is3DObjectType(obj.type)) {
+            node = get3DObjectDef(obj.type).makeNode(obj, this.provider)
+            this.three_map[obj.id] = node
+            on(node, 'click', () => {
+                this.scriptManager.performClickAction(obj)
+            })
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+            this.behavior_map[obj.id] = obj
+        }
+
+        if(obj.children) {
+            obj.children.forEach(ch => {
+                const chnode = this.initObject(ch)
+                if(chnode) node.add(chnode)
+            })
+        }
+
+        return node
     }
 
     initThreeJS(canvas, context) {
