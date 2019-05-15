@@ -220,6 +220,8 @@ export class VRCanvas extends Component {
 
     componentDidMount() {
         const canvas = this.canvas
+        const logger = this.props.provider.pubnub.getLogger()
+        logger.log("mounting VRCanvas")
         if(XRSupport.supportsARKit()) {
             this.xr = new XRSupport()
             this.xr.getContext(canvas).then((context) => {
@@ -284,7 +286,9 @@ export class VRCanvas extends Component {
     }
 
     animationLoop(time, frame) {
-        if(this.state.running) this.scriptManager.tick(time, this.session, frame)
+        let session = null
+        if(this.xr) session = this.xr.session
+        if(this.state.running) this.scriptManager.tick(time, session, frame)
         if(this.tweenManager) this.tweenManager.update(time)
         this.previewUpdateNodes.forEach(n => n.previewUpdate())
         this.renderer.render(this.scene, this.camera)

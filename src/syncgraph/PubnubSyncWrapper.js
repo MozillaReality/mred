@@ -6,6 +6,10 @@ function short(op) {
     }
     return str
 }
+const settings = {
+    publishKey: 'pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd',
+    subscribeKey: 'sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733',
+}
 
 export class PubnubSyncWrapper {
     constructor(provider, graph) {
@@ -16,11 +20,6 @@ export class PubnubSyncWrapper {
         this.provider = provider
 
         graph.onChange((e)=>this.handleGraphChange(e))
-
-        const settings = {
-            publishKey: 'pub-c-1cba58da-c59a-4b8b-b756-09e9b33b1edd',
-            subscribeKey: 'sub-c-39263f3a-f6fb-11e7-847e-5ef6eb1f4733',
-        }
 
         this.pubnub = new PubNub(settings)
     }
@@ -134,7 +133,11 @@ export class PubnubSyncWrapper {
 //        console.log("channel is",evt.channel)
         if(evt.channel === this.calculateLoggerChannelName()) {
             if(evt.publisher !== this.pubnub.getUUID()) {
-                console.log("REMOTE LOGGER", evt.message)
+                if(evt.message.length) {
+                    console.log("REMOTE LOGGER",...evt.message)
+                } else {
+                    console.log("REMOTE LOGGER", evt.message)
+                }
             }
             return
         }
@@ -181,5 +184,30 @@ export class PubnubSyncWrapper {
                 })
             }
         }
+    }
+}
+
+
+export class PubnubLogger {
+    constructor(docid) {
+        this.docid = docid
+        this.pubnub = new PubNub(settings)
+    }
+    calculateLoggerChannelName() {
+        return "metadoc-log-" + this.docid
+    }
+    log() {
+        console.log("LOGGER",...arguments)
+        this.pubnub.publish({
+            channel:this.calculateLoggerChannelName(),
+            message:Array.from(arguments)
+        })
+    }
+    error () {
+        console.log("LOGGER ERROR",...arguments)
+        this.pubnub.publish({
+            channel:this.calculateLoggerChannelName(),
+            message:Array.from(arguments)
+        })
     }
 }

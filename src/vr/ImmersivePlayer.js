@@ -9,6 +9,8 @@ import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
 import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
+import {XRSupport} from './XRSupport'
+import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 
 
 function attachUtilFunctions(obj) {
@@ -36,6 +38,9 @@ export class ImmersivePlayer extends Component {
         this.behavior_assets = {}
         this.pendingAssets = []
         this.scriptManager = new ScriptManager(new Adapter(this))
+        const opts = parseOptions({})
+        this.logger = new PubnubLogger(opts.doc)
+        if(!opts.doc) throw new Error("doc not specified")
         this.provider = {
             accessObject:(id)=>{
                 if(!this.obj_map[id]) return {
@@ -47,12 +52,31 @@ export class ImmersivePlayer extends Component {
     }
 
     componentDidMount() {
-        this.initThreeJS()
+        this.logger.log("mounted ImmersivePlayer")
+        const canvas = this.canvas
+        if(XRSupport.supportsARKit()) {
+            this.xr = new XRSupport()
+            this.xr.getContext(canvas).then((context) => {
+                this.initThreeJS(canvas,context)
+                this.xr.setAnimationLoop( this.renderThreeWithCamera)
+                this.startScene()
+            }).catch(err => {
+                console.error('Error', err)
+            })
+        } else {
+            this.initThreeJS(canvas,0)
+            this.renderer.setAnimationLoop(this.renderThree)
+            this.startScene()
+        }
+
+    }
+
+    startScene() {
         const opts = parseOptions({})
         AuthModule.getJSON(getDocsURL()+opts.doc).then((payload)=>{
             this.root = payload.graph
             this.buildRoot(this.root)
-            console.log("root is",this.root)
+            this.logger.log(this.root)
             if(this.root.defaultScene) {
                 const sc = this.root.children.find(ch => ch.id  === this.root.defaultScene)
                 this.setCurrentScene(sc)
@@ -61,7 +85,7 @@ export class ImmersivePlayer extends Component {
                 this.setCurrentScene(sc)
             }
             Promise.all(this.pendingAssets).then(() => {
-                console.log("all assets loaded now")
+                this.logger.log("all assets loaded now. starting script manager")
                 this.scriptManager.startRunning()
             })
         })
@@ -69,17 +93,17 @@ export class ImmersivePlayer extends Component {
 
     render() {
         return <div>
-            <div id="overlay">
-                <div id="inner">
-                    <h1>Application Name</h1>
-                    <div id="loading-indicator">
-                        <label>loading</label>
-                        <progress max="100" value="0" id="progress"></progress>
-                    </div>
-                    <button id="enter-button" disabled>VR not supported, play anyway</button>
-                </div>
-            </div>
-            <div ref={c => this.sceneContainer = c}></div>
+            {/*<div id="overlay">*/}
+            {/*    <div id="inner">*/}
+            {/*        <h1>Application Name</h1>*/}
+            {/*        <div id="loading-indicator">*/}
+            {/*            <label>loading</label>*/}
+            {/*            <progress max="100" value="0" id="progress"></progress>*/}
+            {/*        </div>*/}
+            {/*        <button id="enter-button" disabled>VR not supported, play anyway</button>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+            <canvas ref={c => this.canvas = c} width={600} height={400}/>
         </div>
     }
 
@@ -136,26 +160,25 @@ export class ImmersivePlayer extends Component {
         scene.visible = false
     }
 
-    initThreeJS() {
+    initThreeJS(canvas, context) {
         this.tweenManager = new TweenManager()
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x000000 );
         this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        this.renderer = new THREE.WebGLRenderer( { antialias: true, canvas:canvas, context:context } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.gammaOutput = true
         this.renderer.vr.enabled = true;
-        this.sceneContainer.appendChild( this.renderer.domElement );
+        // this.sceneContainer.appendChild( this.renderer.domElement );
         this.vrmanager = new VRManager(this.renderer)
         this.audioListener = new THREE.AudioListener()
         this.camera.add(this.audioListener)
+        if(!this.xr) this.scene.background = new THREE.Color(0x000000);
         window.addEventListener( 'resize', ()=>{
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize( window.innerWidth, window.innerHeight );
         }, false );
-        this.renderer.setAnimationLoop(this.renderThree)
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
@@ -165,27 +188,30 @@ export class ImmersivePlayer extends Component {
         this.scenes = new Group()
         this.scene.add(this.scenes)
 
-        const $ = (sel) => document.querySelector(sel)
-        const on = (elem, type, cb) => elem.addEventListener(type,cb)
+        // const $ = (sel) => document.querySelector(sel)
+        // const on = (elem, type, cb) => elem.addEventListener(type,cb)
 
-        on($("#enter-button"),'click',()=>{
-            $("#overlay").style.display = 'none'
-            //we can start playing sound now
-        })
-
+        // on($("#enter-button"),'click',()=>{
+        //     $("#overlay").style.display = 'none'
+        //     //we can start playing sound now
+        // })
+        /*
         this.vrmanager.addEventListener(VR_DETECTED,()=>{
             console.log("VR detected")
             $("#enter-button").removeAttribute('disabled',false)
             $("#enter-button").innerText = "enter vr"
             on($("#enter-button"),'click',()=> this.vrmanager.enterVR())
         })
+         */
 
-        const WAIT_FOR_LOAD = false
+        // const WAIT_FOR_LOAD = false
+        /*
         if(!WAIT_FOR_LOAD) {
             $("#loading-indicator").style.display = 'none'
             $("#enter-button").style.display = 'block'
             $("#enter-button").removeAttribute('disabled')
         }
+         */
 
 
         //class which handles mouse and VR controller
@@ -199,31 +225,40 @@ export class ImmersivePlayer extends Component {
 
     }
 
-    renderThree = (time) => {
+    renderThreeWithCamera = (bounds,projectionMatrix,viewMatrix, time,frame) => {
+        if(!this.scene || !this.camera) return
+        this.camera.matrix.fromArray(viewMatrix)
+        this.camera.matrixWorldNeedsUpdate = true
+        this.camera.updateMatrixWorld()
+        this.camera.projectionMatrix.fromArray(projectionMatrix)
+        this.renderThree(time,frame)
+    }
+
+    renderThree = (time, frame) => {
         if(this.tweenManager) this.tweenManager.update(time)
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
-        this.scriptManager.tick(time)
+        let session = null
+        if(this.xr) session = this.xr.session
+        this.scriptManager.tick(time, session, frame)
         this.renderer.render( this.scene, this.camera );
     }
 
     initAssets(assets) {
-        console.log("loading assets",assets.children)
         assets.children.forEach(ch => {
-            console.log("loading asset",ch)
+            this.logger.log("loading asset",ch)
             attachUtilFunctions(ch)
             this.obj_map[ch.id] =  ch
         })
     }
 
     initBehaviors(behaviors) {
-        console.log("loading behaviors",behaviors.children)
         behaviors.children.forEach(ch => {
             attachUtilFunctions(ch)
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
-                console.log("loading behavior",ch)
+                this.logger.log("loading behavior",ch)
                 const prom = AuthModule.fetch(ch.src,{
                     method:'GET'
                 }) .then(res => res.text())
