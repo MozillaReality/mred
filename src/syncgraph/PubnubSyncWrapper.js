@@ -168,30 +168,19 @@ export class PubnubSyncWrapper {
     }
 
     getLogger() {
-        return {
-            log: (msg)=> {
-                console.log("LOGGER",msg)
-                this.pubnub.publish({
-                    channel:this.calculateLoggerChannelName(),
-                    message:msg
-                })
-            },
-            error: (msg) => {
-                console.error("LOGGER ERROR",msg)
-                this.pubnub.publish({
-                    channel:this.calculateLoggerChannelName(),
-                    message:msg
-                })
-            }
-        }
+        return new PubnubLogger(this.provider.getDocId(),this.pubnub)
     }
 }
 
 
 export class PubnubLogger {
-    constructor(docid) {
+    constructor(docid, pubnub) {
         this.docid = docid
-        this.pubnub = new PubNub(settings)
+        if(!pubnub) {
+            this.pubnub = new PubNub(settings)
+        } else {
+            this.pubnub = pubnub
+        }
     }
     calculateLoggerChannelName() {
         return "metadoc-log-" + this.docid
