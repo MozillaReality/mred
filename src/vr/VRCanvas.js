@@ -249,7 +249,7 @@ export class VRCanvas extends Component {
 
     setupRenderer(canvas,context) {
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(70, canvas.width / canvas.height, 0.1, 50);
+        this.camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
         // this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
@@ -260,6 +260,7 @@ export class VRCanvas extends Component {
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
         // this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
+        this.camera.position.set(9,5,0)
 
         this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
         this.transformControls.addEventListener('change',this.transformChanged)
@@ -267,7 +268,7 @@ export class VRCanvas extends Component {
         this.transformControls.addEventListener('mouseUp',this.unpauseQueue)
         this.scene.add(this.transformControls)
 
-        // this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
+        this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
         this.raycaster = new THREE.Raycaster();
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
