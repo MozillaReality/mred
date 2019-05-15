@@ -26,7 +26,7 @@ import panel2d from "./panel2d/panel2d"
 import button2d from "./panel2d/button2d"
 import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
-import {on, toFlatString} from "../utils"
+import {on, parseOptions, toFlatString} from "../utils"
 import {TweenManager} from "../common/tween"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
@@ -34,6 +34,7 @@ import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {deleteObject} from './Actions'
 import {DialogContainer} from 'appy-comps'
+import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 
 const {SET_PROPERTY, CREATE_OBJECT, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -129,8 +130,12 @@ export default class ImmersiveVREditor extends Component {
     constructor(props) {
         super(props)
         this.obj_node_map = {}
+        this.previewUpdateNodes = []
         this.playing_audio = []
-        this.scriptManager = new ScriptManager(new Adapter(this, this.props.provider))
+        const opts = parseOptions({})
+        if(!opts.doc) throw new Error("doc not specified")
+        this.logger = new PubnubLogger(opts.doc)
+        this.scriptManager = new ScriptManager(new Adapter(this, this.props.provider), this.logger)
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -165,6 +170,7 @@ export default class ImmersiveVREditor extends Component {
     render3(time) {
         //update the pointer and stats, if configured
         if(this.tweenManager) this.tweenManager.update(time)
+        this.previewUpdateNodes.forEach(n => n.previewUpdate())
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)
@@ -257,7 +263,7 @@ export default class ImmersiveVREditor extends Component {
 
 
     initContent() {
-        this.scene.background = new Color( 0xcccccc );
+        if(!this.xr) this.scene.background = new Color(0x000000);
         const light = new DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
@@ -269,6 +275,7 @@ export default class ImmersiveVREditor extends Component {
             this.camera.add(this.stats)
         }
         this.scene.add(this.camera)
+        this.camera.matrixAutoUpdate = false
 
         //class which handles mouse and VR controller 
         this.pointer = new Pointer(this, {
@@ -307,7 +314,7 @@ export default class ImmersiveVREditor extends Component {
 
         if(this.props.editable) {
             this.tools = new panel2d(this.scene, this.camera)
-            this.tools.position.set(-1, 1, -3)
+            this.tools.position.set(-1, 0, -3)
             this.scene.add(this.tools)
 
 
@@ -495,6 +502,7 @@ export default class ImmersiveVREditor extends Component {
     insertNodeMapping(id, node) {
         if (typeof id !== 'string') throw new Error("cannot map an object to an object. invalid call in insertNodeMapping")
         this.obj_node_map[id] = node
+        if(node.previewUpdate) this.previewUpdateNodes.push(node)
         node.userData.graphid = id
     }
 
