@@ -30,6 +30,7 @@ class TreeTableItem extends Component {
     onContextMenu = (e) => {
         e.preventDefault()
         e.stopPropagation()
+        selMan.setSelection(this.props.node)
         if(this.props.provider.calculateContextMenu) {
             const menu = this.props.provider.calculateContextMenu(this.props.node)
             PopupManager.show(<ContextMenu menu={menu}/>,e.target)
