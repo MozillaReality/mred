@@ -1,8 +1,8 @@
 import {toFlatString} from '../utils'
 import * as ToasterManager from './ToasterManager'
 
-let Cesium = document.Cesium
-let XRGeospatialAnchor = document.XRGeospatialAnchor
+let Cesium = window.Cesium
+let XRGeospatialAnchor = window.XRGeospatialAnchor
 
 export class XRSupport {
 
@@ -25,21 +25,29 @@ export class XRSupport {
         this.xrCanvas = document.createElement('canvas')
         this.xrContext = this.xrCanvas.getContext('xrpresent')
         this._anchoredNodes = new Map() // { XRAnchorOffset, Three.js Object3D }
+        let that = this
         let prom = new Promise((resolve, reject) => {
             // document.body.insertBefore(this.xrCanvas, document.body.firstChild) <- not needed?
             navigator.xr.requestDevice().then((xrDevice) => {
-                this.device = xrDevice
-                this.device.requestSession({
-                    outputContext: this.xrContext,
+                that.device = xrDevice
+                that.device.requestSession({
+                    outputContext: that.xrContext,
                     alignEUS: true,
                     geolocation: true,
                     worldSensing: true
                 }).then((xrSession) => {
-                    this.session = xrSession
-                    if (!this.canvas) this.canvas = document.createElement('canvas')
-                    if (!this.context) this.context = this.canvas.getContext('webgl', {compatibleXRDevice: this.device})
-                    this.session.baseLayer = new window.XRWebGLLayer(this.session, this.context)
-                    resolve(this.context)
+                    that.session = xrSession
+
+                    // we want to always use the estimated elevation
+                    XRGeospatialAnchor.useEstimatedElevation(true)
+
+                    // enable smooth tracking of image targets
+                    that.session.nonStandard_setNumberOfTrackedImages(4)
+
+                    if (!that.canvas) that.canvas = document.createElement('canvas')
+                    if (!that.context) that.context = that.canvas.getContext('webgl', {compatibleXRDevice: that.device})
+                    that.session.baseLayer = new window.XRWebGLLayer(that.session, that.context)
+                    resolve(that.context)
                 }).catch(err => {
                     console.error('Session setup error', err)
                     reject()
@@ -198,17 +206,17 @@ export class XRSupport {
         })
     }
 
-    addGeoAnchoredNode(info) {
+    addGeoAnchoredNode(info, logger) {
 
-        console.log("adding a geo recognizer")
+        logger.log("adding a geo recognizer")
 
         if (!info.node) {
-            console.error("Missing threejs node")
+            logger.log("Missing threejs node")
             return
         }
 
         if (!this.session) {
-            console.error("no session")
+            logger.log("no session")
             return
         }
 
@@ -222,47 +230,70 @@ export class XRSupport {
          */
 
         let callback = info.callback
+        let location = info.location
         let object = info.object // object that represents anchor variables that users can edit in general-editor
         let node = info.node
         let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
         // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
 
-        if (info.latitude || info.longitude) {
-
+        // these values are 0 by default, we need to change at least one of them by a bit!
+        if (location.latitude != 0 || location.longitude != 0) {
             // use supplied altitude?
 
-            if (info.useAltitude || info.altitude) {
-                let lla = new Cesium.Cartographic(info.longitude * Math.PI / 180, info.latitude * Math.PI / 180, info.altitude)
-                console.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
-                console.log(lla)
+            let lla = new Cesium.Cartographic(location.longitude * Math.PI / 180, location.latitude * Math.PI / 180, location.altitude)
+
+            if (location.useAltitude) {
+                logger.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
+                logger.log('${toFlatString(lla)}')
                 XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                    this.addAnchoredNode(anchor, node)
+                    this.addAnchoredNode(anchor, node, logger)
+                    if (callback) {
+                        callback(info)
+                    }
+                }).catch(error => {
+                    logger.error(`error creating geospatial anchor: ${error}`)
                 })
             } else {
-                XRGeospatialAnchor.getDeviceElevation().then(altitude => {
-                    let lla = new Cesium.Cartographic(info.longitude * Math.PI / 180, info.latitude * Math.PI / 180, altitude)
-                    console.log("XRGeoAnchor: Placing an object at specified lla and your altitude")
-                    console.log(lla)
+                XRGeospatialAnchor.getDefaultElevation(lla).then(altitude => {
+                    lla.height = altitude
+                    logger.log("XRGeoAnchor: Placing an object at specified lla and estimated altitude")
+                    logger.log('${toFlatString(lla)}')
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                        this.addAnchoredNode(anchor, node)
+                        this.addAnchoredNode(anchor, node, logger)
+                        if (callback) {
+                            callback(info)
+                        }
+                    }).catch(error => {
+                        logger.error(`error creating geospatial anchor: ${error}`)
                     })
+                }).catch(error => {
+                    logger.error(`error getting default elevation: ${error}`)
                 })
             }
         }
 
         // else find current position and altitude
-
         else {
             XRGeospatialAnchor.getDeviceCartographic().then(cartographic => {
-                XRGeospatialAnchor.getDeviceElevation().then(altitude => {
+                // probably don't need to explicitly do this, but to be safe ...
+                XRGeospatialAnchor.getDefaultElevation().then(altitude => {
                     let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude)
-                    console.log("XRGeoAnchor: Placing an object at your lla")
-                    console.log(lla)
+                    logger.log("XRGeoAnchor: Placing an object at your lla")
+                    logger.log('${toFlatString(lla)}')
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                        this.addAnchoredNode(anchor, node)
+                        this.addAnchoredNode(anchor, node, logger)
+                        if (callback) {
+                            callback(info)
+                        }
+                    }).catch(error => {
+                        logger.error(`error creating geospatial anchor: ${error}`)
                     })
+                }).catch(error => {
+                    logger.error(`error getting default elevation: ${error}`)
                 })
+            }).catch(error => {
+                logger.error(`error getting device cartographic location: ${error}`)
             })
         }
     }

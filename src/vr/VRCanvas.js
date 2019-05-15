@@ -521,15 +521,16 @@ export class VRCanvas extends Component {
     }
 
     startGeoRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
 
         // WebXR loaded?
         if(!this.xr || !this.xr.session) {
-            console.error("XR is not active?")
+            logger.log("XR is not active?")
             return
         }
 
         // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info)
+        this.xr.addGeoAnchoredNode(info, logger)
     }
 
     stopGeoRecognizer() {
