@@ -34,6 +34,7 @@ export class ImmersivePlayer extends Component {
         this.obj_map = {}
         this.three_map = {}
         this.title_map = {}
+        this.previewUpdateNodes = []
         this.current_scene = null
         this.root = null
         this.behavior_map = {}
@@ -136,6 +137,7 @@ export class ImmersivePlayer extends Component {
 
         if(is3DObjectType(obj.type)) {
             node = get3DObjectDef(obj.type).makeNode(obj, this.provider)
+            if(node.previewUpdate) this.previewUpdateNodes.push(node)
             this.three_map[obj.id] = node
             on(node, 'click', () => {
                 this.scriptManager.performClickAction(obj)
@@ -169,6 +171,8 @@ export class ImmersivePlayer extends Component {
         this.audioListener = new THREE.AudioListener()
         this.camera.add(this.audioListener)
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
+        this.camera.matrixAutoUpdate = false
+        this.scene.add(this.camera)
         window.addEventListener( 'resize', ()=>{
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
@@ -231,6 +235,7 @@ export class ImmersivePlayer extends Component {
 
     renderThree = (time, frame) => {
         if(this.tweenManager) this.tweenManager.update(time)
+        this.previewUpdateNodes.forEach(n => n.previewUpdate())
         if(this.pointer) this.pointer.tick(time)
         if(this.stats) this.stats.update(time)
         if(this.controller) this.controller.update(time)

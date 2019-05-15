@@ -256,9 +256,6 @@ export class VRCanvas extends Component {
         this.camera.add(this.audioListener)
         //only set a background if there is no XR active
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
-        this.camera.position.y = 1.5
-        this.camera.position.x = 0
-        this.camera.position.z = 0
         this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
 
