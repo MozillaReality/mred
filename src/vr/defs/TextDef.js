@@ -38,6 +38,7 @@ font-size: 200%;
             pixelRatio: window.devicePixelRatio,
             onLayerCreate(layer) {
                 layer.mesh.material.side = THREE.DoubleSide
+                layer.mesh.userData.graphid = obj.id
             }
         })
 
