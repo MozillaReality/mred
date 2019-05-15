@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import TreeItemProvider, {getDocsURL} from '../TreeItemProvider'
-import {on, parseOptions} from '../utils'
+import {on, parseOptions, toFlatString} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
 import {Group} from "three"
@@ -28,6 +28,8 @@ function attachUtilFunctions(obj) {
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
+        const opts = parseOptions({})
+        if(!opts.doc) throw new Error("doc not specified")
         new TreeItemProvider(props.options)
         this.obj_map = {}
         this.three_map = {}
@@ -37,10 +39,8 @@ export class ImmersivePlayer extends Component {
         this.behavior_map = {}
         this.behavior_assets = {}
         this.pendingAssets = []
-        this.scriptManager = new ScriptManager(new Adapter(this))
-        const opts = parseOptions({})
         this.logger = new PubnubLogger(opts.doc)
-        if(!opts.doc) throw new Error("doc not specified")
+        this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
             accessObject:(id)=>{
                 if(!this.obj_map[id]) return {
@@ -75,6 +75,7 @@ export class ImmersivePlayer extends Component {
         const opts = parseOptions({})
         AuthModule.getJSON(getDocsURL()+opts.doc).then((payload)=>{
             this.root = payload.graph
+            this.logger.log("loaded payload",this.root)
             this.buildRoot(this.root)
             this.logger.log(this.root)
             if(this.root.defaultScene) {
@@ -287,6 +288,7 @@ class Adapter extends SceneGraphProvider {
     constructor(player) {
         super()
         this.player = player
+        this.logger = this.player.logger
     }
 
     getCurrentScene() {
@@ -332,6 +334,26 @@ class Adapter extends SceneGraphProvider {
         return this.player.obj_map[id]
     }
     startImageRecognizer(info) {
-        console.log("PRETENDING to START THE IMAGE RECOGNIZER")
+        this.logger.log("PRETENDING to START THE IMAGE RECOGNIZER")
+        return new Promise((res,rej) => {
+            const img = new Image()
+            img.crossOrigin = "Anonymous"
+            img.src = info.image.src
+            this.logger.log("Loading image",img.src)
+            img.onload = () => {
+                res(img)
+            }
+        }).then(img => {
+            this.logger.log("got the image",toFlatString(img))
+            //called when an anchor is started that wants to recognize an image
+            // WebXR loaded?
+            if(!this.player.xr || !this.player.xr.session) {
+                this.logger.log("XR is not active?")
+                return
+            }
+
+            // decorate the info.node with an xr anchor
+            this.player.xr.addImageAnchoredNode(info, img, this.logger)
+        })
     }
 }

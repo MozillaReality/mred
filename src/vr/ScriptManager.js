@@ -24,10 +24,13 @@ export class SceneGraphProvider {
 }
 
 export default class ScriptManager {
-    constructor(sceneGraphProvider) {
+    constructor(sceneGraphProvider, logger) {
         this.sgp = sceneGraphProvider
+        this.logger = logger
         this.running = false
         this.storage = {}
+        this.logger = logger
+        this.logger.log("ScriptManager created")
     }
 
     makeSystemFacade(evt) {
@@ -203,7 +206,7 @@ export default class ScriptManager {
         this.running = true
         this.startTime = 0
         this.storage = {}
-        console.log("script manager starting")
+        this.logger.log("ScriptManager starting")
         try {
             this.sgp.getAllBehaviors().forEach(b => {
                 const evt = {
@@ -224,6 +227,7 @@ export default class ScriptManager {
                     }
                     evt.system = this.makeSystemFacade(evt)
                     const node = this.sgp.getThreeObject(child.id)
+                    this.logger.log("calling init on ",child.type,child.id)
                     if (node.init) node.init(evt)
                 })
             }
