@@ -59,14 +59,14 @@ export class ImmersivePlayer extends Component {
             this.xr = new XRSupport()
             this.xr.getContext(canvas).then((context) => {
                 this.initThreeJS(canvas,context)
-                this.xr.setAnimationLoop( this.renderThreeWithCamera)
+                this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
                 this.startScene()
             }).catch(err => {
                 console.error('Error', err)
             })
         } else {
             this.initThreeJS(canvas,0)
-            this.renderer.setAnimationLoop(this.renderThree)
+            this.renderer.setAnimationLoop(this.renderThree.bind(this))
             this.startScene()
         }
 
