@@ -74,18 +74,24 @@ export function showAddAssetPopup(e, provider) {
                 fun: () => provider.showAddAudioAssetDialog()
             },
             {
-                title:'geo location',
-                icon: ITEM_ICONS.geoanchor,
-                fun: () => provider.showAddGeoLocationAssetDialog()
-            }
-        ])
+                title: 'existing asset on server',
+                icon: ITEM_ICONS.assets,
+                fun: () => provider.showOpenAssetDialog()
+            }])
+    } else {
+        acts.push({
+            title: 'add asset from glitch',
+            icon: ITEM_ICONS.assets,
+            fun: () => provider.showOpenAssetDialog()
+        })    
     }
 
     acts.push({
-        title: 'existing asset on server',
-        icon: ITEM_ICONS.assets,
-        fun: () => provider.showOpenAssetDialog()
+        title:'geo location',
+        icon: ITEM_ICONS.geoanchor,
+        fun: () => provider.showAddGeoLocationAssetDialog()
     })
+
 
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
 }
