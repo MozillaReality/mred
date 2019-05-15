@@ -60,6 +60,9 @@ export default class ParticlesDef extends ObjectDef {
                 system.spawnParticle(options);
             }
         })
+        node.tick = function(evt) {
+            node.update(evt.time)
+        }
         node.userData.options = options
         node.name = obj.title
         node.userData.clickable = false

@@ -300,8 +300,9 @@ class Adapter extends SceneGraphProvider {
     getSceneObjects(sc) {
         return sc.children.filter(ch => is3DObjectType(ch.type))
     }
-    getThreeObject (id)  {
-        return this.player.three_map[id]
+    getThreeObject (obj)  {
+        if(obj.id) return this.player.three_map[obj.id]
+        return this.player.three_map[obj]
     }
     getParsedBehaviorAsset (b) {
         return this.player.behavior_assets[b.behavior]
@@ -309,6 +310,12 @@ class Adapter extends SceneGraphProvider {
     getAllBehaviors () {
         return Object.keys(this.player.behavior_map).map(key => this.player.behavior_map[key])
     }
+    getAllScenes() {
+        return Object.keys(this.player.obj_map)
+            .map(key => this.player.obj_map[key])
+            .filter(obj => obj.type === TOTAL_OBJ_TYPES.SCENE)
+    }
+
     navigateScene (sceneid) {
         console.log("navigating to ",sceneid)
         const scene = this.obj_map[sceneid]
@@ -333,7 +340,7 @@ class Adapter extends SceneGraphProvider {
         return this.player.obj_map[id]
     }
     startImageRecognizer(info) {
-        this.logger.log("PRETENDING to START THE IMAGE RECOGNIZER")
+        this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
             const img = new Image()
             img.crossOrigin = "Anonymous"
@@ -354,5 +361,8 @@ class Adapter extends SceneGraphProvider {
             // decorate the info.node with an xr anchor
             this.player.xr.addImageAnchoredNode(info, img, this.logger)
         })
+    }
+    stopImageRecognizer(info) {
+        this.logger.log("stopping the image recognizer")
     }
 }

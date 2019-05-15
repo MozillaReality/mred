@@ -26,6 +26,10 @@ class Adapter extends SceneGraphProvider {
         return this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
+    getAllScenes() {
+        return this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot())
+            .find((obj)=>obj.type === TOTAL_OBJ_TYPES.SCENE)
+    }
 
     getParsedBehaviorAsset(beh) {
         const prov = this.canvas.props.provider
@@ -262,7 +266,7 @@ export class VRCanvas extends Component {
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
         // this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
-        this.camera.position.set(9,5,0)
+        this.camera.position.set(7,4,1)
 
         this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
         this.transformControls.addEventListener('change',this.transformChanged)

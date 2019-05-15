@@ -11,7 +11,7 @@ export default class GeoAnchorDef extends ObjectDef {
             type: OBJ_TYPES.geoanchor,
             title: 'geo anchor ' + COUNTER++,
             visible: true,
-            tx: 0, ty: 0, tz: -5,
+            tx: 0, ty: 0, tz: 0,
             rx: 0, ry: 0, rz: 0,
             sx: 1, sy: 1, sz: 1,
             color: '#00ff00',
@@ -37,7 +37,7 @@ export default class GeoAnchorDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
-        node.init = (evt) => {
+        node.enter = (evt) => {
             clicker.visible = false
             node.visible = false
             node.userData.info = {
@@ -52,7 +52,7 @@ export default class GeoAnchorDef extends ObjectDef {
             }
             evt.system.startGeoRecognizer(node.userData.info)
         }
-        node.stop = (evt) => {
+        node.exit = (evt) => {
             clicker.visible = true
             evt.system.stopGeoRecognizer(node.userData.info)
         }

@@ -1,4 +1,4 @@
-import {canHaveBehavior} from './Common'
+import {canHaveBehavior, TOTAL_OBJ_TYPES} from './Common'
 
 export class SceneGraphProvider {
     //return the current scene. provider is in charge of tracking which scene is considered 'current'
@@ -6,9 +6,11 @@ export class SceneGraphProvider {
     getCurrentScene() { throw new Error("getCurrentScene not implemented")}
     getSceneObjects(scene) { throw new Error("getSceneObjects not implemented")}
     getBehaviorsForObject(obj) { throw new Error("getBehaviorsForObject(obj) not implemented")}
+    //return threejs object for the id of the graph object
     getThreeObject(id) { throw new Error("getThreeObject(id) not implemented")}
     getParsedBehaviorAsset(beh) { throw new Error("getParsedBehaviorAsset(behavior) not implemented")}
     getAllBehaviors() { throw new Error("getAllBehaviors() not implemented")}
+    getAllScenes() { throw new Error("getAllScenes not implemented")}
 
     //navigate to the specified scene
     navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
@@ -57,9 +59,9 @@ export default class ScriptManager {
                 return sgp.getGraphObjectById(id)
             },
             navigateScene(id) {
-                manager.fireSceneExit(this.getCurrentScene())
+                manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
                 sgp.navigateScene(id)
-                manager.fireSceneEnter(this.getCurrentScene())
+                manager.fireSceneLifecycleEvent('enter',this.getCurrentScene())
             },
             playSound(id) {
                 const asset = sgp.getGraphObjectById(id)
@@ -125,7 +127,7 @@ export default class ScriptManager {
                 let b = behaviors[i]
                 evt.props = b.props()
                 const asset = this.sgp.getParsedBehaviorAsset(b)
-                if (asset.onClick) asset.onClick(evt)
+                if (asset.click) asset.click(evt)
             }
         } catch (error) {
             console.error("error in script",error.message)
@@ -134,29 +136,57 @@ export default class ScriptManager {
         }
     }
 
-    fireSceneExit(scene) {
-        if(!scene) console.error("firing exit for a scene that is null")
+    fireLifecycleEvent(type) {
+        this.logger.log(`doing ${type} event`)
         const evt = {
-            type:'exit',
-            target:scene,
+            type:type,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(scene)
-        behaviors.forEach(b => {
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            if(asset.onExit) asset.onExit(evt)
+        this.sgp.getAllScenes().forEach(scene => {
+            scene.find(child => {
+                // this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
+                if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+                    evt.target = this.sgp.getThreeObject(child.parent)
+                    evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
+                    evt.props = child.props()
+                    const asset = this.sgp.getParsedBehaviorAsset(child)
+                    if(asset[type]) asset[type](evt)
+                } else {
+                    evt.target = this.sgp.getThreeObject(child)
+                    evt.graphTarget = child
+                    if(evt.target && evt.target[type]) evt.target[type](evt)
+                }
+            })
         })
     }
-    fireSceneEnter(scene) {
+
+    fireSceneLifecycleEvent(type, scene, time) {
+        if(type!=='tick') this.logger.log(`doing ${type} event`)
         const evt = {
-            type:'enter',
-            target:scene,
+            type:type,
+            time:time-this.startTime,
+            session: this.session,
+            frame: this.frame,
         }
         evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(scene)
-        behaviors.forEach(b => {
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            if(asset.onEnter) asset.onEnter(evt)
+
+        scene.find(child => {
+            if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
+            if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+                evt.target = this.sgp.getThreeObject(child.parent)
+                evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
+                evt.props = child.props()
+                const asset = this.sgp.getParsedBehaviorAsset(child)
+                if(asset[type]) asset[type](evt)
+            } else {
+                evt.target = this.sgp.getThreeObject(child)
+                evt.graphTarget = child
+                this.logger.log("target is", evt.target)
+                if(evt.target && evt.target[type]) {
+                    this.logger.log("we are readlly doing",type,'on',child.type)
+                    evt.target[type](evt)
+                }
+            }
         })
     }
 
@@ -164,36 +194,9 @@ export default class ScriptManager {
         if(!this.running) return
         if(this.startTime ===0) this.startTime = time
         try {
-            const scene = this.sgp.getCurrentScene()
-            if (!scene) return console.log("no current scene?!")
-            const evt = {
-                type:'tick',
-                time:time-this.startTime
-            }
-            evt.system = this.makeSystemFacade(evt)
-            evt.system.session = session
-            evt.system.frame = frame
-            const behaviors = this.sgp.getBehaviorsForObject(scene)
-            behaviors.forEach(b => {
-                evt.target = this.sgp.getThreeObject(b.parent)
-                evt.graphTarget = b.parent
-                const asset = this.sgp.getParsedBehaviorAsset(b)
-                evt.props = b.props()
-                if(asset.onTick) asset.onTick(evt)
-            })
-            scene.find(child => {
-                if(!canHaveBehavior(child.type)) return
-                const behaviors = this.sgp.getBehaviorsForObject(child)
-                behaviors.forEach(b => {
-                    evt.target = this.sgp.getThreeObject(b.parent)
-                    evt.graphTarget = child
-                    const asset = this.sgp.getParsedBehaviorAsset(b)
-                    evt.props = b.props()
-                    if(asset.onTick) asset.onTick(evt)
-                })
-                const obj3 = this.sgp.getThreeObject(child.id)
-                if(obj3 && obj3.update) obj3.update(time,evt)
-            })
+            this.session = session
+            this.frame = frame
+            this.fireSceneLifecycleEvent('tick',this.sgp.getCurrentScene(),time)
         } catch (err) {
             console.error("error in script",err.message)
             console.info(err)
@@ -208,56 +211,26 @@ export default class ScriptManager {
         this.storage = {}
         this.logger.log("ScriptManager starting")
         try {
-            this.sgp.getAllBehaviors().forEach(b => {
-                const evt = {
-                    type:'init',
-                }
-                evt.system = this.makeSystemFacade(evt)
-                evt.target = this.sgp.getThreeObject(b.parent)
-                evt.graphTarget = b.parent
-                evt.props = b.props()
-                const asset = this.sgp.getParsedBehaviorAsset(b)
-                if (asset.init) asset.init(evt)
-            })
-            const scene = this.sgp.getCurrentScene()
-            if(scene) {
-                this.sgp.getSceneObjects(scene).forEach(child => {
-                    const evt = {
-                        type: 'init',
-                    }
-                    evt.system = this.makeSystemFacade(evt)
-                    const node = this.sgp.getThreeObject(child.id)
-                    this.logger.log("calling init on ",child.type,child.id)
-                    if (node.init) node.init(evt)
-                })
-            }
+            this.fireLifecycleEvent('start')
+            this.fireSceneLifecycleEvent('enter',this.sgp.getCurrentScene())
         } catch(err) {
-            console.error("error in script",err.message)
-            console.info(err)
+            this.logger.error("error in script",err.message)
+            this.logger.error(err)
             this.stopRunning()
         }
     }
     stopRunning() {
         try {
+            this.fireSceneLifecycleEvent('exit',this.sgp.getCurrentScene())
+            this.fireLifecycleEvent('stop')
             this.running = false
             this.storage = {}
             this.destroyListeners()
-            const scene = this.sgp.getCurrentScene()
-            if(scene) {
-                this.sgp.getSceneObjects(scene).forEach(child => {
-                    const evt = {
-                        type: 'stop',
-                    }
-                    evt.system = this.makeSystemFacade(evt)
-                    const node = this.sgp.getThreeObject(child.id)
-                    if (node.stop) node.stop(evt)
-                })
-            }
         } catch(err) {
-            console.log("error stopping scripts", err.message)
-            console.info(err)
+            this.running = false
+            this.logger.error("error stopping scripts",err.message)
+            this.logger.error(err)
         }
-
         console.log("script manager stopping")
     }
     isRunning() {
