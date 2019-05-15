@@ -789,7 +789,7 @@ class VREditorApp extends Component {
                 <button className="fa fa-file" onClick={() => newDoc(prov)} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editIn2D()}>2D Edit</button>
-                {/*<button onClick={() => prov.editInVR()}>AR Edit</button>*/}
+                <button onClick={() => prov.editInVR()}>AR Edit</button>
                 <button onClick={() => prov.viewInVR()}>XR View</button>
                 <Spacer/>
                 <RunButton onClick={this.toggleRunning} active={this.state.running}/>

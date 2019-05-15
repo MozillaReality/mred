@@ -10,6 +10,7 @@ import ScriptManager, {SceneGraphProvider} from './ScriptManager'
 import {TweenManager} from '../common/tween'
 import {toFlatString} from '../utils'
 import {XRSupport} from './XRSupport'
+import OrbitControls from './OrbitControls'
 
 const {SET_PROPERTY, INSERT_ELEMENT, DELETE_ELEMENT} = require("syncing_protocol");
 
@@ -100,25 +101,26 @@ class Adapter extends SceneGraphProvider {
 }
 
 
+const MOVE_SPEED = 0.1
 export class VRCanvas extends Component {
     moveCameraForward = () => {
-        this.camera.position.z += -0.5
+        this.camera.position.z += -MOVE_SPEED
     }
     moveCameraBackward = () => {
-        this.camera.position.z += 0.5
+        this.camera.position.z += MOVE_SPEED
     }
     handleKeyPress = (e) => {
         if(e.key === 'ArrowUp') {
-            this.camera.position.z -= 0.5
+            this.camera.position.z -= MOVE_SPEED
         }
         if(e.key === 'ArrowDown') {
-            this.camera.position.z += 0.5
+            this.camera.position.z += MOVE_SPEED
         }
         if(e.key === 'a') {
-            this.camera.position.x -= 0.5
+            this.camera.position.x -= MOVE_SPEED
         }
         if(e.key === 'd') {
-            this.camera.position.x += 0.5
+            this.camera.position.x += MOVE_SPEED
         }
         if(e.key === 'ArrowLeft') {
             this.camera.rotation.y += 0.1
@@ -193,7 +195,7 @@ export class VRCanvas extends Component {
         }
     }
     selectionChanged = () => {
-        this.controls.detach()
+        this.transformControls.detach()
         const sel = SelectionManager.getSelection()
         if(!sel) return
         const obj = this.props.provider.accessObject(sel)
@@ -205,7 +207,7 @@ export class VRCanvas extends Component {
             this.setCurrentSceneWrapper(this.findNode(sc.id))
             const node = this.findNode(sel)
             if (!node) return
-            this.controls.attach(node)
+            this.transformControls.attach(node)
             return
         }
         console.log("selected something not an object or scene")
@@ -237,9 +239,9 @@ export class VRCanvas extends Component {
     }
 
     componentWillUnmount() {
-        this.controls.removeEventListener('change',this.transformChanged)
-        this.controls.removeEventListener('mouseDown',this.pauseQueue)
-        this.controls.removeEventListener('mouseUp',this.unpauseQueue)
+        this.transformControls.removeEventListener('change',this.transformChanged)
+        this.transformControls.removeEventListener('mouseDown',this.pauseQueue)
+        this.transformControls.removeEventListener('mouseUp',this.unpauseQueue)
         this.props.provider.off(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,this.docSwapped)
         SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
         window.removeEventListener('resize',this.windowResized)
@@ -256,14 +258,16 @@ export class VRCanvas extends Component {
         this.camera.add(this.audioListener)
         //only set a background if there is no XR active
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
-        this.camera.matrixAutoUpdate = false
+        // this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
 
-        this.controls = new TransformControls(this.camera, this.renderer.domElement)
-        this.controls.addEventListener('change',this.transformChanged)
-        this.controls.addEventListener('mouseDown',this.pauseQueue)
-        this.controls.addEventListener('mouseUp',this.unpauseQueue)
-        this.scene.add(this.controls)
+        this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
+        this.transformControls.addEventListener('change',this.transformChanged)
+        this.transformControls.addEventListener('mouseDown',this.pauseQueue)
+        this.transformControls.addEventListener('mouseUp',this.unpauseQueue)
+        this.scene.add(this.transformControls)
+
+        // this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
         this.raycaster = new THREE.Raycaster();
 
         const light = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -271,7 +275,7 @@ export class VRCanvas extends Component {
         this.scene.add(light);
 
         this.scene.add(new THREE.AmbientLight(0xffffff,0.4))
-
+        
         this.tweenManager = new TweenManager()
 
         this.props.provider.onRawChange(op => this.updateScene(op))
@@ -287,6 +291,7 @@ export class VRCanvas extends Component {
         if(this.xr) session = this.xr.session
         if(this.state.running) this.scriptManager.tick(time, session, frame)
         if(this.tweenManager) this.tweenManager.update(time)
+        if(this.orbitControls) this.orbitControls.update()
         this.previewUpdateNodes.forEach(n => n.previewUpdate())
         this.renderer.render(this.scene, this.camera)
     }
@@ -348,7 +353,7 @@ export class VRCanvas extends Component {
             return
         }
         if (op.type === DELETE_ELEMENT) {
-            this.controls.detach()
+            this.transformControls.detach()
             const node = this.findNode(op.value)
             if(node) {
                 this.removeNodeMapping(op.value,node)
@@ -381,7 +386,8 @@ export class VRCanvas extends Component {
 
     render() {
         return <div>
-            <canvas ref={c => this.canvas = c} width={600} height={400} onClick={this.clickedCanvas}
+            <canvas ref={c => this.canvas = c} width={600} height={400}
+                    onClick={this.clickedCanvas}
                     className="editable-canvas"
                     onKeyDown={this.handleKeyPress}
                     tabIndex={0}
