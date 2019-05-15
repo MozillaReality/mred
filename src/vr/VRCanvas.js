@@ -523,8 +523,6 @@ export class VRCanvas extends Component {
     }
 
     startGeoRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
-
         const logger = this.props.provider.pubnub.getLogger()
 
         // WebXR loaded?
