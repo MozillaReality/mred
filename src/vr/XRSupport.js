@@ -186,6 +186,7 @@ export class XRSupport {
                 logger.log("started activate detection image")
                 // this gets invoked after the image is seen for the first time
                 node.anchorName = name
+                node.anchorStyle = "image"
                 this.addAnchoredNode(anchor, node, logger)
                 if (callback) {
                     callback(info)
@@ -237,6 +238,7 @@ export class XRSupport {
                 console.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
                 console.log(lla)
                 XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                    node.anchorStyle = "geo"
                     this.addAnchoredNode(anchor, node)
                 })
             } else {
@@ -245,6 +247,7 @@ export class XRSupport {
                     console.log("XRGeoAnchor: Placing an object at specified lla and your altitude")
                     console.log(lla)
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                        node.anchorStyle = "geo"
                         this.addAnchoredNode(anchor, node)
                     })
                 })
@@ -260,6 +263,7 @@ export class XRSupport {
                     console.log("XRGeoAnchor: Placing an object at your lla")
                     console.log(lla)
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                        node.anchorStyle = "geo"
                         this.addAnchoredNode(anchor, node)
                     })
                 })
@@ -288,6 +292,30 @@ export class XRSupport {
             node.matrix.fromArray(anchor.modelMatrix)
             node.updateMatrixWorld(true)
         }
+    }
+
+    stopImageRecognizer() {
+        console.log("Stopping ALL image recognizers here")
+        if(!this._anchoredNodes) return
+        this._anchoredNodes.forEach( (value,key,map) => {
+            if(value.node && value.node.anchorStyle == "image") {
+                value.node.anchor = 0
+                value.node.matrixAutoUpdate = true
+                this._anchoredNodes.delete(key)
+            }
+        })
+    }
+
+    stopGeoRecognizer() {
+        console.log("Stopping ALL image recognizers here")
+        if(!this._anchoredNodes) return
+        this._anchoredNodes.forEach( (value,key,map) => {
+            if(value.node && value.node.anchorStyle == "geo") {
+                value.node.anchor = 0
+                value.node.matrixAutoUpdate = true
+                this._anchoredNodes.delete(key)
+            }
+        })
     }
 
 }

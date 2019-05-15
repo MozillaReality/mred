@@ -515,12 +515,16 @@ export class VRCanvas extends Component {
         })
     }
 
+
     stopImageRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL image recognizers here")
+        if(this.xr) {
+            this.xr.stopImageRecognizer()
+        }
     }
 
     startGeoRecognizer(info) {
+
+        const logger = this.props.provider.pubnub.getLogger()
 
         // WebXR loaded?
         if(!this.xr || !this.xr.session) {
@@ -529,12 +533,13 @@ export class VRCanvas extends Component {
         }
 
         // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info)
+        this.xr.addGeoAnchoredNode(info,logger)
     }
 
     stopGeoRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL geo recognizers here")
+        if(this.xr) {
+            this.xr.stopGeoRecognizer()
+        }
     }
 
 }
