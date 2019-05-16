@@ -174,6 +174,9 @@ export default class VREditor extends SyncGraphProvider {
                     if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                         if(key === 'title' || key === 'description') def.locked = true
                     }
+                    if(obj.type === TOTAL_OBJ_TYPES.ASSET && obj.subtype === ASSET_TYPES.IMAGE) {
+                        if(key === 'width' || key === 'height') def.locked = true
+                    }
                     return defs.push(def)
                 }
                 // console.log("unknown property",key)
