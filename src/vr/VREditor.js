@@ -51,6 +51,7 @@ import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './A
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
 import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
+import {ErrorCatcher} from './ErrorCatcher'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -799,8 +800,9 @@ class VREditorApp extends Component {
             {/*<br/>*/}
             doc id: <b>{prov.getDocId()}</b>
         </div>
-
-        return <GridEditorApp bottomText={bot}>
+        let logger = null
+        if(prov.pubnub) logger = prov.pubnub.getLogger()
+        return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
             <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
@@ -844,7 +846,7 @@ class VREditorApp extends Component {
             <DialogContainer/>
             <PopupContainer/>
 
-        </GridEditorApp>
+        </GridEditorApp></ErrorCatcher>
     }
     renderCenterPane(mode) {
         if (mode === 'script') return <ScriptEditor provider={this.props.provider}/>

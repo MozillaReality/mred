@@ -11,6 +11,7 @@ import {ASSET_TYPES, get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
+import {ErrorCatcher} from './ErrorCatcher'
 
 
 function attachUtilFunctions(obj) {
@@ -105,9 +106,11 @@ export class ImmersivePlayer extends Component {
             {/*        <button id="enter-button" disabled>VR not supported, play anyway</button>*/}
             {/*    </div>*/}
             {/*</div>*/}
-            <canvas ref={c => this.canvas = c} width={600} height={400}
-                onClick={this.clickedCanvas}
-            />
+            <ErrorCatcher logger={this.logger}>
+                <canvas ref={c => this.canvas = c} width={600} height={400}
+                    onClick={this.clickedCanvas}
+                />
+            </ErrorCatcher>
         </div>
     }
 
