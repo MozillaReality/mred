@@ -918,7 +918,6 @@ class ScaleEditor extends Component {
     }
 }
 
-
 function acceptsModelAsset(type) {
     if(type=== OBJ_TYPES.model) return true
     return false

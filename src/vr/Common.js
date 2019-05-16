@@ -276,6 +276,11 @@ export const PROP_DEFS = {
         type:TYPES.BOOLEAN
     },
 
+    reactivate: {
+        key: 'reactivate',
+        name: "Reactivate Image Search",
+        type: TYPES.BOOLEAN
+    },
 
     pointSize: {
         key:'pointSize',
