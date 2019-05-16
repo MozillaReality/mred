@@ -27,6 +27,7 @@ export default class SceneDef {
         this.setDefaultFloor(scene,obj.defaultFloor)
         scene.start = () => {
             scene.userData.sceneAnchor = new Group()
+            scene.userData.sceneAnchor.name = "SceneAnchor"
             scene.add(scene.userData.sceneAnchor)
             scene.children.forEach(chNode => {
                 const chObj = provider.accessObject(chNode.userData.graphid)

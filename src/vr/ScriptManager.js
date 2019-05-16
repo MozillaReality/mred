@@ -78,6 +78,9 @@ export default class ScriptManager {
             getObjectById(id) {
                 return sgp.getGraphObjectById(id)
             },
+            getThreeObjectById(id) {
+                return sgp.getThreeObject(id)
+            },
             navigateScene(id) {
                 manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
                 sgp.navigateScene(id)
