@@ -211,8 +211,8 @@ export default class ScriptManager {
             this.frame = frame
             this.fireSceneLifecycleEvent('tick',this.sgp.getCurrentScene(),time)
         } catch (err) {
-            console.error("error in script",err.message)
-            console.info(err)
+            this.logger.error("error in script",err.message)
+            this.logger.log(err)
             this.stopRunning()
         }
     }
@@ -244,7 +244,7 @@ export default class ScriptManager {
             this.logger.error("error stopping scripts",err.message)
             this.logger.error(err)
         }
-        console.log("script manager stopping")
+        this.logger.log("script manager stopping")
     }
     isRunning() {
         return this.running
