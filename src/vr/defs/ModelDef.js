@@ -16,6 +16,7 @@ export default class ModelDef extends ObjectDef {
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#ffffff',
+            children:graph.createArray(),
             asset:0,
             parent:scene.id
         }))
