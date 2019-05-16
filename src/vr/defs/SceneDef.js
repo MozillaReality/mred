@@ -27,7 +27,7 @@ export default class SceneDef {
         this.setDefaultFloor(scene,obj.defaultFloor)
         scene.enter = () => {
             scene.userData.sceneAnchor = new Group()
-            scene.userData.sceneAnchor.position.y = 2
+            // scene.userData.sceneAnchor.position.y = 2
             scene.add(scene.userData.sceneAnchor)
             scene.children.forEach(chNode => {
                 const chObj = provider.accessObject(chNode.userData.graphid)
