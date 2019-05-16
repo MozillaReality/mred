@@ -296,10 +296,14 @@ svg path.connection-line {
 }
 
 .editable-canvas {
-    border: 3px solid black;
+    border: 0px solid black;
+    padding:0;
+    margin:0;
+    width: 100% !important;
+    height: 100% !important;
 }
 .editable-canvas:focus {
-    border: 3px solid aqua;
+    border: 0px solid aqua;
 }
 rect.selection {
     stroke: #888;

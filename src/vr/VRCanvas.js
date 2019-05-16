@@ -167,6 +167,9 @@ export class VRCanvas extends Component {
             prov.quick_setPropertyValue(sel,'tz',node.position.z)
         }
     }
+    transformDraggingChanged = (e) => {
+        this.orbitControls.enabled = ! e.value
+    }
 
     docSwapped = (e) => {
         //nuke all the old stuff
@@ -220,9 +223,22 @@ export class VRCanvas extends Component {
     }
     windowResized = () => {
         if(this.canvas) {
-            this.camera.aspect = this.canvas.width / this.canvas.height;
+            let cw = this.canvas.clientWidth
+            let ch = this.canvas.clientHeight
+            this.camera.aspect = cw/ch;
             this.camera.updateProjectionMatrix();
-            this.renderer.setSize(this.canvas.width, this.canvas.height);
+            this.renderer.setSize(cw,ch);
+        }
+    }
+
+    checkAspectRatio() {
+        let cw = this.canvas.clientWidth
+        let ch = this.canvas.clientHeight
+        const aspect = cw/ch
+        if(Math.abs(this.camera.aspect - aspect) > 0.01 ) {
+            this.camera.aspect = aspect
+            this.camera.updateProjectionMatrix()
+            this.renderer.setSize(cw,ch);
         }
     }
 
@@ -257,7 +273,7 @@ export class VRCanvas extends Component {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
-        // this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
         this.audioListener = new THREE.AudioListener()
@@ -270,11 +286,13 @@ export class VRCanvas extends Component {
 
         this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
         this.transformControls.addEventListener('change',this.transformChanged)
+        this.transformControls.addEventListener('dragging-changed', this.transformDraggingChanged)
         this.transformControls.addEventListener('mouseDown',this.pauseQueue)
         this.transformControls.addEventListener('mouseUp',this.unpauseQueue)
         this.scene.add(this.transformControls)
 
         this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
+        this.orbitControls.update()
         // this.orbitControls.autoRotate = true
         this.raycaster = new THREE.Raycaster();
 
@@ -295,6 +313,7 @@ export class VRCanvas extends Component {
     }
 
     animationLoop(time, frame) {
+        this.checkAspectRatio()
         let session = null
         if(this.xr) session = this.xr.session
         if(this.state.running) this.scriptManager.tick(time, session, frame)
@@ -392,16 +411,20 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <div>
-            <canvas ref={c => this.canvas = c} width={600} height={400}
+        return <div style={{
+            borderWidth:0,
+            margin:0,
+            padding:0,
+            display:'flex',
+            flexDirection:'column',
+            height:'100%',
+        }}>
+            <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
                     onClick={this.clickedCanvas}
                     className="editable-canvas"
                     onKeyDown={this.handleKeyPress}
                     tabIndex={0}
             />
-            <br/>
-            <button onClick={this.moveCameraForward}>forward</button>
-            <button onClick={this.moveCameraBackward}>backward</button>
             <ToasterNotification/>
         </div>
     }
