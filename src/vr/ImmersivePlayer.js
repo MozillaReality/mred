@@ -125,12 +125,12 @@ export class ImmersivePlayer extends Component {
         if(intersect && intersect.length >= 1) {
             const inter = intersect.find(inter => inter.distance > 0)
             if(inter) {
-                console.log("found the interesction", inter)
-                console.log("intersections", intersect)
+                this.logger.log("found the interesction", inter)
+                this.logger.log("intersections", intersect)
                 const obj = inter.object
-                console.log("obj", obj)
+                this.logger.log("obj", obj)
                 const gobj = this.obj_map[obj.userData.graphid]
-                console.log("jobj", gobj)
+                this.logger.log("jobj", gobj)
                 this.scriptManager.performClickAction(gobj)
             }
         }
@@ -353,6 +353,10 @@ class Adapter extends SceneGraphProvider {
         this.logger.log("navigating to ",sceneid)
         const scene = this.player.obj_map[sceneid]
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
+        // @blair
+        const sceneNode = this.player.three_map[sceneid]
+        this.logger.log("the scene node is",sceneNode)
+        this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
         this.player.setCurrentScene(scene)
     }
     playMediaAsset (asset)  {
@@ -415,6 +419,7 @@ class Adapter extends SceneGraphProvider {
         this.player.xr.addGeoAnchoredNode(info, this.logger)
     }
 
+<<<<<<< HEAD
     stopGeoRecognizer(info) {
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
@@ -424,6 +429,11 @@ class Adapter extends SceneGraphProvider {
 
         // decorate the info.node with an xr anchor
         this.player.xr.stopGeoRecognizer(info, this.logger)
+=======
+    stopGeoRecognizer() {
+        //TODO: @ahook
+        this.logger.log("WE NEED TO STOP ALL geo recognizers here")
+>>>>>>> master
     }
 
 }
