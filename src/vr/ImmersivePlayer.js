@@ -379,6 +379,9 @@ class Adapter extends SceneGraphProvider {
     getGraphObjectById (id) {
         return this.player.obj_map[id]
     }
+    getCamera() {
+        return this.player.camera
+    }
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {

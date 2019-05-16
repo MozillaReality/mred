@@ -10,6 +10,7 @@ import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
 import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
+import {HudAnchorDef} from './defs/HudAnchorDef'
 
 const stdhints = {
     incrementValue:0.1,
@@ -341,6 +342,7 @@ export const OBJ_TYPES = {
     particles:'particles',
     imageanchor:'imageanchor',
     geoanchor:'geoanchor',
+    hudanchor:'hudanchor',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -371,6 +373,7 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.particles) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
+    if(type === OBJ_TYPES.hudanchor) return true
     return false
 }
 
@@ -378,6 +381,7 @@ export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
+    if(type === OBJ_TYPES.hudanchor) return true
     if(type === TOTAL_OBJ_TYPES.SCENE) return true
     return false
 }
@@ -412,6 +416,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
     if(type === OBJ_TYPES.imageanchor) return new ImageAnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
+    if(type === OBJ_TYPES.hudanchor) return new HudAnchorDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
