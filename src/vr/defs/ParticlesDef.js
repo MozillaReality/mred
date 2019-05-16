@@ -15,7 +15,7 @@ export default class ParticlesDef extends ObjectDef {
             type:OBJ_TYPES.particles,
             title:'particles '+COUNTER++,
             visible:true,
-            tx:0, ty:0, tz:-5,
+            tx:0, ty:0, tz:0,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             children:graph.createArray(),
