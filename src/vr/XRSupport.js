@@ -366,7 +366,7 @@ export class XRSupport {
 
             if (location.useAltitude) {
                 logger.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
-                logger.log('${toFlatString(lla)}')
+                logger.log(toFlatString(lla))
                 XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                     node.anchorStyle = "geo"
                     this.addAnchoredNode(anchor, node, logger)
@@ -380,7 +380,7 @@ export class XRSupport {
                 XRGeospatialAnchor.getDefaultElevation(lla).then(altitude => {
                     lla.height = altitude
                     logger.log("XRGeoAnchor: Placing an object at specified lla and estimated altitude")
-                    logger.log('${toFlatString(lla)}')
+                    logger.log(toFlatString(lla))
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                         node.anchorStyle = "geo"
                         this.addAnchoredNode(anchor, node, logger)
@@ -403,7 +403,7 @@ export class XRSupport {
                 XRGeospatialAnchor.getDefaultElevation().then(altitude => {
                     let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude)
                     logger.log("XRGeoAnchor: Placing an object at your lla")
-                    logger.log('${toFlatString(lla)}')
+                    logger.log(toFlatString(lla))
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                         node.anchorStyle = "geo"
                         this.addAnchoredNode(anchor, node, logger)
