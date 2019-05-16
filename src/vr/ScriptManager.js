@@ -150,6 +150,7 @@ export default class ScriptManager {
                     evt.target = this.sgp.getThreeObject(child.parent)
                     evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
                     evt.props = child.props()
+                    evt.globals = window
                     const asset = this.sgp.getParsedBehaviorAsset(child)
                     if(asset[type]) asset[type](evt)
                 } else {
