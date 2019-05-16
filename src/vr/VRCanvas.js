@@ -242,6 +242,7 @@ export class VRCanvas extends Component {
     }
 
     checkAspectRatio() {
+        if(!this.canvas) return
         let cw = this.canvas.clientWidth
         let ch = this.canvas.clientHeight
         const aspect = cw/ch
