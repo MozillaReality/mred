@@ -1,5 +1,6 @@
 import {toFlatString} from '../utils'
 import * as ToasterManager from './ToasterManager'
+import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
 
 let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor
@@ -7,6 +8,7 @@ let XRGeospatialAnchor = window.XRGeospatialAnchor
 export class XRSupport {
     constructor() {
         this.imageDetectorMap = {}
+        this._workingMatrix = mat4.create()
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -138,6 +140,28 @@ export class XRSupport {
         anchor.addEventListener("removed", anchor._handleAnchorDeleteCallback)
         logger.log("done adding anchored node")
         return node
+    }
+
+    async createSceneAnchor(sceneNode, logger) {
+        logger.log("Creating Scene Anchor")
+
+        if (!this.session) {
+            logger.log("no session")
+            rej("no session")
+            return
+        }
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+        headLevel.getTransformTo(eyeLevel, _workingMatrix)
+
+
+        let newAnchor = await this.session.addAnchor(_identity, _headLevelFrameOfReference)
+    }
+
+    removeSceneAnchor(sceneAnchor, logger) {
+        logger.log("Removing Scene Anchor")
+        this.session.removeAnchor(sceneAnchor)
+        _removeAnchorFromNode(sceneAnchor)
     }
 
     _fetchImage(info,logger) {
