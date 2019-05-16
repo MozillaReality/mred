@@ -133,6 +133,18 @@ export class VRCanvas extends Component {
             this.camera.rotation.y -= 0.1
         }
     }
+    recenterOnSelection = () => {
+        const sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = this.props.provider.accessObject(sel)
+        if(is3DObjectType(obj.type)) {
+            const node = this.findNode(sel)
+            this.orbitControls.target.copy(node.position)
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            this.orbitControls.reset()
+        }
+    }
 
     constructor(props) {
         super(props)
@@ -215,8 +227,6 @@ export class VRCanvas extends Component {
             const node = this.findNode(sel)
             if (!node) return
             this.transformControls.attach(node)
-            // this.orbitControls.target = node.position
-            // this.orbitControls.reset()
             return
         }
         console.log("selected something not an object or scene")
@@ -282,7 +292,7 @@ export class VRCanvas extends Component {
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
         // this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
-        this.camera.position.set(7,4,1)
+        this.camera.position.set(1,6,6)
 
         this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
         this.transformControls.addEventListener('change',this.transformChanged)
@@ -411,21 +421,24 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <div style={{
-            borderWidth:0,
-            margin:0,
-            padding:0,
-            display:'flex',
-            flexDirection:'column',
-            height:'100%',
-        }}>
-            <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
-                    onClick={this.clickedCanvas}
-                    className="editable-canvas"
-                    onKeyDown={this.handleKeyPress}
-                    tabIndex={0}
-            />
-            <ToasterNotification/>
+        return <div style={{}}>
+            <button onClick={this.recenterOnSelection}>recenter on selection</button>
+            <div style={{
+                borderWidth:0,
+                margin:0,
+                padding:0,
+                display:'flex',
+                flexDirection:'column',
+                height:'100%',
+            }}>
+                <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
+                        onClick={this.clickedCanvas}
+                        className="editable-canvas"
+                        onKeyDown={this.handleKeyPress}
+                        tabIndex={0}
+                />
+                <ToasterNotification/>
+            </div>
         </div>
     }
 
