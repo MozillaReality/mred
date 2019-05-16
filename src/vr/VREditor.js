@@ -924,6 +924,8 @@ function acceptsImageAsset(type) {
     if(type === OBJ_TYPES.plane
         || type === OBJ_TYPES.bg360
         || type === OBJ_TYPES.img2d
+        || type === OBJ_TYPES.cube
+        || type === OBJ_TYPES.sphere
     ) return true
     return false
 }
