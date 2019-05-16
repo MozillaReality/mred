@@ -12,6 +12,7 @@ export default class ImageAnchorDef extends ObjectDef {
             type:OBJ_TYPES.imageanchor,
             title:'image anchor '+COUNTER++,
             visible:true,
+            reactivate: false,
             tx:0, ty:0, tz:0,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
@@ -54,6 +55,7 @@ export default class ImageAnchorDef extends ObjectDef {
             node.userData.info = {
                 image: evt.system.getObjectById(obj.targetImage),
                 imageRealworldWidth: obj.imageRealworldWidth,
+                reactivate: obj.reactivate,
                 recType: obj.recType,
                 object: obj,
                 node: node,

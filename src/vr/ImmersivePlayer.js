@@ -375,18 +375,10 @@ class Adapter extends SceneGraphProvider {
     getGraphObjectById (id) {
         return this.player.obj_map[id]
     }
+
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            this.logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            this.logger.log("got the image",toFlatString(img))
             //called when an anchor is started that wants to recognize an image
             // WebXR loaded?
             if(!this.player.xr || !this.player.xr.session) {
@@ -394,17 +386,25 @@ class Adapter extends SceneGraphProvider {
                 return
             }
 
-            // decorate the info.node with an xr anchor
-            this.player.xr.addImageAnchoredNode(info, img, this.logger)
+            this.player.xr.createDetectionImage(info,this.logger).then((name) => {
+                // decorate the info.node with an xr anchor
+                this.player.xr.addImageAnchoredNode(info, name, this.logger)
+            })
         })
     }
 
     stopImageRecognizer(info) {
         this.logger.log("stopping the image recognizer")
+
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
     startGeoRecognizer(info) {
-
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
             this.logger.log("XR is not active?")
@@ -415,9 +415,15 @@ class Adapter extends SceneGraphProvider {
         this.player.xr.addGeoAnchoredNode(info, this.logger)
     }
 
-    stopGeoRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL geo recognizers here")
+    stopGeoRecognizer(info) {
+        // WebXR loaded?
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        // decorate the info.node with an xr anchor
+        this.player.xr.stopGeoRecognizer(info, this.logger)
     }
 
 }

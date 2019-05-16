@@ -99,50 +99,26 @@ class Adapter extends SceneGraphProvider {
 
     startImageRecognizer(info) {
         const logger = this.provider.pubnub.getLogger()
-        return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            logger.log("got the image",toFlatString(img))
-            //called when an anchor is started that wants to recognize an image
-            // WebXR loaded?
-            if(!this.xr || !this.xr.session) {
-                logger.log("XR is not active?")
-                return
-            }
-
-            // decorate the info.node with an xr anchor
-            this.xr.addImageAnchoredNode(info, img, logger)
-        })
-
+        
+        logger.log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL image recognizers here")
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoRecognizer(info) {
         const logger = this.provider.pubnub.getLogger()
-
-        // WebXR loaded?
-        if(!this.xr || !this.xr.session) {
-            logger.log("XR is not active?")
-            return
-        }
-
-        // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info, logger)
+        
+        logger.log("NOTHING DONE TO start geo recognizer")
     }
 
-    stopGeoRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL geo recognizers here")
+    stopGeoRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop geo recognizer")
     }
 
 }

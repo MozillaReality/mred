@@ -379,11 +379,10 @@ export class VRCanvas extends Component {
                 if(nextProps.running === false) {
                     this.scriptManager.stopRunning()
                     this.resetSceneGraph()
-                    this.stopImageRecognizer()
-                    this.stopGeoRecognizer()
+                    this.stopRecognizers()
                 } else {
                     //start the script manager
-                    this.startRecognizer()
+                    this.startRecognizers()
                     this.scriptManager.startRunning()
                 }
                 return false
@@ -501,58 +500,36 @@ export class VRCanvas extends Component {
         })
     }
 
-    startRecognizer() {
+    startRecognizers() {
+        //called when script running is started
+    }
+
+    stopRecognizers() {
         //called when script running is started
     }
 
     startImageRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            logger.log("got the image",toFlatString(img))
-            //called when an anchor is started that wants to recognize an image
-            // WebXR loaded?
-            if(!this.xr || !this.xr.session) {
-                logger.log("XR is not active?")
-                return
-            }
-
-            // decorate the info.node with an xr anchor
-            this.xr.addImageAnchoredNode(info, img, logger)
-        })
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO start image recognizer")
     }
 
-
-    stopImageRecognizer() {
-        if(this.xr) {
-            this.xr.stopImageRecognizer()
-        }
+    stopImageRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-
-        // WebXR loaded?
-        if(!this.xr || !this.xr.session) {
-            logger.log("XR is not active?")
-            return
-        }
-
-        // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info,logger)
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO start geo recognizer")
     }
 
-    stopGeoRecognizer() {
-        if(this.xr) {
-            this.xr.stopGeoRecognizer()
-        }
+    stopGeoRecognizer(info) {
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop geo recognizer")
     }
 
 }

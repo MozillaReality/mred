@@ -1,5 +1,8 @@
 import {canHaveBehavior, TOTAL_OBJ_TYPES} from './Common'
 import * as THREE from "three"
+import WebLayer3D from 'three-web-layer'
+import GPUParticles from './defs/GPUParticles'
+import GLTFLoader from './GLTFLoader'
 
 export class SceneGraphProvider {
     //return the current scene. provider is in charge of tracking which scene is considered 'current'
@@ -34,6 +37,11 @@ export default class ScriptManager {
         this.storage = {}
         this.logger = logger
         this.logger.log("ScriptManager created")
+
+        if (!window.THREE) window.THREE = THREE
+        if (!window.GLTFLoader) window.GLTFLoader = GLTFLoader
+        if (!window.GPUParticles) window.GPUParticles = GPUParticles
+        if (!window.WebLayer3D) window.WebLayer3D = WebLayer3D
     }
 
     makeSystemFacade(evt) {
@@ -42,7 +50,10 @@ export default class ScriptManager {
         return {
             globals() {
                 return {
-                    THREE:THREE
+                    THREE:THREE,
+                    GLTFLoader: GLTFLoader,
+                    GPUParticles: GPUParticles,
+                    WebLayer3D: WebLayer3D
                 }
             },
             logger() {
@@ -159,7 +170,6 @@ export default class ScriptManager {
                     evt.target = this.sgp.getThreeObject(child.parent)
                     evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
                     evt.props = child.props()
-                    evt.globals = window
                     const asset = this.sgp.getParsedBehaviorAsset(child)
                     if(asset[type]) asset[type](evt)
                 } else {

@@ -5,7 +5,9 @@ let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor
 
 export class XRSupport {
-
+    constructor() {
+        this.imageDetectorMap = {}
+    }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
             console.log("*** Found mozilla xr viewer")
@@ -25,6 +27,7 @@ export class XRSupport {
         this.xrCanvas = document.createElement('canvas')
         this.xrContext = this.xrCanvas.getContext('xrpresent')
         this._anchoredNodes = new Map() // { XRAnchorOffset, Three.js Object3D }
+
         let that = this
         let prom = new Promise((resolve, reject) => {
             // document.body.insertBefore(this.xrCanvas, document.body.firstChild) <- not needed?
@@ -127,14 +130,111 @@ export class XRSupport {
         node.matrix.fromArray(anchor.modelMatrix)
         node.updateMatrixWorld(true)
         //this._scene.add(node) -> presumably this is already done
-        anchor.addEventListener("update", (e) => this._handleAnchorUpdate(e, logger))
-        anchor.addEventListener("removed", (e) => this._handleAnchorDelete(e, logger))
+
+        anchor._handleAnchorUpdateCallback = this._handleAnchorUpdate.bind(this, logger)
+        anchor._handleAnchorDeleteCallback = this._handleAnchorDelete.bind(this, logger)
+
+        anchor.addEventListener("update", anchor._handleAnchorUpdateCallback)
+        anchor.addEventListener("removed", anchor._handleAnchorDeleteCallback)
         logger.log("done adding anchored node")
         return node
     }
 
-    addImageAnchoredNode(info, image, logger) {
+    _fetchImage(info,logger) {
+        return new Promise((res,rej) => {
+            const img = new Image()
+            img.crossOrigin = "Anonymous"
+            img.src = info.image.src
+            logger.log("Loading image",img.src)
+            img.onload = () => {
+                res(img)
+            }
+        })
+    }
 
+    createDetectionImage(info, logger) {
+        logger.log("creating an image recognizer")
+        return new Promise((res,rej) => {            
+            if (!info.image || !info.node) {
+                logger.log("missing image or threejs node")
+                rej("missing image or threejs node")
+                return
+            }
+
+            if (!this.session) {
+                logger.log("no session")
+                rej("no session")
+                return
+            }
+
+            let imageRealworldWidth = info.imageRealworldWidth || 1
+
+            if (this.imageDetectorMap[info.image.src]) {
+                let det = this.imageDetectorMap[info.image.src]
+                if (imageRealworldWidth != det.realWorldWidth) {
+                    rej("can't create the same image with different real world width")
+                    return
+                }
+                res(det.name)
+                return
+            }
+
+            this._fetchImage(info,logger).then(image => {
+                logger.log("got the image",toFlatString(image))
+    
+                //info contains
+                // * callback: to call when the image is found
+                // * image: info about the image to recognize. src is at image.src
+                // * imageRealworldWidth: width of the image in meters
+                // * object: the anchor object
+                // * node: the ThreeJS group which represents the anchor. It should be updated as the scene changes
+                // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
+    
+        
+                // random name from https://gist.github.com/6174/6062387
+                let name = [...Array(10)].map(i => (~~(Math.random() * 36)).toString(36)).join('')
+        
+                // Get ImageData
+                let canvas = document.createElement('canvas')
+                let context = canvas.getContext('2d')
+                canvas.width = image.width
+                canvas.height = image.height
+        
+                context.drawImage(image, 0, 0)
+                let idata
+                try {
+                    idata = context.getImageData(0, 0, image.width, image.height)
+                } catch (e) {
+                    logger.log(`error drawing image ${toFlatString(e)}`)
+                    logger.log(`name ${e.name}`)
+                    logger.log(`name ${e.message}`)
+                    logger.log("local url is " + document.documentURI)
+                    logger.log("image url from " + image.src)
+                    ToasterManager.add("error drawing image", e.toString())
+                    rej( new Error("foo"))
+                }
+                logger.log(`calling createDetectionImage with image width and height ${image.width} ${image.height}`)
+        
+                // Attach image observer handler
+                this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, imageRealworldWidth).then(() => {
+                    this.imageDetectorMap[info.image.src] = {
+                        name: name,
+                        realWorldWidth: imageRealworldWidth,
+                        anchor: null
+                    }
+                    res(name)
+                }).catch(error => {
+                    logger.error(`error creating detection image: ${error}`)
+                    rej(error)
+                })
+            }).catch(error => {
+                logger.error(`error creating detection image: ${error}`)
+                rej(error)
+            })
+        })
+    }
+
+    addImageAnchoredNode(info, name, logger) {
         logger.log("addImageAnchoredNode")
 
         if (!info.image || !info.node) {
@@ -156,56 +256,76 @@ export class XRSupport {
         // * recType: current set to SCENE_START, meaning we should recognize as soon as the scene starts up
 
         let callback = info.callback
-        // let image = info.image
-        let imageRealworldWidth = info.imageRealworldWidth || 1
-        let object = info.object // object that represents anchor variables that users can edit in general-editor
+
         let node = info.node
         let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
-        // random name from https://gist.github.com/6174/6062387
-        let name = [...Array(10)].map(i => (~~(Math.random() * 36)).toString(36)).join('')
-
-        // Get ImageData
-        let canvas = document.createElement('canvas')
-        let context = canvas.getContext('2d')
-        canvas.width = image.width
-        canvas.height = image.height
-        logger.log(`looking for image ${toFlatString(image)} ${image.src}`)
-
-        context.drawImage(image, 0, 0)
-        let idata
-        try {
-            idata = context.getImageData(0, 0, image.width, image.height)
-        } catch (e) {
-            logger.log(`error drawing image ${toFlatString(e)}`)
-            logger.log(`name ${e.name}`)
-            logger.log(`name ${e.message}`)
-            logger.log("local url is " + document.documentURI)
-            logger.log("image url from " + image.src)
-            ToasterManager.add("error drawing image", e.toString())
-            throw new Error("foo")
+        if (!this.imageDetectorMap[info.image.src]) {
+            logger.error("not detection object for image", info.image.src)
+            return
         }
-        logger.log(`calling createDetectionImage with image width and height ${image.width} ${image.height}`)
 
-        // Attach image observer handler
-        this.session.nonStandard_createDetectionImage(name, idata.data, image.width, image.height, imageRealworldWidth).then(() => {
-            logger.log("created a createdetectionimage")
-            this.session.nonStandard_activateDetectionImage(name).then(anchor => {
-                logger.log("started activate detection image")
-                // this gets invoked after the image is seen for the first time
-                node.anchorName = name
-                node.anchorStyle = "image"
-                this.addAnchoredNode(anchor, node, logger)
+        let det = this.imageDetectorMap[info.image.src]
+
+        // there is already an anchor tracking this image, either from this
+        // scene or another
+        if (det.anchor) {
+            if (info.reactivate) {
+                // we want to reactivate.  So destroy the anchor, remove it from
+                // the node it was tracking, and continue below to reactivate
+                this.session.removeAnchor(det.anchor)
+                this._removeAnchorFromNode(det.anchor)
+                det.anchor = null
+            } else {
+                // we want to reuse, likely from some previous scene.
+                // So, remove the relationship to whatever node is in the 
+                // anchor map, and reset it to this node.   
+                this._removeAnchorFromNode(det.anchor)
+                this.addAnchoredNode(det.anchor, node, logger)
                 if (callback) {
                     callback(info)
                 }
-            }).catch(error => {
-                logger.error(`error activating detection image: ${error}`)
-            })
+                return
+            }
+        } 
+
+        node.anchorName = null
+        this.session.nonStandard_activateDetectionImage(det.name).then(anchor => {
+            logger.log("started activate detection image")
+            // this gets invoked after the image is seen for the first time
+            node.anchorName = name
+            node.anchorStyle = "image"
+            this.addAnchoredNode(anchor, node, logger)
+            if (callback) {
+                callback(info)
+            }
         }).catch(error => {
-            logger.error(`error creating detection image: ${error}`)
+            logger.error(`error activating detection image: ${error}`)
         })
     }
+
+    stopImageRecognizer(info, logger) {
+        console.log("Stopping image recognizer")
+        if(!this._anchoredNodes) return
+
+        if (!this.imageDetectorMap[info.image.src]) {
+            logger.error("no detection object for image", info.image.src)
+            return
+        }
+
+        let det = this.imageDetectorMap[info.image.src]
+
+        if (det.anchor) {
+            this._removeAnchorFromNode(det.anchor)
+            det.anchor = null
+        }
+
+        this.session.nonStandard_deactivateDetectionImage(det.name).then(() => {
+        }).catch(error => {
+            logger.error(`error deactivating detection image: ${error}`)
+        })
+    }
+
 
     addGeoAnchoredNode(info, logger) {
 
@@ -302,18 +422,44 @@ export class XRSupport {
         }
     }
 
-    _handleAnchorDelete(details, logger) {
+    /// BLAIR:  Need a way to destroy geo Anchors!
+    stopGeoRecognizer(info, logger) {
+
+        this._removeAnchorForNode(info.node)
+    }
+
+    _handleAnchorDelete(logger, details) {
         logger.log("delete anchor")
         let anchor = details.source
+        this._removeAnchorFromNode(anchor)
+    }
+
+    _removeAnchorForNode(node) {
+        this._anchoredNodes.forEach( (value) => {
+            if(value.node == node) {
+                this._removeAnchorFromNode(node.anchor)
+                return
+            }
+        })
+    }
+
+    _removeAnchorFromNode(anchor) {
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
             const node = anchoredNode.node
+            node.anchor = null
+
+            anchor.removeEventListener("update", anchor._handleAnchorUpdateCallback)
+            anchor.removeEventListener("removed", anchor._handleAnchorDeleteCallback)
+            anchor._handleAnchorUpdateCallback = null
+            anchor._handleAnchorDeleteCallback = null
+
             // NOTIFY SOMEBODY? TODO
             this._anchoredNodes.delete(anchor.uid)
         }
     }
 
-    _handleAnchorUpdate(details, logger) {
+    _handleAnchorUpdate(logger, details) {
         logger.log("anchor update")
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
@@ -323,30 +469,6 @@ export class XRSupport {
             node.matrix.fromArray(anchor.modelMatrix)
             node.updateMatrixWorld(true)
         }
-    }
-
-    stopImageRecognizer() {
-        console.log("Stopping ALL image recognizers here")
-        if(!this._anchoredNodes) return
-        this._anchoredNodes.forEach( (value,key,map) => {
-            if(value.node && value.node.anchorStyle == "image") {
-                value.node.anchor = 0
-                value.node.matrixAutoUpdate = true
-                this._anchoredNodes.delete(key)
-            }
-        })
-    }
-
-    stopGeoRecognizer() {
-        console.log("Stopping ALL image recognizers here")
-        if(!this._anchoredNodes) return
-        this._anchoredNodes.forEach( (value,key,map) => {
-            if(value.node && value.node.anchorStyle == "geo") {
-                value.node.anchor = 0
-                value.node.matrixAutoUpdate = true
-                this._anchoredNodes.delete(key)
-            }
-        })
     }
 
 }
