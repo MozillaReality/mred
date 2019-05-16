@@ -153,11 +153,11 @@ export class XRSupport {
     }
 
     createDetectionImage(info, logger) {
-        logger.log("creating an image recognizer")
+        logger.log("creating/find an image recognizer")
         return new Promise((res,rej) => {            
             if (!info.image || !info.node) {
-                logger.log("missing image or threejs node")
-                rej("missing image or threejs node")
+                logger.log("createDetectionImage: missing image or threejs node")
+                rej("createDetectionImage: missing image or threejs node")
                 return
             }
 
@@ -172,9 +172,11 @@ export class XRSupport {
             if (this.imageDetectorMap[info.image.src]) {
                 let det = this.imageDetectorMap[info.image.src]
                 if (imageRealworldWidth != det.realWorldWidth) {
+                    logger.log("can't create the same image with different real world width")
                     rej("can't create the same image with different real world width")
                     return
                 }
+                logger.log("createDetectionImage: already created, returning it")
                 res(det.name)
                 return
             }
@@ -234,8 +236,8 @@ export class XRSupport {
         })
     }
 
-    addImageAnchoredNode(info, name, logger) {
-        logger.log("addImageAnchoredNode")
+    startImageRecognizer(info, name, logger) {
+        logger.log("starting Image Recognizer")
 
         if (!info.image || !info.node) {
             logger.log("missing image or threejs node")
@@ -271,16 +273,21 @@ export class XRSupport {
         // scene or another
         if (det.anchor) {
             if (info.reactivate) {
+                logger.log("Found existing anchor: reactivate")
                 // we want to reactivate.  So destroy the anchor, remove it from
                 // the node it was tracking, and continue below to reactivate
                 this.session.removeAnchor(det.anchor)
+                logger.log("remove from previous node")
                 this._removeAnchorFromNode(det.anchor)
                 det.anchor = null
             } else {
+                logger.log("Found existing anchor: use it")
                 // we want to reuse, likely from some previous scene.
                 // So, remove the relationship to whatever node is in the 
                 // anchor map, and reset it to this node.   
+                logger.log("remove from previous node")
                 this._removeAnchorFromNode(det.anchor)
+                logger.log("add our node")
                 this.addAnchoredNode(det.anchor, node, logger)
                 if (callback) {
                     callback(info)
@@ -290,8 +297,9 @@ export class XRSupport {
         } 
 
         node.anchorName = null
+        logger.log("activate detection image")
         this.session.nonStandard_activateDetectionImage(det.name).then(anchor => {
-            logger.log("started activate detection image")
+            logger.log("found detection image")
             // this gets invoked after the image is seen for the first time
             node.anchorName = name
             node.anchorStyle = "image"
@@ -316,10 +324,12 @@ export class XRSupport {
         let det = this.imageDetectorMap[info.image.src]
 
         if (det.anchor) {
+            console.log("already found the image, removing it")
             this._removeAnchorFromNode(det.anchor)
             det.anchor = null
         }
 
+        console.log("deactivating the image")
         this.session.nonStandard_deactivateDetectionImage(det.name).then(() => {
         }).catch(error => {
             logger.error(`error deactivating detection image: ${error}`)

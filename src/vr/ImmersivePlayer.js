@@ -392,7 +392,7 @@ class Adapter extends SceneGraphProvider {
 
             this.player.xr.createDetectionImage(info,this.logger).then((name) => {
                 // decorate the info.node with an xr anchor
-                this.player.xr.addImageAnchoredNode(info, name, this.logger)
+                this.player.xr.startImageRecognizer(info, name, this.logger)
             })
         })
     }
@@ -419,7 +419,6 @@ class Adapter extends SceneGraphProvider {
         this.player.xr.addGeoAnchoredNode(info, this.logger)
     }
 
-<<<<<<< HEAD
     stopGeoRecognizer(info) {
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
@@ -429,11 +428,6 @@ class Adapter extends SceneGraphProvider {
 
         // decorate the info.node with an xr anchor
         this.player.xr.stopGeoRecognizer(info, this.logger)
-=======
-    stopGeoRecognizer() {
-        //TODO: @ahook
-        this.logger.log("WE NEED TO STOP ALL geo recognizers here")
->>>>>>> master
     }
 
 }
