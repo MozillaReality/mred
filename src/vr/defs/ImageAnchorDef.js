@@ -52,6 +52,7 @@ export default class ImageAnchorDef extends ObjectDef {
         node.enter = (evt) => {
             clicker.visible = false
             node.visible = false
+            preview.visible = false
             node.userData.info = {
                 image: evt.system.getObjectById(obj.targetImage),
                 imageRealworldWidth: obj.imageRealworldWidth,
@@ -68,6 +69,7 @@ export default class ImageAnchorDef extends ObjectDef {
         }
         node.exit = (evt) => {
             clicker.visible = true
+            preview.visible = true
             evt.system.stopImageRecognizer(node.userData.info)
         }
         return node
