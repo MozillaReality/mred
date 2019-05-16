@@ -2,8 +2,10 @@ import React, {Component} from "react"
 import {map, tileLayer, marker, Icon, divIcon, latLng} from "leaflet/dist/leaflet-src.esm"
 import "leaflet/dist/leaflet.css"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {HBox} from 'appy-comps'
 
 export default class GeoAssetView extends Component {
+
 
     constructor(props, context) {
         super(props, context)
@@ -18,13 +20,29 @@ export default class GeoAssetView extends Component {
         }
     }
 
+    loadCurrentLocation = () => {
+        navigator.geolocation.getCurrentPosition((success)=>{
+            console.log("success",success)
+            const coords = success.coords
+            this.props.provider.quick_setPropertyValue(this.props.asset.id,'latitude',coords.latitude)
+            this.props.provider.quick_setPropertyValue(this.props.asset.id,'longitude',coords.longitude)
+        },(error)=>{
+            console.log("error",error)
+        })
+    }
+
     render() {
         const style = {
             width: '400px',
             height: '400px',
             border: '1px solid black',
         }
-        return <div id="mapid" ref={d => this.div = d} style={style}></div>
+        return <div>
+            <HBox>
+                <button onClick={this.loadCurrentLocation}>set to current location</button>
+            </HBox>
+            <div id="mapid" ref={d => this.div = d} style={style}></div>
+        </div>
     }
     componentDidMount() {
         this.mymap = map('mapid').setView([this.props.asset.longitude, this.props.asset.latitude], 3);
@@ -43,6 +61,7 @@ export default class GeoAssetView extends Component {
         }).addTo(this.mymap)
 
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.updateLocation)
+        this.updateLocation()
     }
     componentWillUnmount() {
         this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, this.updateLocation)
