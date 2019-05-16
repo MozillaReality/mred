@@ -25,9 +25,8 @@ export default class SceneDef {
         const scene = new Group()
         scene.name = obj.title
         this.setDefaultFloor(scene,obj.defaultFloor)
-        scene.enter = () => {
+        scene.start = () => {
             scene.userData.sceneAnchor = new Group()
-            // scene.userData.sceneAnchor.position.y = 2
             scene.add(scene.userData.sceneAnchor)
             scene.children.forEach(chNode => {
                 const chObj = provider.accessObject(chNode.userData.graphid)
@@ -37,7 +36,7 @@ export default class SceneDef {
                 scene.userData.sceneAnchor.add(chNode)
             })
         }
-        scene.exit = () => {
+        scene.stop = () => {
             const toMove = scene.userData.sceneAnchor.children.slice()
             toMove.forEach(chNode => scene.add(chNode))
             scene.remove(scene.userData.sceneAnchor)

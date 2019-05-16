@@ -353,6 +353,10 @@ class Adapter extends SceneGraphProvider {
         this.logger.log("navigating to ",sceneid)
         const scene = this.player.obj_map[sceneid]
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
+        // @blair
+        const sceneNode = this.player.three_map[sceneid]
+        this.logger.log("the scene node is",sceneNode)
+        this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
         this.player.setCurrentScene(scene)
     }
     playMediaAsset (asset)  {
