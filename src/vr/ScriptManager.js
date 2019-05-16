@@ -1,4 +1,5 @@
 import {canHaveBehavior, TOTAL_OBJ_TYPES} from './Common'
+import * as THREE from "three"
 
 export class SceneGraphProvider {
     //return the current scene. provider is in charge of tracking which scene is considered 'current'
@@ -39,6 +40,11 @@ export default class ScriptManager {
         const manager = this
         const sgp = this.sgp
         return {
+            globals() {
+                return {
+                    THREE:THREE
+                }
+            },
             logger() {
                 return manager.logger
             },

@@ -494,7 +494,9 @@ export const ITEM_ICONS = {
 
 
 export function parseBehaviorScript(contents) {
-    return Function('"use strict"; return('+contents+')')();
+    return Function(`"use strict";
+    const toRadians = (deg) => Math.PI/180*deg; 
+    return(${contents})`)();
 }
 
 export const REC_TYPES = {
