@@ -39,6 +39,9 @@ export default class ScriptManager {
         const manager = this
         const sgp = this.sgp
         return {
+            logger() {
+                return manager.logger
+            },
             getCurrentScene() {
                 return sgp.getCurrentScene()
             },
