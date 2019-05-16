@@ -74,7 +74,7 @@ export default class ScriptManager {
             },
             playSound(id) {
                 const asset = sgp.getGraphObjectById(id)
-                manager.playAudioAsset(asset)
+                manager.playMediaAsset(asset)
             },
             getCamera() {
                 return sgp.getCamera()

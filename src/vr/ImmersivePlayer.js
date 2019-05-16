@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import {Group} from "three"
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
-import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
@@ -246,10 +246,11 @@ export class ImmersivePlayer extends Component {
     }
 
     initAssets(assets) {
-        assets.children.forEach(ch => {
-            this.logger.log("loading asset",ch)
-            attachUtilFunctions(ch)
-            this.obj_map[ch.id] =  ch
+        assets.children.forEach(obj => {
+            this.logger.log("loading asset",obj)
+            attachUtilFunctions(obj)
+            this.obj_map[obj.id] =  obj
+            if(obj.title) this.title_map[obj.title] = obj
         })
     }
 
@@ -322,16 +323,19 @@ class Adapter extends SceneGraphProvider {
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
         this.player.setCurrentScene(scene)
     }
-    playAudioAsset (audio)  {
-        console.log("trying to play",audio)
-        const sound = new THREE.Audio(this.player.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
+    playMediaAsset (asset)  {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            this.logger.log("ImmersivePlayer playing audio", asset)
+            const sound = new THREE.Audio(this.player.audioListener)
+            const audioLoader = new THREE.AudioLoader()
+            audioLoader.load(asset.src, (buffer) => {
+                this.logger.log("loaded the buffer", buffer.length)
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+        }
     }
     getGraphObjectByName(title) {
         return this.player.title_map[title]

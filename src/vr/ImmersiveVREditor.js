@@ -28,7 +28,7 @@ import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
 import {on, parseOptions, toFlatString} from "../utils"
 import {TweenManager} from "../common/tween"
-import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
@@ -72,16 +72,18 @@ class Adapter extends SceneGraphProvider {
     navigateScene(id) {
         return this.editor.swapScene(id)
     }
-    playAudioAsset(audio) {
-        const sound = new Audio(this.editor.audioListener)
-        const audioLoader = new AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-        this.editor.playing_audio[audio.id] = sound
+    playMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            const sound = new Audio(this.editor.audioListener)
+            const audioLoader = new AudioLoader()
+            audioLoader.load(asset.src, function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+            this.editor.playing_audio[asset.id] = sound
+        }
     }
 
     stopAudioAsset(audio) {
