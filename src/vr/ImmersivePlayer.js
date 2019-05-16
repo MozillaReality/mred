@@ -41,6 +41,9 @@ export class ImmersivePlayer extends Component {
         this.behavior_map = {}
         this.behavior_assets = {}
         this.pendingAssets = []
+
+        this.sceneAnchor = null
+
         this.logger = new PubnubLogger(opts.doc)
         this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
@@ -356,10 +359,24 @@ class Adapter extends SceneGraphProvider {
         this.logger.log("navigating to ",sceneid)
         const scene = this.player.obj_map[sceneid]
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
+
         // @blair
         const sceneNode = this.player.three_map[sceneid]
         this.logger.log("the scene node is",sceneNode)
         this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
+
+        if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
+            // create a new scene anchor
+            this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
+            this.sceneAnchor = null
+
+            this.player.xr.createSceneAnchor(sceneNode, this.logger).then(anchor => {
+                this.sceneAnchor = anchor
+            }).catch(error => {
+                logger.error(`error creating new scene anchor: ${error}`)
+            })
+        }
+
         this.player.setCurrentScene(scene)
     }
     playMediaAsset (asset)  {

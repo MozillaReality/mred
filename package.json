@@ -21,7 +21,8 @@
     "three": "^0.101.0",
     "three-gltf2-loader": "^1.2.0",
     "three-web-layer": "0.0.21",
-    "webxr-boilerplate": "^0.1.9"
+    "webxr-boilerplate": "^0.1.9",
+    "gl-matrix": "^2.5.1"
   },
   "scripts": {
     "start": "react-scripts start",
