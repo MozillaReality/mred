@@ -105,8 +105,35 @@ export class ImmersivePlayer extends Component {
             {/*        <button id="enter-button" disabled>VR not supported, play anyway</button>*/}
             {/*    </div>*/}
             {/*</div>*/}
-            <canvas ref={c => this.canvas = c} width={600} height={400}/>
+            <canvas ref={c => this.canvas = c} width={600} height={400}
+                onClick={this.clickedCanvas}
+            />
         </div>
+    }
+
+    clickedCanvas = (e) => {
+        this.canvas.focus()
+        const rect = this.canvas.getBoundingClientRect();
+        const pointer = {
+            x: ( e.clientX - rect.left ) / rect.width * 2 - 1,
+            y: - ( e.clientY - rect.top ) / rect.height * 2 + 1,
+        }
+        this.logger.log("clicked on the canvas")
+        this.raycaster.setFromCamera(pointer, this.camera);
+        const scene = this.three_map[this.current_scene.id]
+        const intersect = this.raycaster.intersectObjects(scene.children, true)
+        if(intersect && intersect.length >= 1) {
+            const inter = intersect.find(inter => inter.distance > 0)
+            if(inter) {
+                console.log("found the interesction", inter)
+                console.log("intersections", intersect)
+                const obj = inter.object
+                console.log("obj", obj)
+                const gobj = this.obj_map[obj.userData.graphid]
+                console.log("jobj", gobj)
+                this.scriptManager.performClickAction(gobj)
+            }
+        }
     }
 
     buildRoot(graph) {
@@ -129,6 +156,7 @@ export class ImmersivePlayer extends Component {
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             const scene = new SceneDef().makeNode(obj, this.provider)
             this.three_map[obj.id] = scene
+            scene.userData.graphid = obj.id
             this.scenes.add(scene)
             scene.visible = false
             node = scene
@@ -139,6 +167,7 @@ export class ImmersivePlayer extends Component {
             node = get3DObjectDef(obj.type).makeNode(obj, this.provider)
             if(node.previewUpdate) this.previewUpdateNodes.push(node)
             this.three_map[obj.id] = node
+            node.userData.graphid = obj.id
             on(node, 'click', () => {
                 this.scriptManager.performClickAction(obj)
             })
@@ -187,6 +216,8 @@ export class ImmersivePlayer extends Component {
         this.scenes = new Group()
         this.scene.add(this.scenes)
 
+        this.raycaster = new THREE.Raycaster();
+
         // const $ = (sel) => document.querySelector(sel)
         // const on = (elem, type, cb) => elem.addEventListener(type,cb)
 
@@ -212,7 +243,7 @@ export class ImmersivePlayer extends Component {
         }
          */
 
-
+        /*
         //class which handles mouse and VR controller
         this.pointer = new Pointer(this, {
             intersectionFilter: ((o) => o.userData.clickable),
@@ -221,6 +252,7 @@ export class ImmersivePlayer extends Component {
             enableLaser: true,
             laserLength: 20,
         })
+         */
 
     }
 
