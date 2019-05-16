@@ -27,7 +27,6 @@ export default class PlaneDef extends ObjectDef {
             new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide})
         )
         const asset = provider.accessObject(obj.asset)
-        console.log("asset is",asset)
         if(asset.exists()) this.attachAsset(asset, obj, node, provider)
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))

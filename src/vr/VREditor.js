@@ -35,6 +35,7 @@ import {AddImageAssetDialog} from './dialogs/AddImageAssetDialog'
 import {AddGLTFAssetDialog} from './dialogs/AddGLTFAssetDialog'
 import {AddGLBAssetDialog} from './dialogs/AddGLBAssetDialog'
 import {AddAudioAssetDialog} from './dialogs/AddAudioAssetDialog'
+import {UnsavedDocumentDialog} from "./dialogs/UnsavedDocumentDialog"
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
@@ -713,7 +714,8 @@ class VREditorApp extends Component {
             mode:'canvas',
             user:null,
             running:false,
-            connected:false
+            connected:false,
+            dirty:true
         }
 
         this.im = new InputManager()
@@ -744,6 +746,15 @@ class VREditorApp extends Component {
         AuthModule.on(USER_CHANGE,()=>this.setState({user:AuthModule.getUsername()}))
         AuthModule.on(CONNECTED,()=>this.setState({connected:true}))
         if(AuthModule.isConnected()) this.setState({connected:true})
+        this.props.provider.on(TREE_ITEM_PROVIDER.CLEAR_DIRTY,()=>{
+            this.setState({dirty:false})
+        })
+        this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED, () => {
+            this.setState({dirty:true})
+        })
+        this.props.provider.on(TREE_ITEM_PROVIDER.SAVED, () => {
+            this.setState({dirty:false})
+        })
     }
     componentWillUnmount() {
         SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
@@ -762,6 +773,19 @@ class VREditorApp extends Component {
         this.setState({running:!this.state.running})
     }
 
+    newDoc = () => {
+        if(this.state.dirty) {
+            console.log("can't create new becausue dirty")
+            DialogManager.show(<UnsavedDocumentDialog onAnyway={()=>{
+                console.log("we are doing it anyway")
+                newDoc(this.props.provider)
+            }}/>)
+
+        } else {
+            newDoc(this.props.provider)
+        }
+    }
+
     render() {
         if(this.state.connected === false) {
             return <div><h1>connecting to server</h1></div>
@@ -774,7 +798,7 @@ class VREditorApp extends Component {
         </div>
 
         return <GridEditorApp bottomText={bot}>
-            <Toolbar left top><label>{prov.getTitle()}</label></Toolbar>
+            <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
@@ -786,7 +810,7 @@ class VREditorApp extends Component {
 
 
             <Toolbar center top>
-                <button className="fa fa-file" onClick={() => newDoc(prov)} title={'new project'}></button>
+                <button className="fa fa-file" onClick={this.newDoc} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
                 <button onClick={() => prov.editIn2D()}>2D Edit</button>
                 <button onClick={() => prov.editInVR()}>AR Edit</button>
@@ -900,6 +924,8 @@ function acceptsImageAsset(type) {
     if(type === OBJ_TYPES.plane
         || type === OBJ_TYPES.bg360
         || type === OBJ_TYPES.img2d
+        || type === OBJ_TYPES.cube
+        || type === OBJ_TYPES.sphere
     ) return true
     return false
 }
