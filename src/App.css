@@ -422,8 +422,24 @@ ul.behaviors-list > div {
     padding: 0.25em;
 }
 
+/* =============== script editor ============= */
 
+#script-editor {
+    z-index: 0;
+}
+
+
+/* =============== leaflet-maps =========== */
 
 .map-icon {
     border: 5px solid red;
 }
+#mapid {
+    z-index: 0;
+}
+
+#mapid .leaflet-pane {
+    /*z-index: unset;*/
+}
+
+
