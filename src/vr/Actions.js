@@ -48,33 +48,39 @@ export function showAddAssetPopup(e, provider) {
         acts = acts.concat([
             {
                 title: 'image',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.image,
                 fun: () => provider.showAddImageAssetDialog()
             },
             {
                 title: 'server image',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.image,
                 fun: () => provider.showAddServerImageDialog()
             },
             {divider: true},
             {
                 title: 'GLTF model',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.model,
                 fun: () => provider.showAddGLTFAssetDialog()
             },
             {
                 title: 'GLB model',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.model,
                 fun: () => provider.showAddGLBAssetDialog()
             },
             {divider: true},
             {
                 title: 'audio file',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.audio,
                 fun: () => provider.showAddAudioAssetDialog()
             },
             {
                 title: 'existing asset on server',
+                enabled: AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.assets,
                 fun: () => provider.showOpenAssetDialog()
             }])
@@ -100,6 +106,7 @@ export function showAddBehaviorPopup (e, provider) {
     const acts = [
         {
             title:'Add Behavior from Server',
+            enabled: AuthModule.isLoggedIn(),
             icon: ITEM_ICONS.behavior_script,
             fun: () => provider.showOpenBehaviorDialog()
         },
@@ -107,6 +114,7 @@ export function showAddBehaviorPopup (e, provider) {
     if(AuthModule.supportsScriptEdit()) {
         acts.push({
             title: 'custom behavior',
+            enabled: AuthModule.isLoggedIn(),
             icon: ITEM_ICONS.behavior_script,
             fun: () => provider.addCustomBehaviorAsset()
         })

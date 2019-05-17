@@ -367,8 +367,17 @@ export default class VREditor extends SyncGraphProvider {
         if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
             cmds.push({
                 title: 'existing asset on server',
+                enabled:AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.assets,
                 fun: () => this.showOpenAssetDialog()
+            })
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) {
+            cmds.push({
+                title:'Add Behavior from Server',
+                enabled:AuthModule.isLoggedIn(),
+                icon: ITEM_ICONS.behavior_script,
+                fun: () => this.showOpenBehaviorDialog()
             })
         }
         if(canHaveShape(obj.type)) {
@@ -394,10 +403,10 @@ export default class VREditor extends SyncGraphProvider {
                         fun: () => this.addBehaviorToObject(b, item)
                     })
                 })
-            if(AuthModule.isLoggedIn()) {
                 cmds.push({
                     title: 'Add Behavior from server',
                     icon: ITEM_ICONS.behavior_script,
+                    enabled:AuthModule.isLoggedIn(),
                     fun: () => {
                         DialogManager.show(<OpenScriptDialog provider={this} onAdd={(beh)=>{
                             this.addBehaviorToObject(beh,item).then(b=>{
@@ -406,7 +415,6 @@ export default class VREditor extends SyncGraphProvider {
                         }}/>)
                     }
                 })
-            }
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             cmds.push({ divider:true })

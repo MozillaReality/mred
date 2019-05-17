@@ -495,6 +495,7 @@ export const ITEM_ICONS = {
     imageanchor:'anchor',
     geoanchor:'globe',
     geolocation:'globe',
+    hudanchor: 'eye',
 
     cut:'cut',
     copy:'copy',
