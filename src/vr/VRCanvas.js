@@ -546,25 +546,24 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
-        
+        const logger = this.props.provider.pubnub.getLogger()
         logger.log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
+        const logger = this.props.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
+        const logger = this.props.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO start geo recognizer")
     }
 
     stopGeoRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
+        const logger = this.props.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO stop geo recognizer")
     }
