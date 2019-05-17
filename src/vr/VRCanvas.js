@@ -327,7 +327,7 @@ export class VRCanvas extends Component {
         this.checkAspectRatio()
         let session = null
         if(this.xr) session = this.xr.session
-        if(this.state.running) this.scriptManager.tick(time, session, frame)
+        if(this.state.running) this.scriptManager.tick(time, session)
         if(this.tweenManager) this.tweenManager.update(time)
         if(this.orbitControls) this.orbitControls.update()
         this.previewUpdateNodes.forEach(n => n.previewUpdate())
