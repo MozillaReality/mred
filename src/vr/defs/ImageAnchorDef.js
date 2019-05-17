@@ -50,28 +50,28 @@ export default class ImageAnchorDef extends ObjectDef {
         node.userData.preview = preview
         this.updateImagePreview(node,obj,provider)
 
-        node.enter = (evt) => {
+        node.enter = (evt, scriptManager) => {
             clicker.visible = false
             node.visible = false
             preview.visible = false
             node.userData.info = {
-                image: evt.system.getObjectById(obj.targetImage),
+                image: scriptManager.sgp.getGraphObjectById(obj.targetImage),
                 imageRealworldWidth: obj.imageRealworldWidth,
                 reactivate: obj.reactivate,
                 recType: obj.recType,
                 object: obj,
                 node: node,
                 callback: (info) => {
-                    evt.system.fireEvent(obj, 'recognized', info)
+                    scriptManager.fireEventFromTarget(obj, 'recognized', info)
                     node.visible = true
                 }
             }
-            evt.system.startImageRecognizer(node.userData.info)
+            scriptManager.sgp.startImageRecognizer(node.userData.info)
         }
-        node.exit = (evt) => {
+        node.exit = (evt, scriptManager) => {
             clicker.visible = true
             preview.visible = true
-            evt.system.stopImageRecognizer(node.userData.info)
+            scriptManager.sgp.stopImageRecognizer(node.userData.info)
         }
         return node
     }

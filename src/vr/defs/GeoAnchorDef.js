@@ -37,24 +37,24 @@ export default class GeoAnchorDef extends ObjectDef {
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
-        node.enter = (evt) => {
+        node.enter = (evt, scriptManager) => {
             clicker.visible = false
             node.visible = false
             node.userData.info = {
-                location:evt.system.getObjectById(obj.targetGeoLocation),
+                location:scriptManager.sgp.getGraphObjectById(obj.targetGeoLocation),
                 recType:obj.recType,
                 object:obj,
                 node:node,
                 callback:(info) => {
-                    evt.system.fireEvent(obj, 'recognized', info)
+                    scriptManager.fireEventFromTarget(obj, 'recognized', info)
                     node.visible = true
                 }
             }
-            evt.system.startGeoRecognizer(node.userData.info)
+            scriptManager.sgp.startGeoRecognizer(node.userData.info)
         }
-        node.exit = (evt) => {
+        node.exit = (evt, scriptManager) => {
             clicker.visible = true
-            evt.system.stopGeoRecognizer(node.userData.info)
+            scriptManager.sgp.stopGeoRecognizer(node.userData.info)
         }
         return node
     }

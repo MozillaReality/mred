@@ -29,6 +29,64 @@ export class SceneGraphProvider {
     startGeoRecognizer(info) { throw new Error("startGeoRecognizer not implemented")}
 }
 
+class SystemFacade {
+
+    constructor(manager, sgp, behavior) {
+        this.manager = manager
+        this.sgp = sgp
+        this.logger = this.manager.logger
+        this.tween = sgp.getTweenManager()
+        this.camera = sgp.getCamera()
+        this.globalStorage = this.manager.storage
+        this.behavior = behavior
+    }
+
+    get globals () {
+        return {
+            THREE:THREE,
+            GLTFLoader: GLTFLoader,
+            GPUParticles: GPUParticles,
+            WebLayer3D: WebLayer3D
+        }
+    }
+
+    get properties () {
+        return this.behavior.props()
+    }
+    getThreeObjectByTitle(title) {
+        const obj = this.sgp.getGraphObjectByName(title)
+        if(!obj) throw new Error(`object '${title}' not found`)
+        return this.sgp.getThreeObject(obj)
+    }
+    getAssetByTitle(title) {
+        const obj = this.sgp.getGraphObjectByName(title)
+        if(!obj) throw new Error(`asset '${title}' not found`)
+        return new AssetFacade(this.manager,obj)
+    }
+    getObjectById(id) {
+        return this.sgp.getGraphObjectById(id)
+    }
+    getThreeObjectById(id) {
+        return this.sgp.getThreeObject(id)
+    }
+    playSound(id) {
+        const asset = this.sgp.getGraphObjectById(id)
+        this.manager.playMediaAsset(asset)
+    }
+
+    getCurrentScene() {
+        return this.sgp.getCurrentScene()
+    }
+    navigateScene(id) {
+        this.manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
+        this.sgp.navigateScene(id)
+        this.manager.fireSceneLifecycleEvent('enter',this.getCurrentScene())
+    }
+    fireEvent(target,type, payload) {
+        this.manager.fireEventFromTarget(target,type,payload)
+    }
+}
+
 export default class ScriptManager {
     constructor(sceneGraphProvider, logger) {
         this.sgp = sceneGraphProvider
@@ -37,6 +95,7 @@ export default class ScriptManager {
         this.storage = {}
         this.logger = logger
         this.logger.log("ScriptManager created")
+        this.system_cache = {}
 
         if (!window.THREE) window.THREE = THREE
         if (!window.GLTFLoader) window.GLTFLoader = GLTFLoader
@@ -44,95 +103,8 @@ export default class ScriptManager {
         if (!window.WebLayer3D) window.WebLayer3D = WebLayer3D
     }
 
-    makeSystemFacade(evt) {
-        const manager = this
-        const sgp = this.sgp
-        return {
-            globals() {
-                return {
-                    THREE:THREE,
-                    GLTFLoader: GLTFLoader,
-                    GPUParticles: GPUParticles,
-                    WebLayer3D: WebLayer3D
-                }
-            },
-            logger() {
-                return manager.logger
-            },
-            getCurrentScene() {
-                return sgp.getCurrentScene()
-            },
-            getScene(name) {
-                return null
-            },
-            getObject(name) {
-                const obj = sgp.getGraphObjectByName(name)
-                if(!obj) throw new Error(`object '${name}' not found`)
-                return sgp.getThreeObject(obj)
-            },
-            getAsset(name) {
-                const obj = sgp.getGraphObjectByName(name)
-                if(!obj) throw new Error(`asset '${name}' not found`)
-                return new AssetFacade(manager,obj)
-            },
-            getObjectById(id) {
-                return sgp.getGraphObjectById(id)
-            },
-            getThreeObjectById(id) {
-                return sgp.getThreeObject(id)
-            },
-            navigateScene(id) {
-                manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
-                sgp.navigateScene(id)
-                manager.fireSceneLifecycleEvent('enter',this.getCurrentScene())
-            },
-            playSound(id) {
-                const asset = sgp.getGraphObjectById(id)
-                manager.playMediaAsset(asset)
-            },
-            getCamera() {
-                return sgp.getCamera()
-            },
-            setKeyValue(key, value) {
-                manager.storage[key] = value
-            },
-            getKeyValue(key, defaultValue) {
-                return manager.storage[key]
-            },
-            hasKeyValue(key) {
-                return typeof manager.storage[key] !== 'undefined'
-            },
-            isAR() {
-                return false
-            },
-            sendMessage(name,payload) {
-                const target = evt.graphTarget
-                if(target) {
-                    manager.fireMessageAtTarget(name,payload,target)
-                }
-            },
-            getTweenManager() {
-                return sgp.getTweenManager()
-            },
-            on(target,type,cb) {
-                manager.on(target,type,cb)
-            },
-            fireEvent(target,type, payload) {
-                manager.fireEventFromTarget(target,type,payload)
-            },
-            startImageRecognizer(info) {
-                return sgp.startImageRecognizer(info)
-            },
-            stopImageRecognizer(info) {
-                return sgp.stopImageRecognizer(info)
-            },
-            startGeoRecognizer(info) {
-                return sgp.startGeoRecognizer(info)
-            },
-            stopGeoRecognizer(info) {
-                return sgp.stopGeoRecognizer(info)
-            }
-        }
+    makeSystemFacade(behavior) {
+        return new SystemFacade(this,this.sgp, behavior)
     }
 
     performClickAction(target) {
@@ -145,14 +117,11 @@ export default class ScriptManager {
                 target: this.sgp.getThreeObject(target),
                 graphTarget: target
             }
-            evt.system = this.makeSystemFacade(evt)
-            const behaviors = this.sgp.getBehaviorsForObject(target)
-            for (let i in behaviors) {
-                let b = behaviors[i]
-                evt.props = b.props()
+            this.sgp.getBehaviorsForObject(target).forEach(b => {
                 const asset = this.sgp.getParsedBehaviorAsset(b)
-                if (asset.click) asset.click(evt)
-            }
+                const system = this.getSystemFacadeFromCache(b)
+                if (asset.click) asset.click.call(system,evt)
+            })
         } catch (error) {
             this.logger.error("error in performClickAction",error.message)
             this.logger.error(error)
@@ -165,20 +134,18 @@ export default class ScriptManager {
         const evt = {
             type:type
         }
-        evt.system = this.makeSystemFacade(evt)
         this.sgp.getAllScenes().forEach(scene => {
             scene.find(child => {
-                // this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
                 if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
                     evt.target = this.sgp.getThreeObject(child.parent)
                     evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
-                    evt.props = child.props()
                     const asset = this.sgp.getParsedBehaviorAsset(child)
-                    if(asset[type]) asset[type](evt)
+                    const system = this.getSystemFacadeFromCache(child)
+                    if (asset[type]) asset[type].call(system,evt)
                 } else {
                     evt.target = this.sgp.getThreeObject(child)
                     evt.graphTarget = child
-                    if(evt.target && evt.target[type]) evt.target[type](evt)
+                    if(evt.target && evt.target[type]) evt.target[type](evt, this)
                 }
             })
         })
@@ -194,7 +161,6 @@ export default class ScriptManager {
             time:this.lastTime-this.startTime,
             session: this.session
         }
-        evt.system = this.makeSystemFacade(evt)
 
         scene.find(child => {
             if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
@@ -203,13 +169,14 @@ export default class ScriptManager {
                 evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
                 evt.props = child.props()
                 const asset = this.sgp.getParsedBehaviorAsset(child)
-                if(asset[type]) asset[type](evt)
+                const system = this.getSystemFacadeFromCache(child)
+                if (asset[type]) asset[type].call(system,evt)
+                // if(asset[type]) asset[type](evt)
             } else {
                 evt.target = this.sgp.getThreeObject(child)
                 evt.graphTarget = child
                 if(evt.target && evt.target[type]) {
-                    // this.logger.log(`we are readly doing ${type}`,type,'on',child.type)
-                    evt.target[type](evt)
+                    evt.target[type](evt, this)
                 }
             }
         })
@@ -298,6 +265,13 @@ export default class ScriptManager {
         if(!this.listeners[target.id]) return
         if(!this.listeners[target.id][type]) return
         this.listeners[target.id][type].forEach(cb => cb(payload))
+    }
+
+    getSystemFacadeFromCache(behavior) {
+        if(!this.system_cache[behavior.id]) {
+            this.system_cache[behavior.id] = this.makeSystemFacade(behavior)
+        }
+        return this.system_cache[behavior.id]
     }
 }
 

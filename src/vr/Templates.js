@@ -19,9 +19,9 @@ export const CUSTOM_BEHAVIOR_SCRIPT = `
     init: function() {
         //called when the program starts
     },
-    onClick: function(e) {
+    click: function(e) {
         //called when object is clicked on
-        //e.system.navigateScene(e.props.scene)
+        //this.navigateScene(this.properties.scene)
     }
 })
 `
@@ -49,10 +49,10 @@ export const CUSTOM_SCENE_SCRIPT = `
     init: function() {
         //called when the program starts
     },
-    onEnter: function() {
+    enter: function() {
         //called when entering a scene
     },
-    onExit: function() {
+    exit: function() {
         //called when exiting a scene
     },
 })
