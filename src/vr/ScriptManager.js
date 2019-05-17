@@ -163,7 +163,7 @@ export default class ScriptManager {
     fireLifecycleEvent(type) {
         this.logger.log(`doing ${type} event`)
         const evt = {
-            type:type,
+            type:type
         }
         evt.system = this.makeSystemFacade(evt)
         this.sgp.getAllScenes().forEach(scene => {
@@ -186,11 +186,13 @@ export default class ScriptManager {
 
     fireSceneLifecycleEvent(type, scene, time) {
         if(type!=='tick') this.logger.log(`doing ${type} event`)
+        if (time) {
+            this.lastTime = time
+        }
         const evt = {
             type:type,
-            time:time-this.startTime,
-            session: this.session,
-            frame: this.frame,
+            time:this.lastTime-this.startTime,
+            session: this.session
         }
         evt.system = this.makeSystemFacade(evt)
 
@@ -213,12 +215,14 @@ export default class ScriptManager {
         })
     }
 
-    tick(time, session, frame) {
+    tick(time, session) {
         if(!this.running) return
-        if(this.startTime ===0) this.startTime = time
+        if(this.startTime ===0) {
+            this.startTime = time
+            this.lastTime = 0
+        }
         try {
             this.session = session
-            this.frame = frame
             this.fireSceneLifecycleEvent('tick',this.sgp.getCurrentScene(),time)
         } catch (err) {
             this.logger.error("error in script",err.message)
@@ -231,6 +235,7 @@ export default class ScriptManager {
     startRunning() {
         this.running = true
         this.startTime = 0
+        this.lastTime = 0
         this.storage = {}
         this.logger.log("ScriptManager starting")
         try {

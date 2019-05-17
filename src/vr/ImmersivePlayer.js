@@ -279,7 +279,7 @@ export class ImmersivePlayer extends Component {
         if(this.controller) this.controller.update(time)
         let session = null
         if(this.xr) session = this.xr.session
-        this.scriptManager.tick(time, session, frame)
+        this.scriptManager.tick(time, session)
         this.renderer.render( this.scene, this.camera );
     }
 
