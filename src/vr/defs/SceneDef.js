@@ -9,6 +9,13 @@ import {OBJ_TYPES, PROP_DEFS} from '../Common'
 
 let COUNTER = 0
 
+function isAnchorType(type) {
+    if(type === OBJ_TYPES.geoanchor) return true
+    if(type === OBJ_TYPES.imageanchor) return true
+    if(type === OBJ_TYPES.hudanchor) return true
+    return false
+}
+
 export default class SceneDef {
     make(graph, root) {
         if(!root.id) throw new Error("can't create scene w/ missing parent")
@@ -32,6 +39,7 @@ export default class SceneDef {
             scene.children.forEach(chNode => {
                 const chObj = provider.accessObject(chNode.userData.graphid)
                 if(!chObj.exists()) return
+                if(isAnchorType(chObj.type)) return
                 if(chObj.type === OBJ_TYPES.geoanchor) return
                 if(chObj.type === OBJ_TYPES.imageanchor) return
                 scene.userData.sceneAnchor.add(chNode)
