@@ -36,7 +36,7 @@ export class OpenFileDialog extends Component {
         DialogManager.hide()
     }
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.dismiss}>
             <VBox grow>
                 <h3>Open document</h3>
                 <VBox scroll style={{ maxHeight:'60vh'}}>

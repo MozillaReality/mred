@@ -33,7 +33,7 @@ export class AddImageAssetDialog extends Component {
     switchRemote = () => this.setState({view:'remote'})
 
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox grow>
                 <h3>add image to assets</h3>
                 <VBox grow>

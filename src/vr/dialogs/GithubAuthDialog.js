@@ -27,7 +27,7 @@ export class GithubAuthDialog extends Component {
         AuthModule.login(this.state.data)
     }
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox grow>
                 <h3>Github Auth</h3>
                 <p>To log into MrEd you need a github account. Press the button

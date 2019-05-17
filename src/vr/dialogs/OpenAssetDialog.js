@@ -58,7 +58,7 @@ export class OpenAssetDialog extends Component {
         DialogManager.hide()
     }
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.okay}>
             <VBox grow>
                 <h3>Add Asset</h3>
                 <VBox scroll style={{ maxHeight:'60vh'}}>

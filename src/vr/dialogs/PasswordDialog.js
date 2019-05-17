@@ -17,7 +17,7 @@ export class PasswordDialog extends Component {
         AuthModule.doPasswordLogin(this.state.field)
     }
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox grow>
                 <h3>login with the password from your env file</h3>
                 <label>password</label>
