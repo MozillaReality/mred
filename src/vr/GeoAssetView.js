@@ -31,6 +31,11 @@ export default class GeoAssetView extends Component {
         })
     }
 
+    onMapClick = (e) => {
+        this.props.provider.quick_setPropertyValue(this.props.asset.id,'latitude',e.latlng.lat)
+        this.props.provider.quick_setPropertyValue(this.props.asset.id,'longitude',e.latlng.lng)
+    }
+
     render() {
         const style = {
             width: '400px',
@@ -53,6 +58,7 @@ export default class GeoAssetView extends Component {
                 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
             id: 'mapbox.streets'
         }).addTo(this.mymap);
+        this.mymap.on('click',this.onMapClick)
 
         const customIcon = divIcon({className:'map-icon'})
         this.marker = marker([this.props.asset.longitude, this.props.asset.latitude],{
