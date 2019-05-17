@@ -364,6 +364,13 @@ class Adapter extends SceneGraphProvider {
         const sceneNode = this.player.three_map[sceneid]
         // this.logger.log("the scene node is",sceneNode)
         // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
+        const sceneAnchorNode = sceneNode.userData.sceneAnchor
+        if (sceneAnchorNode && sceneAnchorNode.children) {
+            this.logger.log("scene has children: ", sceneNode.children.length)
+            this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
+        } else {
+            this.logger.warn("no sceneNode? so no children?")
+        }
 
         if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
             // create a new scene anchor
@@ -371,13 +378,13 @@ class Adapter extends SceneGraphProvider {
                 this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
                 this.sceneAnchor = null
             }
-            this.player.xr.createSceneAnchor(sceneNode, this.logger).then(anchor => {
+            this.player.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
                 this.sceneAnchor = anchor
             }).catch(error => {
                 this.logger.error(`error creating new scene anchor: ${error}`)
             })
         } else {
-            this.player.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneNode, this.logger)
+            this.player.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
         }
 
         this.player.setCurrentScene(scene)
