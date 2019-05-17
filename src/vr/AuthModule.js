@@ -96,6 +96,8 @@ class AuthModuleSingleton {
                 this.fire(USER_CHANGE)
             } else {
                 ToasterMananager.add("login failed")
+                localStorage.clear()
+                this.doclistSupported = false
                 this.fire(USER_CHANGE)
             }
         })
