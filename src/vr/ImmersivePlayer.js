@@ -362,19 +362,22 @@ class Adapter extends SceneGraphProvider {
 
         // @blair
         const sceneNode = this.player.three_map[sceneid]
-        this.logger.log("the scene node is",sceneNode)
-        this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
+        // this.logger.log("the scene node is",sceneNode)
+        // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
 
         if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
             // create a new scene anchor
-            this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
-            this.sceneAnchor = null
-
+            if (this.sceneAnchor) {
+                this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
+                this.sceneAnchor = null
+            }
             this.player.xr.createSceneAnchor(sceneNode, this.logger).then(anchor => {
                 this.sceneAnchor = anchor
             }).catch(error => {
-                logger.error(`error creating new scene anchor: ${error}`)
+                this.logger.error(`error creating new scene anchor: ${error}`)
             })
+        } else {
+            this.player.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneNode, this.logger)
         }
 
         this.player.setCurrentScene(scene)

@@ -1,6 +1,7 @@
 import {toFlatString} from '../utils'
 import * as ToasterManager from './ToasterManager'
 import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
+import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
 
 let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor
@@ -9,6 +10,9 @@ export class XRSupport {
     constructor() {
         this.imageDetectorMap = {}
         this._workingMatrix = mat4.create()
+        this._identity = mat4.create()
+        this._vec = vec3.create()
+        
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -147,21 +151,37 @@ export class XRSupport {
 
         if (!this.session) {
             logger.log("no session")
-            rej("no session")
             return
         }
         let eyeLevel = await this.session.requestFrameOfReference('eye-level')
         let headLevel = await this.session.requestFrameOfReference('head-model')
-        headLevel.getTransformTo(eyeLevel, _workingMatrix)
 
+        // get the pose of the camera in the world
+        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
 
-        let newAnchor = await this.session.addAnchor(_identity, _headLevelFrameOfReference)
+        // get just the position
+        mat4.getTranslation(this._vec, this._workingMatrix) 
+
+        // set the matrix to just the position, which means the orientation is EUS
+        mat4.fromTranslation(this._workingMatrix, this._vec)
+
+        // create that anchor
+        let newAnchor = await this.session.addAnchor(this._workingMatrix, eyeLevel)
+
+        this.addAnchoredNode(newAnchor, sceneNode, logger)
+        return newAnchor
+    }
+
+    updateAnchoredSceneNode(sceneAnchor, sceneNode, logger) {
+        logger.log("Replacing the scene node on the existing scene anchor")
+        this._removeAnchorFromNode(sceneAnchor)
+        this.addAnchoredNode(sceneAnchor, sceneNode, logger)
     }
 
     removeSceneAnchor(sceneAnchor, logger) {
         logger.log("Removing Scene Anchor")
         this.session.removeAnchor(sceneAnchor)
-        _removeAnchorFromNode(sceneAnchor)
+        this._removeAnchorFromNode(sceneAnchor)
     }
 
     _fetchImage(info,logger) {
@@ -362,7 +382,6 @@ export class XRSupport {
 
 
     addGeoAnchoredNode(info, logger) {
-
         logger.log("adding a geo recognizer")
 
         if (!info.node) {
@@ -458,7 +477,6 @@ export class XRSupport {
 
     /// BLAIR:  Need a way to destroy geo Anchors!
     stopGeoRecognizer(info, logger) {
-
         this._removeAnchorForNode(info.node)
     }
 
