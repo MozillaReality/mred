@@ -12,6 +12,7 @@ export class XRSupport {
         this._workingMatrix = mat4.create()
         this._identity = mat4.create()
         this._vec = vec3.create()
+        this.lastFrameTime = 0
         
     }
     static supportsARKit() {
@@ -97,7 +98,7 @@ export class XRSupport {
     }
 
     _handleAnimationFrame(time = 0, frame = 0) {
-
+        this.lastFrameTime = time
         if (!this.session || this.session.ended) return
 
         this.session.requestAnimationFrame(this.__handleAnimationFrame)
@@ -121,6 +122,8 @@ export class XRSupport {
         }
     }
 
+    getTime() { return this.lastFrameTime }
+    
     addAnchoredNode(anchor, node, logger) {
         if (!anchor || !anchor.uid) {
             console.error("not a valid anchor", anchor)

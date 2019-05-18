@@ -86,10 +86,19 @@ class SystemFacade {
     }
     fireEvent(type,payload,target=null) {
         // this.manager.fireEventFromTarget(target,type,payload)
+        if (target == null) {
+            target = this.sgp.getGraphObjectById(this.behavior.parent)
+        }
         this.manager.fireEventAtTarget(target,type,payload)
     }
     sendMessage(name,payload,target=null) {
+        if (target == null) {
+            target = this.sgp.getGraphObjectById(this.behavior.parent)
+        }
         this.manager.fireMessageAtTarget(target,name,payload)
+    }
+    captureEvent() {
+        this.manager.captureEvent()
     }
 }
 
@@ -103,6 +112,8 @@ export default class ScriptManager {
         this.logger.log("ScriptManager created")
         this.system_cache = {}
 
+        this.bubbling = true;
+
         if (!window.THREE) window.THREE = THREE
         if (!window.GLTFLoader) window.GLTFLoader = GLTFLoader
         if (!window.GPUParticles) window.GPUParticles = GPUParticles
@@ -111,28 +122,6 @@ export default class ScriptManager {
 
     makeSystemFacade(behavior) {
         return new SystemFacade(this,this.sgp, behavior)
-    }
-
-    performClickAction(target) {
-        if(!this.running) return
-        try {
-            this.logger.log("script manager, got a click event",target)
-            if (!target || !target.exists || !target.exists()) return
-            const evt = {
-                type: 'click',
-                target: this.sgp.getThreeObject(target),
-                graphTarget: target
-            }
-            this.sgp.getBehaviorsForObject(target).forEach(b => {
-                const asset = this.sgp.getParsedBehaviorAsset(b)
-                const system = this.getSystemFacadeFromCache(b)
-                if (asset.click) asset.click.call(system,evt)
-            })
-        } catch (error) {
-            this.logger.error("error in performClickAction",error.message)
-            this.logger.error(error)
-            this.stopRunning()
-        }
     }
 
     fireLifecycleEvent(type) {
@@ -239,47 +228,98 @@ export default class ScriptManager {
     }
 
     fireMessageAtTarget(target, name, payload) {
-        const evt = {
-            type:'message',
-            name:name,
-            message:payload,
-            time:Date.now(),
-            target: this.sgp.getThreeObject(target),
-            graphTarget:target,
+        if(!this.running) return
+        try { 
+            const evt = {
+                type: 'message',
+                name: name,
+                data: payload,
+                time: this.lastTime,
+                target: this.sgp.getThreeObject(target),
+                graphTarget: target,
+            }
+            const behaviors = this.sgp.getBehaviorsForObject(target)
+            behaviors.forEach(b => {
+                const system = this.getSystemFacadeFromCache(b)
+                const asset = this.sgp.getParsedBehaviorAsset(b)
+                if (asset.message) asset.message.call(system,evt)
+            })
+        } catch (error) {
+            this.logger.error("error in '" + name + "' message",error.message)
+            this.logger.error(error)
+            this.stopRunning()
         }
-        // evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(target)
-        behaviors.forEach(b => {
-            const system = this.getSystemFacadeFromCache(b)
-            // evt.props = b.props()
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            if (asset.onMessage) asset.onMessage.call(system,evt)
-            // if(asset.onMessage) asset.onMessage(evt)
-        })
+    }
+
+    performClickAction(target) {
+        this.fireEventAtTarget(target, "click", {})
+        // if(!this.running) return
+        // try {
+        //     this.logger.log("script manager, got a click event",target)
+        //     if (!target || !target.exists || !target.exists()) return
+        //     const evt = {
+        //         type: 'click',
+        //         target: this.sgp.getThreeObject(target),
+        //         graphTarget: target
+        //     }
+        //     this.sgp.getBehaviorsForObject(target).forEach(b => {
+        //         const asset = this.sgp.getParsedBehaviorAsset(b)
+        //         const system = this.getSystemFacadeFromCache(b)
+        //         if (asset.click) asset.click.call(system,evt)
+        //     })
+        // } catch (error) {
+        //     this.logger.error("error in performClickAction",error.message)
+        //     this.logger.error(error)
+        //     this.stopRunning()
+        // }
+    }
+
+    captureEvent() {
+        this.bubbling = false
     }
 
     fireEventAtTarget(target, type, payload) {
-        const evt = {
-            type:type,
-            message:payload,
-            time:Date.now(),
-            target: this.sgp.getThreeObject(target),
-            graphTarget:target,
+        if(!this.running) return
+        try { 
+            this.bubbling = true
+
+            const evt = {
+                type: type,
+                data: payload,
+                time: this.lastTime,
+                target: this.sgp.getThreeObject(target),
+                graphTarget: target,
+            }
+
+            let scene = this.sgp.getCurrentScene()
+
+            while (this.bubbling && target != scene) {
+                const behaviors = this.sgp.getBehaviorsForObject(target)
+                //this.logger.log("firing " + type + " at target " + target.id + ", " + behaviors.length + " behaviors")
+
+                behaviors.forEach(b => {
+                    const system = this.getSystemFacadeFromCache(b)
+                    const asset = this.sgp.getParsedBehaviorAsset(b)
+                    if (asset[type]) {
+                        // this.logger.log("found message on behavior")
+                        asset[type].call(system,evt)
+                    } else {
+                        // this.logger.log("didn't find message on behavior")
+                    }
+                })
+                target = this.sgp.getGraphObjectById(target.parent)
+            }
+        } catch (error) {
+            this.logger.error("error in '" + type + "' event",error.message)
+            this.logger.error(error)
+            this.stopRunning()
         }
-        // evt.system = this.makeSystemFacade(evt)
-        const behaviors = this.sgp.getBehaviorsForObject(target)
-        behaviors.forEach(b => {
-            const system = this.getSystemFacadeFromCache(b)
-            // evt.props = b.props()
-            const asset = this.sgp.getParsedBehaviorAsset(b)
-            if (asset.onMessage) asset.onMessage.call(system,evt)
-            // if(asset.onMessage) asset.onMessage(evt)
-        })
     }
 
     destroyListeners() {
         this.listeners = {}
     }
+
     on(target,type,cb) {
         if(!this.listeners) this.listeners = {}
         if(!this.listeners[target.id]) this.listeners[target.id] = {}
