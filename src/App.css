@@ -443,3 +443,29 @@ ul.behaviors-list > div {
 }
 
 
+
+/* =============== dialogs ============== */
+.ac-dialog-scrim {
+    position: fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-color: rgba(255,255,255,0.8);
+    z-index:2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.ac-dialog-body {
+    border: 1px solid darkgray;
+    padding: 1rem;
+    margin:0;
+    position: absolute;
+    width: 70vw;
+    height: 80vh;
+    background-color: white;
+    box-shadow: 0px 4px 15px 5px rgba(0,0,0,0.23);
+}

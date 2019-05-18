@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {getScriptsURL} from '../../TreeItemProvider'
 import {Spacer} from '../../common/GridEditorApp'
 import {AuthModule} from '../AuthModule'
+import {Dialog} from '../../common/Dialog'
 
 export class OpenScriptDialog extends Component {
     constructor(props) {
@@ -38,9 +39,9 @@ export class OpenScriptDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.okay}>
-            <VBox grow>
+            <VBox style={{height:'100%'}}>
                 <h3>Choose Behavior Script</h3>
-                <VBox scroll style={{ maxHeight:'60vh'}}>
+                <VBox scroll>
                     <ul className="behaviors-list">{this.state.scripts.map((doc, i) => {
                         return <HBox key={doc.name}>
                             <VBox>
