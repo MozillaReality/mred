@@ -22,6 +22,25 @@ class Adapter extends SceneGraphProvider {
         this.canvas = canvas
     }
 
+    getCurrentScene() {
+        return this.canvas.props.provider.getSelectedSceneObject()
+    }
+    getSceneObjects(scene) {
+        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+    }
+    getBehaviorsForObject(scene) {
+        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getThreeObject(obj) {
+        if(obj.id) return this.canvas.findNode(obj.id)
+        return this.canvas.findNode(obj)
+    }
+    getParsedBehaviorAsset(beh) {
+        const prov = this.canvas.props.provider
+        const asset = prov.accessObject(beh.behavior)
+        return prov.getCachedBehaviorAsset(asset.id)
+    }
+
     getAllBehaviors() {
         return this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
@@ -31,38 +50,11 @@ class Adapter extends SceneGraphProvider {
             .find((obj)=>obj.type === TOTAL_OBJ_TYPES.SCENE)
     }
 
-    getParsedBehaviorAsset(beh) {
-        const prov = this.canvas.props.provider
-        const asset = prov.accessObject(beh.behavior)
-        return prov.getCachedBehaviorAsset(asset.id)
-    }
-    getGraphObjectById(id) {
-        return this.canvas.props.provider.accessObject(id)
-    }
-    getGraphObjectByName(title) {
-        const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
-        if(!list || list.length<1) return null
-        return list[0]
-    }
     navigateScene(id) {
         SelectionManager.setSelection(id)
     }
-    getCurrentScene() {
-        return this.canvas.props.provider.getSelectedSceneObject()
-    }
-    getSceneObjects(scene) {
-        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
-    }
-    getThreeObject(obj) {
-        if(obj.id) return this.canvas.findNode(obj.id)
-        return this.canvas.findNode(obj)
-    }
-    getBehaviorsForObject(scene) {
-        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-    getCamera() {
-        return this.canvas.camera
-    }
+
+
     playMediaAsset(asset) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             const sound = new THREE.Audio(this.canvas.audioListener)
@@ -81,12 +73,30 @@ class Adapter extends SceneGraphProvider {
         }
     }
 
-    stopAudioAsset(audio) {
-        if(this.canvas.playing_audio[audio.id]) {
-            this.canvas.playing_audio[audio.id].stop()
-            delete this.canvas.playing_audio[audio.id]
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.canvas.playing_audio[asset.id]) {
+                this.canvas.playing_audio[asset.id].stop()
+                delete this.canvas.playing_audio[asset.id]
+                this.canvas.playing_audio[asset.id] = null
+            }
         }
     }
+    getGraphObjectByName(title) {
+        const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
+
+    getGraphObjectById(id) {
+        return this.canvas.props.provider.accessObject(id)
+    }
+
+
+    getCamera() {
+        return this.canvas.camera
+    }
+    
     getTweenManager() {
         return this.canvas.tweenManager
     }

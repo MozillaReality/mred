@@ -218,7 +218,6 @@ export class ImmersivePlayer extends Component {
         this.scene.add( light );
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
-
         this.scenes = new Group()
         this.scene.add(this.scenes)
 
@@ -332,12 +331,12 @@ class Adapter extends SceneGraphProvider {
     getCurrentScene() {
         return this.player.current_scene
     }
+    getSceneObjects(sc) {
+        return sc.children.filter(ch => is3DObjectType(ch.type))
+    }
     getBehaviorsForObject (obj) {
         if(!obj.children) return []
         return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-    getSceneObjects(sc) {
-        return sc.children.filter(ch => is3DObjectType(ch.type))
     }
     getThreeObject (obj)  {
         if(obj.id) return this.player.three_map[obj.id]
@@ -401,8 +400,21 @@ class Adapter extends SceneGraphProvider {
                 sound.setVolume(0.5);
                 sound.play();
             });
+            this.player.playing_audio[asset.id] = sound
         }
     }
+
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.player.playing_audio[asset.id]) {
+                this.player.playing_audio[asset.id].stop()
+                delete this.player.playing_audio[asset.id]
+                this.player.playing_audio[asset.id] = null
+            }
+        }
+    }
+
+
     getGraphObjectByName(title) {
         return this.player.title_map[title]
     }
@@ -412,6 +424,11 @@ class Adapter extends SceneGraphProvider {
     getCamera() {
         return this.player.camera
     }
+
+    getTweenManager() {
+        return this.player.tweenManager
+    }
+
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
@@ -429,17 +446,6 @@ class Adapter extends SceneGraphProvider {
         })
     }
 
-    stopImageRecognizer(info) {
-        this.logger.log("stopping the image recognizer")
-
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
-            return
-        }
-
-        this.player.xr.stopImageRecognizer(info, this.logger)
-    }
-
     startGeoRecognizer(info) {
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
@@ -449,6 +455,17 @@ class Adapter extends SceneGraphProvider {
 
         // decorate the info.node with an xr anchor
         this.player.xr.addGeoAnchoredNode(info, this.logger)
+    }
+
+    stopImageRecognizer(info) {
+        this.logger.log("stopping the image recognizer")
+
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
     stopGeoRecognizer(info) {

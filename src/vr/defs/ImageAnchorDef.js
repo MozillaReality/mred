@@ -62,7 +62,7 @@ export default class ImageAnchorDef extends ObjectDef {
                 object: obj,
                 node: node,
                 callback: (info) => {
-                    scriptManager.fireEventFromTarget(obj, 'recognized', info)
+                    scriptManager.fireEventAtTarget(obj, 'recognized', info)
                     node.visible = true
                 }
             }

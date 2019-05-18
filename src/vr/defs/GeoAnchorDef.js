@@ -46,7 +46,7 @@ export default class GeoAnchorDef extends ObjectDef {
                 object:obj,
                 node:node,
                 callback:(info) => {
-                    scriptManager.fireEventFromTarget(obj, 'recognized', info)
+                    scriptManager.fireEventAtTarget(obj, 'localized', info)
                     node.visible = true
                 }
             }

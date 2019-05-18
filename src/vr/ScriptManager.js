@@ -27,6 +27,8 @@ export class SceneGraphProvider {
     getTweenManager() { throw new Error("getTweenManager() not implemented")}
     startImageRecognizer(info) { throw new Error("startImageRecognizer not implemented")}
     startGeoRecognizer(info) { throw new Error("startGeoRecognizer not implemented")}
+    stopImageRecognizer(info) { throw new Error("stopImageRecognizer not implemented")}
+    stopGeoRecognizer(info) { throw new Error("stopGeoRecognizer not implemented")}
 }
 
 class SystemFacade {
@@ -82,8 +84,12 @@ class SystemFacade {
         this.sgp.navigateScene(id)
         this.manager.fireSceneLifecycleEvent('enter',this.getCurrentScene())
     }
-    fireEvent(target,type, payload) {
-        this.manager.fireEventFromTarget(target,type,payload)
+    fireEvent(type,payload,target=null) {
+        // this.manager.fireEventFromTarget(target,type,payload)
+        this.manager.fireEventAtTarget(target,type,payload)
+    }
+    sendMessage(name,payload,target=null) {
+        this.manager.fireMessageAtTarget(target,name,payload)
     }
 }
 
@@ -167,7 +173,7 @@ export default class ScriptManager {
             if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
                 evt.target = this.sgp.getThreeObject(child.parent)
                 evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
-                evt.props = child.props()
+                //evt.props = child.props()
                 const asset = this.sgp.getParsedBehaviorAsset(child)
                 const system = this.getSystemFacadeFromCache(child)
                 if (asset[type]) asset[type].call(system,evt)
@@ -232,7 +238,7 @@ export default class ScriptManager {
         return this.running
     }
 
-    fireMessageAtTarget(name, payload, target) {
+    fireMessageAtTarget(target, name, payload) {
         const evt = {
             type:'message',
             name:name,
@@ -241,12 +247,33 @@ export default class ScriptManager {
             target: this.sgp.getThreeObject(target),
             graphTarget:target,
         }
-        evt.system = this.makeSystemFacade(evt)
+        // evt.system = this.makeSystemFacade(evt)
         const behaviors = this.sgp.getBehaviorsForObject(target)
         behaviors.forEach(b => {
-            evt.props = b.props()
+            const system = this.getSystemFacadeFromCache(b)
+            // evt.props = b.props()
             const asset = this.sgp.getParsedBehaviorAsset(b)
-            if(asset.onMessage) asset.onMessage(evt)
+            if (asset.onMessage) asset.onMessage.call(system,evt)
+            // if(asset.onMessage) asset.onMessage(evt)
+        })
+    }
+
+    fireEventAtTarget(target, type, payload) {
+        const evt = {
+            type:type,
+            message:payload,
+            time:Date.now(),
+            target: this.sgp.getThreeObject(target),
+            graphTarget:target,
+        }
+        // evt.system = this.makeSystemFacade(evt)
+        const behaviors = this.sgp.getBehaviorsForObject(target)
+        behaviors.forEach(b => {
+            const system = this.getSystemFacadeFromCache(b)
+            // evt.props = b.props()
+            const asset = this.sgp.getParsedBehaviorAsset(b)
+            if (asset.onMessage) asset.onMessage.call(system,evt)
+            // if(asset.onMessage) asset.onMessage(evt)
         })
     }
 
@@ -260,12 +287,12 @@ export default class ScriptManager {
         this.listeners[target.id][type].push(cb)
     }
 
-    fireEventFromTarget(target, type, payload) {
-        if(!this.listeners) return
-        if(!this.listeners[target.id]) return
-        if(!this.listeners[target.id][type]) return
-        this.listeners[target.id][type].forEach(cb => cb(payload))
-    }
+    // fireEventFromTarget(target, type, payload) {
+    //     if(!this.listeners) return
+    //     if(!this.listeners[target.id]) return
+    //     if(!this.listeners[target.id][type]) return
+    //     this.listeners[target.id][type].forEach(cb => cb(payload))
+    // }
 
     getSystemFacadeFromCache(behavior) {
         if(!this.system_cache[behavior.id]) {

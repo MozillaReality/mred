@@ -64,11 +64,12 @@ class Adapter extends SceneGraphProvider {
         return this.provider.accessObject(this.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
-    getGraphObjectByName(title) {
-        const list = this.provider.accessObject(this.provider.getSceneRoot()).find((o)=>o.title === title)
-        if(!list || list.length<1) return null
-        return list[0]
+
+    getAllScenes() {
+        return this.provider.accessObject(this.provider.getSceneRoot())
+            .find((obj)=>obj.type === TOTAL_OBJ_TYPES.SCENE)
     }
+
     navigateScene(id) {
         return this.editor.swapScene(id)
     }
@@ -86,15 +87,32 @@ class Adapter extends SceneGraphProvider {
         }
     }
 
-    stopAudioAsset(audio) {
-        if(this.editor.playing_audio[audio.id]) {
-            this.editor.playing_audio[audio.id].stop()
-            delete this.editor.playing_audio[audio.id]
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.editor.playing_audio[asset.id]) {
+                this.editor.playing_audio[asset.id].stop()
+                delete this.editor.playing_audio[asset.id]
+                this.canvas.playing_audio[asset.id] = null
+            }
         }
     }
 
+    getGraphObjectByName(title) {
+        const list = this.provider.accessObject(this.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
     getGraphObjectById(id) {
         return this.provider.accessObject(id)
+    }
+
+    getCamera() {
+        return this.editor.camera
+    }
+    
+
+    getTweenManager() {
+        return this.editor.tweenManager
     }
 
     startImageRecognizer(info) {
