@@ -16,10 +16,10 @@ export const CUSTOM_BEHAVIOR_SCRIPT = `
             }
         },
     },
-    init: function() {
+    start: function(evt) {
         //called when the program starts
     },
-    click: function(e) {
+    click: function(evt) {
         //called when object is clicked on
         //this.navigateScene(this.properties.scene)
     }
@@ -46,14 +46,20 @@ export const CUSTOM_SCENE_SCRIPT = `
             }
         },
     },
-    init: function() {
+    start: function(evt) {
         //called when the program starts
     },
-    enter: function() {
+    enter: function(evt) {
         //called when entering a scene
     },
-    exit: function() {
+    tick: function(evt) {
+        //called on every frame
+    },
+    exit: function(evt) {
         //called when exiting a scene
+    },
+    stop: function(evt) {
+        //called when the program stops
     },
 })
 `

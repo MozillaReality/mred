@@ -292,8 +292,7 @@ export default class ScriptManager {
             }
 
             let scene = this.sgp.getCurrentScene()
-
-            while (this.bubbling && target != scene) {
+            while (this.bubbling && target.id !== scene.id) {
                 const behaviors = this.sgp.getBehaviorsForObject(target)
                 //this.logger.log("firing " + type + " at target " + target.id + ", " + behaviors.length + " behaviors")
 
