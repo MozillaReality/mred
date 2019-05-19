@@ -402,6 +402,10 @@ class Adapter extends SceneGraphProvider {
             });
             this.player.playing_audio[asset.id] = sound
         }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const cache = this.player.props.provider.videocache
+            if(cache[asset.src]) cache[asset.src].play()
+        }
     }
 
     stopMediaAsset(asset) {

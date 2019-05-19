@@ -76,6 +76,16 @@ class SystemFacade {
         this.manager.sgp.playMediaAsset(asset)
     }
 
+    playMedia(id) {
+        const asset = this.sgp.getGraphObjectById(id)
+        this.manager.sgp.playMediaAsset(asset)
+    }
+
+    stopMedia(id) {
+        const asset = this.sgp.getGraphObjectById(id)
+        this.manager.sgp.stopMediaAsset(asset)
+    }
+
     getCurrentScene() {
         return this.sgp.getCurrentScene()
     }
