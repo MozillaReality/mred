@@ -123,7 +123,7 @@ export class XRSupport {
     }
 
     getTime() { return this.lastFrameTime }
-    
+
     addAnchoredNode(anchor, node, logger) {
         if (!anchor || !anchor.uid) {
             console.error("not a valid anchor", anchor)
@@ -480,7 +480,10 @@ export class XRSupport {
 
     /// BLAIR:  Need a way to destroy geo Anchors!
     stopGeoRecognizer(info, logger) {
-        this._removeAnchorForNode(info.node)
+        // info.node may be destroyed before we get here
+        if (info && info.node) {
+            this._removeAnchorForNode(info.node)
+        }
     }
 
     _handleAnchorDelete(logger, details) {
@@ -515,7 +518,7 @@ export class XRSupport {
     }
 
     _handleAnchorUpdate(logger, details) {
-        logger.log("anchor update")
+        // logger.log("anchor update")
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
