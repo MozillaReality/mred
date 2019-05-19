@@ -403,9 +403,11 @@ const _global = typeof global !== 'undefined' ? global :
                 typeof self !== 'undefined' ? self :
                 typeof window !== 'undefined' ? window : {};
 
-XRAnchor = _global.XRAnchor;
-XRDevice = _global.XRDevice;
+var XRAnchor = null;
+var XRDevice = null;
 function _patchXRDevice() {
+    XRAnchor = _global.XRAnchor;
+    XRDevice = _global.XRDevice;
     var __XRDevice_requestSession = XRDevice.prototype.requestSession;
     XRDevice.prototype.requestSession = async function (options) {
         let bindrequest = __XRDevice_requestSession.bind(this);
@@ -814,9 +816,9 @@ class XRGeospatialAnchor extends XRAnchor {
         })
     }
 }
-if (window["XRGeospatialAnchr"] !== undefined) {
+if (_global["XRGeospatialAnchr"] !== undefined) {
     console.warn(`XRGeospatialAnchor already defined on global.`);
-} else {
+} else if (_global["XRAnchor"] !== undefined && _global["XRDevice"] !== undefined) {
     _patchXRDevice();
     window["XRGeospatialAnchor"] = XRGeospatialAnchor;
 }
