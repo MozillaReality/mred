@@ -127,13 +127,13 @@ class Adapter extends SceneGraphProvider {
         logger.log("NOTHING DONE TO stop image recognizer")
     }
 
-    startGeoRecognizer(info) {
+    startGeoTracker(info) {
         const logger = this.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO start geo recognizer")
     }
 
-    stopGeoRecognizer(info) {
+    stopGeoTracker(info) {
         const logger = this.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO stop geo recognizer")

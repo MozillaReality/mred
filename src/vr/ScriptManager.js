@@ -26,9 +26,9 @@ export class SceneGraphProvider {
     getCamera() { throw new Error("getCamera() not implemented")}
     getTweenManager() { throw new Error("getTweenManager() not implemented")}
     startImageRecognizer(info) { throw new Error("startImageRecognizer not implemented")}
-    startGeoRecognizer(info) { throw new Error("startGeoRecognizer not implemented")}
+    startGeoTracker(info) { throw new Error("startGeoTracker not implemented")}
     stopImageRecognizer(info) { throw new Error("stopImageRecognizer not implemented")}
-    stopGeoRecognizer(info) { throw new Error("stopGeoRecognizer not implemented")}
+    stopGeoTracker(info) { throw new Error("stopGeoTracker not implemented")}
 }
 
 class SystemFacade {

@@ -446,15 +446,19 @@ class Adapter extends SceneGraphProvider {
         })
     }
 
-    startGeoRecognizer(info) {
+    startGeoTracker(info) {
         // WebXR loaded?
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
-            return
-        }
+        return new Promise((res, rej) => {
+            if(!this.player.xr || !this.player.xr.session) {
+                this.logger.log("XR is not active?")
+                return
+            }
 
-        // decorate the info.node with an xr anchor
-        this.player.xr.addGeoAnchoredNode(info, this.logger)
+            this.player.xr.createGeoAnchor(info, this.logger).then(() => {
+                // decorate the info.node with an xr anchor
+                this.player.xr.addGeoAnchoredNode(info, this.logger)
+            })
+        })
     }
 
     stopImageRecognizer(info) {
@@ -468,7 +472,7 @@ class Adapter extends SceneGraphProvider {
         this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
-    stopGeoRecognizer(info) {
+    stopGeoTracker(info) {
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
             this.logger.log("XR is not active?")
@@ -476,7 +480,7 @@ class Adapter extends SceneGraphProvider {
         }
 
         // decorate the info.node with an xr anchor
-        this.player.xr.stopGeoRecognizer(info, this.logger)
+        this.player.xr.stopGeoTracker(info, this.logger)
     }
 
 }

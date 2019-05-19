@@ -9,6 +9,7 @@ let XRGeospatialAnchor = window.XRGeospatialAnchor
 export class XRSupport {
     constructor() {
         this.imageDetectorMap = {}
+        this.geoAnchorMap = {}
         this._workingMatrix = mat4.create()
         this._identity = mat4.create()
         this._vec = vec3.create()
@@ -384,8 +385,118 @@ export class XRSupport {
     }
 
 
+    createGeoAnchor(info, logger) {        
+        logger.log("creating or reusing a geospatial anchor")
+        return new Promise((res,rej) => {            
+            if (!info.node) {
+                logger.log("Missing threejs node")
+                rej("Missing threejs node")
+                return
+            }
+
+            if (!this.session) {
+                logger.log("no session")
+                rej("no session")
+                return
+            }
+
+            if (this.geoAnchorMap[info.location.id]) {
+                let det = this.geoAnchorMap[info.location.id]
+                logger.log("found geoanchor: already created, returning it")
+                res()
+                return
+            }
+
+            /*
+            info contains
+            location:  a geo location asset, has properties for latitude, longitude, altitude, useAltitude
+            recType: the recognition type. for now always SCENE_START
+            object: the anchor object. It reresents the anchor in the 3D scene. has tx,ty,tz, rotation, etc.
+            node: the actual ThreeJS object that mirrors the propertites of the `object` above
+            callback: a function to be called once the geo anchor is recognized. By default this callback will fire a 'recognized' event and make the anchor visible in the scene
+            */
+
+            let location = info.location
+            let object = info.object // object that represents anchor variables that users can edit in general-editor
+            let node = info.node
+            let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+
+            // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
+
+            // these values are 0 by default, we need to change at least one of them by a bit!
+            if (location.latitude != 0 || location.longitude != 0) {
+                // use supplied altitude?
+
+                let lla = new Cesium.Cartographic(location.longitude * Math.PI / 180, location.latitude * Math.PI / 180, location.altitude)
+
+                if (location.useAltitude) {
+                    logger.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
+                    logger.log(toFlatString(lla))
+                    XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                        this.geoAnchorMap[info.location.id] = {
+                            anchor: anchor
+                        }
+                        res()
+                        return;
+                    }).catch(error => {
+                        logger.error(`error creating geospatial anchor: ${error}`)
+                        rej(error)
+                    })
+                } else {
+                    XRGeospatialAnchor.getDefaultElevation(lla).then(altitude => {
+                        lla.height = altitude
+                        logger.log("XRGeoAnchor: Placing an object at specified lla and estimated altitude")
+                        logger.log(toFlatString(lla))
+                        XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                            this.geoAnchorMap[info.location.id] = {
+                                anchor: anchor
+                            }
+                            res()
+                            return;
+                        }).catch(error => {
+                            logger.error(`error creating geospatial anchor: ${error}`)
+                            rej(error)
+                        })
+                    }).catch(error => {
+                        logger.error(`error getting default elevation: ${error}`)
+                        rej(error)
+                    })
+                }
+            }
+
+            // else find current position and altitude
+            else {
+                XRGeospatialAnchor.getDeviceCartographic().then(cartographic => {
+                    // probably don't need to explicitly do this, but to be safe ...
+                    XRGeospatialAnchor.getDefaultElevation().then(altitude => {
+                        let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude)
+                        logger.log("XRGeoAnchor: Placing an object at your lla")
+                        logger.log(toFlatString(lla))
+                        XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
+                            this.geoAnchorMap[info.location.id] = {
+                                anchor: anchor
+                            }
+                            res()
+                            return;
+                        }).catch(error => {
+                            logger.error(`error creating geospatial anchor: ${error}`)
+                            rej(error)
+                        })
+                    }).catch(error => {
+                        logger.error(`error getting default elevation: ${error}`)
+                        rej(error)
+                    })
+                }).catch(error => {
+                    logger.error(`error getting device cartographic location: ${error}`)
+                    rej(error)
+                })
+            }
+        })
+    }
+
+
     addGeoAnchoredNode(info, logger) {
-        logger.log("adding a geo recognizer")
+        logger.log("adding a geotracked node")
 
         if (!info.node) {
             logger.log("Missing threejs node")
@@ -397,6 +508,13 @@ export class XRSupport {
             return
         }
 
+        if (!this.geoAnchorMap[info.location.id]) {
+            logger.error("not geolocation anchor for object", info.location.id)
+            return
+        }
+
+        let det = this.geoAnchorMap[info.location.id]
+
         /*
         info contains
          location:  a geo location asset, has properties for latitude, longitude, altitude, useAltitude
@@ -407,79 +525,20 @@ export class XRSupport {
          */
 
         let callback = info.callback
-        let location = info.location
-        let object = info.object // object that represents anchor variables that users can edit in general-editor
         let node = info.node
         let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
-        // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
 
-        // these values are 0 by default, we need to change at least one of them by a bit!
-        if (location.latitude != 0 || location.longitude != 0) {
-            // use supplied altitude?
-
-            let lla = new Cesium.Cartographic(location.longitude * Math.PI / 180, location.latitude * Math.PI / 180, location.altitude)
-
-            if (location.useAltitude) {
-                logger.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
-                logger.log(toFlatString(lla))
-                XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                    node.anchorStyle = "geo"
-                    this.addAnchoredNode(anchor, node, logger)
-                    if (callback) {
-                        callback(info)
-                    }
-                }).catch(error => {
-                    logger.error(`error creating geospatial anchor: ${error}`)
-                })
-            } else {
-                XRGeospatialAnchor.getDefaultElevation(lla).then(altitude => {
-                    lla.height = altitude
-                    logger.log("XRGeoAnchor: Placing an object at specified lla and estimated altitude")
-                    logger.log(toFlatString(lla))
-                    XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                        node.anchorStyle = "geo"
-                        this.addAnchoredNode(anchor, node, logger)
-                        if (callback) {
-                            callback(info)
-                        }
-                    }).catch(error => {
-                        logger.error(`error creating geospatial anchor: ${error}`)
-                    })
-                }).catch(error => {
-                    logger.error(`error getting default elevation: ${error}`)
-                })
-            }
-        }
-
-        // else find current position and altitude
-        else {
-            XRGeospatialAnchor.getDeviceCartographic().then(cartographic => {
-                // probably don't need to explicitly do this, but to be safe ...
-                XRGeospatialAnchor.getDefaultElevation().then(altitude => {
-                    let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude)
-                    logger.log("XRGeoAnchor: Placing an object at your lla")
-                    logger.log(toFlatString(lla))
-                    XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
-                        node.anchorStyle = "geo"
-                        this.addAnchoredNode(anchor, node, logger)
-                        if (callback) {
-                            callback(info)
-                        }
-                    }).catch(error => {
-                        logger.error(`error creating geospatial anchor: ${error}`)
-                    })
-                }).catch(error => {
-                    logger.error(`error getting default elevation: ${error}`)
-                })
-            }).catch(error => {
-                logger.error(`error getting device cartographic location: ${error}`)
-            })
+        this._removeAnchorFromNode(det.anchor)
+        logger.log("add our node")
+        this.addAnchoredNode(det.anchor, node, logger)
+        if (callback) {
+            callback(info)
         }
     }
 
     /// BLAIR:  Need a way to destroy geo Anchors!
-    stopGeoRecognizer(info, logger) {
+    stopGeoTracker(info, logger) {
         // info.node may be destroyed before we get here
         if (info && info.node) {
             this._removeAnchorForNode(info.node)

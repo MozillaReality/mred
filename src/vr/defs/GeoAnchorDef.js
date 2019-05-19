@@ -50,11 +50,11 @@ export default class GeoAnchorDef extends ObjectDef {
                     node.visible = true
                 }
             }
-            scriptManager.sgp.startGeoRecognizer(node.userData.info)
+            scriptManager.sgp.startGeoTracker(node.userData.info)
         }
         node.exit = (evt, scriptManager) => {
             clicker.visible = true
-            scriptManager.sgp.stopGeoRecognizer(node.userData.info)
+            scriptManager.sgp.stopGeoTracker(node.userData.info)
         }
         return node
     }

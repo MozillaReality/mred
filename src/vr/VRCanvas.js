@@ -106,11 +106,11 @@ class Adapter extends SceneGraphProvider {
     stopImageRecognizer(info) {
         return this.canvas.stopImageRecognizer(info)
     }
-    startGeoRecognizer(info) {
-        return this.canvas.startGeoRecognizer(info)
+    startGeoTracker(info) {
+        return this.canvas.startGeoTracker(info)
     }
-    stopGeoRecognizer(info) {
-        return this.canvas.stopGeoRecognizer(info)
+    stopGeoTracker(info) {
+        return this.canvas.stopGeoTracker(info)
     }
 }
 
@@ -566,13 +566,13 @@ export class VRCanvas extends Component {
         logger.log("NOTHING DONE TO stop image recognizer")
     }
 
-    startGeoRecognizer(info) {
+    startGeoTracker(info) {
         const logger = this.props.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO start geo recognizer")
     }
 
-    stopGeoRecognizer(info) {
+    stopGeoTracker(info) {
         const logger = this.props.provider.pubnub.getLogger()
         
         logger.log("NOTHING DONE TO stop geo recognizer")
