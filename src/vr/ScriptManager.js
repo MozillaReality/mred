@@ -73,7 +73,7 @@ class SystemFacade {
     }
     playSound(id) {
         const asset = this.sgp.getGraphObjectById(id)
-        this.manager.playMediaAsset(asset)
+        this.manager.sgp.playMediaAsset(asset)
     }
 
     getCurrentScene() {
