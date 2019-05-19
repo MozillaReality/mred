@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {toQueryString} from '../../utils'
 import {AuthModule} from '../AuthModule'
+import {Dialog} from '../../common/Dialog'
+
 
 export class OpenFileDialog extends Component {
     constructor(props) {
@@ -37,23 +39,21 @@ export class OpenFileDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.dismiss}>
-            <VBox grow>
-                <h3>Open document</h3>
-                <VBox scroll style={{ maxHeight:'60vh'}}>
-                    <ul>{this.state.docList.map((doc, i) => {
+            <h3>Open document</h3>
+            <VBox scroll style={{flex:1}}>
+                <ul>{this.state.docList.map((doc, i) => {
 
-                        return <li key={i}>
-                            <b>{doc.title}</b>
-                            <a className={"button"} href={this.generateDocUrl(doc)}>open</a>
-                            {this.renderDeleteButton(doc)}
-                        </li>
-                    })}
-                    </ul>
-                </VBox>
-                <HBox>
-                    <button onClick={this.dismiss}>dismiss</button>
-                </HBox>
+                    return <li key={i}>
+                        <b>{doc.title}</b>
+                        <a className={"button"} href={this.generateDocUrl(doc)}>open</a>
+                        {this.renderDeleteButton(doc)}
+                    </li>
+                })}
+                </ul>
             </VBox>
+            <HBox className={"footer"}>
+                <button onClick={this.dismiss}>dismiss</button>
+            </HBox>
         </Dialog>
     }
 

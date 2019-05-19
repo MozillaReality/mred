@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {getAssetsURL} from '../../TreeItemProvider'
 import {isAudioType, isGLTFType, isImageType, isVideoType} from '../Common'
 import {AuthModule} from '../AuthModule'
@@ -9,6 +9,7 @@ import {
     addImageAssetFromExpandedURL,
     addVideoAssetFromURL
 } from '../AssetActions'
+import {Dialog} from '../../common/Dialog'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {
@@ -59,23 +60,21 @@ export class OpenAssetDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.okay}>
-            <VBox grow>
-                <h3>Add Asset</h3>
-                <VBox scroll style={{ maxHeight:'60vh'}}>
-                    <ul>{this.state.assetList.map((doc, i) => {
-                        return <li key={i}>
-                            <b>{doc.title} </b>
-                            <i> {doc.mimeType}</i>
-                            <button onClick={()=>this.addAsset(doc)}>add</button>
-                            {this.renderDeleteButton(doc)}
-                        </li>
-                    })}
-                    </ul>
-                </VBox>
-                <HBox>
-                    <button onClick={this.okay}>close</button>
-                </HBox>
+            <h3>Add Asset</h3>
+            <VBox scroll grow>
+                <ul>{this.state.assetList.map((doc, i) => {
+                    return <li key={i}>
+                        <b>{doc.title} </b>
+                        <i> {doc.mimeType}</i>
+                        <button onClick={()=>this.addAsset(doc)}>add</button>
+                        {this.renderDeleteButton(doc)}
+                    </li>
+                })}
+                </ul>
             </VBox>
+            <HBox className={"footer"}>
+                <button onClick={this.okay}>close</button>
+            </HBox>
         </Dialog>
     }
 
