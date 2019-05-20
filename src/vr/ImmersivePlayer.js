@@ -119,18 +119,26 @@ export class ImmersivePlayer extends Component {
         })
     }
 
+    clickedStart = () => {
+        console.log("clicked. play the sample audio")
+        const $ = (sel) => document.querySelector(sel)
+        $("#overlay").style.display = 'none'
+        $("#test-audio").play()
+    }
+
     render() {
         return <div>
-            {/*<div id="overlay">*/}
-            {/*    <div id="inner">*/}
-            {/*        <h1>Application Name</h1>*/}
-            {/*        <div id="loading-indicator">*/}
-            {/*            <label>loading</label>*/}
-            {/*            <progress max="100" value="0" id="progress"></progress>*/}
-            {/*        </div>*/}
-            {/*        <button id="enter-button" disabled>VR not supported, play anyway</button>*/}
-            {/*    </div>*/}
-            {/*</div>*/}
+            <audio id={"test-audio"} src={"https://vr.josh.earth/assets/sounds/clang.mp3"}/>
+            <div id="overlay">
+                <div id="inner">
+                    <button onClick={this.clickedStart}>click to start</button>
+                    {/*<div id="loading-indicator">*/}
+                    {/*    <label>loading</label>*/}
+                    {/*    <progress max="100" value="0" id="progress"></progress>*/}
+                    {/*</div>*/}
+                    {/*<button id="enter-button" disabled>VR not supported, play anyway</button>*/}
+                </div>
+            </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
                     onClick={this.clickedCanvas}
@@ -415,17 +423,28 @@ class Adapter extends SceneGraphProvider {
     playMediaAsset (asset)  {
         console.log("playing the media asset",asset)
         if(asset.subtype === ASSET_TYPES.AUDIO) {
-            this.logger.log("ImmersivePlayer playing audio", asset)
-            const sound = new THREE.Audio(this.player.audioListener)
-            const audioLoader = new THREE.AudioLoader()
-            audioLoader.load(asset.src, (buffer) => {
-                this.logger.log("loaded the buffer", buffer.length)
-                sound.setBuffer(buffer);
-                sound.setLoop(false);
-                sound.setVolume(0.5);
-                sound.play();
-            });
-            this.player.playing_audio[asset.id] = sound
+            if(this.player.playing_audio[asset.id]) {
+                this.logger.log("already playing. restarting it")
+                const sound = this.player.playing_audio[asset.id]
+                if(sound.isPlaying) {
+                    sound.stop()
+                    sound.play()
+                } else {
+                    sound.play()
+                }
+            } else {
+                this.logger.log("ImmersivePlayer playing audio", asset)
+                const sound = new THREE.Audio(this.player.audioListener)
+                const audioLoader = new THREE.AudioLoader()
+                audioLoader.load(asset.src, (buffer) => {
+                    this.logger.log("loaded the buffer", buffer.length)
+                    sound.setBuffer(buffer);
+                    sound.setLoop(false);
+                    sound.setVolume(0.5);
+                    sound.play();
+                });
+                this.player.playing_audio[asset.id] = sound
+            }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
             const cache = this.player.props.provider.videocache
