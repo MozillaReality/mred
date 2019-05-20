@@ -20,6 +20,9 @@ export class ToasterNotification extends Component {
     componentWillMount() {
         ToasterManager.onAdd(this.add)
     }
+    componentWillUnmount() {
+        ToasterManager.offAdd(this.add)
+    }
 
     render() {
         return <div style={{

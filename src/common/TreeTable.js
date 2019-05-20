@@ -10,7 +10,12 @@ const ContextMenu = (props) => {
     return <VBox className={"popup-menu"}>
         {props.menu.map((item,i)=>{
             if(item.divider) return <div className="divider" key={i}></div>
-            return <button key={i} onClick={()=>{
+            let enabled = false
+            if(typeof item.enabled === 'undefined') enabled = true
+            if(item.enabled === true) enabled = true
+            return <button key={i}
+                           disabled={!enabled}
+                           onClick={()=>{
                 PopupManager.hide()
                 if(item.fun) item.fun()
             }}
@@ -30,6 +35,7 @@ class TreeTableItem extends Component {
     onContextMenu = (e) => {
         e.preventDefault()
         e.stopPropagation()
+        selMan.setSelection(this.props.node)
         if(this.props.provider.calculateContextMenu) {
             const menu = this.props.provider.calculateContextMenu(this.props.node)
             PopupManager.show(<ContextMenu menu={menu}/>,e.target)

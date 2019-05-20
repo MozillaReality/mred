@@ -22,6 +22,25 @@ class Adapter extends SceneGraphProvider {
         this.canvas = canvas
     }
 
+    getCurrentScene() {
+        return this.canvas.props.provider.getSelectedSceneObject()
+    }
+    getSceneObjects(scene) {
+        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
+    }
+    getBehaviorsForObject(scene) {
+        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
+    }
+    getThreeObject(obj) {
+        if(obj.id) return this.canvas.findNode(obj.id)
+        return this.canvas.findNode(obj)
+    }
+    getParsedBehaviorAsset(beh) {
+        const prov = this.canvas.props.provider
+        const asset = prov.accessObject(beh.behavior)
+        return prov.getCachedBehaviorAsset(asset.id)
+    }
+
     getAllBehaviors() {
         return this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
@@ -31,38 +50,11 @@ class Adapter extends SceneGraphProvider {
             .find((obj)=>obj.type === TOTAL_OBJ_TYPES.SCENE)
     }
 
-    getParsedBehaviorAsset(beh) {
-        const prov = this.canvas.props.provider
-        const asset = prov.accessObject(beh.behavior)
-        return prov.getCachedBehaviorAsset(asset.id)
-    }
-    getGraphObjectById(id) {
-        return this.canvas.props.provider.accessObject(id)
-    }
-    getGraphObjectByName(title) {
-        const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
-        if(!list || list.length<1) return null
-        return list[0]
-    }
     navigateScene(id) {
         SelectionManager.setSelection(id)
     }
-    getCurrentScene() {
-        return this.canvas.props.provider.getSelectedSceneObject()
-    }
-    getSceneObjects(scene) {
-        return scene.getChildren().filter(ch => is3DObjectType(ch.type))
-    }
-    getThreeObject(obj) {
-        if(obj.id) return this.canvas.findNode(obj.id)
-        return this.canvas.findNode(obj)
-    }
-    getBehaviorsForObject(scene) {
-        return scene.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-    getCamera() {
-        return this.canvas.camera
-    }
+
+
     playMediaAsset(asset) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             const sound = new THREE.Audio(this.canvas.audioListener)
@@ -81,12 +73,30 @@ class Adapter extends SceneGraphProvider {
         }
     }
 
-    stopAudioAsset(audio) {
-        if(this.canvas.playing_audio[audio.id]) {
-            this.canvas.playing_audio[audio.id].stop()
-            delete this.canvas.playing_audio[audio.id]
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.canvas.playing_audio[asset.id]) {
+                this.canvas.playing_audio[asset.id].stop()
+                delete this.canvas.playing_audio[asset.id]
+                this.canvas.playing_audio[asset.id] = null
+            }
         }
     }
+    getGraphObjectByName(title) {
+        const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
+        if(!list || list.length<1) return null
+        return list[0]
+    }
+
+    getGraphObjectById(id) {
+        return this.canvas.props.provider.accessObject(id)
+    }
+
+
+    getCamera() {
+        return this.canvas.camera
+    }
+    
     getTweenManager() {
         return this.canvas.tweenManager
     }
@@ -96,11 +106,11 @@ class Adapter extends SceneGraphProvider {
     stopImageRecognizer(info) {
         return this.canvas.stopImageRecognizer(info)
     }
-    startGeoRecognizer(info) {
-        return this.canvas.startGeoRecognizer(info)
+    startGeoTracker(info) {
+        return this.canvas.startGeoTracker(info)
     }
-    stopGeoRecognizer(info) {
-        return this.canvas.stopGeoRecognizer(info)
+    stopGeoTracker(info) {
+        return this.canvas.stopGeoTracker(info)
     }
 }
 
@@ -131,6 +141,18 @@ export class VRCanvas extends Component {
         }
         if(e.key === 'ArrowRight') {
             this.camera.rotation.y -= 0.1
+        }
+    }
+    recenterOnSelection = () => {
+        const sel = SelectionManager.getSelection()
+        if(!sel) return
+        const obj = this.props.provider.accessObject(sel)
+        if(is3DObjectType(obj.type)) {
+            const node = this.findNode(sel)
+            this.orbitControls.target.copy(node.position)
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            this.orbitControls.reset()
         }
     }
 
@@ -166,6 +188,9 @@ export class VRCanvas extends Component {
             prov.quick_setPropertyValue(sel,'ty',node.position.y)
             prov.quick_setPropertyValue(sel,'tz',node.position.z)
         }
+    }
+    transformDraggingChanged = (e) => {
+        this.orbitControls.enabled = ! e.value
     }
 
     docSwapped = (e) => {
@@ -212,17 +237,29 @@ export class VRCanvas extends Component {
             const node = this.findNode(sel)
             if (!node) return
             this.transformControls.attach(node)
-            // this.orbitControls.target = node.position
-            // this.orbitControls.reset()
             return
         }
         console.log("selected something not an object or scene")
     }
     windowResized = () => {
         if(this.canvas) {
-            this.camera.aspect = this.canvas.width / this.canvas.height;
+            let cw = this.canvas.clientWidth
+            let ch = this.canvas.clientHeight
+            this.camera.aspect = cw/ch;
             this.camera.updateProjectionMatrix();
-            this.renderer.setSize(this.canvas.width, this.canvas.height);
+            this.renderer.setSize(cw,ch);
+        }
+    }
+
+    checkAspectRatio() {
+        if(!this.canvas) return
+        let cw = this.canvas.clientWidth
+        let ch = this.canvas.clientHeight
+        const aspect = cw/ch
+        if(Math.abs(this.camera.aspect - aspect) > 0.01 ) {
+            this.camera.aspect = aspect
+            this.camera.updateProjectionMatrix()
+            this.renderer.setSize(cw,ch);
         }
     }
 
@@ -257,7 +294,7 @@ export class VRCanvas extends Component {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
-        // this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
         this.audioListener = new THREE.AudioListener()
@@ -266,15 +303,17 @@ export class VRCanvas extends Component {
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
         // this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
-        this.camera.position.set(7,4,1)
+        this.camera.position.set(1,6,6)
 
         this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
         this.transformControls.addEventListener('change',this.transformChanged)
+        this.transformControls.addEventListener('dragging-changed', this.transformDraggingChanged)
         this.transformControls.addEventListener('mouseDown',this.pauseQueue)
         this.transformControls.addEventListener('mouseUp',this.unpauseQueue)
         this.scene.add(this.transformControls)
 
         this.orbitControls = new OrbitControls(this.camera,this.renderer.domElement)
+        this.orbitControls.update()
         // this.orbitControls.autoRotate = true
         this.raycaster = new THREE.Raycaster();
 
@@ -295,9 +334,10 @@ export class VRCanvas extends Component {
     }
 
     animationLoop(time, frame) {
+        this.checkAspectRatio()
         let session = null
         if(this.xr) session = this.xr.session
-        if(this.state.running) this.scriptManager.tick(time, session, frame)
+        if(this.state.running) this.scriptManager.tick(time, session)
         if(this.tweenManager) this.tweenManager.update(time)
         if(this.orbitControls) this.orbitControls.update()
         this.previewUpdateNodes.forEach(n => n.previewUpdate())
@@ -379,11 +419,10 @@ export class VRCanvas extends Component {
                 if(nextProps.running === false) {
                     this.scriptManager.stopRunning()
                     this.resetSceneGraph()
-                    this.stopImageRecognizer()
-                    this.stopGeoRecognizer()
+                    this.stopRecognizers()
                 } else {
                     //start the script manager
-                    this.startRecognizer()
+                    this.startRecognizers()
                     this.scriptManager.startRunning()
                 }
                 return false
@@ -393,17 +432,24 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <div>
-            <canvas ref={c => this.canvas = c} width={600} height={400}
-                    onClick={this.clickedCanvas}
-                    className="editable-canvas"
-                    onKeyDown={this.handleKeyPress}
-                    tabIndex={0}
-            />
-            <br/>
-            <button onClick={this.moveCameraForward}>forward</button>
-            <button onClick={this.moveCameraBackward}>backward</button>
-            <ToasterNotification/>
+        return <div style={{}}>
+            <button onClick={this.recenterOnSelection}>recenter on selection</button>
+            <div style={{
+                borderWidth:0,
+                margin:0,
+                padding:0,
+                display:'flex',
+                flexDirection:'column',
+                height:'100%',
+            }}>
+                <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
+                        onClick={this.clickedCanvas}
+                        className="editable-canvas"
+                        onKeyDown={this.handleKeyPress}
+                        tabIndex={0}
+                />
+                <ToasterNotification/>
+            </div>
         </div>
     }
 
@@ -501,58 +547,35 @@ export class VRCanvas extends Component {
         })
     }
 
-    startRecognizer() {
+    startRecognizers() {
+        //called when script running is started
+    }
+
+    stopRecognizers() {
         //called when script running is started
     }
 
     startImageRecognizer(info) {
         const logger = this.props.provider.pubnub.getLogger()
-        return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            logger.log("got the image",toFlatString(img))
-            //called when an anchor is started that wants to recognize an image
-            // WebXR loaded?
-            if(!this.xr || !this.xr.session) {
-                logger.log("XR is not active?")
-                return
-            }
-
-            // decorate the info.node with an xr anchor
-            this.xr.addImageAnchoredNode(info, img, logger)
-        })
+        logger.log("NOTHING DONE TO start image recognizer")
     }
 
-
-    stopImageRecognizer() {
-        if(this.xr) {
-            this.xr.stopImageRecognizer()
-        }
-    }
-
-    startGeoRecognizer(info) {
+    stopImageRecognizer(info) {
         const logger = this.props.provider.pubnub.getLogger()
-
-        // WebXR loaded?
-        if(!this.xr || !this.xr.session) {
-            logger.log("XR is not active?")
-            return
-        }
-
-        // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info,logger)
+        
+        logger.log("NOTHING DONE TO stop image recognizer")
     }
 
-    stopGeoRecognizer() {
-        if(this.xr) {
-            this.xr.stopGeoRecognizer()
-        }
+    startGeoTracker(info) {
+        const logger = this.props.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO start geo recognizer")
+    }
+
+    stopGeoTracker(info) {
+        const logger = this.props.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop geo recognizer")
     }
 
 }

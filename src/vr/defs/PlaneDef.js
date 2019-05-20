@@ -10,9 +10,9 @@ export default class PlaneDef extends ObjectDef {
             type:'plane',
             title:'a plane',
             visible:true,
-            width: 3,
-            height: 3,
-            tx:0, ty:0, tz:-5,
+            width: 0.5,
+            height: 0.5,
+            tx:0, ty:0, tz:0,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             color:'#ffffff',
@@ -27,7 +27,6 @@ export default class PlaneDef extends ObjectDef {
             new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide})
         )
         const asset = provider.accessObject(obj.asset)
-        console.log("asset is",asset)
         if(asset.exists()) this.attachAsset(asset, obj, node, provider)
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))

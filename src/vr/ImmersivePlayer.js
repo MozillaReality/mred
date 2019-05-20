@@ -7,10 +7,11 @@ import * as THREE from 'three'
 import {Group} from "three"
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
-import {get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
+import {ErrorCatcher} from './ErrorCatcher'
 
 
 function attachUtilFunctions(obj) {
@@ -40,6 +41,9 @@ export class ImmersivePlayer extends Component {
         this.behavior_map = {}
         this.behavior_assets = {}
         this.pendingAssets = []
+
+        this.sceneAnchor = null
+
         this.logger = new PubnubLogger(opts.doc)
         this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
@@ -105,8 +109,37 @@ export class ImmersivePlayer extends Component {
             {/*        <button id="enter-button" disabled>VR not supported, play anyway</button>*/}
             {/*    </div>*/}
             {/*</div>*/}
-            <canvas ref={c => this.canvas = c} width={600} height={400}/>
+            <ErrorCatcher logger={this.logger}>
+                <canvas ref={c => this.canvas = c} width={600} height={400}
+                    onClick={this.clickedCanvas}
+                />
+            </ErrorCatcher>
         </div>
+    }
+
+    clickedCanvas = (e) => {
+        this.canvas.focus()
+        const rect = this.canvas.getBoundingClientRect();
+        const pointer = {
+            x: ( e.clientX - rect.left ) / rect.width * 2 - 1,
+            y: - ( e.clientY - rect.top ) / rect.height * 2 + 1,
+        }
+        this.logger.log("clicked on the canvas")
+        this.raycaster.setFromCamera(pointer, this.camera);
+        const scene = this.three_map[this.current_scene.id]
+        const intersect = this.raycaster.intersectObjects(scene.children, true)
+        if(intersect && intersect.length >= 1) {
+            const inter = intersect.find(inter => inter.distance > 0)
+            if(inter) {
+                this.logger.log("found the interesction", inter)
+                this.logger.log("intersections", intersect)
+                const obj = inter.object
+                this.logger.log("obj", obj)
+                const gobj = this.obj_map[obj.userData.graphid]
+                this.logger.log("jobj", gobj)
+                this.scriptManager.performClickAction(gobj)
+            }
+        }
     }
 
     buildRoot(graph) {
@@ -129,6 +162,7 @@ export class ImmersivePlayer extends Component {
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             const scene = new SceneDef().makeNode(obj, this.provider)
             this.three_map[obj.id] = scene
+            scene.userData.graphid = obj.id
             this.scenes.add(scene)
             scene.visible = false
             node = scene
@@ -139,6 +173,7 @@ export class ImmersivePlayer extends Component {
             node = get3DObjectDef(obj.type).makeNode(obj, this.provider)
             if(node.previewUpdate) this.previewUpdateNodes.push(node)
             this.three_map[obj.id] = node
+            node.userData.graphid = obj.id
             on(node, 'click', () => {
                 this.scriptManager.performClickAction(obj)
             })
@@ -183,9 +218,10 @@ export class ImmersivePlayer extends Component {
         this.scene.add( light );
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
 
-
         this.scenes = new Group()
         this.scene.add(this.scenes)
+
+        this.raycaster = new THREE.Raycaster();
 
         // const $ = (sel) => document.querySelector(sel)
         // const on = (elem, type, cb) => elem.addEventListener(type,cb)
@@ -212,7 +248,7 @@ export class ImmersivePlayer extends Component {
         }
          */
 
-
+        /*
         //class which handles mouse and VR controller
         this.pointer = new Pointer(this, {
             intersectionFilter: ((o) => o.userData.clickable),
@@ -221,6 +257,7 @@ export class ImmersivePlayer extends Component {
             enableLaser: true,
             laserLength: 20,
         })
+         */
 
     }
 
@@ -241,15 +278,16 @@ export class ImmersivePlayer extends Component {
         if(this.controller) this.controller.update(time)
         let session = null
         if(this.xr) session = this.xr.session
-        this.scriptManager.tick(time, session, frame)
+        this.scriptManager.tick(time, session)
         this.renderer.render( this.scene, this.camera );
     }
 
     initAssets(assets) {
-        assets.children.forEach(ch => {
-            this.logger.log("loading asset",ch)
-            attachUtilFunctions(ch)
-            this.obj_map[ch.id] =  ch
+        assets.children.forEach(obj => {
+            this.logger.log("loading asset",obj)
+            attachUtilFunctions(obj)
+            this.obj_map[obj.id] =  obj
+            if(obj.title) this.title_map[obj.title] = obj
         })
     }
 
@@ -293,12 +331,12 @@ class Adapter extends SceneGraphProvider {
     getCurrentScene() {
         return this.player.current_scene
     }
+    getSceneObjects(sc) {
+        return sc.children.filter(ch => is3DObjectType(ch.type))
+    }
     getBehaviorsForObject (obj) {
         if(!obj.children) return []
         return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
-    }
-    getSceneObjects(sc) {
-        return sc.children.filter(ch => is3DObjectType(ch.type))
     }
     getThreeObject (obj)  {
         if(obj.id) return this.player.three_map[obj.id]
@@ -320,37 +358,84 @@ class Adapter extends SceneGraphProvider {
         this.logger.log("navigating to ",sceneid)
         const scene = this.player.obj_map[sceneid]
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
+
+        // @blair
+        const sceneNode = this.player.three_map[sceneid]
+        // this.logger.log("the scene node is",sceneNode)
+        // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
+        const sceneAnchorNode = sceneNode.userData.sceneAnchor
+        if (sceneAnchorNode && sceneAnchorNode.children) {
+            this.logger.log("scene has children: ", sceneNode.children.length)
+            this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
+        } else {
+            this.logger.warn("no sceneNode? so no children?")
+        }
+
+        if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
+            // create a new scene anchor
+            if (this.sceneAnchor) {
+                this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
+                this.sceneAnchor = null
+            }
+            this.player.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
+                this.sceneAnchor = anchor
+            }).catch(error => {
+                this.logger.error(`error creating new scene anchor: ${error}`)
+            })
+        } else {
+            this.player.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
+        }
+
         this.player.setCurrentScene(scene)
     }
-    playAudioAsset (audio)  {
-        console.log("trying to play",audio)
-        const sound = new THREE.Audio(this.player.audioListener)
-        const audioLoader = new THREE.AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
+    playMediaAsset (asset)  {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            this.logger.log("ImmersivePlayer playing audio", asset)
+            const sound = new THREE.Audio(this.player.audioListener)
+            const audioLoader = new THREE.AudioLoader()
+            audioLoader.load(asset.src, (buffer) => {
+                this.logger.log("loaded the buffer", buffer.length)
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+            this.player.playing_audio[asset.id] = sound
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const cache = this.player.props.provider.videocache
+            if(cache[asset.src]) cache[asset.src].play()
+        }
     }
+
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.player.playing_audio[asset.id]) {
+                this.player.playing_audio[asset.id].stop()
+                delete this.player.playing_audio[asset.id]
+                this.player.playing_audio[asset.id] = null
+            }
+        }
+    }
+
+
     getGraphObjectByName(title) {
         return this.player.title_map[title]
     }
     getGraphObjectById (id) {
         return this.player.obj_map[id]
     }
+    getCamera() {
+        return this.player.camera
+    }
+
+    getTweenManager() {
+        return this.player.tweenManager
+    }
+
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            this.logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            this.logger.log("got the image",toFlatString(img))
             //called when an anchor is started that wants to recognize an image
             // WebXR loaded?
             if(!this.player.xr || !this.player.xr.session) {
@@ -358,17 +443,40 @@ class Adapter extends SceneGraphProvider {
                 return
             }
 
-            // decorate the info.node with an xr anchor
-            this.player.xr.addImageAnchoredNode(info, img, this.logger)
+            this.player.xr.createDetectionImage(info,this.logger).then((name) => {
+                // decorate the info.node with an xr anchor
+                this.player.xr.startImageRecognizer(info, name, this.logger)
+            })
+        })
+    }
+
+    startGeoTracker(info) {
+        // WebXR loaded?
+        return new Promise((res, rej) => {
+            if(!this.player.xr || !this.player.xr.session) {
+                this.logger.log("XR is not active?")
+                return
+            }
+
+            this.player.xr.createGeoAnchor(info, this.logger).then(() => {
+                // decorate the info.node with an xr anchor
+                this.player.xr.addGeoAnchoredNode(info, this.logger)
+            })
         })
     }
 
     stopImageRecognizer(info) {
         this.logger.log("stopping the image recognizer")
+
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
-    startGeoRecognizer(info) {
-
+    stopGeoTracker(info) {
         // WebXR loaded?
         if(!this.player.xr || !this.player.xr.session) {
             this.logger.log("XR is not active?")
@@ -376,12 +484,7 @@ class Adapter extends SceneGraphProvider {
         }
 
         // decorate the info.node with an xr anchor
-        this.player.xr.addGeoAnchoredNode(info, this.logger)
-    }
-
-    stopGeoRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL geo recognizers here")
+        this.player.xr.stopGeoTracker(info, this.logger)
     }
 
 }

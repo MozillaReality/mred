@@ -28,7 +28,7 @@ import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
 import {on, parseOptions, toFlatString} from "../utils"
 import {TweenManager} from "../common/tween"
-import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
@@ -64,83 +64,79 @@ class Adapter extends SceneGraphProvider {
         return this.provider.accessObject(this.provider.getSceneRoot())
             .find((obj)=> obj.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
+
+    getAllScenes() {
+        return this.provider.accessObject(this.provider.getSceneRoot())
+            .find((obj)=>obj.type === TOTAL_OBJ_TYPES.SCENE)
+    }
+
+    navigateScene(id) {
+        return this.editor.swapScene(id)
+    }
+    playMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            const sound = new Audio(this.editor.audioListener)
+            const audioLoader = new AudioLoader()
+            audioLoader.load(asset.src, function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+            this.editor.playing_audio[asset.id] = sound
+        }
+    }
+
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.editor.playing_audio[asset.id]) {
+                this.editor.playing_audio[asset.id].stop()
+                delete this.editor.playing_audio[asset.id]
+                this.canvas.playing_audio[asset.id] = null
+            }
+        }
+    }
+
     getGraphObjectByName(title) {
         const list = this.provider.accessObject(this.provider.getSceneRoot()).find((o)=>o.title === title)
         if(!list || list.length<1) return null
         return list[0]
     }
-    navigateScene(id) {
-        return this.editor.swapScene(id)
-    }
-    playAudioAsset(audio) {
-        const sound = new Audio(this.editor.audioListener)
-        const audioLoader = new AudioLoader()
-        audioLoader.load(audio.src, function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( false );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
-        this.editor.playing_audio[audio.id] = sound
-    }
-
-    stopAudioAsset(audio) {
-        if(this.editor.playing_audio[audio.id]) {
-            this.editor.playing_audio[audio.id].stop()
-            delete this.editor.playing_audio[audio.id]
-        }
-    }
-
     getGraphObjectById(id) {
         return this.provider.accessObject(id)
     }
 
+    getCamera() {
+        return this.editor.camera
+    }
+    
+
+    getTweenManager() {
+        return this.editor.tweenManager
+    }
+
     startImageRecognizer(info) {
         const logger = this.provider.pubnub.getLogger()
-        return new Promise((res,rej) => {
-            const img = new Image()
-            img.crossOrigin = "Anonymous"
-            img.src = info.image.src
-            logger.log("Loading image",img.src)
-            img.onload = () => {
-                res(img)
-            }
-        }).then(img => {
-            logger.log("got the image",toFlatString(img))
-            //called when an anchor is started that wants to recognize an image
-            // WebXR loaded?
-            if(!this.xr || !this.xr.session) {
-                logger.log("XR is not active?")
-                return
-            }
-
-            // decorate the info.node with an xr anchor
-            this.xr.addImageAnchoredNode(info, img, logger)
-        })
-
+        
+        logger.log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL image recognizers here")
-    }
-
-    startGeoRecognizer(info) {
         const logger = this.provider.pubnub.getLogger()
-
-        // WebXR loaded?
-        if(!this.xr || !this.xr.session) {
-            logger.log("XR is not active?")
-            return
-        }
-
-        // decorate the info.node with an xr anchor
-        this.xr.addGeoAnchoredNode(info, logger)
+        
+        logger.log("NOTHING DONE TO stop image recognizer")
     }
 
-    stopGeoRecognizer() {
-        //TODO: @ahook
-        console.log("WE NEED TO STOP ALL geo recognizers here")
+    startGeoTracker(info) {
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO start geo recognizer")
+    }
+
+    stopGeoTracker(info) {
+        const logger = this.provider.pubnub.getLogger()
+        
+        logger.log("NOTHING DONE TO stop geo recognizer")
     }
 
 }

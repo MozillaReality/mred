@@ -13,7 +13,7 @@ export class QRDialog extends Component {
         if(this.props.url) url = this.props.url
         let wurl = url.replace("https","wxrv")
         wurl = wurl.replace("http","wxrv")
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.okay}>
             <VBox grow>
                 <h3>{this.props.text?this.props.text:'Scan'}</h3>
                 <VBox grow>

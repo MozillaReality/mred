@@ -1,8 +1,20 @@
 import {createGraphObjectFromObject, fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
-import {PROP_DEFS} from '../Common'
+import {
+    Group,
+    Mesh,
+    MeshLambertMaterial,
+    PlaneBufferGeometry
+} from 'three'
+import {OBJ_TYPES, PROP_DEFS} from '../Common'
 
 let COUNTER = 0
+
+function isAnchorType(type) {
+    if(type === OBJ_TYPES.geoanchor) return true
+    if(type === OBJ_TYPES.imageanchor) return true
+    if(type === OBJ_TYPES.hudanchor) return true
+    return false
+}
 
 export default class SceneDef {
     make(graph, root) {
@@ -16,10 +28,28 @@ export default class SceneDef {
             children:graph.createArray()
         }))
     }
-    makeNode(obj) {
-        const scene = new THREE.Group()
+    makeNode(obj,provider) {
+        const scene = new Group()
         scene.name = obj.title
         this.setDefaultFloor(scene,obj.defaultFloor)
+        scene.start = () => {
+            scene.userData.sceneAnchor = new Group()
+            scene.userData.sceneAnchor.name = "SceneAnchor"
+            scene.add(scene.userData.sceneAnchor)
+            scene.children.forEach(chNode => {
+                const chObj = provider.accessObject(chNode.userData.graphid)
+                if(!chObj.exists()) return
+                if(isAnchorType(chObj.type)) return
+                if(chObj.type === OBJ_TYPES.geoanchor) return
+                if(chObj.type === OBJ_TYPES.imageanchor) return
+                scene.userData.sceneAnchor.add(chNode)
+            })
+        }
+        scene.stop = () => {
+            const toMove = scene.userData.sceneAnchor.children.slice()
+            toMove.forEach(chNode => scene.add(chNode))
+            scene.remove(scene.userData.sceneAnchor)
+        }
         return scene
     }
 
@@ -33,9 +63,9 @@ export default class SceneDef {
 
     setDefaultFloor(scene,val) {
         if (val === true) {
-            const floor = new THREE.Mesh(
-                new THREE.PlaneBufferGeometry(100, 100, 10, 10),
-                new THREE.MeshLambertMaterial({color: 'blue'})
+            const floor = new Mesh(
+                new PlaneBufferGeometry(100, 100, 10, 10),
+                new MeshLambertMaterial({color: 'blue'})
             )
             floor.name = 'defaultFloor'
             floor.rotation.x = -90 * Math.PI / 180

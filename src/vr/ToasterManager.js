@@ -9,4 +9,7 @@ module.exports = {
     onAdd: function onAdd(cb) {
         this.adds.push(cb);
     },
+    offAdd: function offAdd(cb) {
+        this.adds = this.adds.filter(n => n !== cb)
+    }
 }

@@ -51,6 +51,7 @@ import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './A
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
 import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
+import {ErrorCatcher} from './ErrorCatcher'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -173,6 +174,9 @@ export default class VREditor extends SyncGraphProvider {
                     const def = copyPropDef(PROP_DEFS[key],value)
                     if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                         if(key === 'title' || key === 'description') def.locked = true
+                    }
+                    if(obj.type === TOTAL_OBJ_TYPES.ASSET && obj.subtype === ASSET_TYPES.IMAGE) {
+                        if(key === 'width' || key === 'height') def.locked = true
                     }
                     return defs.push(def)
                 }
@@ -363,8 +367,17 @@ export default class VREditor extends SyncGraphProvider {
         if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
             cmds.push({
                 title: 'existing asset on server',
+                enabled:AuthModule.isLoggedIn(),
                 icon: ITEM_ICONS.assets,
                 fun: () => this.showOpenAssetDialog()
+            })
+        }
+        if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) {
+            cmds.push({
+                title:'Add Behavior from Server',
+                enabled:AuthModule.isLoggedIn(),
+                icon: ITEM_ICONS.behavior_script,
+                fun: () => this.showOpenBehaviorDialog()
             })
         }
         if(canHaveShape(obj.type)) {
@@ -390,10 +403,10 @@ export default class VREditor extends SyncGraphProvider {
                         fun: () => this.addBehaviorToObject(b, item)
                     })
                 })
-            if(AuthModule.isLoggedIn()) {
                 cmds.push({
                     title: 'Add Behavior from server',
                     icon: ITEM_ICONS.behavior_script,
+                    enabled:AuthModule.isLoggedIn(),
                     fun: () => {
                         DialogManager.show(<OpenScriptDialog provider={this} onAdd={(beh)=>{
                             this.addBehaviorToObject(beh,item).then(b=>{
@@ -402,7 +415,6 @@ export default class VREditor extends SyncGraphProvider {
                         }}/>)
                     }
                 })
-            }
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
             cmds.push({ divider:true })
@@ -796,8 +808,9 @@ class VREditorApp extends Component {
             {/*<br/>*/}
             doc id: <b>{prov.getDocId()}</b>
         </div>
-
-        return <GridEditorApp bottomText={bot}>
+        let logger = null
+        if(prov.pubnub) logger = prov.pubnub.getLogger()
+        return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
             <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
@@ -841,7 +854,7 @@ class VREditorApp extends Component {
             <DialogContainer/>
             <PopupContainer/>
 
-        </GridEditorApp>
+        </GridEditorApp></ErrorCatcher>
     }
     renderCenterPane(mode) {
         if (mode === 'script') return <ScriptEditor provider={this.props.provider}/>
@@ -915,7 +928,6 @@ class ScaleEditor extends Component {
     }
 }
 
-
 function acceptsModelAsset(type) {
     if(type=== OBJ_TYPES.model) return true
     return false
@@ -924,6 +936,8 @@ function acceptsImageAsset(type) {
     if(type === OBJ_TYPES.plane
         || type === OBJ_TYPES.bg360
         || type === OBJ_TYPES.img2d
+        || type === OBJ_TYPES.cube
+        || type === OBJ_TYPES.sphere
     ) return true
     return false
 }

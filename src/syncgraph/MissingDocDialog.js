@@ -13,7 +13,7 @@ export class MissingDocDialog extends Component {
     }
 
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox grow>
                 <h3>Document "<b>{this.props.docid}</b>" not found</h3>
                 <VBox grow>

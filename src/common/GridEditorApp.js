@@ -62,7 +62,12 @@ export const MenuPopup = (props) => {
     return <VBox className={"popup-menu"}>
         {props.actions.map((act,i)=>{
             if(act.divider) return <div className="divider" key={i}></div>
-            return <button  key={i} onClick={()=>{
+            let enabled = false
+            if(typeof act.enabled === 'undefined') enabled = true
+            if(act.enabled === true) enabled = true
+            return <button  key={i}
+                            disabled={!enabled}
+                            onClick={()=>{
                 PopupManager.hide();
                 if(act.fun) act.fun()
             }}><i className={'fa fa-' + act.icon}/> {act.title}</button>

@@ -14,7 +14,7 @@ export class AddGLTFAssetDialog extends Component {
     }
 
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox>
                 <h3>add GLTF file assets</h3>
                 <p>

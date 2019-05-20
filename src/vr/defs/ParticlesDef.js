@@ -15,7 +15,7 @@ export default class ParticlesDef extends ObjectDef {
             type:OBJ_TYPES.particles,
             title:'particles '+COUNTER++,
             visible:true,
-            tx:0, ty:0, tz:-5,
+            tx:0, ty:0, tz:0,
             rx:0, ry:0, rz:0,
             sx:1, sy:1, sz:1,
             children:graph.createArray(),
@@ -27,7 +27,7 @@ export default class ParticlesDef extends ObjectDef {
             texture:null,
         }))
     }
-    makeNode(obj) {
+    makeNode(obj, provider) {
         let tex = null
         if(obj.texture) tex = new TextureLoader().load(obj.texture)
         const options = {
@@ -63,6 +63,8 @@ export default class ParticlesDef extends ObjectDef {
         node.tick = function(evt) {
             node.update(evt.time)
         }
+        const texture = provider.accessObject(obj.texture)
+        if(texture.exists()) this.attachTexture(texture, obj, node, provider)
         node.userData.options = options
         node.name = obj.title
         node.userData.clickable = false
@@ -79,13 +81,14 @@ export default class ParticlesDef extends ObjectDef {
         if(op.name === PROP_DEFS.endColor.key) return node.userData.options.endColor.set(obj.endColor)
         if(op.name === PROP_DEFS.texture.key) {
             const texture = provider.accessObject(obj.texture)
-            if(texture) {
-                const tex = new TextureLoader().load(texture.src)
-                node.updateSprite(tex)
-            }
+            if(texture.exists()) this.attachTexture(texture, obj, node, provider)
             return
         }
         return super.updateProperty(node,obj,op,provider)
     }
 
+    attachTexture(texture, obj, node, provider) {
+        const tex = new TextureLoader().load(texture.src)
+        node.updateSprite(tex)
+    }
 }

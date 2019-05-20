@@ -4,7 +4,7 @@
   "private": false,
   "main": "lib/exports.js",
   "dependencies": {
-    "appy-comps": "^0.1.15",
+    "appy-comps": "^0.1.17",
     "appy-style": "0.0.7",
     "cors": "^2.8.4",
     "dagre": "^0.8.2",
@@ -18,10 +18,11 @@
     "react-dom": "^16.2.0",
     "react-scripts": "2.0.3",
     "syncing_protocol": "0.0.8",
-    "three": "^0.100.0",
+    "three": "^0.101.0",
     "three-gltf2-loader": "^1.2.0",
     "three-web-layer": "0.0.21",
-    "webxr-boilerplate": "^0.1.9"
+    "webxr-boilerplate": "^0.1.9",
+    "gl-matrix": "^2.5.1"
   },
   "scripts": {
     "start": "react-scripts start",

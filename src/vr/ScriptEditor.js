@@ -49,7 +49,7 @@ export default class ScriptEditor extends Component {
         if(this.state.id === null) return <div>loading</div>
         return <AceEditor mode="javascript"
                           theme="github"
-                          name="UNIQUE_ID_OF_DIV"
+                          name="script-editor"
                           value={this.state.text}
                           onChange={this.changeText}
                           onBlur={this.save}

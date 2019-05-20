@@ -33,9 +33,9 @@ export class AddAudioAssetDialog extends Component {
     switchRemote = () => this.setState({view:'remote'})
 
     render() {
-        return <Dialog visible={true}>
+        return <Dialog visible={true} onScrimClick={this.cancel}>
             <VBox grow>
-                <h3>add image to assets</h3>
+                <h3>add audio to assets</h3>
                 <VBox grow>
                     <Toolbar>
                         <ToggleButton onClick={this.switchLocal} selected={this.state.view==='local'}>local</ToggleButton>
