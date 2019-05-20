@@ -822,6 +822,17 @@ class VREditorApp extends Component {
         }
     }
 
+    showOpenDocumentDialog = () => {
+        if(this.state.dirty) {
+            DialogManager.show(<UnsavedDocumentDialog onAnyway={()=>{
+                console.log("we are doing it anyway")
+                this.props.provider.showOpenDocumentDialog()
+            }}/>)
+        } else {
+            this.props.provider.showOpenDocumentDialog()
+        }
+    }
+
     render() {
         if(this.state.connected === false) {
             return <div><h1>connecting to server</h1></div>
@@ -905,7 +916,7 @@ class VREditorApp extends Component {
             }
         }
         if(AuthModule.supportsDocList()) {
-            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.props.provider.showOpenDocumentDialog} title={"open"}/>)
+            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.showOpenDocumentDialog} title={"open"}/>)
         }
         return buttons
     }

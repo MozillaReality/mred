@@ -11,7 +11,7 @@ export class UnsavedDocumentDialog extends Component {
         this.props.onAnyway()
     }
     render() {
-        return <Dialog visible={true} onScrimClick={this.cancel}>
+        return <Dialog visible={true} onScrimClick={this.cancel} width="600px" height="auto">
             <VBox grow>
                 <h3>Warning. Your document has unsaved changes.</h3>
                 <p>Press cancel to go back</p>
