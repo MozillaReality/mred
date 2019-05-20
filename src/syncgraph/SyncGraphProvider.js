@@ -39,9 +39,6 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.rawlisteners = []
         this.expanded = {}
 
-        const doc = new DocGraph()
-        this.makeEmptyRoot(doc)
-        this.setupDocFlow(doc,this.genID('doc'))
         if(options.doc) this.loadDoc(options.doc)
     }
     getDocTitle = () => "untitled"
@@ -125,7 +122,9 @@ export default class SyncGraphProvider extends TreeItemProvider {
             })
             .catch((e)=> {
                 console.error("there was an error loading doc",docid,e)
-                // this.showMissingDocDialog(docid)
+                const doc = new DocGraph()
+                this.makeEmptyRoot(doc)
+                this.setupDocFlow(doc,this.genID('doc'))
             })
     }
 
@@ -160,11 +159,12 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.pubnub = new PubnubSyncWrapper(this,this.syncdoc)
         this.pubnub.unpause()
         this.pubnub.start()
-        this.connected = true
-        this.fire("CONNECTED",this.connected)
-        this.fire(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,{provider:this})
-        setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
-        this.docLoaded()
+        this.docLoaded().then(()=>{
+            this.fire(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,{provider:this})
+            setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
+            this.connected = true
+            this.fire("CONNECTED",this.connected)
+        })
     }
 
     reloadDocument() {
@@ -173,12 +173,16 @@ export default class SyncGraphProvider extends TreeItemProvider {
             const doc = this.makeDocFromServerHistory(payload.history)
             this.setupDocFlow(doc,this.docid)
         }).catch((e)=>{
-            console.log("couldn't reload the doc",e)
+            console.error("couldn't reload the doc",e)
+            const doc = new DocGraph()
+            this.makeEmptyRoot(doc)
+            this.setupDocFlow(doc,this.genID('doc'))
         })
 
     }
 
     docLoaded = () => {
+        return Promise.resolve()
     }
 
     toggleConnected = () => {

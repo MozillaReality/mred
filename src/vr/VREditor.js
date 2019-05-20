@@ -72,6 +72,8 @@ export default class VREditor extends SyncGraphProvider {
     }
     getTitle = () => "MrEd"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
+    getLogger = () => this.pubnub.getLogger()
+
     makeEmptyRoot(doc) {
         //make root
         const root = fetchGraphObject(doc,doc.createObject({ type:TOTAL_OBJ_TYPES.ROOT, title:'Untitled Project', defaultScene:0, children:doc.createArray() }))
@@ -107,7 +109,7 @@ export default class VREditor extends SyncGraphProvider {
                 })
             })
         //get a list of assets for calculating the correct URLS.
-        this.loadAssetList().then(assets => {
+        return this.loadAssetList().then(assets => {
             assets.forEach(asset => {
                 this.assets_url_map[asset.id] = asset.url
             })
@@ -826,12 +828,13 @@ class VREditorApp extends Component {
         }
         const prov = this.props.provider
         const bot = <div>
-            {/*<a href={getInfoURL()}>{getInfoURL()}</a>*/}
-            {/*<br/>*/}
             doc id: <b>{prov.getDocId()}</b>
         </div>
         let logger = null
         if(prov.pubnub) logger = prov.pubnub.getLogger()
+        if(!prov.getDataGraph()) {
+            return <div><h1>connecting to server</h1></div>
+        }
         return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
             <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>

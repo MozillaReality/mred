@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import TreeItemProvider, {getDocsURL} from '../TreeItemProvider'
+import TreeItemProvider, {getAssetsURL, getDocsURL, getScriptsURL} from '../TreeItemProvider'
 import {on, parseOptions, toFlatString} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
@@ -40,6 +40,7 @@ export class ImmersivePlayer extends Component {
         this.root = null
         this.behavior_map = {}
         this.behavior_assets = {}
+        this.assets_url_map = {}
         this.pendingAssets = []
 
         this.sceneAnchor = null
@@ -54,7 +55,15 @@ export class ImmersivePlayer extends Component {
                     exists:()=>false,
                 }
                 return this.obj_map[id]
-            }
+            },
+            getAssetURL:(asset) => {
+                if(asset.assetId) {
+                    return this.assets_url_map[asset.assetId]
+                } else {
+                    return asset.src
+                }
+            },
+            getLogger:() => this.logger
         }
     }
 
@@ -78,23 +87,33 @@ export class ImmersivePlayer extends Component {
 
     }
 
+    cacheAssetsList() {
+        return AuthModule.getJSON(`${getAssetsURL()}list`)
+            .then(assets => {
+                assets.forEach(asset => {
+                    this.assets_url_map[asset.id] = asset.url
+                })
+            })
+    }
     startScene() {
         const opts = parseOptions({})
-        AuthModule.getJSON(getDocsURL()+opts.doc).then((payload)=>{
-            this.root = payload.graph
-            this.logger.log("loaded payload",this.root)
-            this.buildRoot(this.root)
-            this.logger.log(this.root)
-            if(this.root.defaultScene) {
-                const sc = this.root.children.find(ch => ch.id  === this.root.defaultScene)
-                this.setCurrentScene(sc)
-            } else {
-                const sc = this.root.children[0]
-                this.setCurrentScene(sc)
-            }
-            Promise.all(this.pendingAssets).then(() => {
-                this.logger.log("all assets loaded now. starting script manager")
-                this.scriptManager.startRunning()
+        this.cacheAssetsList().then(()=> {
+            AuthModule.getJSON(getDocsURL() + opts.doc).then((payload) => {
+                this.root = payload.graph
+                this.logger.log("loaded payload", this.root)
+                this.buildRoot(this.root)
+                this.logger.log(this.root)
+                if (this.root.defaultScene) {
+                    const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
+                    this.setCurrentScene(sc)
+                } else {
+                    const sc = this.root.children[0]
+                    this.setCurrentScene(sc)
+                }
+                Promise.all(this.pendingAssets).then(() => {
+                    this.logger.log("all assets loaded now. starting script manager")
+                    this.scriptManager.startRunning()
+                })
             })
         })
     }
@@ -290,6 +309,7 @@ export class ImmersivePlayer extends Component {
             attachUtilFunctions(obj)
             this.obj_map[obj.id] =  obj
             if(obj.title) this.title_map[obj.title] = obj
+            this.assets_url_map[obj.id] = obj.url
         })
     }
 
@@ -298,8 +318,9 @@ export class ImmersivePlayer extends Component {
             attachUtilFunctions(ch)
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
-                this.logger.log("loading behavior",ch)
-                const prom = AuthModule.fetch(ch.src,{
+                const url = getScriptsURL()+ch.src
+                this.logger.log("loading behavior",ch,'from',url)
+                const prom = AuthModule.fetch(url,{
                     method:'GET'
                 }) .then(res => res.text())
                     .then(text => {

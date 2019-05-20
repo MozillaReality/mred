@@ -330,7 +330,6 @@ export class VRCanvas extends Component {
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
         window.addEventListener('resize', this.windowResized,false)
-        this.docSwapped()
     }
 
     animationLoop(time, frame) {

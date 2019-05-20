@@ -53,8 +53,9 @@ export default class ModelDef extends ObjectDef {
 
     attachAsset(asset,obj,node,provider) {
         const loader = new GLTFLoader()
-        console.log("loading the url",asset.src)
-        loader.load(asset.src, (gltf)=> {
+        const url = provider.getAssetURL(asset)
+        provider.getLogger().log("loading the model asset url",url)
+        loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
             //swap the model
             if(node.userData.model) node.remove(node.userData.model)
