@@ -42,6 +42,7 @@ export class ImmersivePlayer extends Component {
         this.behavior_assets = {}
         this.assets_url_map = {}
         this.pendingAssets = []
+        this.playing_audio = {}
 
         this.sceneAnchor = null
 
@@ -412,6 +413,7 @@ class Adapter extends SceneGraphProvider {
         this.player.setCurrentScene(scene)
     }
     playMediaAsset (asset)  {
+        console.log("playing the media asset",asset)
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             this.logger.log("ImmersivePlayer playing audio", asset)
             const sound = new THREE.Audio(this.player.audioListener)
