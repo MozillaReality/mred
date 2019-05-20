@@ -22,7 +22,7 @@ export class AddAudioAssetDialog extends Component {
         DialogManager.hide()
         if(this.state.view === 'remote') {
             console.log("adding the url",this.state.url)
-            addAudioAssetFromURL(this.state.url, this.props.provider)
+            addAudioAssetFromURL(null,this.state.url, this.props.provider)
         } else {
             console.log("the file input is",this.fileInput)
             listToArray(this.fileInput.current.files).forEach(file => {

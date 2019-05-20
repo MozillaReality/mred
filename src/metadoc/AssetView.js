@@ -15,11 +15,13 @@ export default class AssetView extends Component {
     }
 
     renderAsset(asset) {
-        if(asset.subtype === ASSET_TYPES.IMAGE) return <img src={asset.src} alt={asset.title}/>
-        if(asset.subtype === ASSET_TYPES.AUDIO) return <audio src={asset.src} controls/>
-        if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={asset.src} controls crossOrigin="anonymous"/>
-        if(asset.subtype === ASSET_TYPES.BEHAVIOR) return <div>{asset.src}</div>
-        if(asset.subtype === ASSET_TYPES.GLTF) return <GLTFAssetView asset={asset}/>
+        const prov = this.props.provider
+        const url = prov.getAssetURL(asset)
+        if(asset.subtype === ASSET_TYPES.IMAGE) return <img src={url} alt={asset.title}/>
+        if(asset.subtype === ASSET_TYPES.AUDIO) return <audio src={url} controls/>
+        if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={url} controls crossOrigin="anonymous"/>
+        if(asset.subtype === ASSET_TYPES.BEHAVIOR) return <div>{url}</div>
+        if(asset.subtype === ASSET_TYPES.GLTF) return <GLTFAssetView asset={asset} provider={this.props.provider}/>
         if(asset.subtype === ASSET_TYPES.GEOLOCATION) return <GeoAssetView asset={asset} provider={this.props.provider}/>
         return <div>unknown type</div>
     }

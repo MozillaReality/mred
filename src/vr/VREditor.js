@@ -59,6 +59,7 @@ export default class VREditor extends SyncGraphProvider {
         super(options)
         this.imagecache = {}
         this.videocache = {}
+        this.assets_url_map = {}
         this.behaviorCache = {}
     }
     getDocType() { return "vr" }
@@ -105,6 +106,12 @@ export default class VREditor extends SyncGraphProvider {
                     }
                 })
             })
+        //get a list of assets for calculating the correct URLS.
+        this.loadAssetList().then(assets => {
+            assets.forEach(asset => {
+                this.assets_url_map[asset.id] = asset.url
+            })
+        })
     }
 
     getRendererForItem = (item) => {
@@ -586,6 +593,14 @@ export default class VREditor extends SyncGraphProvider {
     }
     loadAssetList() {
         return AuthModule.getJSON(`${getAssetsURL()}list`)
+    }
+    getAssetURL(asset) {
+        if(asset.assetId) {
+            console.log("converting asset id",asset.assetId)
+            return this.assets_url_map[asset.assetId]
+        } else {
+            return asset.src
+        }
     }
     removeAssetSource(info) {
         return AuthModule.fetch(`${getAssetsURL()}delete/${info.id}`,{

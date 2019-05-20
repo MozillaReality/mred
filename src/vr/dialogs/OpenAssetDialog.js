@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import {DialogManager, HBox, VBox} from 'appy-comps'
-import {getAssetsURL} from '../../TreeItemProvider'
 import {isAudioType, isGLTFType, isImageType, isVideoType} from '../Common'
 import {AuthModule} from '../AuthModule'
 import {
@@ -31,22 +30,18 @@ export class OpenAssetDialog extends Component {
     addAsset(info) {
         DialogManager.hide()
         if(isImageType(info.mimeType)) {
-            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return addImageAssetFromExpandedURL(info.url,info.mimeType, info.title, this.props.provider)
+            return addImageAssetFromExpandedURL(info.id, info.url,info.mimeType, info.title, this.props.provider)
         }
         if(isAudioType(info.mimeType)) {
-            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return addAudioAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
+            return addAudioAssetFromURL(info.id, info.url, info.mimeType, info.title, this.props.provider)
         }
         if(isVideoType(info.mimeType)) {
-            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return addVideoAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
+            return addVideoAssetFromURL(info.id, info.url, info.mimeType, info.title, this.props.provider)
         }
         if(isGLTFType(info.mimeType)) {
-            if(!info.url) info.url = `${getAssetsURL()}${info.id}`
-            return addGLBAssetFromURL(info.url, info.mimeType, info.title, this.props.provider)
+            return addGLBAssetFromURL(info.id, info.url, info.mimeType, info.title, this.props.provider)
         }
-        console.log("can't add this type")
+        console.log("can't add this type",info.mimeType)
     }
     deleteAsset(info) {
         return this.props.provider.removeAssetSource(info).then((res)=>{
