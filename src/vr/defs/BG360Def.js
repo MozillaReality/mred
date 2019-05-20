@@ -1,6 +1,10 @@
 import {fetchGraphObject} from '../../syncgraph/utils'
-import {ASSET_TYPES, OBJ_TYPES, PROP_DEFS} from '../Common'
+import {ASSET_TYPES, NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
+import {MeshLambertMaterial} from 'three'
+import {DoubleSide} from 'three'
+import {TextureLoader} from 'three'
+import {VideoTexture} from 'three'
 
 function customize(node,mat,obj) {
     mat.onBeforeCompile = (shader) => {
@@ -52,7 +56,7 @@ export default class BG360Def {
             type:OBJ_TYPES.bg360,
             title:'background',
             visible:true,
-            asset:0,
+            asset:NONE_ASSET.id,
             parent:scene.id,
             imageOffsetAngle:0.0, //offset in UV coords, 0 to 1
             imageCropStartAngle:0.0, //crop left edge of image
@@ -66,15 +70,11 @@ export default class BG360Def {
         node.name = obj.title
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
-        const asset = provider.accessObject(obj.asset)
-        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
+        this.attachAsset(node, obj, provider)
         return node
     }
     updateProperty(node, obj, op, provider) {
-        if (op.name === PROP_DEFS.asset.key) {
-            const asset = provider.accessObject(obj.asset)
-            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-        }
+        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
         if(node.userData.matShader) {
             if (op.name === 'imageOffsetAngle') node.userData.matShader.uniforms.imageOffsetAngle.value = op.value
             if (op.name === 'imageCropStartAngle') node.userData.matShader.uniforms.imageCropStartAngle.value = op.value
@@ -84,20 +84,32 @@ export default class BG360Def {
         }
     }
 
-    attachAsset(asset, obj, node, provider) {
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({color: 'white', side:DoubleSide})
+            return
+        }
+        const asset = provider.accessObject(obj.asset)
+        if(!asset.exists()) return
         const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading the model asset url",url)
+        provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new THREE.TextureLoader().load(url)
-            node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
-            customize(node, node.material, obj)
+            const tex = new TextureLoader().load(url)
+            node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const video = document.createElement('video')
-            video.crossOrigin = 'anonymous'
-            video.src = url
-            const tex = new THREE.VideoTexture(video)
-            node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
+            let video
+            if(!provider.videocache[url]) {
+                video = document.createElement('video')
+                video.crossOrigin = 'anonymous'
+                video.src = asset.src
+                provider.videocache[url] = video
+            } else {
+                video = provider.videocache[url]
+            }
+            const tex = new VideoTexture(video)
+            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
         }
     }
+
 }

@@ -1,7 +1,11 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import {ASSET_TYPES, PROP_DEFS} from '../Common'
+import {ASSET_TYPES, NONE_ASSET, PROP_DEFS} from '../Common'
 import ObjectDef from './ObjectDef'
+import {MeshLambertMaterial} from 'three'
+import {DoubleSide} from 'three'
+import {TextureLoader} from 'three'
+import {VideoTexture} from 'three'
 
 export default class PlaneDef extends ObjectDef {
     make(graph, scene) {
@@ -17,7 +21,7 @@ export default class PlaneDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#ffffff',
             children:graph.createArray(),
-            asset:0,
+            asset:NONE_ASSET.id,
             parent:scene.id
         }))
     }
@@ -26,8 +30,7 @@ export default class PlaneDef extends ObjectDef {
             new THREE.PlaneBufferGeometry(obj.width,obj.height),
             new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide})
         )
-        const asset = provider.accessObject(obj.asset)
-        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
+        this.attachAsset(node, obj, provider)
         node.userData.clickable = true
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         node.position.set(obj.tx, obj.ty, obj.tz)
@@ -39,33 +42,35 @@ export default class PlaneDef extends ObjectDef {
     updateProperty(node, obj, op, provider) {
         if (op.name === 'width') node.geometry = new THREE.PlaneBufferGeometry(op.value,obj.height)
         if (op.name === 'height') node.geometry = new THREE.PlaneBufferGeometry(obj.width,op.value)
-        if (op.name === PROP_DEFS.asset.key) {
-            const asset = provider.accessObject(obj.asset)
-            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-        }
+        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachAsset(asset, obj, node, provider) {
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            return
+        }
+        const asset = provider.accessObject(obj.asset)
+        if(!asset.exists()) return
         const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading the model asset url",url)
+        provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new THREE.TextureLoader().load(url)
-            node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
+            const tex = new TextureLoader().load(url)
+            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
             let video
             if(!provider.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-                video.src = url
+                video.src = asset.src
                 provider.videocache[url] = video
             } else {
                 video = provider.videocache[url]
             }
-            const tex = new THREE.VideoTexture(video)
-            node.material = new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, map: tex})
+            const tex = new VideoTexture(video)
+            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
         }
     }
-
 }

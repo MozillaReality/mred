@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
 import {BoxGeometry, Mesh, MeshLambertMaterial, TextureLoader, DoubleSide, VideoTexture} from 'three'
 import ObjectDef from './ObjectDef'
-import {ASSET_TYPES, OBJ_TYPES, PROP_DEFS} from '../Common'
+import {ASSET_TYPES, NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 
 let COUNTER = 0
 
@@ -18,7 +18,7 @@ export default class CubeDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#00ff00',
             children:graph.createArray(),
-            asset:0,
+            asset:NONE_ASSET.id,
             parent:scene.id
         }))
     }
@@ -32,8 +32,7 @@ export default class CubeDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
-        const asset = provider.accessObject(obj.asset)
-        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
+        this.attachAsset(node, obj, provider)
         return node
     }
 
@@ -44,14 +43,17 @@ export default class CubeDef extends ObjectDef {
             node.geometry = new BoxGeometry(obj.width, obj.height, obj.depth)
             return
         }
-        if (op.name === PROP_DEFS.asset.key) {
-            const asset = provider.accessObject(obj.asset)
-            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-        }
+        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachAsset(asset, obj, node, provider) {
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            return
+        }
+        const asset = provider.accessObject(obj.asset)
+        if(!asset.exists()) return
         const url = provider.getAssetURL(asset)
         provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {

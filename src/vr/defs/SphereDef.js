@@ -1,6 +1,6 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import ObjectDef from './ObjectDef'
-import {ASSET_TYPES, PROP_DEFS} from '../Common'
+import {ASSET_TYPES, NONE_ASSET, PROP_DEFS} from '../Common'
 import {TextureLoader, MeshLambertMaterial, DoubleSide, VideoTexture, Mesh, SphereBufferGeometry} from 'three'
 
 export default class SphereDef extends ObjectDef {
@@ -16,7 +16,7 @@ export default class SphereDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#0000ff',
             children:graph.createArray(),
-            asset:0,
+            asset:NONE_ASSET.id,
             parent:scene.id
         }))
     }
@@ -30,23 +30,25 @@ export default class SphereDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
-        const asset = provider.accessObject(obj.asset)
-        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
+        this.attachAsset(node, obj, provider)
         return node
     }
 
     updateProperty(node, obj, op, provider) {
         if (op.name === 'radius') node.geometry = new SphereBufferGeometry(op.value)
-        if (op.name === PROP_DEFS.asset.key) {
-            const asset = provider.accessObject(obj.asset)
-            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-        }
+        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachAsset(asset, obj, node, provider) {
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            return
+        }
+        const asset = provider.accessObject(obj.asset)
+        if(!asset.exists()) return
         const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading the model asset url",url)
+        provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
             const tex = new TextureLoader().load(url)
             node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
@@ -56,7 +58,7 @@ export default class SphereDef extends ObjectDef {
             if(!provider.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-                video.src = url
+                video.src = asset.src
                 provider.videocache[url] = video
             } else {
                 video = provider.videocache[url]

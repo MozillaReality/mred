@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
-import {AdditiveBlending, Color, TextureLoader, Vector3} from 'three'
+import {AdditiveBlending, Color, DoubleSide, MeshLambertMaterial, TextureLoader, Vector3} from 'three'
 import ObjectDef from './ObjectDef'
-import {OBJ_TYPES, PROP_DEFS} from '../Common'
+import {NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'
 
 export const rand = (min,max) => Math.random()*(max-min) + min
@@ -24,12 +24,10 @@ export default class ParticlesDef extends ObjectDef {
             startColor:'#ff0000',
             endColor:'#0000ff',
             parent:scene.id,
-            texture:null,
+            texture:NONE_ASSET.id,
         }))
     }
     makeNode(obj, provider) {
-        let tex = null
-        if(obj.texture) tex = new TextureLoader().load(obj.texture)
         const options = {
             velocity: new Vector3(0,1,0),
             position: new Vector3(0,0,0),
@@ -53,7 +51,6 @@ export default class ParticlesDef extends ObjectDef {
             lifetime: 3,
             size: 10,
             sizeRandomness: 1.0,
-            particleSpriteTex: tex,
             blending: AdditiveBlending,
             onTick: (system, time) => {
                 options.velocity.set(rand(-1,1),1,rand(-1,1))
@@ -63,8 +60,7 @@ export default class ParticlesDef extends ObjectDef {
         node.tick = function(evt) {
             node.update(evt.time)
         }
-        const texture = provider.accessObject(obj.texture)
-        if(texture.exists()) this.attachTexture(texture, obj, node, provider)
+        this.attachTexture(node,obj,provider)
         node.userData.options = options
         node.name = obj.title
         node.userData.clickable = false
@@ -79,15 +75,17 @@ export default class ParticlesDef extends ObjectDef {
         if(op.name === PROP_DEFS.lifetime.key) return node.userData.options.lifetime = obj.lifetime
         if(op.name === PROP_DEFS.startColor.key) return node.userData.options.color.set(obj.startColor)
         if(op.name === PROP_DEFS.endColor.key) return node.userData.options.endColor.set(obj.endColor)
-        if(op.name === PROP_DEFS.texture.key) {
-            const texture = provider.accessObject(obj.texture)
-            if(texture.exists()) this.attachTexture(texture, obj, node, provider)
-            return
-        }
+        if(op.name === PROP_DEFS.texture.key) return this.attachTexture(node,obj,provider)
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachTexture(texture, obj, node, provider) {
+    attachTexture(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.updateSprite(null)
+            return
+        }
+        const texture = provider.accessObject(obj.texture)
+        if(!texture.exists()) return
         const url = provider.getAssetURL(texture)
         provider.getLogger().log("loading the asset url",url)
         const tex = new TextureLoader().load(url)

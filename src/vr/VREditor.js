@@ -23,7 +23,7 @@ import {
     is3DObjectType,
     isGLTFFile,
     isImageType,
-    ITEM_ICONS,
+    ITEM_ICONS, NONE_ASSET,
     OBJ_TYPES,
     parseBehaviorScript,
     PROP_DEFS,
@@ -246,12 +246,13 @@ export default class VREditor extends SyncGraphProvider {
                 }
             }
         }
+
         if (key === PROP_DEFS.asset.key) {
             const assets = this.accessObject(this.getAssetsObject()).getChildren()
-            if(acceptsImageAsset(realobj.type) && acceptsVideoAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.VIDEO || a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
-            if(acceptsVideoAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
-            if(acceptsModelAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.GLTF).map(a => a.id)
-            if(acceptsImageAsset(realobj.type)) return assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
+            if(acceptsImageAsset(realobj.type) && acceptsVideoAsset(realobj.type)) return withNone(assets.filter(a => a.subtype === ASSET_TYPES.VIDEO || a.subtype === ASSET_TYPES.IMAGE).map(a => a.id))
+            if(acceptsVideoAsset(realobj.type)) return withNone(assets.filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id))
+            if(acceptsModelAsset(realobj.type)) return withNone(assets.filter(a => a.subtype === ASSET_TYPES.GLTF).map(a => a.id))
+            if(acceptsImageAsset(realobj.type)) return withNone(assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id))
         }
         if(key === PROP_DEFS.horizontalAlign.key) {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
@@ -264,7 +265,7 @@ export default class VREditor extends SyncGraphProvider {
         if(key === PROP_DEFS.texture.key) {
             let assets = this.accessObject(this.getAssetsObject()).getChildren()
             assets = assets.filter(a => a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
-            return assets
+            return withNone(assets)
         }
         if(key === PROP_DEFS.targetImage.key) {
             let assets = this.accessObject(this.getAssetsObject()).getChildren()
@@ -924,9 +925,8 @@ class VREditorApp extends Component {
 }
 const EnumTitleRenderer = (props) => {
     let value = "---"
-    if(props.value && props.provider) {
-        value = props.provider.accessObject(props.value).title
-    }
+    if(props.value && props.provider)  value = props.provider.accessObject(props.value).title
+    if(props.value === NONE_ASSET.id)  value = NONE_ASSET.title
     return <b>{value}</b>
 }
 
@@ -989,4 +989,9 @@ function acceptsVideoAsset(type) {
 const RunButton = (props) => {
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
     return <button onClick={props.onClick} className={clss}/>
+}
+
+function withNone(array) {
+    array.push(NONE_ASSET.id)
+    return array
 }

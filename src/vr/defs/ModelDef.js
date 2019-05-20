@@ -1,9 +1,10 @@
 import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
-import {PROP_DEFS} from '../Common'
+import {NONE_ASSET, PROP_DEFS} from '../Common'
 import GLTFLoader from '../GLTFLoader'
 import {MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
+import {DoubleSide} from 'three'
 
 export default class ModelDef extends ObjectDef {
     make(graph, scene) {
@@ -17,7 +18,7 @@ export default class ModelDef extends ObjectDef {
             sx:1, sy:1, sz:1,
             color:'#ffffff',
             children:graph.createArray(),
-            asset:0,
+            asset:NONE_ASSET.id,
             parent:scene.id
         }))
     }
@@ -36,22 +37,23 @@ export default class ModelDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
-
-        const asset = provider.accessObject(obj.asset)
-        if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-
+        this.attachAsset(node, obj, provider)
         return node
     }
 
     updateProperty(node, obj, op, provider) {
-        if (op.name === PROP_DEFS.asset.key) {
-            const asset = provider.accessObject(op.value)
-            if(asset.exists()) this.attachAsset(asset, obj, node, provider)
-        }
+        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachAsset(asset,obj,node,provider) {
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            // node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            console.log("REMOVE NODE CHILDREN")
+            return
+        }
+        const asset = provider.accessObject(obj.asset)
+        if(!asset.exists()) return
         const loader = new GLTFLoader()
         const url = provider.getAssetURL(asset)
         provider.getLogger().log("loading the model asset url",url)

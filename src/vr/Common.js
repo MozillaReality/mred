@@ -12,6 +12,11 @@ import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
 import {HudAnchorDef} from './defs/HudAnchorDef'
 
+export const NONE_ASSET = {
+    id:-30,
+    title:'NONE'
+}
+
 const stdhints = {
     incrementValue:0.1,
 }
