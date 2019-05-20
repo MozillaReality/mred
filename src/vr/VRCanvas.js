@@ -165,7 +165,7 @@ export class VRCanvas extends Component {
             scene: -1,
             running:props.running
         }
-        this.playing_audio = []
+        this.playing_audio = {}
         this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.pubnub.getLogger())
     }
 
@@ -417,6 +417,7 @@ export class VRCanvas extends Component {
                 this.setState({running:nextProps.running})
                 if(nextProps.running === false) {
                     this.scriptManager.stopRunning()
+                    this.stopAllMedia()
                     this.resetSceneGraph()
                     this.stopRecognizers()
                 } else {
@@ -543,6 +544,14 @@ export class VRCanvas extends Component {
                     def.reset(threeObj,graphObj,this.props.provider.getDataGraph())
                 }
             }
+        })
+    }
+
+    stopAllMedia() {
+        Object.keys(this.playing_audio).forEach(key => {
+            const media = this.playing_audio[key]
+            console.log("stopping",media)
+            media.stop()
         })
     }
 

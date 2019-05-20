@@ -3,7 +3,10 @@ export default class GraphAccessor {
         this.graph = graph
     }
     object(id) {
-        // console.log('accessing',id)
+        if(id.id && id.exists && id.exists()) {
+            console.log("someone created a graphaccessor on an existing object")
+            return id
+        }
         if(this.graph.hasObject(id)) {
             const obj = {}
             this.graph.getPropertiesForObject(id).forEach(key => {
