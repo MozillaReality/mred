@@ -21,7 +21,7 @@ export class PasswordDialog extends Component {
             <VBox grow>
                 <h3>login with the password from your env file</h3>
                 <label>password</label>
-                <input type={"text"} value={this.state.field} onChange={(e)=>{
+                <input type={"password"} value={this.state.field} onChange={(e)=>{
                     this.setState({field:e.target.value})
                 }}/>
                 <HBox>
