@@ -681,26 +681,33 @@ export default class VREditor extends SyncGraphProvider {
     }
     fetchBehaviorAssetContents(id) {
         const obj = this.accessObject(id)
-        return AuthModule.fetch(obj.src,{
+        const url = getScriptsURL()+obj.src
+        return AuthModule.fetch(url,{
             method:'GET',
         }).then(res => res.text())
     }
     updateBehaviorAssetContents(id,text) {
         if(!AuthModule.supportsScriptEdit()) return
         //update the cache first
-        const info = parseBehaviorScript(text)
-        info.text = text
-        this.setCachedBehaviorAsset(id, info)
+        try {
+            const info = parseBehaviorScript(text)
+            info.text = text
+            this.setCachedBehaviorAsset(id, info)
 
-        const obj = this.accessObject(id)
-        return AuthModule.fetch(obj.src,{
-            method:'POST',
-            body:text,
-        }).then(res => res.json())
-            .then(ans => {
-                obj.set('title',ans.script.title)
-                obj.set('description',ans.script.description)
-            })
+            const obj = this.accessObject(id)
+            const url = getScriptsURL() + obj.src
+            return AuthModule.fetch(url, {
+                method: 'POST',
+                body: text,
+            }).then(res => res.json())
+                .then(ans => {
+                    obj.set('title', ans.script.title)
+                    obj.set('description', ans.script.description)
+                })
+        } catch(e) {
+            console.error("error parsing the script",e)
+            ToasterMananager.add('error parsing')
+        }
     }
     getCachedBehaviorPropDefs(behavior) {
         if(!this.behaviorCache[behavior]) {
