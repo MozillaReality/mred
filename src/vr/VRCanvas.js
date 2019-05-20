@@ -553,6 +553,13 @@ export class VRCanvas extends Component {
             console.log("stopping",media)
             media.stop()
         })
+        const cache = this.props.provider.videocache
+        Object.keys(cache).forEach(key => {
+            const item = cache[key]
+            if(item.pause) {
+                item.pause()
+            }
+        })
     }
 
     startRecognizers() {

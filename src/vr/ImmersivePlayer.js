@@ -447,7 +447,7 @@ class Adapter extends SceneGraphProvider {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const cache = this.player.props.provider.videocache
+            const cache = this.player.provider.videocache
             if(cache[asset.src]) cache[asset.src].play()
         }
     }
