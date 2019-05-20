@@ -3482,11 +3482,15 @@ WebXRPolyfill.prototype._patchRequestDevice = function(){
       configurable: true,
     });
 };
-const xrPolyfill =  navigator.userAgent.indexOf("WebXRViewer") !== -1 ?
-	new WebXRPolyfill(null, {
+let mobileIndex =  navigator.userAgent.indexOf("Mobile/");
+let isWebXRViewer = navigator.userAgent.indexOf("WebXRViewer") !== -1 ||
+			((navigator.userAgent.indexOf("iPhone") !== -1 ||  navigator.userAgent.indexOf("iPad") !== -1)
+				&& mobileIndex !== -1 && navigator.userAgent.indexOf("AppleWebKit") !== -1
+				&& navigator.userAgent.indexOf(" ", mobileIndex) === -1);
+const xrPolyfill =  !isWebXRViewer ? null : new WebXRPolyfill(null, {
 	webvr: false,
 	cardboard: false
-}) : null;
+});
 function _xrFrameOfReferenceGetTransformTo(otherFoR, out){
 	return _getTransformTo(this[PRIVATE$9].transform, otherFoR[PRIVATE$9].transform, out)
 }
