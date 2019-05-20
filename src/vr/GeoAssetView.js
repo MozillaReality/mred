@@ -50,7 +50,7 @@ export default class GeoAssetView extends Component {
         </div>
     }
     componentDidMount() {
-        this.mymap = map('mapid').setView([this.props.asset.longitude, this.props.asset.latitude], 3);
+        this.mymap = map('mapid').setView([this.props.asset.longitude, this.props.asset.latitude], 18);
         tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
             maxZoom: 18,
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
