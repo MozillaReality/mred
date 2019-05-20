@@ -1,7 +1,6 @@
-import {} from '../TreeItemProvider'
-import {getInfoURL} from '../TreeItemProvider'
-import {getUserURL} from '../TreeItemProvider'
+import {getInfoURL, getUserURL} from '../TreeItemProvider'
 import * as ToasterMananager from './ToasterManager'
+import {genID} from "../utils"
 
 export const USER_CHANGE = 'USER_CHANGE'
 export const CONNECTED = "CONNECTED"
@@ -15,6 +14,7 @@ class AuthModuleSingleton {
         this.scriptEditingSupported = false
         this.passwordSupported = false
         this.connected = false
+        this.serverID = genID("serverid")
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -35,6 +35,8 @@ class AuthModuleSingleton {
                 if(info.assetUpload === true)         this.assetUploadSupported = true
                 if(info.scriptEditing === true)       this.scriptEditingSupported = true
                 if(info.docDeleteSupported === true)  this.docDeleteSupported = true
+                this.serverID = getInfoURL().replace(/[\.\:\/]/g,"")
+
 
                 this.getJSON(getUserURL()).then(res=>{
                     if(!res.success) {
@@ -120,6 +122,10 @@ class AuthModuleSingleton {
 
     getUsername() {
         return this.getAccessToken()
+    }
+
+    getServerID() {
+        return this.serverID
     }
 
     fetch(url, options) {

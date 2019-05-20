@@ -1,4 +1,5 @@
 import PubNub from "pubnub";
+import {AuthModule} from '../vr/AuthModule'
 function short(op) {
     let str = `${op.type} ${op.uuid} |  `
     if(op.name) {
@@ -25,10 +26,10 @@ export class PubnubSyncWrapper {
     }
 
     calculateChannelName() {
-        return "metadoc-docupdate-" + this.provider.getDocId()
+        return "metadoc-docupdate-" + this.provider.getDocId() + "_"+AuthModule.getServerID()
     }
     calculateLoggerChannelName() {
-        return "metadoc-log-" + this.provider.getDocId()
+        return "metadoc-log-" + this.provider.getDocId()+"_"+AuthModule.getServerID()
     }
 
     start() {
@@ -184,7 +185,7 @@ export class PubnubLogger {
         }
     }
     calculateLoggerChannelName() {
-        return "metadoc-log-" + this.docid
+        return "metadoc-log-" + this.docid+"_"+AuthModule.getServerID()
     }
     log() {
         console.log("LOGGER",...arguments)
