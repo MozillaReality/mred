@@ -3,7 +3,7 @@ export default class GraphAccessor {
         this.graph = graph
     }
     object(id) {
-        if(id.id && id.exists && id.exists()) {
+        if(id && id.id && id.exists && id.exists()) {
             console.log("someone created a graphaccessor on an existing object")
             return id
         }
