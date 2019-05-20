@@ -36,7 +36,9 @@ export default class Image2DDef extends ObjectDef {
         if (op.name === PROP_DEFS.asset.key) {
             const asset = provider.accessObject(op.value)
             if(asset.exists()) {
-                const tex = new THREE.TextureLoader().load(asset.src)
+                const url = provider.getAssetURL(asset)
+                provider.getLogger().log("loading the model asset url",url)
+                const tex = new THREE.TextureLoader().load(url)
                 node.material = new THREE.MeshLambertMaterial({color:'white', side: THREE.DoubleSide, map:tex})
                 asset.set('ratio',asset.width/asset.height)
             }

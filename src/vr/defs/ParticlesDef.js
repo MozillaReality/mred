@@ -88,7 +88,9 @@ export default class ParticlesDef extends ObjectDef {
     }
 
     attachTexture(texture, obj, node, provider) {
-        const tex = new TextureLoader().load(texture.src)
+        const url = provider.getAssetURL(texture)
+        provider.getLogger().log("loading the asset url",url)
+        const tex = new TextureLoader().load(url)
         node.updateSprite(tex)
     }
 }

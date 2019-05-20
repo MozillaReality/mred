@@ -85,15 +85,17 @@ export default class BG360Def {
     }
 
     attachAsset(asset, obj, node, provider) {
+        const url = provider.getAssetURL(asset)
+        provider.getLogger().log("loading the model asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new THREE.TextureLoader().load(asset.src)
+            const tex = new THREE.TextureLoader().load(url)
             node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
             customize(node, node.material, obj)
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
             const video = document.createElement('video')
             video.crossOrigin = 'anonymous'
-            video.src = asset.src
+            video.src = url
             const tex = new THREE.VideoTexture(video)
             node.material = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide, map: tex})
         }

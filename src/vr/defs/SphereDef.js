@@ -45,19 +45,21 @@ export default class SphereDef extends ObjectDef {
     }
 
     attachAsset(asset, obj, node, provider) {
+        const url = provider.getAssetURL(asset)
+        provider.getLogger().log("loading the model asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new TextureLoader().load(asset.src)
+            const tex = new TextureLoader().load(url)
             node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
             let video
-            if(!provider.videocache[asset.src]) {
+            if(!provider.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-                video.src = asset.src
-                provider.videocache[asset.src] = video
+                video.src = url
+                provider.videocache[url] = video
             } else {
-                video = provider.videocache[asset.src]
+                video = provider.videocache[url]
             }
             const tex = new VideoTexture(video)
             node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})

@@ -89,7 +89,9 @@ export default class ImageAnchorDef extends ObjectDef {
     updateImagePreview(node,obj,provider) {
         const targetImage = provider.accessObject(obj.targetImage)
         if(targetImage.exists()) {
-            const tex = new TextureLoader().load(targetImage.src)
+            const url = provider.getAssetURL(targetImage)
+            provider.getLogger().log("loading the asset url",url)
+            const tex = new TextureLoader().load(url)
             node.userData.preview.material = new MeshLambertMaterial({color:'white',transparent:true, opacity:0.5, side:DoubleSide, map:tex})
             let height = (targetImage.height / targetImage.width)
             let width = 1
