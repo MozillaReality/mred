@@ -497,6 +497,7 @@ export default class VREditor extends SyncGraphProvider {
         const c = this.accessObject(child)
         if(p.type === TOTAL_OBJ_TYPES.ROOT && c.type === TOTAL_OBJ_TYPES.SCENE) return true
         if(p.type === TOTAL_OBJ_TYPES.SCENE && is3DObjectType(c.type)) return true
+        if(is3DObjectType(p.type) && c.type === TOTAL_OBJ_TYPES.BEHAVIOR) return true
         if(canHaveShape(p.type) && is3DObjectType(c.type)) return true
         return false
     }

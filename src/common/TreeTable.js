@@ -185,6 +185,8 @@ export default class TreeTable extends Component {
         }
 
         const graph = this.props.provider.getDataGraph()
+        if(!this.state.dragTarget) return
+        if(!this.state.dropTarget) return
         const src = fetchGraphObject(graph,this.state.dragTarget)
         const dst = fetchGraphObject(graph,this.state.dropTarget)
 
