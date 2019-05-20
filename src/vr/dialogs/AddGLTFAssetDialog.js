@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
+import {Dialog} from '../../common/Dialog'
 
 export class AddGLTFAssetDialog extends Component {
     cancel = () => {

@@ -1,7 +1,8 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {addGLBAssetFromFile} from '../AssetActions'
+import {Dialog} from '../../common/Dialog'
 
 export class AddGLBAssetDialog extends Component {
     cancel = () => {

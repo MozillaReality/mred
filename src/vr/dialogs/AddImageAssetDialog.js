@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {ToggleButton, Toolbar} from '../../common/GridEditorApp'
 import {addImageAssetFromFile, addImageAssetFromURL} from '../AssetActions'
+import {Dialog} from '../../common/Dialog'
 
 export class AddImageAssetDialog extends Component {
     constructor(props) {

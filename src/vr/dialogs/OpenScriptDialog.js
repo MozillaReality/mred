@@ -1,3 +1,11 @@
+/*
+
+
+always load scripts relative to a baseURL
+
+
+ */
+
 import React, {Component} from 'react'
 import {DialogManager, HBox, VBox} from 'appy-comps'
 import {getScriptsURL} from '../../TreeItemProvider'
@@ -14,29 +22,26 @@ export class OpenScriptDialog extends Component {
     }
     refreshList = () => {
         this.props.provider.loadScriptList()
-            .then((scripts) => {
-                this.setState({scripts:scripts})
-            })
+            .then((scripts) => this.setState({scripts:scripts}))
     }
     componentDidMount() {
         this.refreshList()
     }
     addScript(info) {
         DialogManager.hide()
-        if(!info.url) info.url = `${getScriptsURL()}${info.name}`
+        console.log("URL is",info.url)
+        info.url = info.name
+        console.log("Now URL is",info.url)
         const beh = this.props.provider.addBehaviorAssetFromURL(info)
         if(this.props.onAdd) this.props.onAdd(beh)
     }
     deleteScript(info) {
-        return this.props.provider.removeBehaviorAssetSource(info.name).then((res)=>{
-            console.log("removed?",res)
-            this.refreshList()
-        })
+        return this.props.provider.removeBehaviorAssetSource(info.name)
+            .then(()=> this.refreshList())
     }
 
-    okay = () => {
-        DialogManager.hide()
-    }
+    okay = () => DialogManager.hide()
+
     render() {
         return <Dialog visible={true} onScrimClick={this.okay}>
             <h3>Choose Behavior Script</h3>

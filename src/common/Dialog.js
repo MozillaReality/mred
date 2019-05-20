@@ -7,8 +7,11 @@ export  class Dialog extends Component {
     }
     render() {
         if(!this.props.visible) return <div/>;
+        const bodyStyle = {}
+        if(this.props.width) bodyStyle.width = this.props.width
+        if(this.props.height) bodyStyle.height = this.props.height
         return <div className={"ac-dialog-scrim"} ref={(scrim)=>this.scrim=scrim} onClick={this.clickedScrim}>
-            <div className={"ac-dialog-body"}>{this.props.children}</div>
+            <div className={"ac-dialog-body"} style={bodyStyle}>{this.props.children}</div>
         </div>
 
     }

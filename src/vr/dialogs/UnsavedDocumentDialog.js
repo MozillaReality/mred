@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
+import {Dialog} from '../../common/Dialog'
 
 export class UnsavedDocumentDialog extends Component {
     cancel = () => {

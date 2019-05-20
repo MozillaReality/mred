@@ -1,7 +1,8 @@
 import React, {Component} from 'react'
-import {Dialog, DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox, VBox} from 'appy-comps'
 import {AuthModule} from '../AuthModule'
 import {getLoginURL} from '../../TreeItemProvider'
+import {Dialog} from '../../common/Dialog'
 
 export class GithubAuthDialog extends Component {
     constructor(props) {
