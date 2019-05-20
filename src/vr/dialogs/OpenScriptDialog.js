@@ -1,14 +1,5 @@
-/*
-
-
-always load scripts relative to a baseURL
-
-
- */
-
 import React, {Component} from 'react'
 import {DialogManager, HBox, VBox} from 'appy-comps'
-import {getScriptsURL} from '../../TreeItemProvider'
 import {Spacer} from '../../common/GridEditorApp'
 import {AuthModule} from '../AuthModule'
 import {Dialog} from '../../common/Dialog'
