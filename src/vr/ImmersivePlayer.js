@@ -47,6 +47,8 @@ export class ImmersivePlayer extends Component {
         this.logger = new PubnubLogger(opts.doc)
         this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
+            videocache: {},
+
             accessObject:(id)=>{
                 if(!this.obj_map[id]) return {
                     exists:()=>false,
