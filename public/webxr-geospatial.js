@@ -405,8 +405,9 @@ const _global = typeof global !== 'undefined' ? global :
 
 var XRAnchor = null;
 var XRDevice = null;
+if (_global["XRAnchor"] !== undefined) var XRAnchor = _global.XRAnchor;
+if (_global["XRDevice"] !== undefined) var XRDevice = _global.XRDevice;
 function _patchXRDevice() {
-    XRAnchor = _global.XRAnchor;
     XRDevice = _global.XRDevice;
     var __XRDevice_requestSession = XRDevice.prototype.requestSession;
     XRDevice.prototype.requestSession = async function (options) {
