@@ -241,25 +241,16 @@ export class VRCanvas extends Component {
         }
         console.log("selected something not an object or scene")
     }
-    windowResized = () => {
-        if(this.canvas) {
-            let cw = this.canvas.clientWidth
-            let ch = this.canvas.clientHeight
-            this.camera.aspect = cw/ch;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(cw,ch);
-        }
-    }
 
     checkAspectRatio() {
         if(!this.canvas) return
-        let cw = this.canvas.clientWidth
-        let ch = this.canvas.clientHeight
-        const aspect = cw/ch
-        if(Math.abs(this.camera.aspect - aspect) > 0.01 ) {
+        const w = this.wrapper.clientWidth
+        const h = this.wrapper.clientHeight
+        const aspect = w/h
+        if(Math.abs(this.camera.aspect - aspect) > 0.001 ) {
             this.camera.aspect = aspect
             this.camera.updateProjectionMatrix()
-            this.renderer.setSize(cw,ch);
+            this.renderer.setSize(w-4,h-4)
         }
     }
 
@@ -287,7 +278,6 @@ export class VRCanvas extends Component {
         this.transformControls.removeEventListener('mouseUp',this.unpauseQueue)
         this.props.provider.off(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,this.docSwapped)
         SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
-        window.removeEventListener('resize',this.windowResized)
     }
 
     setupRenderer(canvas,context) {
@@ -295,7 +285,6 @@ export class VRCanvas extends Component {
         this.camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
         this.renderer.setPixelRatio( window.devicePixelRatio );
-        this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
         this.audioListener = new THREE.AudioListener()
         this.camera.add(this.audioListener)
@@ -329,7 +318,6 @@ export class VRCanvas extends Component {
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.docSwapped)
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
-        window.addEventListener('resize', this.windowResized,false)
         this.docSwapped()
     }
 
@@ -435,17 +423,33 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <div style={{}}>
+        return <div style={{
+            borderWidth:0,
+            boxSizing:'border-box',
+            height:'100%',
+            display:'flex',
+            flexDirection:'column'
+        }}>
             <button onClick={this.recenterOnSelection}>recenter on selection</button>
             <div style={{
+                boxSizing:'border-box',
                 borderWidth:0,
                 margin:0,
                 padding:0,
-                display:'flex',
-                flexDirection:'column',
-                height:'100%',
-            }}>
-                <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
+                flex:1.0,
+                overflow:'auto',
+            }}
+                 ref={c => this.wrapper = c}
+            >
+                <canvas ref={c => this.canvas = c}
+                        style={{
+                            boxSizing:'border-box',
+                            margin:0,
+                            padding:0,
+                            width:'100px',
+                            height:'100px',
+                            borderWidth:0,
+                        }}
                         onClick={this.clickedCanvas}
                         className="editable-canvas"
                         onKeyDown={this.handleKeyPress}

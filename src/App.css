@@ -299,8 +299,6 @@ svg path.connection-line {
     border: 0px solid black;
     padding:0;
     margin:0;
-    width: 100% !important;
-    height: 100% !important;
 }
 .editable-canvas:focus {
     border: 0px solid aqua;
