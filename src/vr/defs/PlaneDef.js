@@ -64,7 +64,7 @@ export default class PlaneDef extends ObjectDef {
             if(!provider.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-                video.playsinline = true
+                video.setAttribute('playsinline', 'playsinline');
                 video.src = url
                 provider.videocache[url] = video
             } else {
