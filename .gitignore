@@ -8,8 +8,8 @@
 # testing
 /coverage
 
-# production
-/build
+# want the production to live in the repo so it's accessible from there
+# /build
 
 # misc
 .DS_Store
