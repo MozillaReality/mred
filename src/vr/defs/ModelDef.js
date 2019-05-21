@@ -64,7 +64,11 @@ export default class ModelDef extends ObjectDef {
         if(!asset.exists()) return
         const loader = new GLTFLoader()
         const url = provider.assetsManager.getAssetURL(asset)
-        provider.getLogger().log("loading the model asset url",url)
+        provider.getLogger().log("ModelDef loading the model asset url",url)
+        if(!url) {
+            provider.getLogger().error("ModelDef: empty url. cannot load GLTF")
+            return
+        }
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
             //swap the model
