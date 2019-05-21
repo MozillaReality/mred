@@ -46,7 +46,15 @@ import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject, newDoc, showAddBehaviorPopup, showAddAssetPopup, showAddPopup} from './Actions'
+import {
+    addScene,
+    deleteObject,
+    newDoc,
+    showAddBehaviorPopup,
+    showAddAssetPopup,
+    showAddPopup,
+    generateAddAssetPopup
+} from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
@@ -384,12 +392,7 @@ export default class VREditor extends SyncGraphProvider {
             cmds.push({title: 'delete', icon: ITEM_ICONS.delete, fun: () => deleteObject(this)});
         }
         if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
-            cmds.push({
-                title: 'existing asset on server',
-                enabled:AuthModule.isLoggedIn(),
-                icon: ITEM_ICONS.assets,
-                fun: () => this.showOpenAssetDialog()
-            })
+            return generateAddAssetPopup(this)
         }
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) {
             cmds.push({
