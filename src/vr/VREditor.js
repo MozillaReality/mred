@@ -111,9 +111,17 @@ export default class VREditor extends SyncGraphProvider {
         //get a list of assets for calculating the correct URLS.
         return this.loadAssetList().then(assets => {
                 if(!assets || !assets.forEach) return
+            if(AuthModule.supportsAssetUpload()) {
+                //doc server version
+                assets.forEach(asset => {
+                    this.assets_url_map[asset.id] = getAssetsURL()+asset.id
+                })
+            } else {
+                // glitch server version
                 assets.forEach(asset => {
                     this.assets_url_map[asset.id] = asset.url
                 })
+            }
         })
     }
 
@@ -600,6 +608,7 @@ export default class VREditor extends SyncGraphProvider {
         return AuthModule.getJSON(`${getAssetsURL()}list`)
     }
     getAssetURL(asset) {
+        console.log("getting asset url",asset)
         if(asset.assetId) {
             console.log("converting asset id",asset.assetId)
             return this.assets_url_map[asset.assetId]

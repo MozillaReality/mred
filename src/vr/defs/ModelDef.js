@@ -38,6 +38,13 @@ export default class ModelDef extends ObjectDef {
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         this.attachAsset(node, obj, provider)
+
+        node.enter = (evt, scriptManager) => {
+            clicker.visible = false
+        }
+        node.exit = (evt, scriptManager) => {
+            clicker.visible = true
+        }
         return node
     }
 
