@@ -158,15 +158,16 @@ export default class ScriptManager {
 
     fireSceneLifecycleEvent(type, scene, time) {
         if(type!=='tick') this.logger.log(`doing ${type} event`)
+
+        const evt = {
+            type: type,
+            time: time ? time - this.startTime : -1,
+            deltaTime: time ? time - this.lastTime : 0,
+            session: this.session
+        }
         if (time) {
             this.lastTime = time
         }
-        const evt = {
-            type:type,
-            time:this.lastTime-this.startTime,
-            session: this.session
-        }
-
         scene.find(child => {
             if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
             if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
@@ -191,7 +192,7 @@ export default class ScriptManager {
         if(!this.running) return
         if(this.startTime ===0) {
             this.startTime = time
-            this.lastTime = 0
+            this.lastTime = time
         }
         try {
             this.session = session
