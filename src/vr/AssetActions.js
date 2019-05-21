@@ -2,8 +2,11 @@ import * as ToasterManager from './ToasterManager'
 import {getAssetsURL} from '../TreeItemProvider'
 import {ASSET_TYPES, MIME_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {fetchGraphObject} from '../syncgraph/utils'
+import {AuthModule} from './AuthModule'
 
 export function addImageAssetFromExpandedURL(assetId, url,format,title, prov) {
+    if(!AuthModule.supportsAssetUpload()) assetId = title
+
     const asset = prov.accessObject(prov.getDataGraph().createObject({
         type:TOTAL_OBJ_TYPES.ASSET,
         subtype:ASSET_TYPES.IMAGE,
@@ -103,6 +106,7 @@ export function addAudioAssetFromURL (assetId, url, fileType, name, prov) {
         if(type.toLowerCase() === 'mp3') fileType = MIME_TYPES.MP3
         if(type.toLowerCase() === 'aac') fileType = MIME_TYPES.AAC
     }
+    if(!AuthModule.supportsAssetUpload()) assetId = name
 
     const graph = prov.getDataGraph()
     const asset = fetchGraphObject(graph,graph.createObject({
@@ -117,30 +121,32 @@ export function addAudioAssetFromURL (assetId, url, fileType, name, prov) {
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
 }
 
-export function addVideoAssetFromURL (assetId, url, fileType, name, prov) {
-    if(!name) name = url.substring(url.lastIndexOf('/') + 1)
+export function addVideoAssetFromURL (assetId, url, fileType, title, prov) {
+    if(!title) title = url.substring(url.lastIndexOf('/') + 1)
+    if(!AuthModule.supportsAssetUpload()) assetId = title
     const asset = prov.accessObject(prov.getDataGraph().createObject({
         type: TOTAL_OBJ_TYPES.ASSET,
         subtype:ASSET_TYPES.VIDEO,
         assetId:assetId,
         format:fileType,
         src:url,
-        title:name,
+        title:title,
         parent:0
     }))
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
 }
 
 
-export function addGLBAssetFromURL(assetId, url, fileType, name, prov) {
-    if(!name) name = url.substring(url.lastIndexOf('/') + 1)
+export function addGLBAssetFromURL(assetId, url, fileType, title, prov) {
+    if(!title) title = url.substring(url.lastIndexOf('/') + 1)
+    if(!AuthModule.supportsAssetUpload()) assetId = title
     const asset = prov.accessObject(prov.getDataGraph().createObject({
         type: TOTAL_OBJ_TYPES.ASSET,
         subtype:ASSET_TYPES.GLTF,
         assetId:assetId,
         format:fileType,
         src:url,
-        title:name,
+        title:title,
         parent:0
     }))
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)

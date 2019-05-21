@@ -88,7 +88,7 @@ export default class ParticlesDef extends ObjectDef {
         const texture = provider.accessObject(obj.texture)
         if(!texture.exists()) return
         const url = provider.assetsManager.getAssetURL(texture)
-        provider.getLogger().log("loading the asset url",url)
+        provider.getLogger().log("ParticlesDef: loading the asset url",url)
         const tex = new TextureLoader().load(url)
         node.updateSprite(tex)
     }

@@ -19,8 +19,9 @@ export class AssetsManager {
                     this.assets_url_map[asset.id] = getAssetsURL()+asset.id
                 })
             } else {
+                //glitch server version
                 assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = asset.url
+                    this.assets_url_map[asset.title] = asset.url
                 })
                 console.log("cached the assets",this.assets_url_map)
             }
@@ -62,6 +63,10 @@ export class AssetsManager {
         const asset = this.provider.accessObject(id)
         if(!asset.exists()) return null
         const url = this.getAssetURL(asset)
+        if(!url) {
+            this.provider.getLogger().error("==== null url from asset",asset)
+            return
+        }
         this.provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
             const tex = new TextureLoader().load(url)
