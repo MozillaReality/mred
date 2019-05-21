@@ -65,7 +65,8 @@ export default class CubeDef extends ObjectDef {
             if(!provider.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-                video.src = asset.src
+                video.playsinline = true
+                video.src = url
                 provider.videocache[url] = video
             } else {
                 video = provider.videocache[url]

@@ -68,8 +68,9 @@ class Adapter extends SceneGraphProvider {
             this.canvas.playing_audio[asset.id] = sound
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const url = this.canvas.props.provider.getAssetURL(asset)
             const cache = this.canvas.props.provider.videocache
-            if(cache[asset.src]) cache[asset.src].play()
+            if(cache[url]) cache[url].play()
         }
     }
 

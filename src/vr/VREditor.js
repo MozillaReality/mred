@@ -110,9 +110,9 @@ export default class VREditor extends SyncGraphProvider {
             })
         //get a list of assets for calculating the correct URLS.
         return this.loadAssetList().then(assets => {
-            assets.forEach(asset => {
-                this.assets_url_map[asset.id] = asset.url
-            })
+                assets.forEach(asset => {
+                    this.assets_url_map[asset.id] = asset.url
+                })
         })
     }
 
