@@ -380,6 +380,8 @@ export class VRCanvas extends Component {
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
             if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
             if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return
             if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return
             console.warn("unknown object type", obj)
             return
