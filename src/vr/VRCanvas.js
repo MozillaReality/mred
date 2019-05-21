@@ -166,7 +166,7 @@ export class VRCanvas extends Component {
             running:props.running
         }
         this.playing_audio = {}
-        this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.pubnub.getLogger())
+        this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.getLogger())
     }
 
     pauseQueue = (e) => {
@@ -265,7 +265,7 @@ export class VRCanvas extends Component {
 
     componentDidMount() {
         const canvas = this.canvas
-        const logger = this.props.provider.pubnub.getLogger()
+        const logger = this.props.provider.getLogger()
         logger.log("mounting VRCanvas")
         if(XRSupport.supportsARKit()) {
             this.xr = new XRSupport()
@@ -568,26 +568,20 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        logger.log("NOTHING DONE TO start image recognizer")
+        this.props.getLogger().log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop image recognizer")
+        this.props.getLogger().log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoTracker(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO start geo recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO start geo recognizer")
     }
 
     stopGeoTracker(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop geo recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO stop geo recognizer")
     }
+
 
 }
