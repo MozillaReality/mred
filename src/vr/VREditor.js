@@ -837,7 +837,10 @@ class VREditorApp extends Component {
 
     render() {
         if(this.state.connected === false) {
-            return <div><h1>connecting to server</h1></div>
+            return <div>
+                <h1>connecting to server</h1>
+                <DialogContainer/>
+            </div>
         }
         const prov = this.props.provider
         const bot = <div>
@@ -846,7 +849,10 @@ class VREditorApp extends Component {
         let logger = null
         if(prov.pubnub) logger = prov.pubnub.getLogger()
         if(!prov.getDataGraph()) {
-            return <div><h1>connecting to server</h1></div>
+            return <div>
+                <h1>connecting to server</h1>
+                <DialogContainer/>
+            </div>
         }
         return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
             <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
