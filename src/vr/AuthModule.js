@@ -45,6 +45,8 @@ class AuthModuleSingleton {
                         this.fire(USER_CHANGE)
                         this.doclistSupported = true
                     }
+                    this.connected = true
+                    this.fire(CONNECTED)
                 }).then(()=>{
                     this.connected = true
                     this.fire(CONNECTED)

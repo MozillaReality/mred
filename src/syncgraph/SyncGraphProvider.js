@@ -39,7 +39,11 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.rawlisteners = []
         this.expanded = {}
 
-        if(options.doc) this.loadDoc(options.doc)
+        if(options.doc) {
+            this.loadDoc(options.doc)
+        } else {
+            this.createNewDocument()
+        }
     }
     getDocTitle = () => "untitled"
     getDocHistory = () => this.getDataGraph().getHistory()
@@ -129,6 +133,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     }
 
     createNewDocument(docid) {
+        if(!docid) docid = this.genID("doc")
         const doc = new DocGraph()
         this.makeEmptyRoot(doc)
         this.setupDocFlow(doc,docid)
