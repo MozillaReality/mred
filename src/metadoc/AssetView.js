@@ -15,8 +15,7 @@ export default class AssetView extends Component {
     }
 
     renderAsset(asset) {
-        const prov = this.props.provider
-        const url = prov.getAssetURL(asset)
+        const url = this.props.provider.assetsManager.getAssetURL(asset)
         if(asset.subtype === ASSET_TYPES.IMAGE) return <img src={url} alt={asset.title}/>
         if(asset.subtype === ASSET_TYPES.AUDIO) return <audio src={url} controls/>
         // added playsinline so video shows in editor on ipad 

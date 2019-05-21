@@ -68,9 +68,7 @@ class Adapter extends SceneGraphProvider {
             this.canvas.playing_audio[asset.id] = sound
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const url = this.canvas.props.provider.getAssetURL(asset)
-            const cache = this.canvas.props.provider.videocache
-            if(cache[url]) cache[url].play()
+            this.canvas.props.provider.assetsManager.playMediaAsset(asset)
         }
     }
 
@@ -558,13 +556,7 @@ export class VRCanvas extends Component {
             console.log("stopping",media)
             media.stop()
         })
-        const cache = this.props.provider.videocache
-        Object.keys(cache).forEach(key => {
-            const item = cache[key]
-            if(item.pause) {
-                item.pause()
-            }
-        })
+        this.props.provider.assetsManager.stopAllMedia()
     }
 
     startRecognizers() {

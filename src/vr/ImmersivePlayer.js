@@ -12,6 +12,7 @@ import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
+import {AssetsManager} from './AssetsManager'
 
 
 function attachUtilFunctions(obj) {
@@ -49,8 +50,6 @@ export class ImmersivePlayer extends Component {
         this.logger = new PubnubLogger(opts.doc)
         this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
-            videocache: {},
-
             accessObject:(id)=>{
                 if(!this.obj_map[id]) return {
                     exists:()=>false,
@@ -66,6 +65,7 @@ export class ImmersivePlayer extends Component {
             },
             getLogger:() => this.logger
         }
+        this.assetsManager = new AssetsManager(this.provider)
     }
 
     componentDidMount() {
@@ -89,13 +89,7 @@ export class ImmersivePlayer extends Component {
     }
 
     cacheAssetsList() {
-        return AuthModule.getJSON(`${getAssetsURL()}list`)
-            .then(assets => {
-                if(!assets || !assets.forEach) return
-                assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = asset.url
-                })
-            })
+        return this.assetsManager.cacheAssetsList()
     }
     startScene() {
         const opts = parseOptions({})

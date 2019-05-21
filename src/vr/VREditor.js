@@ -23,7 +23,8 @@ import {
     is3DObjectType,
     isGLTFFile,
     isImageType,
-    ITEM_ICONS, NONE_ASSET,
+    ITEM_ICONS,
+    NONE_ASSET,
     OBJ_TYPES,
     parseBehaviorScript,
     PROP_DEFS,
@@ -49,26 +50,26 @@ import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
 import {
     addScene,
     deleteObject,
+    generateAddAssetPopup,
     newDoc,
-    showAddBehaviorPopup,
     showAddAssetPopup,
-    showAddPopup,
-    generateAddAssetPopup
+    showAddBehaviorPopup,
+    showAddPopup
 } from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
 import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 import {ErrorCatcher} from './ErrorCatcher'
+import {AssetsManager} from './AssetsManager'
 
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
         super(options)
         this.imagecache = {}
-        this.videocache = {}
-        this.assets_url_map = {}
         this.behaviorCache = {}
+        this.assetsManager = new AssetsManager(this)
     }
     getDocType() { return "vr" }
     getApp = () => {
@@ -117,20 +118,7 @@ export default class VREditor extends SyncGraphProvider {
                 })
             })
         //get a list of assets for calculating the correct URLS.
-        return this.loadAssetList().then(assets => {
-                if(!assets || !assets.forEach) return
-            if(AuthModule.supportsAssetUpload()) {
-                //doc server version
-                assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = getAssetsURL()+asset.id
-                })
-            } else {
-                // glitch server version
-                assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = asset.url
-                })
-            }
-        })
+        return this.assetsManager.cacheAssetsList()
     }
 
     getRendererForItem = (item) => {
@@ -609,15 +597,6 @@ export default class VREditor extends SyncGraphProvider {
     }
     loadAssetList() {
         return AuthModule.getJSON(`${getAssetsURL()}list`)
-    }
-    getAssetURL(asset) {
-        console.log("getting asset url",asset)
-        if(asset.assetId) {
-            console.log("converting asset id",asset.assetId)
-            return this.assets_url_map[asset.assetId]
-        } else {
-            return asset.src
-        }
     }
     removeAssetSource(info) {
         return AuthModule.fetch(`${getAssetsURL()}delete/${info.id}`,{
