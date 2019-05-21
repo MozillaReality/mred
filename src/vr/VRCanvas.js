@@ -150,6 +150,7 @@ export class VRCanvas extends Component {
         const obj = this.props.provider.accessObject(sel)
         if(is3DObjectType(obj.type)) {
             const node = this.findNode(sel)
+            if(!node) return
             this.orbitControls.target.copy(node.position)
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
@@ -331,6 +332,7 @@ export class VRCanvas extends Component {
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
         window.addEventListener('resize', this.windowResized,false)
+        this.docSwapped()
     }
 
     animationLoop(time, frame) {
