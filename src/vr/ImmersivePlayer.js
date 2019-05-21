@@ -70,21 +70,21 @@ export class ImmersivePlayer extends Component {
 
     componentDidMount() {
         this.logger.log("mounted ImmersivePlayer")
-        const canvas = this.canvas
-        if(XRSupport.supportsARKit()) {
-            this.xr = new XRSupport()
-            this.xr.getContext(canvas).then((context) => {
-                this.initThreeJS(canvas,context)
-                this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
-                this.startScene()
-            }).catch(err => {
-                console.error('Error', err)
-            })
-        } else {
-            this.initThreeJS(canvas,0)
-            this.renderer.setAnimationLoop(this.renderThree.bind(this))
-            this.startScene()
-        }
+        // const canvas = this.canvas
+        // if(XRSupport.supportsARKit()) {
+        //     this.xr = new XRSupport()
+        //     this.xr.getContext(canvas).then((context) => {
+        //         this.initThreeJS(canvas,context)
+        //         this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
+        //         this.startScene()
+        //     }).catch(err => {
+        //         console.error('Error', err)
+        //     })
+        // } else {
+        //     this.initThreeJS(canvas,0)
+        //     this.renderer.setAnimationLoop(this.renderThree.bind(this))
+        //     this.startScene()
+        // }
 
     }
 
@@ -124,6 +124,23 @@ export class ImmersivePlayer extends Component {
         const $ = (sel) => document.querySelector(sel)
         $("#overlay").style.display = 'none'
         $("#test-audio").play()
+
+        const canvas = this.canvas
+        if(XRSupport.supportsARKit()) {
+            this.xr = new XRSupport()
+            this.xr.getContext(canvas).then((context) => {
+                this.initThreeJS(canvas,context)
+                this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
+                this.startScene()
+            }).catch(err => {
+                console.error('Error', err)
+            })
+        } else {
+            this.initThreeJS(canvas,0)
+            this.renderer.setAnimationLoop(this.renderThree.bind(this))
+            this.startScene()
+        }
+
     }
 
     render() {
