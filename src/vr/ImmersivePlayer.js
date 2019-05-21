@@ -91,6 +91,7 @@ export class ImmersivePlayer extends Component {
     cacheAssetsList() {
         return AuthModule.getJSON(`${getAssetsURL()}list`)
             .then(assets => {
+                if(!assets || !assets.forEach) return
                 assets.forEach(asset => {
                     this.assets_url_map[asset.id] = asset.url
                 })

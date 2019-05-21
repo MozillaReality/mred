@@ -69,6 +69,7 @@ export default class BG360Def {
         customize(node,mat,obj)
         node.name = obj.title
         node.userData.clickable = true
+        node.visible = obj.visible
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         this.attachAsset(node, obj, provider)
         return node

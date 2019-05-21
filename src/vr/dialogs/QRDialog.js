@@ -10,7 +10,7 @@ export class QRDialog extends Component {
     }
 
     render() {
-        let url = document.documentURI
+        let url = null
         if(this.props.url) url = this.props.url
         let wurl = url.replace("https","wxrv")
         wurl = wurl.replace("http","wxrv")

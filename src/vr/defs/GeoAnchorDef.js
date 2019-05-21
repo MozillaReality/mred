@@ -28,6 +28,7 @@ export default class GeoAnchorDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
+        node.visible = obj.visible
 
         const clicker =  new Mesh(
             new SphereBufferGeometry(1),
