@@ -60,6 +60,9 @@ class SystemFacade {
         if(!obj) throw new Error(`object '${title}' not found`)
         return this.sgp.getThreeObject(obj)
     }
+    getObjectByTitle(title) {
+        return this.sgp.getGraphObjectByName(title)
+    }
     getAssetByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
         if(!obj) throw new Error(`asset '${title}' not found`)
