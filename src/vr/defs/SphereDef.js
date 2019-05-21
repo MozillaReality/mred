@@ -46,33 +46,7 @@ export default class SphereDef extends ObjectDef {
             node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
             return
         }
-        const asset = provider.accessObject(obj.asset)
-        if(!asset.exists()) return
-        const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading asset url",url)
-        if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new TextureLoader().load(url)
-            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
-        }
-        if(asset.subtype === ASSET_TYPES.VIDEO) {
-            let video
-            if(!provider.videocache[url]) {
-                video = document.createElement('video')
-                video.crossOrigin = 'anonymous'
-
-                // video will only play inline on mobile devices if it's muted
-                // we will loop video
-                video.muted = true;
-                video.loop = true;
-                video.setAttribute( 'playsinline', '' );
-
-                video.src = url
-                provider.videocache[url] = video
-            } else {
-                video = provider.videocache[url]
-            }
-            const tex = new VideoTexture(video)
-            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
-        }
+        const tex = provider.assetsManager.getTexture(obj.asset)
+        if(tex) node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
     }
 }

@@ -16,7 +16,7 @@ export function addImageAssetFromExpandedURL(assetId, url,format,title, prov) {
         parent:0
     }))
     prov.accessObject(prov.getAssetsObject()).insertChildLast(asset)
-    prov.requestImageCache(prov.getAssetURL(asset)).then(img => {
+    prov.requestImageCache(prov.assetsManager.getAssetURL(asset)).then(img => {
         asset.set('width',img.width)
         asset.set('height',img.height)
     })

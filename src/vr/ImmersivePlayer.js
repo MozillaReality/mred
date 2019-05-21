@@ -56,16 +56,10 @@ export class ImmersivePlayer extends Component {
                 }
                 return this.obj_map[id]
             },
-            getAssetURL:(asset) => {
-                if(asset.assetId) {
-                    return this.assets_url_map[asset.assetId]
-                } else {
-                    return asset.src
-                }
-            },
             getLogger:() => this.logger
         }
         this.assetsManager = new AssetsManager(this.provider)
+        this.provider.assetsManager = this.assetsManager
     }
 
     componentDidMount() {
@@ -459,9 +453,7 @@ class Adapter extends SceneGraphProvider {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const url = this.player.provider.getAssetURL(asset)
-            const cache = this.player.provider.videocache
-            if(cache[url]) cache[url].play()
+            this.player.provider.assetsManager.playMediaAsset(asset)
         }
     }
 

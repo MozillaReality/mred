@@ -90,7 +90,7 @@ export default class ImageAnchorDef extends ObjectDef {
     updateImagePreview(node,obj,provider) {
         const targetImage = provider.accessObject(obj.targetImage)
         if(targetImage.exists()) {
-            const url = provider.getAssetURL(targetImage)
+            const url = provider.assetsManager.getAssetURL(targetImage)
             provider.getLogger().log("loading the asset url",url)
             const tex = new TextureLoader().load(url)
             node.userData.preview.material = new MeshLambertMaterial({color:'white',transparent:true, opacity:0.5, side:DoubleSide, map:tex})

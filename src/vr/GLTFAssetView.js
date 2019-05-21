@@ -37,7 +37,7 @@ export default class GLTFAssetView extends Component {
         console.log("rendering the asset",asset)
 
         const loader = new GLTFLoader()
-        const url = this.props.provider.getAssetURL(asset)
+        const url = this.props.provider.assetsManager.getAssetURL(asset)
         console.log("loading the url",url)
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)

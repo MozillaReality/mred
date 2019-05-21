@@ -22,6 +22,7 @@ export class AssetsManager {
                 assets.forEach(asset => {
                     this.assets_url_map[asset.id] = asset.url
                 })
+                console.log("cached the assets",this.assets_url_map)
             }
         })
     }
@@ -38,7 +39,10 @@ export class AssetsManager {
 
 
     playMediaAsset(asset) {
+        const lg = this.provider.getLogger()
+        lg.log("playing the asset",asset)
         const url = this.getAssetURL(asset)
+        lg.log("playing the url",url)
         const cache = this.videocache
         if(cache[url]) cache[url].play()
     }
