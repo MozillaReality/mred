@@ -144,6 +144,12 @@ export class ImmersivePlayer extends Component {
             </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
+                        style={{
+                            boxSizing:'border-box',
+                            margin:0,
+                            padding:0,
+                            border:"1px solid red",
+                        }}
                     onClick={this.clickedCanvas}
                 />
             </ErrorCatcher>
@@ -246,9 +252,10 @@ export class ImmersivePlayer extends Component {
         this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
         window.addEventListener( 'resize', ()=>{
-            this.camera.aspect = window.innerWidth / window.innerHeight;
+            const body = document.querySelector("body")
+            this.camera.aspect = body.clientWidth / body.clientHeight;
             this.camera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
+            this.renderer.setSize( body.clientWidth - 3, body.clientHeight  - 3);
         }, false );
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
