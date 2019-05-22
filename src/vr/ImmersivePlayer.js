@@ -82,12 +82,9 @@ export class ImmersivePlayer extends Component {
 
     }
 
-    cacheAssetsList() {
-        return this.assetsManager.cacheAssetsList()
-    }
     startScene() {
         const opts = parseOptions({})
-        this.cacheAssetsList().then(()=> {
+        this.assetsManager.cacheAssetsList().then(()=> {
             AuthModule.getJSON(getDocsURL() + opts.doc).then((payload) => {
                 this.root = payload.graph
                 this.logger.log("loaded payload", this.root)

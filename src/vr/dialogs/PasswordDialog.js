@@ -18,12 +18,17 @@ export class PasswordDialog extends Component {
         DialogManager.hide()
         AuthModule.doPasswordLogin(this.state.field)
     }
+    keyDown = (e) => {
+        if(e.key === 'Enter') this.okay()
+    }
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel} width="600px" height="auto">
             <VBox grow>
                 <h3>login with the password from your env file</h3>
                 <label>password</label>
-                <input type={"password"} value={this.state.field} onChange={(e)=>{
+                <input type={"password"} value={this.state.field}
+                       onKeyDown={this.keyDown}
+                       onChange={(e)=>{
                     this.setState({field:e.target.value})
                 }}/>
                 <HBox>

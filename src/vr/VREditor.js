@@ -839,7 +839,7 @@ class VREditorApp extends Component {
             doc id: <b>{prov.getDocId()}</b>
         </div>
         let logger = null
-        if(prov.pubnub) logger = prov.pubnub.getLogger()
+        if(prov.pubnub) logger = prov.getLogger()
         if(!prov.getDataGraph()) {
             return <div>
                 <h1>connecting to server</h1>
