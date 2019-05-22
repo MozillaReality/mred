@@ -370,26 +370,30 @@ export class ImmersivePlayer extends Component {
         // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
         if (sceneNode) {
             const sceneAnchorNode = sceneNode.userData.sceneAnchor
-            if (sceneAnchorNode && sceneAnchorNode.children) {
-                this.logger.log("scene has children: ", sceneNode.children.length)
-                this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
+            if (!sceneAnchorNode) {
+                this.logger.error("no sceneNode? so no children?")
             } else {
-                this.logger.warn("no sceneNode? so no children?")
-            }
-
-            if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
-                // create a new scene anchor
-                if (this.sceneAnchor) {
-                    this.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
-                    this.sceneAnchor = null
+                if (sceneAnchorNode.children) {
+                    this.logger.log("scene has children: ", sceneNode.children.length)
+                    this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
+                } else {
+                    this.logger.log("no sceneNode children?")
                 }
-                this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
-                    this.sceneAnchor = anchor
-                }).catch(error => {
-                    this.logger.error(`error creating new scene anchor: ${error}`)
-                })
-            } else {
-                this.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
+
+                if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
+                    // create a new scene anchor
+                    if (this.sceneAnchor) {
+                        this.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
+                        this.sceneAnchor = null
+                    }
+                    this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
+                        this.sceneAnchor = anchor
+                    }).catch(error => {
+                        this.logger.error(`error creating new scene anchor: ${error}`)
+                    })
+                } else {
+                    this.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
+                }
             }
         }
         this.scenes.children.forEach(sc => sc.visible = false)
