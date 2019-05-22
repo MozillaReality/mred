@@ -170,12 +170,12 @@ export class ImmersivePlayer extends Component {
         if(intersect && intersect.length >= 1) {
             const inter = intersect.find(inter => inter.distance > 0)
             if(inter) {
-                this.logger.log("found the interesction", inter)
-                this.logger.log("intersections", intersect)
+                //this.logger.log("found the interesction", inter)
+                //this.logger.log("intersections", intersect)
                 const obj = inter.object
-                this.logger.log("obj", obj)
+                //this.logger.log("obj", obj)
                 const gobj = this.obj_map[obj.userData.graphid]
-                this.logger.log("jobj", gobj)
+                //this.logger.log("jobj", gobj)
                 this.scriptManager.performClickAction(gobj, e)
             }
         }
@@ -381,7 +381,11 @@ class Adapter extends SceneGraphProvider {
         return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
     getThreeObject (obj)  {
-        if(obj.id) return this.player.three_map[obj.id]
+        if (!obj) {
+            this.logger.error("getThreeObject got invalid obj")
+        } else {
+            if(obj.id) return this.player.three_map[obj.id]
+        }
         return this.player.three_map[obj]
     }
     getParsedBehaviorAsset (b) {
