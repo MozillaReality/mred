@@ -62,6 +62,7 @@ import {PasswordDialog} from './dialogs/PasswordDialog'
 import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
+import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -81,7 +82,10 @@ export default class VREditor extends SyncGraphProvider {
     }
     getTitle = () => "MrEd"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
-    getLogger = () => this.pubnub.getLogger()
+    getLogger = () => {
+        if(this.pubnub) return this.pubnub.getLogger()
+        return new ConsoleLogger()
+    }
 
     makeEmptyRoot(doc) {
         //make root

@@ -41,10 +41,13 @@ export default class ModelDef extends ObjectDef {
         this.attachAsset(node, obj, provider)
 
         node.enter = (evt, scriptManager) => {
-            clicker.visible = false
+            node.userData.clicker.visible = false
         }
         node.exit = (evt, scriptManager) => {
-            clicker.visible = true
+            const ob2 = provider.accessObject(obj.id)
+            if(ob2.asset === NONE_ASSET.id) {
+                node.userData.clicker.visible = true
+            }
         }
         return node
     }
@@ -58,6 +61,11 @@ export default class ModelDef extends ObjectDef {
         if(obj.asset === NONE_ASSET.id) {
             // node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
             console.log("REMOVE NODE CHILDREN")
+            if(node.userData.model) {
+                node.remove(node.userData.model)
+                delete node.userData.model
+            }
+            node.userData.clicker.visible = true
             return
         }
         const asset = provider.accessObject(obj.asset)
@@ -86,6 +94,8 @@ export default class ModelDef extends ObjectDef {
                 model.position.z = -bs.center.z
                 node.userData.clicker.geometry = new THREE.SphereBufferGeometry(bs.radius)
             }
+            //disable the clicker sphere
+            node.userData.clicker.visible = false
         })
     }
 
