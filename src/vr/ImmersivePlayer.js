@@ -149,7 +149,7 @@ export class ImmersivePlayer extends Component {
             </ErrorCatcher>
         </div>
     }
-    
+
     clickedCanvas = (e) => {
         function findKnownParent(node) {
             if(!node) return null
@@ -364,6 +364,34 @@ export class ImmersivePlayer extends Component {
     }
 
     setCurrentScene(scene) {
+        // @blair
+        const sceneNode = this.three_map[scene.id]
+        // this.logger.log("the scene node is",sceneNode)
+        // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
+        if (sceneNode) {
+            const sceneAnchorNode = sceneNode.userData.sceneAnchor
+            if (sceneAnchorNode && sceneAnchorNode.children) {
+                this.logger.log("scene has children: ", sceneNode.children.length)
+                this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
+            } else {
+                this.logger.warn("no sceneNode? so no children?")
+            }
+
+            if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
+                // create a new scene anchor
+                if (this.sceneAnchor) {
+                    this.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
+                    this.sceneAnchor = null
+                }
+                this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
+                    this.sceneAnchor = anchor
+                }).catch(error => {
+                    this.logger.error(`error creating new scene anchor: ${error}`)
+                })
+            } else {
+                this.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
+            }
+        }
         this.scenes.children.forEach(sc => sc.visible = false)
         if(this.three_map[scene.id]) this.three_map[scene.id].visible = true
         this.current_scene = scene
@@ -414,33 +442,6 @@ class Adapter extends SceneGraphProvider {
         this.logger.log("navigating to ",sceneid)
         const scene = this.player.obj_map[sceneid]
         if(!scene) return this.logger.error("couldn't find scene for",sceneid)
-
-        // @blair
-        const sceneNode = this.player.three_map[sceneid]
-        // this.logger.log("the scene node is",sceneNode)
-        // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
-        const sceneAnchorNode = sceneNode.userData.sceneAnchor
-        if (sceneAnchorNode && sceneAnchorNode.children) {
-            this.logger.log("scene has children: ", sceneNode.children.length)
-            this.logger.log("scene anchor has children: ", sceneAnchorNode.children.length)
-        } else {
-            this.logger.warn("no sceneNode? so no children?")
-        }
-
-        if (!this.sceneAnchor || (this.sceneAnchor && scene.autoRecenter)) {
-            // create a new scene anchor
-            if (this.sceneAnchor) {
-                this.player.xr.removeSceneAnchor(this.sceneAnchor, this.logger)
-                this.sceneAnchor = null
-            }
-            this.player.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
-                this.sceneAnchor = anchor
-            }).catch(error => {
-                this.logger.error(`error creating new scene anchor: ${error}`)
-            })
-        } else {
-            this.player.xr.updateAnchoredSceneNode(this.sceneAnchor, sceneAnchorNode, this.logger)
-        }
 
         this.player.setCurrentScene(scene)
     }
