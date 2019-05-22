@@ -270,7 +270,7 @@ export default class ImmersiveVREditor extends Component {
 
     standardViewClickHandler = (e)  => {
         if(this.scriptManager.isRunning()) {
-            this.scriptManager.performClickAction(this.props.provider.accessObject(e.target.userData.graphid))
+            this.scriptManager.performClickAction(this.props.provider.accessObject(e.target.userData.graphid), e)
         } else {
             SelectionManager.setSelection(e.target.userData.graphid)
         }

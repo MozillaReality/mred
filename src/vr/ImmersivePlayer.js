@@ -173,7 +173,7 @@ export class ImmersivePlayer extends Component {
                 this.logger.log("obj", obj)
                 const gobj = this.obj_map[obj.userData.graphid]
                 this.logger.log("jobj", gobj)
-                this.scriptManager.performClickAction(gobj)
+                this.scriptManager.performClickAction(gobj, e)
             }
         }
     }
@@ -210,8 +210,8 @@ export class ImmersivePlayer extends Component {
             if(node.previewUpdate) this.previewUpdateNodes.push(node)
             this.three_map[obj.id] = node
             node.userData.graphid = obj.id
-            on(node, 'click', () => {
-                this.scriptManager.performClickAction(obj)
+            on(node, 'click', (e) => {
+                this.scriptManager.performClickAction(obj, e)
             })
         }
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
@@ -426,7 +426,7 @@ class Adapter extends SceneGraphProvider {
 
         this.player.setCurrentScene(scene)
     }
-    playMediaAsset (asset)  {
+    playMediaAsset (asset, trusted=false)  {
         console.log("playing the media asset",asset)
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             if(this.player.playing_audio[asset.id]) {
@@ -453,7 +453,7 @@ class Adapter extends SceneGraphProvider {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            this.player.provider.assetsManager.playMediaAsset(asset)
+            this.player.provider.assetsManager.playMediaAsset(asset,trusted)
         }
     }
 

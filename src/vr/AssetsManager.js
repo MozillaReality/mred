@@ -39,7 +39,7 @@ export class AssetsManager {
     }
 
 
-    playMediaAsset(asset) {
+    playMediaAsset(asset, trusted=false) {
         const lg = this.provider.getLogger()
         lg.log("playing the asset",asset)
         const url = this.getAssetURL(asset)

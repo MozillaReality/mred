@@ -55,7 +55,7 @@ class Adapter extends SceneGraphProvider {
     }
 
 
-    playMediaAsset(asset) {
+    playMediaAsset(asset, trusted=false) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             const sound = new THREE.Audio(this.canvas.audioListener)
             const audioLoader = new THREE.AudioLoader()
@@ -68,7 +68,7 @@ class Adapter extends SceneGraphProvider {
             this.canvas.playing_audio[asset.id] = sound
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            this.canvas.props.provider.assetsManager.playMediaAsset(asset)
+            this.canvas.props.provider.assetsManager.playMediaAsset(asset, trusted)
         }
     }
 
@@ -523,7 +523,7 @@ export class VRCanvas extends Component {
         if(intersect && intersect.length >= 1) {
             const obj = intersect[0].object
             if(this.state.running) {
-                this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid))
+                this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid), e)
             } else {
                 SelectionManager.setSelection(obj.userData.graphid)
             }
