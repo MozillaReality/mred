@@ -144,13 +144,12 @@ export class ImmersivePlayer extends Component {
             </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
-                        style={{
+                    onClick={this.clickedCanvas} style={{
                             boxSizing:'border-box',
                             margin:0,
                             padding:0,
                             border:"1px solid red",
                         }}
-                    onClick={this.clickedCanvas}
                 />
             </ErrorCatcher>
         </div>
