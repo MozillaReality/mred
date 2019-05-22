@@ -522,10 +522,16 @@ export class VRCanvas extends Component {
             y: - ( e.clientY - rect.top ) / rect.height * 2 + 1,
         }
 
+        function findKnownParent(node) {
+            if(!node) return null
+            if(node.userData.graphid) return node
+            return findKnownParent(node.parent)
+        }
+
         this.raycaster.setFromCamera(pointer, this.camera);
         const intersect = this.raycaster.intersectObjects(this.getCurrentSceneWrapper().children, true)
         if(intersect && intersect.length >= 1) {
-            const obj = intersect[0].object
+            let obj = findKnownParent(intersect[0].object)
             if(this.state.running) {
                 this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid), e)
             } else {
