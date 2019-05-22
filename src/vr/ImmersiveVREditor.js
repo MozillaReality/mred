@@ -73,7 +73,7 @@ class Adapter extends SceneGraphProvider {
     navigateScene(id) {
         return this.editor.swapScene(id)
     }
-    playMediaAsset(asset) {
+    playMediaAsset(asset, trusted) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             const sound = new Audio(this.editor.audioListener)
             const audioLoader = new AudioLoader()
