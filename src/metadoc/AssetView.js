@@ -8,18 +8,18 @@ export default class AssetView extends Component {
     render() {
         const prov = this.props.provider
         const asset = fetchGraphObject(prov.getDataGraph(),this.props.asset)
-        return <div>asset view
-            <h3>{asset.type} : <b>{asset.title}</b></h3>
+        return <div>
+            <h3>{asset.subtype} : <b>{asset.title}</b></h3>
             {this.renderAsset(asset)}
         </div>
     }
 
     renderAsset(asset) {
-        const prov = this.props.provider
-        const url = prov.getAssetURL(asset)
+        const url = this.props.provider.assetsManager.getAssetURL(asset)
         if(asset.subtype === ASSET_TYPES.IMAGE) return <img src={url} alt={asset.title}/>
         if(asset.subtype === ASSET_TYPES.AUDIO) return <audio src={url} controls/>
-        if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={url} controls crossOrigin="anonymous"/>
+        // added playsinline so video shows in editor on ipad 
+        if(asset.subtype === ASSET_TYPES.VIDEO) return <video src={url} controls playsInline crossOrigin="anonymous"/>
         if(asset.subtype === ASSET_TYPES.BEHAVIOR) return <div>{url}</div>
         if(asset.subtype === ASSET_TYPES.GLTF) return <GLTFAssetView asset={asset} provider={this.props.provider}/>
         if(asset.subtype === ASSET_TYPES.GEOLOCATION) return <GeoAssetView asset={asset} provider={this.props.provider}/>

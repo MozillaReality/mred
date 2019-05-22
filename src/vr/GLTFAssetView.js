@@ -37,8 +37,12 @@ export default class GLTFAssetView extends Component {
         console.log("rendering the asset",asset)
 
         const loader = new GLTFLoader()
-        const url = this.props.provider.getAssetURL(asset)
-        console.log("loading the url",url)
+        const url = this.props.provider.assetsManager.getAssetURL(asset)
+        this.props.provider.getLogger().log("GLTFAssetView loading the url",url)
+        if(!url) {
+            this.props.provider.getLogger().error("GLTFAssetView url is empty!")
+            return
+        }
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
             //swap the model

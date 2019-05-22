@@ -55,7 +55,7 @@ class Adapter extends SceneGraphProvider {
     }
 
 
-    playMediaAsset(asset) {
+    playMediaAsset(asset, trusted=false) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             const sound = new THREE.Audio(this.canvas.audioListener)
             const audioLoader = new THREE.AudioLoader()
@@ -68,9 +68,7 @@ class Adapter extends SceneGraphProvider {
             this.canvas.playing_audio[asset.id] = sound
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const url = this.canvas.props.provider.getAssetURL(asset)
-            const cache = this.canvas.props.provider.videocache
-            if(cache[url]) cache[url].play()
+            this.canvas.props.provider.assetsManager.playMediaAsset(asset, trusted)
         }
     }
 
@@ -150,6 +148,7 @@ export class VRCanvas extends Component {
         const obj = this.props.provider.accessObject(sel)
         if(is3DObjectType(obj.type)) {
             const node = this.findNode(sel)
+            if(!node) return
             this.orbitControls.target.copy(node.position)
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
@@ -167,7 +166,7 @@ export class VRCanvas extends Component {
             running:props.running
         }
         this.playing_audio = {}
-        this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.pubnub.getLogger())
+        this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.getLogger())
     }
 
     pauseQueue = (e) => {
@@ -242,31 +241,22 @@ export class VRCanvas extends Component {
         }
         console.log("selected something not an object or scene")
     }
-    windowResized = () => {
-        if(this.canvas) {
-            let cw = this.canvas.clientWidth
-            let ch = this.canvas.clientHeight
-            this.camera.aspect = cw/ch;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(cw,ch);
-        }
-    }
 
     checkAspectRatio() {
         if(!this.canvas) return
-        let cw = this.canvas.clientWidth
-        let ch = this.canvas.clientHeight
-        const aspect = cw/ch
-        if(Math.abs(this.camera.aspect - aspect) > 0.01 ) {
+        const w = this.wrapper.clientWidth
+        const h = this.wrapper.clientHeight
+        const aspect = w/h
+        if(Math.abs(this.camera.aspect - aspect) > 0.001 ) {
             this.camera.aspect = aspect
             this.camera.updateProjectionMatrix()
-            this.renderer.setSize(cw,ch);
+            this.renderer.setSize(w-4,h-4)
         }
     }
 
     componentDidMount() {
         const canvas = this.canvas
-        const logger = this.props.provider.pubnub.getLogger()
+        const logger = this.props.provider.getLogger()
         logger.log("mounting VRCanvas")
         if(XRSupport.supportsARKit()) {
             this.xr = new XRSupport()
@@ -288,7 +278,6 @@ export class VRCanvas extends Component {
         this.transformControls.removeEventListener('mouseUp',this.unpauseQueue)
         this.props.provider.off(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,this.docSwapped)
         SelectionManager.off(SELECTION_MANAGER.CHANGED,this.selectionChanged)
-        window.removeEventListener('resize',this.windowResized)
     }
 
     setupRenderer(canvas,context) {
@@ -296,7 +285,6 @@ export class VRCanvas extends Component {
         this.camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas, context:context});
         this.renderer.setPixelRatio( window.devicePixelRatio );
-        this.renderer.setSize(canvas.width, canvas.height);
         this.renderer.gammaOutput = true
         this.audioListener = new THREE.AudioListener()
         this.camera.add(this.audioListener)
@@ -330,7 +318,7 @@ export class VRCanvas extends Component {
         this.props.provider.on(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED, this.docSwapped)
         SelectionManager.on(SELECTION_MANAGER.CHANGED, this.selectionChanged)
 
-        window.addEventListener('resize', this.windowResized,false)
+        this.docSwapped()
     }
 
     animationLoop(time, frame) {
@@ -380,6 +368,8 @@ export class VRCanvas extends Component {
             if (is3DObjectType(obj.type)) return this.populateNode(objid)
             if(obj.type === TOTAL_OBJ_TYPES.ASSET) return
             if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) return
+            if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) return
             if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return
             console.warn("unknown object type", obj)
             return
@@ -433,17 +423,33 @@ export class VRCanvas extends Component {
     }
 
     render() {
-        return <div style={{}}>
+        return <div style={{
+            borderWidth:0,
+            boxSizing:'border-box',
+            height:'100%',
+            display:'flex',
+            flexDirection:'column'
+        }}>
             <button onClick={this.recenterOnSelection}>recenter on selection</button>
             <div style={{
+                boxSizing:'border-box',
                 borderWidth:0,
                 margin:0,
                 padding:0,
-                display:'flex',
-                flexDirection:'column',
-                height:'100%',
-            }}>
-                <canvas ref={c => this.canvas = c} width={'200px'} height={'200px'}
+                flex:1.0,
+                overflow:'auto',
+            }}
+                 ref={c => this.wrapper = c}
+            >
+                <canvas ref={c => this.canvas = c}
+                        style={{
+                            boxSizing:'border-box',
+                            margin:0,
+                            padding:0,
+                            width:'100px',
+                            height:'100px',
+                            borderWidth:0,
+                        }}
                         onClick={this.clickedCanvas}
                         className="editable-canvas"
                         onKeyDown={this.handleKeyPress}
@@ -521,7 +527,7 @@ export class VRCanvas extends Component {
         if(intersect && intersect.length >= 1) {
             const obj = intersect[0].object
             if(this.state.running) {
-                this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid))
+                this.scriptManager.performClickAction(this.props.provider.accessObject(obj.userData.graphid), e)
             } else {
                 SelectionManager.setSelection(obj.userData.graphid)
             }
@@ -554,13 +560,7 @@ export class VRCanvas extends Component {
             console.log("stopping",media)
             media.stop()
         })
-        const cache = this.props.provider.videocache
-        Object.keys(cache).forEach(key => {
-            const item = cache[key]
-            if(item.pause) {
-                item.pause()
-            }
-        })
+        this.props.provider.assetsManager.stopAllMedia()
     }
 
     startRecognizers() {
@@ -572,26 +572,20 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        logger.log("NOTHING DONE TO start image recognizer")
+        this.props.getLogger().log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop image recognizer")
+        this.props.getLogger().log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoTracker(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO start geo recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO start geo recognizer")
     }
 
     stopGeoTracker(info) {
-        const logger = this.props.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop geo recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO stop geo recognizer")
     }
+
 
 }

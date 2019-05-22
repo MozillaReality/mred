@@ -23,7 +23,8 @@ import {
     is3DObjectType,
     isGLTFFile,
     isImageType,
-    ITEM_ICONS, NONE_ASSET,
+    ITEM_ICONS,
+    NONE_ASSET,
     OBJ_TYPES,
     parseBehaviorScript,
     PROP_DEFS,
@@ -46,21 +47,29 @@ import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
 import ScriptEditor from './ScriptEditor'
 import {OpenScriptDialog} from './dialogs/OpenScriptDialog'
 import {CUSTOM_BEHAVIOR_SCRIPT, CUSTOM_SCENE_SCRIPT} from './Templates'
-import {addScene, deleteObject, newDoc, showAddBehaviorPopup, showAddAssetPopup, showAddPopup} from './Actions'
+import {
+    addScene,
+    deleteObject,
+    generateAddAssetPopup,
+    newDoc,
+    showAddAssetPopup,
+    showAddBehaviorPopup,
+    showAddPopup
+} from './Actions'
 import {addGeoAnchorAsset, addGLBAssetFromFile, addImageAssetFromFile} from './AssetActions'
 import {QRDialog} from './dialogs/QRDialog'
 import {PasswordDialog} from './dialogs/PasswordDialog'
 import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 import {ErrorCatcher} from './ErrorCatcher'
+import {AssetsManager} from './AssetsManager'
 
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
         super(options)
         this.imagecache = {}
-        this.videocache = {}
-        this.assets_url_map = {}
         this.behaviorCache = {}
+        this.assetsManager = new AssetsManager(this)
     }
     getDocType() { return "vr" }
     getApp = () => {
@@ -109,11 +118,7 @@ export default class VREditor extends SyncGraphProvider {
                 })
             })
         //get a list of assets for calculating the correct URLS.
-        return this.loadAssetList().then(assets => {
-                assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = asset.url
-                })
-        })
+        return this.assetsManager.cacheAssetsList()
     }
 
     getRendererForItem = (item) => {
@@ -335,7 +340,7 @@ export default class VREditor extends SyncGraphProvider {
 
     editIn2D = () => {
         this.save().then(()=>{
-            const opts = Object.assign({},this.options,{mode:'edit', switcher:false})
+            const opts = Object.assign({},this.options,{mode:'edit', switcher:false, doc:this.getDocId()})
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"Edit in 2D"} url={url}/>)
@@ -344,7 +349,7 @@ export default class VREditor extends SyncGraphProvider {
 
     editInVR = () => {
         this.save().then(()=>{
-            const opts = Object.assign({},this.options,{mode:'vredit', switcher:false})
+            const opts = Object.assign({},this.options,{mode:'vredit', switcher:false, doc:this.getDocId()})
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"Edit in AR/VR"} url={url}/>)
@@ -353,7 +358,7 @@ export default class VREditor extends SyncGraphProvider {
 
     viewInVR = () => {
         this.save().then(()=> {
-            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false})
+            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false, doc:this.getDocId()})
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"View in AR/VR"} url={url}/>)
@@ -375,12 +380,7 @@ export default class VREditor extends SyncGraphProvider {
             cmds.push({title: 'delete', icon: ITEM_ICONS.delete, fun: () => deleteObject(this)});
         }
         if(obj.type === TOTAL_OBJ_TYPES.ASSETS_LIST) {
-            cmds.push({
-                title: 'existing asset on server',
-                enabled:AuthModule.isLoggedIn(),
-                icon: ITEM_ICONS.assets,
-                fun: () => this.showOpenAssetDialog()
-            })
+            return generateAddAssetPopup(this)
         }
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) {
             cmds.push({
@@ -597,14 +597,6 @@ export default class VREditor extends SyncGraphProvider {
     }
     loadAssetList() {
         return AuthModule.getJSON(`${getAssetsURL()}list`)
-    }
-    getAssetURL(asset) {
-        if(asset.assetId) {
-            console.log("converting asset id",asset.assetId)
-            return this.assets_url_map[asset.assetId]
-        } else {
-            return asset.src
-        }
     }
     removeAssetSource(info) {
         return AuthModule.fetch(`${getAssetsURL()}delete/${info.id}`,{
@@ -847,7 +839,7 @@ class VREditorApp extends Component {
             doc id: <b>{prov.getDocId()}</b>
         </div>
         let logger = null
-        if(prov.pubnub) logger = prov.pubnub.getLogger()
+        if(prov.pubnub) logger = prov.getLogger()
         if(!prov.getDataGraph()) {
             return <div>
                 <h1>connecting to server</h1>

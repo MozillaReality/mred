@@ -31,6 +31,7 @@ export default class ImageAnchorDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
+        node.visible = obj.visible
 
         const clicker =  new Mesh(
             new SphereBufferGeometry(1),
@@ -89,8 +90,8 @@ export default class ImageAnchorDef extends ObjectDef {
     updateImagePreview(node,obj,provider) {
         const targetImage = provider.accessObject(obj.targetImage)
         if(targetImage.exists()) {
-            const url = provider.getAssetURL(targetImage)
-            provider.getLogger().log("loading the asset url",url)
+            const url = provider.assetsManager.getAssetURL(targetImage)
+            provider.getLogger().log("ImageAnchor loading the asset url",url)
             const tex = new TextureLoader().load(url)
             node.userData.preview.material = new MeshLambertMaterial({color:'white',transparent:true, opacity:0.5, side:DoubleSide, map:tex})
             let height = (targetImage.height / targetImage.width)

@@ -37,7 +37,15 @@ export default class ModelDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
+        node.visible = obj.visible
         this.attachAsset(node, obj, provider)
+
+        node.enter = (evt, scriptManager) => {
+            clicker.visible = false
+        }
+        node.exit = (evt, scriptManager) => {
+            clicker.visible = true
+        }
         return node
     }
 
@@ -55,8 +63,12 @@ export default class ModelDef extends ObjectDef {
         const asset = provider.accessObject(obj.asset)
         if(!asset.exists()) return
         const loader = new GLTFLoader()
-        const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading the model asset url",url)
+        const url = provider.assetsManager.getAssetURL(asset)
+        provider.getLogger().log("ModelDef loading the model asset url",url)
+        if(!url) {
+            provider.getLogger().error("ModelDef: empty url. cannot load GLTF")
+            return
+        }
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
             //swap the model

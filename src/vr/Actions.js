@@ -40,8 +40,12 @@ export function showAddPopup (e, provider) {
     PopupManager.show(<MenuPopup actions={acts}/>, e.target)
 }
 
-
 export function showAddAssetPopup(e, provider) {
+    const acts = generateAddAssetPopup(provider)
+    PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+}
+
+export function generateAddAssetPopup(provider) {
     let acts = []
     // console.log("Auth mod",AuthModule.supportsAssetUpload())
     if(AuthModule.supportsAssetUpload()) {
@@ -89,7 +93,7 @@ export function showAddAssetPopup(e, provider) {
             title: 'add asset from glitch',
             icon: ITEM_ICONS.assets,
             fun: () => provider.showOpenAssetDialog()
-        })    
+        })
     }
 
     acts.push({
@@ -98,8 +102,7 @@ export function showAddAssetPopup(e, provider) {
         fun: () => provider.showAddGeoLocationAssetDialog()
     })
 
-
-    PopupManager.show(<MenuPopup actions={acts}/>, e.target)
+    return acts
 }
 
 export function showAddBehaviorPopup (e, provider) {

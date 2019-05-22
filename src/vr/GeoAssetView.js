@@ -49,6 +49,13 @@ export default class GeoAssetView extends Component {
             <div id="mapid" ref={d => this.div = d} style={style}></div>
         </div>
     }
+
+    componentWillReceiveProps(nextProps, nextContext) {
+        if(nextProps.asset.id !== this.props.asset.id) {
+            this.updateLocation()
+        }
+    }
+
     componentDidMount() {
         this.mymap = map('mapid').setView([this.props.asset.longitude, this.props.asset.latitude], 18);
         tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {

@@ -67,6 +67,7 @@ export default class ParticlesDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
+        node.visible = obj.visible
         return node
     }
 
@@ -86,8 +87,8 @@ export default class ParticlesDef extends ObjectDef {
         }
         const texture = provider.accessObject(obj.texture)
         if(!texture.exists()) return
-        const url = provider.getAssetURL(texture)
-        provider.getLogger().log("loading the asset url",url)
+        const url = provider.assetsManager.getAssetURL(texture)
+        provider.getLogger().log("ParticlesDef: loading the asset url",url)
         const tex = new TextureLoader().load(url)
         node.updateSprite(tex)
     }

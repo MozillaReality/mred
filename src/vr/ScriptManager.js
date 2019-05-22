@@ -60,10 +60,14 @@ class SystemFacade {
         if(!obj) throw new Error(`object '${title}' not found`)
         return this.sgp.getThreeObject(obj)
     }
+    getObjectByTitle(title) {
+        return this.sgp.getGraphObjectByName(title)
+    }
     getAssetByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
         if(!obj) throw new Error(`asset '${title}' not found`)
-        return new AssetFacade(this.manager,obj)
+        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
+        return new AssetFacade(this.manager,obj, trusted)
     }
     getObjectById(id) {
         return this.sgp.getGraphObjectById(id)
@@ -72,13 +76,13 @@ class SystemFacade {
         return this.sgp.getThreeObject(id)
     }
     playSound(id) {
-        const asset = this.sgp.getGraphObjectById(id)
-        this.manager.sgp.playMediaAsset(asset)
+        this.playMedia(id)
     }
 
     playMedia(id) {
         const asset = this.sgp.getGraphObjectById(id)
-        this.manager.sgp.playMediaAsset(asset)
+        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
+        this.manager.sgp.playMediaAsset(asset, trusted)
     }
 
     stopMedia(id) {
@@ -253,7 +257,9 @@ export default class ScriptManager {
             behaviors.forEach(b => {
                 const system = this.getSystemFacadeFromCache(b)
                 const asset = this.sgp.getParsedBehaviorAsset(b)
+                system._event = evt   // want to be able to look for this later
                 if (asset.message) asset.message.call(system,evt)
+                system._event = null
             })
         } catch (error) {
             this.logger.error("error in '" + name + "' message",error.message)
@@ -262,8 +268,8 @@ export default class ScriptManager {
         }
     }
 
-    performClickAction(target) {
-        this.fireEventAtTarget(target, "click", {})
+    performClickAction(target, e) {
+        this.fireEventAtTarget(target, "click", {event: e})
         // if(!this.running) return
         // try {
         //     this.logger.log("script manager, got a click event",target)
@@ -310,12 +316,14 @@ export default class ScriptManager {
                 behaviors.forEach(b => {
                     const system = this.getSystemFacadeFromCache(b)
                     const asset = this.sgp.getParsedBehaviorAsset(b)
+                    system._event = evt
                     if (asset[type]) {
                         // this.logger.log("found message on behavior")
                         asset[type].call(system,evt)
                     } else {
                         // this.logger.log("didn't find message on behavior")
                     }
+                    system._event = null
                 })
                 target = this.sgp.getGraphObjectById(target.parent)
             }
@@ -354,12 +362,13 @@ export default class ScriptManager {
 
 
 class AssetFacade {
-    constructor(manager,obj) {
+    constructor(manager,obj, trusted) {
         this.manager = manager
         this.obj = obj
+        this.trusted = trusted
     }
     play() {
-        this.manager.sgp.playMediaAsset(this.obj)
+        this.manager.sgp.playMediaAsset(this.obj, this.trusted)
     }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)

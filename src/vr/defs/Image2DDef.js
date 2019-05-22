@@ -34,6 +34,7 @@ export default class Image2DDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
+        node.visible = obj.visible
         this.attachAsset(node, obj, provider)
         return node
     }
@@ -50,28 +51,8 @@ export default class Image2DDef extends ObjectDef {
             node.material = new MeshLambertMaterial({color: 'white', side:DoubleSide})
             return
         }
-        const asset = provider.accessObject(obj.asset)
-        if(!asset.exists()) return
-        const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading asset url",url)
-        if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new TextureLoader().load(url)
-            node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
-        }
-        if(asset.subtype === ASSET_TYPES.VIDEO) {
-            let video
-            if(!provider.videocache[url]) {
-                video = document.createElement('video')
-                video.crossOrigin = 'anonymous'
-                video.playsinline = true
-                video.src = url
-                provider.videocache[url] = video
-            } else {
-                video = provider.videocache[url]
-            }
-            const tex = new VideoTexture(video)
-            node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
-        }
+        const tex = provider.assetsManager.getTexture(obj.asset)
+        if(tex) node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
     }
 
 }

@@ -12,6 +12,7 @@ import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
+import {AssetsManager} from './AssetsManager'
 
 
 function attachUtilFunctions(obj) {
@@ -49,23 +50,16 @@ export class ImmersivePlayer extends Component {
         this.logger = new PubnubLogger(opts.doc)
         this.scriptManager = new ScriptManager(new Adapter(this),this.logger)
         this.provider = {
-            videocache: {},
-
             accessObject:(id)=>{
                 if(!this.obj_map[id]) return {
                     exists:()=>false,
                 }
                 return this.obj_map[id]
             },
-            getAssetURL:(asset) => {
-                if(asset.assetId) {
-                    return this.assets_url_map[asset.assetId]
-                } else {
-                    return asset.src
-                }
-            },
             getLogger:() => this.logger
         }
+        this.assetsManager = new AssetsManager(this.provider)
+        this.provider.assetsManager = this.assetsManager
     }
 
     componentDidMount() {
@@ -88,17 +82,9 @@ export class ImmersivePlayer extends Component {
 
     }
 
-    cacheAssetsList() {
-        return AuthModule.getJSON(`${getAssetsURL()}list`)
-            .then(assets => {
-                assets.forEach(asset => {
-                    this.assets_url_map[asset.id] = asset.url
-                })
-            })
-    }
     startScene() {
         const opts = parseOptions({})
-        this.cacheAssetsList().then(()=> {
+        this.assetsManager.cacheAssetsList().then(()=> {
             AuthModule.getJSON(getDocsURL() + opts.doc).then((payload) => {
                 this.root = payload.graph
                 this.logger.log("loaded payload", this.root)
@@ -184,7 +170,7 @@ export class ImmersivePlayer extends Component {
                 this.logger.log("obj", obj)
                 const gobj = this.obj_map[obj.userData.graphid]
                 this.logger.log("jobj", gobj)
-                this.scriptManager.performClickAction(gobj)
+                this.scriptManager.performClickAction(gobj, e)
             }
         }
     }
@@ -221,8 +207,8 @@ export class ImmersivePlayer extends Component {
             if(node.previewUpdate) this.previewUpdateNodes.push(node)
             this.three_map[obj.id] = node
             node.userData.graphid = obj.id
-            on(node, 'click', () => {
-                this.scriptManager.performClickAction(obj)
+            on(node, 'click', (e) => {
+                this.scriptManager.performClickAction(obj, e)
             })
         }
         if(obj.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
@@ -437,7 +423,7 @@ class Adapter extends SceneGraphProvider {
 
         this.player.setCurrentScene(scene)
     }
-    playMediaAsset (asset)  {
+    playMediaAsset (asset, trusted=false)  {
         console.log("playing the media asset",asset)
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             if(this.player.playing_audio[asset.id]) {
@@ -464,9 +450,7 @@ class Adapter extends SceneGraphProvider {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            const url = this.player.provider.getAssetURL(asset)
-            const cache = this.player.provider.videocache
-            if(cache[url]) cache[url].play()
+            this.player.provider.assetsManager.playMediaAsset(asset,trusted)
         }
     }
 

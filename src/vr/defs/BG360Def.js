@@ -69,6 +69,7 @@ export default class BG360Def {
         customize(node,mat,obj)
         node.name = obj.title
         node.userData.clickable = true
+        node.visible = obj.visible
         // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
         this.attachAsset(node, obj, provider)
         return node
@@ -89,28 +90,8 @@ export default class BG360Def {
             node.material = new MeshLambertMaterial({color: 'white', side:DoubleSide})
             return
         }
-        const asset = provider.accessObject(obj.asset)
-        if(!asset.exists()) return
-        const url = provider.getAssetURL(asset)
-        provider.getLogger().log("loading asset url",url)
-        if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new TextureLoader().load(url)
-            node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
-        }
-        if(asset.subtype === ASSET_TYPES.VIDEO) {
-            let video
-            if(!provider.videocache[url]) {
-                video = document.createElement('video')
-                video.crossOrigin = 'anonymous'
-                video.playsinline = true
-                video.src = url
-                provider.videocache[url] = video
-            } else {
-                video = provider.videocache[url]
-            }
-            const tex = new VideoTexture(video)
-            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
-        }
+        const tex = provider.assetsManager.getTexture(obj.asset)
+        if(tex) node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
     }
 
 }

@@ -116,27 +116,19 @@ class Adapter extends SceneGraphProvider {
     }
 
     startImageRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO start image recognizer")
+        this.provider.getLogger().log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        const logger = this.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop image recognizer")
+        this.provider.getLogger().log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoTracker(info) {
-        const logger = this.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO start geo recognizer")
+        this.provider.getLogger().log("NOTHING DONE TO start geo recognizer")
     }
 
     stopGeoTracker(info) {
-        const logger = this.provider.pubnub.getLogger()
-        
-        logger.log("NOTHING DONE TO stop geo recognizer")
+        this.provider.getLogger().log("NOTHING DONE TO stop geo recognizer")
     }
 
 }
@@ -270,7 +262,7 @@ export default class ImmersiveVREditor extends Component {
 
     standardViewClickHandler = (e)  => {
         if(this.scriptManager.isRunning()) {
-            this.scriptManager.performClickAction(this.props.provider.accessObject(e.target.userData.graphid))
+            this.scriptManager.performClickAction(this.props.provider.accessObject(e.target.userData.graphid), e)
         } else {
             SelectionManager.setSelection(e.target.userData.graphid)
         }
