@@ -374,8 +374,8 @@ class Adapter extends SceneGraphProvider {
         return obj.children.filter(ch => ch.type === TOTAL_OBJ_TYPES.BEHAVIOR)
     }
     getThreeObject (obj)  {
-        if (obj === null) {
-            this.logger.error("getThreeObject passed null object")
+        if (!obj) {
+            this.logger.error("getThreeObject got invalid obj")
         } else {
             if(obj.id) return this.player.three_map[obj.id]
         }
