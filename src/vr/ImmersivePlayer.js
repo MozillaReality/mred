@@ -255,9 +255,11 @@ export class ImmersivePlayer extends Component {
         this.scene.add(this.camera)
         window.addEventListener( 'resize', ()=>{
             const body = document.querySelector("body")
-            this.camera.aspect = body.clientWidth / body.clientHeight;
+            // this.camera.aspect = body.clientWidth / body.clientHeight;
+            this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
-            this.renderer.setSize( body.clientWidth - 3, body.clientHeight  - 3);
+            // this.renderer.setSize( body.clientWidth - 3, body.clientHeight  - 3);
+            this.renderer.setSize( window.innerWidth, window.innerHeight );
         }, false );
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
