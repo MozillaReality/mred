@@ -155,6 +155,12 @@ export class ImmersivePlayer extends Component {
         </div>
     }
 
+    findKnownParent(node) {
+        if(!node) return null
+        if(node.userData.graphid) return node
+        return this.findKnownParent(node.parent)
+    }
+
     clickedCanvas = (e) => {
         this.canvas.focus()
         const rect = this.canvas.getBoundingClientRect();
@@ -169,17 +175,18 @@ export class ImmersivePlayer extends Component {
         if(intersect && intersect.length >= 1) {
             const inter = intersect.find(inter => inter.distance > 0)
             if(inter) {
+                let obj = this.findKnownParent(inter.object)
                 //this.logger.log("found the interesction", inter)
                 //this.logger.log("intersections", intersect)
-                const obj = inter.object
+//                const obj = inter.object
                 //this.logger.log("obj", obj)
-                if (obj.userData && obj.userData.graphid) { 
+               // if (obj.userData && obj.userData.graphid) { 
                     const gobj = this.obj_map[obj.userData.graphid]
                     //this.logger.log("jobj", gobj)
-                    if (gobj) {
+                 //   if (gobj) {
                         this.scriptManager.performClickAction(gobj, e)
-                   }
-                }
+                  // }
+               // }
             }
         }
     }
