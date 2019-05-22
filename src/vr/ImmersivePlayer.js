@@ -144,25 +144,26 @@ export class ImmersivePlayer extends Component {
             </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
-                    onClick={this.clickedCanvas} style={{
-                            boxSizing:'border-box',
-                            margin:0,
-                            padding:0,
-                            border:"1px solid red",
-                        }}
+                    onClick={this.clickedCanvas}
                 />
             </ErrorCatcher>
         </div>
     }
 
     clickedCanvas = (e) => {
+        function findKnownParent(node) {
+            if(!node) return null
+            if(node.userData.graphid) return node
+            return findKnownParent(node.parent)
+        }
+
+        this.logger.log("clicked on the canvas")
         this.canvas.focus()
         const rect = this.canvas.getBoundingClientRect();
         const pointer = {
             x: ( e.clientX - rect.left ) / rect.width * 2 - 1,
             y: - ( e.clientY - rect.top ) / rect.height * 2 + 1,
         }
-        this.logger.log("clicked on the canvas")
         this.raycaster.setFromCamera(pointer, this.camera);
         const scene = this.three_map[this.current_scene.id]
         const intersect = this.raycaster.intersectObjects(scene.children, true)
@@ -171,7 +172,9 @@ export class ImmersivePlayer extends Component {
             if(inter) {
                 //this.logger.log("found the interesction", inter)
                 //this.logger.log("intersections", intersect)
-                const obj = inter.object
+                // let obj = inter.object
+                let obj = findKnownParent(inter.object)
+
                 //this.logger.log("obj", obj)
                 if (obj.userData && obj.userData.graphid) { 
                     const gobj = this.obj_map[obj.userData.graphid]
