@@ -144,13 +144,12 @@ export class ImmersivePlayer extends Component {
             </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
-                        style={{
+                    onClick={this.clickedCanvas} style={{
                             boxSizing:'border-box',
                             margin:0,
                             padding:0,
                             border:"1px solid red",
                         }}
-                    onClick={this.clickedCanvas}
                 />
             </ErrorCatcher>
         </div>
@@ -174,9 +173,13 @@ export class ImmersivePlayer extends Component {
                 //this.logger.log("intersections", intersect)
                 const obj = inter.object
                 //this.logger.log("obj", obj)
-                const gobj = this.obj_map[obj.userData.graphid]
-                //this.logger.log("jobj", gobj)
-                this.scriptManager.performClickAction(gobj, e)
+                if (obj.userData && obj.userData.graphid) { 
+                    const gobj = this.obj_map[obj.userData.graphid]
+                    //this.logger.log("jobj", gobj)
+                    if (gobj) {
+                        this.scriptManager.performClickAction(gobj, e)
+                   }
+                }
             }
         }
     }
