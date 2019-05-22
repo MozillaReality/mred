@@ -149,7 +149,7 @@ export class ImmersivePlayer extends Component {
             </ErrorCatcher>
         </div>
     }
-
+    
     clickedCanvas = (e) => {
         function findKnownParent(node) {
             if(!node) return null
@@ -176,13 +176,13 @@ export class ImmersivePlayer extends Component {
                 let obj = findKnownParent(inter.object)
 
                 //this.logger.log("obj", obj)
-                if (obj.userData && obj.userData.graphid) { 
+               // if (obj.userData && obj.userData.graphid) { 
                     const gobj = this.obj_map[obj.userData.graphid]
                     //this.logger.log("jobj", gobj)
-                    if (gobj) {
+                 //   if (gobj) {
                         this.scriptManager.performClickAction(gobj, e)
-                   }
-                }
+                  // }
+               // }
             }
         }
     }
