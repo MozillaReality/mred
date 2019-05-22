@@ -415,6 +415,7 @@ export class VRCanvas extends Component {
                     //start the script manager
                     this.startRecognizers()
                     this.scriptManager.startRunning()
+                    this.scriptManager.startFirstScene();
                 }
                 return false
             }

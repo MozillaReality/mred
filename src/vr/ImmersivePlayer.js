@@ -90,16 +90,17 @@ export class ImmersivePlayer extends Component {
                 this.logger.log("loaded payload", this.root)
                 this.buildRoot(this.root)
                 this.logger.log(this.root)
-                if (this.root.defaultScene) {
-                    const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
-                    this.setCurrentScene(sc)
-                } else {
-                    const sc = this.root.children[0]
-                    this.setCurrentScene(sc)
-                }
                 Promise.all(this.pendingAssets).then(() => {
                     this.logger.log("all assets loaded now. starting script manager")
                     this.scriptManager.startRunning()
+                    if (this.root.defaultScene) {
+                        const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
+                        this.setCurrentScene(sc)
+                    } else {
+                        const sc = this.root.children[0]
+                        this.setCurrentScene(sc)
+                    }
+                    this.scriptManager.startFirstScene()
                 })
             })
         })

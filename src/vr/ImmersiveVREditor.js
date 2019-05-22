@@ -354,6 +354,7 @@ export default class ImmersiveVREditor extends Component {
                     } else {
                         runButton.set('text','stop')
                         this.scriptManager.startRunning()
+                        this.scriptManager.startFirstScene()
                     }
                 })
             this.tools.add(runButton)

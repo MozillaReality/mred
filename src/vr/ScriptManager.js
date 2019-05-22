@@ -217,6 +217,15 @@ export default class ScriptManager {
         this.logger.log("ScriptManager starting")
         try {
             this.fireLifecycleEvent('start')
+        } catch(err) {
+            this.logger.error("error in script",err.message)
+            this.logger.error(err)
+            this.stopRunning()
+        }
+    }
+
+    startFirstScene() {
+        try {
             this.fireSceneLifecycleEvent('enter',this.sgp.getCurrentScene())
         } catch(err) {
             this.logger.error("error in script",err.message)
@@ -224,6 +233,8 @@ export default class ScriptManager {
             this.stopRunning()
         }
     }
+    
+
     stopRunning() {
         try {
             this.fireSceneLifecycleEvent('exit',this.sgp.getCurrentScene())
