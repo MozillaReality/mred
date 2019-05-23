@@ -186,6 +186,18 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     }
 
+    duplicateDocument() {
+        const newDocId = this.genID("doc")
+        this.save().then(()=> {
+            this.docid = newDocId
+            this.setDocTitle("copy of "+this.getDocTitle())
+            return this.save()
+        }).then(()=>{
+            ToasterMananager.add('duplicating doc')
+            return this.loadDoc(newDocId)
+        })
+    }
+
     docLoaded = () => {
         return Promise.resolve()
     }

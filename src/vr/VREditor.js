@@ -83,6 +83,7 @@ export default class VREditor extends SyncGraphProvider {
     }
     getTitle = () => "MrEd"
     getDocTitle = () => this.accessObject(this.getSceneRoot()).title
+    setDocTitle = (title) => this.accessObject(this.getSceneRoot()).set('title',title)
     getLogger = () => {
         if(this.pubnub) return this.pubnub.getLogger()
         return new ConsoleLogger()
@@ -857,6 +858,7 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-file" onClick={this.newDoc} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
+                <button className="fa fa-clone" onClick={()=>prov.duplicateDocument()} title={"duplicate project"}></button>
                 <button onClick={() => prov.editIn2D()}>2D Edit</button>
                 <button onClick={() => prov.editInVR()}>AR Edit</button>
                 <button onClick={() => prov.viewInVR()}>XR View</button>
