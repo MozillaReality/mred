@@ -202,6 +202,10 @@ export class VRCanvas extends Component {
         //make new stuff
         const graph = this.props.provider.getDocGraph()
         this.rebuildNode(graph,"")
+
+        const sceneObj = this.props.provider.getSelectedSceneObject()
+        const sceneNode = this.findNode(sceneObj.id)
+        this.setCurrentSceneWrapper(sceneNode, false)
     }
     rebuildNode(obj, inset) {
         // console.log(inset,"rebuilding",obj.type)
@@ -209,7 +213,6 @@ export class VRCanvas extends Component {
             const node = new SceneDef().makeNode(obj,this.props.provider)
             this.insertNodeMapping(obj.id,node)
             this.addSceneWrapper(node)
-            this.setCurrentSceneWrapper(node)
         }
         if(is3DObjectType(obj.type)) {
             const node = get3DObjectDef(obj.type).makeNode(obj,this.props.provider)
@@ -229,11 +232,11 @@ export class VRCanvas extends Component {
         if(!sel) return
         const obj = this.props.provider.accessObject(sel)
 
-        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel))
+        if(obj.type === TOTAL_OBJ_TYPES.SCENE) return this.setCurrentSceneWrapper(this.findNode(sel),true)
 
         if(is3DObjectType(obj.type)) {
             const sc = this.props.provider.findSceneObjectParent(obj)
-            this.setCurrentSceneWrapper(this.findNode(sc.id))
+            this.setCurrentSceneWrapper(this.findNode(sc.id),true)
             const node = this.findNode(sel)
             if (!node) return
             this.transformControls.attach(node)
@@ -273,6 +276,7 @@ export class VRCanvas extends Component {
     }
 
     componentWillUnmount() {
+        this.saveOrbitControlsState()
         this.transformControls.removeEventListener('change',this.transformChanged)
         this.transformControls.removeEventListener('mouseDown',this.pauseQueue)
         this.transformControls.removeEventListener('mouseUp',this.unpauseQueue)
@@ -474,7 +478,7 @@ export class VRCanvas extends Component {
             const scene = new SceneDef().makeNode(obj,this.props.provider)
             this.insertNodeMapping(nodeid, scene)
             this.addSceneWrapper(scene)
-            this.setCurrentSceneWrapper(scene)
+            this.setCurrentSceneWrapper(scene,true)
             return scene
         }
 
@@ -486,7 +490,29 @@ export class VRCanvas extends Component {
         this.scene.add(scene)
     }
 
-    setCurrentSceneWrapper(scene) {
+    saveOrbitControlsState() {
+        const scene = this.scenes.find(sc => sc.visible)
+        this.orbitControls.saveState()
+        const id = scene.userData.graphid
+        this.props.provider.orbit_state[id] = {
+            target: this.orbitControls.target0.clone(),
+            position:this.orbitControls.position0.clone(),
+            zoom: this.orbitControls.zoom0
+        }
+    }
+    restoreOrbitControlsState(scene) {
+        const id = scene.userData.graphid
+        if(this.props.provider.orbit_state[id]) {
+            const state = this.props.provider.orbit_state[id]
+            this.orbitControls.target0.copy(state.target)
+            this.orbitControls.position0.copy(state.position)
+            this.orbitControls.zoom0 = state.zoom
+            this.orbitControls.reset()
+        }
+    }
+    setCurrentSceneWrapper(scene, saveState) {
+        const cur = this.getCurrentSceneWrapper()
+        if(scene !== cur && saveState) this.saveOrbitControlsState()
         this.scenes.forEach(sc => {
             if(sc === scene) {
                 sc.visible = true
@@ -494,6 +520,7 @@ export class VRCanvas extends Component {
                 sc.visible = false
             }
         })
+        this.restoreOrbitControlsState(scene)
     }
 
     dumpScenes() {

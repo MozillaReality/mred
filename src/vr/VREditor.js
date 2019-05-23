@@ -70,6 +70,7 @@ export default class VREditor extends SyncGraphProvider {
         super(options)
         this.imagecache = {}
         this.behaviorCache = {}
+        this.orbit_state = {}
         this.assetsManager = new AssetsManager(this)
     }
     getDocType() { return "vr" }
