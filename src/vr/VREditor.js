@@ -1,6 +1,6 @@
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Spacer, Toolbar} from '../common/GridEditorApp'
+import GridEditorApp, {MenuPopup, Panel, Spacer, Toolbar} from '../common/GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
@@ -11,7 +11,7 @@ import {fetchGraphObject, insertAsFirstChild, insertAsLastChild, listToArray} fr
 import CubeDef from "./defs/CubeDef"
 import SceneDef from "./defs/SceneDef"
 import InputManager from "../common/InputManager"
-import {DialogContainer, DialogManager, HBox, PopupContainer} from "appy-comps"
+import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
     ASSET_TYPES,
     canBeDeleted,
@@ -547,16 +547,7 @@ export default class VREditor extends SyncGraphProvider {
             || def.key === PROP_DEFS.textColor.key
             || def.key === PROP_DEFS.startColor.key
             || def.key === PROP_DEFS.endColor.key
-        ) return <HBox>
-            {
-                SIMPLE_COLORS
-                    .map(c => <button
-                        key={c}
-                        onClick={()=>onChange(c)}
-                        style={{color:c, padding:'1px', margin:0, borderWidth:0,}}
-                        className={"fa fa-square"}/> )
-            }
-        </HBox>
+        ) return <ColorEditor def={def} item={item} onChange={onChange} value={value}/>
 
         if(def.key === 'scale') return <ScaleEditor def={def} item={item} onChange={onChange} provider={this}/>
         if(def.key === 'behavior') return <button onClick={()=>SelectionManager.setSelection(value)}>view code</button>
@@ -997,4 +988,59 @@ const RunButton = (props) => {
 function withNone(array) {
     array.push(NONE_ASSET.id)
     return array
+}
+
+class ColorEditor extends Component {
+    showPopup = (e) =>{
+        PopupManager.show(<ColorPopup onChange={this.props.onChange} value={this.props.value}/>, e.target)
+    }
+    render() {
+        console.log("the value of the def is",this.props.def)
+        return <button
+            style={{backgroundColor:this.props.value}}
+            onClick={this.showPopup}
+        >{this.props.value}</button>
+
+    }
+}
+
+class ColorPopup extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            value:props.value
+        }
+    }
+    onChange = (e) => {
+        this.setState({value:e.target.value})
+        const v = e.target.value
+        if(v.indexOf('#')>=0 && v.length === 7) this.props.onChange(v)
+    }
+    done = () => {
+        this.props.onChange(this.state.value)
+        PopupManager.hide()
+    }
+    render() {
+        return <VBox style={{
+            width: '130px',
+            height: '100px',
+            backgroundColor: 'white'
+        }}>
+            <HBox>
+                {
+                    SIMPLE_COLORS
+                        .map(c => <button
+                            key={c}
+                            onClick={() => {
+                                this.props.onChange(c)
+                            }}
+                            style={{color: c, padding: '1px', margin: 0, borderWidth: 0,}}
+                            className={"fa fa-square"}/>)
+                }
+            </HBox>
+            <input type="text" value={this.state.value}
+                   onChange={this.onChange}/>
+            <button onClick={this.done}>done</button>
+        </VBox>
+    }
 }
