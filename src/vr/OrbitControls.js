@@ -203,7 +203,6 @@ const OrbitControls = function ( object, domElement ) {
                 8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
 
                 scope.dispatchEvent( changeEvent );
-
                 lastPosition.copy( scope.object.position );
                 lastQuaternion.copy( scope.object.quaternion );
                 zoomChanged = false;

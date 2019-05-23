@@ -149,9 +149,15 @@ export class VRCanvas extends Component {
         if(is3DObjectType(obj.type)) {
             const node = this.findNode(sel)
             if(!node) return
-            this.orbitControls.target.copy(node.position)
+            this.orbitControls.target0.copy(node.position)
+            const cam = node.position.clone().sub(new THREE.Vector3(0,0,-2))
+            this.orbitControls.position0.copy(cam)
+            this.orbitControls.reset()
         }
         if(obj.type === TOTAL_OBJ_TYPES.SCENE) {
+            this.orbitControls.saveState()
+            this.orbitControls.target0.set(0,0,0)
+            this.orbitControls.position0.set(1,6,6)
             this.orbitControls.reset()
         }
     }
@@ -165,6 +171,7 @@ export class VRCanvas extends Component {
             scene: -1,
             running:props.running
         }
+        this.current_scene_wrapper = null
         this.playing_audio = {}
         this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.getLogger())
     }
@@ -497,7 +504,6 @@ export class VRCanvas extends Component {
         this.props.provider.orbit_state[id] = {
             target: this.orbitControls.target0.clone(),
             position:this.orbitControls.position0.clone(),
-            zoom: this.orbitControls.zoom0
         }
     }
     restoreOrbitControlsState(scene) {
@@ -506,7 +512,6 @@ export class VRCanvas extends Component {
             const state = this.props.provider.orbit_state[id]
             this.orbitControls.target0.copy(state.target)
             this.orbitControls.position0.copy(state.position)
-            this.orbitControls.zoom0 = state.zoom
             this.orbitControls.reset()
         }
     }
@@ -514,6 +519,7 @@ export class VRCanvas extends Component {
         const cur = this.getCurrentSceneWrapper()
         const changed = (scene !== cur)
         if(changed && saveState) this.saveOrbitControlsState()
+        this.current_scene_wrapper = scene
         this.scenes.forEach(sc => {
             if(sc === scene) {
                 sc.visible = true
@@ -540,7 +546,7 @@ export class VRCanvas extends Component {
     }
 
     getCurrentSceneWrapper() {
-        return this.scenes.find(sc => sc.visible)
+        return this.current_scene_wrapper
     }
 
     clickedCanvas = (e) => {
