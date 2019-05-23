@@ -483,7 +483,7 @@ export default class VREditor extends SyncGraphProvider {
         }
         const obj1 = this.accessObject(SelectionManager.getClipboard())
         let parent = null
-        if(is3DObjectType(obj1.type)) parent = this.getSelectedSceneObject().id
+        if(is3DObjectType(obj1.type)) parent = this.getSelectedSceneObject()
         if(obj1.type === 'scene') parent = this.accessObject(this.getSceneRoot())
         if (!parent) return console.error("no parent to ad too! bad obj type?",obj1.type)
         parent.insertChildLast(obj1.clone())
