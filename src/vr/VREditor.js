@@ -214,15 +214,27 @@ export default class VREditor extends SyncGraphProvider {
                 group: ['sx','sy','sz'],
                 custom:true,
             })
+            defs.push({
+                key: 'translation',
+                name: 'Translation',
+                type: TYPES.GROUP,
+                group: ['tx','ty','tz'],
+                custom:true,
+            })
+            defs.push({
+                key: 'rotation',
+                name: 'Rotation',
+                type: TYPES.GROUP,
+                group: ['rx','ry','rz'],
+                custom:true,
+            })
         }
 
         return defs
     }
     setPropertyValue(item, def, value) {
-        if(def.key === 'scale') {
-            super.setPropertyValue(item,{key:'sx'},value.sx)
-            super.setPropertyValue(item,{key:'sy'},value.sy)
-            super.setPropertyValue(item,{key:'sz'},value.sz)
+        if(def.key === 'scale' || def.key === 'translation' || def.key === 'rotation') {
+            def.group.forEach(key => super.setPropertyValue(item,{key:key}, value[key]))
             return
         }
         super.setPropertyValue(item,def,value)
@@ -550,7 +562,9 @@ export default class VREditor extends SyncGraphProvider {
             || def.key === PROP_DEFS.endColor.key
         ) return <ColorEditor def={def} item={item} onChange={onChange} value={value}/>
 
-        if(def.key === 'scale') return <ScaleEditor def={def} item={item} onChange={onChange} provider={this}/>
+        if(def.key === 'scale') return <GroupPropertyEditor def={def} item={item} onChange={onChange} provider={this}/>
+        if(def.key === 'translation') return <GroupPropertyEditor def={def} item={item} onChange={onChange} provider={this}/>
+        if(def.key === 'rotation') return <GroupPropertyEditor def={def} item={item} onChange={onChange} provider={this}/>
         if(def.key === 'behavior') return <button onClick={()=>SelectionManager.setSelection(value)}>view code</button>
         return <i>no custom editor for {def.key}</i>
     }
@@ -926,7 +940,7 @@ const EnumTitleRenderer = (props) => {
     return <b>{value}</b>
 }
 
-class ScaleEditor extends Component {
+class GroupPropertyEditor extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -936,27 +950,29 @@ class ScaleEditor extends Component {
     syncChanged = (e) => this.setState({sync: !this.state.sync})
     changed = (e, key) =>{
         const obj = this.props.provider.accessObject(this.props.item)
-        const newvals = {
-            sx:obj.sx,
-            sy:obj.sy,
-            sz:obj.sz
-        }
+        const keys = this.props.def.getGroupKeys()
+        const newvals = {}
+        keys.forEach(key=> newvals[key] = obj[key])
         const val = parseFloat(e.target.value)
         newvals[key] = val
         if(this.state.sync) {
-            newvals.sx = val
-            newvals.sy = val
-            newvals.sz = val
+            keys.forEach(key => newvals[key] = val)
         }
         this.props.onChange(newvals)
     }
     render() {
         const obj = this.props.provider.accessObject(this.props.item)
+        const keys = this.props.def.getGroupKeys()
+        const boxes = keys.map(key => {
+            return <input key={key}
+                          type="number"
+                          value={obj[key]}
+                          onChange={(e)=>{ this.changed(e,key)}}
+                          step={0.1}/>
+        })
         return <HBox className="scale-editor">
             <input type="checkbox" checked={this.state.sync} onChange={this.syncChanged}/>
-            <input type="number" value={obj.sx} onChange={(e)=>this.changed(e,'sx')} step={0.1}/>
-            <input type="number" value={obj.sy} onChange={(e)=>this.changed(e,'sy')} step={0.1}/>
-            <input type="number" value={obj.sz} onChange={(e)=>this.changed(e,'sz')} step={0.1}/>
+            {boxes}
         </HBox>
     }
 }
