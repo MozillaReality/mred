@@ -997,7 +997,6 @@ class ColorEditor extends Component {
         PopupManager.show(<ColorPopup onChange={this.props.onChange} value={this.props.value}/>, e.target)
     }
     render() {
-        console.log("the value of the def is",this.props.def)
         return <button
             style={{backgroundColor:this.props.value}}
             onClick={this.showPopup}
