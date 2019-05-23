@@ -512,7 +512,8 @@ export class VRCanvas extends Component {
     }
     setCurrentSceneWrapper(scene, saveState) {
         const cur = this.getCurrentSceneWrapper()
-        if(scene !== cur && saveState) this.saveOrbitControlsState()
+        const changed = (scene !== cur)
+        if(changed && saveState) this.saveOrbitControlsState()
         this.scenes.forEach(sc => {
             if(sc === scene) {
                 sc.visible = true
@@ -520,7 +521,7 @@ export class VRCanvas extends Component {
                 sc.visible = false
             }
         })
-        this.restoreOrbitControlsState(scene)
+        if(changed) this.restoreOrbitControlsState(scene)
     }
 
     dumpScenes() {
