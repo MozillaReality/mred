@@ -98,8 +98,9 @@ export default class VREditor extends SyncGraphProvider {
             defaultScene:0,
             children:doc.createArray()
         }))
+        const rootObj = new GraphAccessor(doc).object(root.id)
         //make scene
-        const scene1 = new SceneDef().make(doc,root)
+        const scene1 = new SceneDef().make(doc,rootObj)
         //make cube
         const obj = new CubeDef().make(doc,scene1)
         //make assets
