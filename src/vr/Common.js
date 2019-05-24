@@ -193,6 +193,12 @@ export const PROP_DEFS = {
         type: TYPES.ENUM,
     },
 
+    splashImage: {
+        key:'splashImage',
+        name:'Splash Image',
+        type: TYPES.ENUM,
+    },
+
     text: {
         key:'text',
         name:'Text',

@@ -16,6 +16,7 @@ export function parseOptions(opts) {
 
 
 export const on = (elem,type,cb) => elem.addEventListener(type,cb)
+export const $ = (sel) => document.querySelector(sel)
 
 export function genID(prefix) {
     return `${prefix}_${Math.floor(Math.random() * 10000)}`

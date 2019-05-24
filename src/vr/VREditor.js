@@ -91,7 +91,13 @@ export default class VREditor extends SyncGraphProvider {
 
     makeEmptyRoot(doc) {
         //make root
-        const root = fetchGraphObject(doc,doc.createObject({ type:TOTAL_OBJ_TYPES.ROOT, title:'Untitled Project', defaultScene:0, children:doc.createArray() }))
+        const root = fetchGraphObject(doc,doc.createObject({
+            type:TOTAL_OBJ_TYPES.ROOT,
+            title:'Untitled Project',
+            splashImage:NONE_ASSET.id,
+            defaultScene:0,
+            children:doc.createArray()
+        }))
         //make scene
         const scene1 = new SceneDef().make(doc,root)
         //make cube
@@ -303,6 +309,13 @@ export default class VREditor extends SyncGraphProvider {
         if(key === PROP_DEFS.recType.key) {
             return Object.keys(REC_TYPES)
         }
+        if(key === PROP_DEFS.splashImage.key) {
+            let assets = this.accessObject(this.getAssetsObject())
+                .getChildren()
+                .filter(a => a.subtype === ASSET_TYPES.IMAGE)
+                .map(a => a.id)
+            return withNone(assets)
+        }
     }
     getRendererForEnum(key,obj) {
         const realobj = this.accessObject(obj)
@@ -313,6 +326,7 @@ export default class VREditor extends SyncGraphProvider {
             case PROP_DEFS.texture.key: return EnumTitleRenderer
             case PROP_DEFS.targetImage.key: return EnumTitleRenderer
             case PROP_DEFS.targetGeoLocation.key: return EnumTitleRenderer
+            case PROP_DEFS.splashImage.key: return EnumTitleRenderer
             default: return null
         }
     }
