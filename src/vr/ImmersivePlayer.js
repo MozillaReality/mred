@@ -15,7 +15,7 @@ import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 
 
-function attachUtilFunctions(obj) {
+function attachUtilFunctions(obj, obj_map) {
     obj.find = (match,list) => {
         if(!list) list = []
         if(match(obj)) list.push(obj)
@@ -25,6 +25,9 @@ function attachUtilFunctions(obj) {
         return list
     }
     obj.exists = ()=>true
+    obj.getParent = () => {
+        return obj_map[obj.parent]
+    }
 }
 
 export class ImmersivePlayer extends Component {
@@ -180,14 +183,14 @@ export class ImmersivePlayer extends Component {
             if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
         })
         graph.children.forEach(ch => {
-            attachUtilFunctions(ch)
+            attachUtilFunctions(ch, this.obj_map)
             if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initObject(ch)
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIORS_LIST) return this.initBehaviors(ch)
         })
     }
 
     initObject(obj) {
-        attachUtilFunctions(obj)
+        attachUtilFunctions(obj, this.obj_map)
         this.obj_map[obj.id] = obj
         if(obj.title) this.title_map[obj.title] = obj
         let node = null
@@ -281,7 +284,7 @@ export class ImmersivePlayer extends Component {
     initAssets(assets) {
         assets.children.forEach(obj => {
             this.logger.log("loading asset",obj)
-            attachUtilFunctions(obj)
+            attachUtilFunctions(obj, this.obj_map)
             this.obj_map[obj.id] =  obj
             if(obj.title) this.title_map[obj.title] = obj
             this.assets_url_map[obj.id] = obj.url
@@ -290,7 +293,7 @@ export class ImmersivePlayer extends Component {
 
     initBehaviors(behaviors) {
         behaviors.children.forEach(ch => {
-            attachUtilFunctions(ch)
+            attachUtilFunctions(ch, this.obj_map)
             this.obj_map[ch.id] =  ch
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 const url = getScriptsURL()+ch.src
