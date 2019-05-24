@@ -46,9 +46,13 @@ export default class ModelDef extends ObjectDef {
             // if (node.userData.mixer) {
             //     provider.addMixer(obj.id, node.userData.mixer)
             // }
-            if (node.userData.currentClip) {
-                node.userData.action = node.userData.mixer.clipAction( node.userData.currentClip );
-                node.userData.action.play()
+            if (node.userData.model) {
+                if (node.userData.currentClip) {
+                    node.userData.action = node.userData.mixer.clipAction( node.userData.currentClip );
+                    node.userData.action.play()
+                }
+            } else {
+                node.userData.shouldPlay = true
             }
         }
         node.exit = (evt, scriptManager) => {
@@ -65,17 +69,21 @@ export default class ModelDef extends ObjectDef {
             node.userData.mixer && node.userData.mixer.update(dt);
         }
 
-        node.playAllClips = (evt, scriptManager) => {
-            node.userData.clips.forEach((clip) => {
-                node.userData.mixer.clipAction(clip).reset().play();
-            });
-        }
+        // node.playAllClips = (evt, scriptManager) => {
+        //     node.userData.clips.forEach((clip) => {
+        //         node.userData.mixer.clipAction(clip).reset().play();
+        //     });
+        // }
         // need to get this into the render loop somehow
 
         node.useClip = (name) => {
-            var clip = THREE.AnimationClip.findByName( node.userData.clips, name );
-            if (clip) {
-                node.userData.currentClip = clip
+            if (node.userData.model) {
+                var clip = THREE.AnimationClip.findByName( node.userData.clips, name );
+                if (clip) {
+                    node.userData.currentClip = clip
+                }
+            } else {
+                node.userData.currentClipName = name
             }
         }
 
@@ -110,7 +118,6 @@ export default class ModelDef extends ObjectDef {
         userData.clips.forEach((clip) => {
           if (clip.validate()) clip.optimize();
         });
-        userData.currentClip = null
 
         if (!userData.clips.length) return;
     
@@ -144,6 +151,11 @@ export default class ModelDef extends ObjectDef {
         const draco = new DRACOLoader() 
         DRACOLoader.setDecoderPath( './draco/' );
         loader.setDRACOLoader( draco );
+
+        node.userData.shouldPlay = false
+        node.userData.currentClip = null
+        node.userData.model = null
+        node.userData.currentClipName = null
 
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
@@ -184,6 +196,19 @@ export default class ModelDef extends ObjectDef {
                 // model.position.y = -bs.center.y
                 // model.position.z = -bs.center.z
 
+                if (node.userData.currentClipName) {
+                    var clip = THREE.AnimationClip.findByName( node.userData.clips, node.userData.currentClipName );
+                    if (clip) {
+                        node.userData.currentClip = clip
+                    }
+                    node.userData.currentClipName = null
+                }
+
+                if (node.userData.shouldPlay && node.userData.currentClip) {
+                    node.userData.action = node.userData.mixer.clipAction( node.userData.currentClip );
+                    node.userData.action.play()
+                    node.userData.shouldPlay = false
+                }
                 node.userData.clicker.geometry = new THREE.SphereBufferGeometry(node.userData.boundingBoxSize / 2)
             // }
             //disable the clicker sphere
