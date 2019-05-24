@@ -150,6 +150,7 @@ export default class ScriptManager {
                     evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
                     const asset = this.sgp.getParsedBehaviorAsset(child)
                     const system = this.getSystemFacadeFromCache(child)
+                    system.code = asset
                     if (asset[type]) asset[type].call(system,evt)
                 } else {
                     evt.target = this.sgp.getThreeObject(child)
@@ -180,6 +181,7 @@ export default class ScriptManager {
                 //evt.props = child.props()
                 const asset = this.sgp.getParsedBehaviorAsset(child)
                 const system = this.getSystemFacadeFromCache(child)
+                system.code = asset
                 if (asset[type]) asset[type].call(system,evt)
                 // if(asset[type]) asset[type](evt)
             } else {
@@ -269,6 +271,7 @@ export default class ScriptManager {
                 const system = this.getSystemFacadeFromCache(b)
                 const asset = this.sgp.getParsedBehaviorAsset(b)
                 system._event = evt   // want to be able to look for this later
+                system.code = asset
                 if (asset.message) asset.message.call(system,evt)
                 system._event = null
             })
@@ -329,6 +332,7 @@ export default class ScriptManager {
                     const asset = this.sgp.getParsedBehaviorAsset(b)
                     system._event = evt
                     if (asset[type]) {
+                        system.code = asset
                         // this.logger.log("found message on behavior")
                         asset[type].call(system,evt)
                     } else {

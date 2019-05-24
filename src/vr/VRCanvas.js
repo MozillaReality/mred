@@ -23,7 +23,12 @@ class Adapter extends SceneGraphProvider {
     }
 
     getCurrentScene() {
-        return this.canvas.props.provider.getSelectedSceneObject()
+        const scene = this.canvas.props.provider.getSelectedSceneObject()
+        if(!scene || !scene.exists()) {
+            this.logger.error("the current scene is null")
+            return null
+        }
+        return scene
     }
     getSceneObjects(scene) {
         return scene.getChildren().filter(ch => is3DObjectType(ch.type))

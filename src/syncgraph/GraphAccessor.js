@@ -64,6 +64,9 @@ export default class GraphAccessor {
                     console.error("could not find index for child", obj, 'in children', parent.children)
                 }
             }
+            obj.getParent = () => {
+                return this.object(obj.parent)
+            }
             obj.clone = () => {
                 const shape = obj;
                 const id = shape.id

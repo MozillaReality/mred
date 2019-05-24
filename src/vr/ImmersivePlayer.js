@@ -360,6 +360,7 @@ class Adapter extends SceneGraphProvider {
     }
 
     getCurrentScene() {
+        if(!this.player.current_scene) this.logger.error("the current scene is null")
         return this.player.current_scene
     }
     getSceneObjects(sc) {
