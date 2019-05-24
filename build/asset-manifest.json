@@ -7,10 +7,10 @@
   "static/js/1.f065ac6d.chunk.js.map": "./static/js/1.f065ac6d.chunk.js.map",
   "runtime~main.js": "./static/js/runtime~main.4a686d48.js",
   "runtime~main.js.map": "./static/js/runtime~main.4a686d48.js.map",
-  "static/media/font-awesome.css": "./static/media/fontawesome-webfont.674f50d2.eot",
-  "static/css/main.79559bd8.chunk.css.map": "./static/css/main.79559bd8.chunk.css.map",
+  "static/media/font-awesome.css": "./static/media/fontawesome-webfont.af7ae505.woff2",
   "static/css/1.50a1c615.chunk.css.map": "./static/css/1.50a1c615.chunk.css.map",
+  "static/css/main.79559bd8.chunk.css.map": "./static/css/main.79559bd8.chunk.css.map",
   "index.html": "./index.html",
-  "precache-manifest.67a9682bfeda28d7894d3152a3cc6557.js": "./precache-manifest.67a9682bfeda28d7894d3152a3cc6557.js",
+  "precache-manifest.eaa43b4cbfbaf79e0733aaa82dc57e98.js": "./precache-manifest.eaa43b4cbfbaf79e0733aaa82dc57e98.js",
   "service-worker.js": "./service-worker.js"
 }
