@@ -95,7 +95,7 @@ export default class VREditor extends SyncGraphProvider {
             type:TOTAL_OBJ_TYPES.ROOT,
             title:'Untitled Project',
             splashImage:NONE_ASSET.id,
-            defaultScene:0,
+            defaultScene:NONE_ASSET.id,
             children:doc.createArray()
         }))
         const rootObj = new GraphAccessor(doc).object(root.id)
@@ -288,9 +288,9 @@ export default class VREditor extends SyncGraphProvider {
             return Object.keys(HORIZONTAL_ALIGNMENT).map(key => HORIZONTAL_ALIGNMENT[key])
         }
         if(key === PROP_DEFS.defaultScene.key) {
-            return this.accessObject(this.getSceneRoot()).getChildren()
+            return withNone(this.accessObject(this.getSceneRoot()).getChildren()
                 .filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
-                .map(ch => ch.id)
+                .map(ch => ch.id))
         }
         if(key === PROP_DEFS.texture.key) {
             let assets = this.accessObject(this.getAssetsObject()).getChildren()

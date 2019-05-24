@@ -523,6 +523,7 @@ export class VRCanvas extends Component {
         }
     }
     setCurrentSceneWrapper(scene, saveState) {
+        if(!scene) return this.props.provider.getLogger().error("invalid scene. cannot setCurrentSceneWrapper")
         const cur = this.getCurrentSceneWrapper()
         const changed = (scene !== cur)
         if(changed && saveState) this.saveOrbitControlsState()

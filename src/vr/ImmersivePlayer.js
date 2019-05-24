@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import {Group} from "three"
 import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
-import {ASSET_TYPES, get3DObjectDef, is3DObjectType, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
+import {ASSET_TYPES, get3DObjectDef, is3DObjectType, NONE_ASSET, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
@@ -77,8 +77,9 @@ export class ImmersivePlayer extends Component {
                 Promise.all(this.pendingAssets).then(() => {
                     this.logger.log("all assets loaded now. starting script manager")
                     this.scriptManager.startRunning()
-                    if (this.root.defaultScene) {
+                    if (this.root.defaultScene && this.root.defaultScene !== NONE_ASSET.id) {
                         const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
+                        if(!sc) return this.logger.error("cannot find the default scene")
                         this.setCurrentScene(sc)
                     } else {
                         const sc = this.root.children[0]
@@ -313,7 +314,7 @@ export class ImmersivePlayer extends Component {
         const sceneNode = this.three_map[scene.id]
         // this.logger.log("the scene node is",sceneNode)
         // this.logger.log("if it exists, scene anchor is", sceneNode.userData.sceneAnchor)
-        if (sceneNode) {
+        if (sceneNode  && this.xr) {
             const sceneAnchorNode = sceneNode.userData.sceneAnchor
             if (!sceneAnchorNode) {
                 this.logger.error("no sceneNode? so no children?")
