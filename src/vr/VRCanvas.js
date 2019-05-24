@@ -51,7 +51,13 @@ class Adapter extends SceneGraphProvider {
     }
 
     navigateScene(id) {
-        SelectionManager.setSelection(id)
+        const obj = this.canvas.props.provider.accessObject(id)
+        if(obj.exists()) {
+            SelectionManager.setSelection(id)
+        } else {
+            const logger = this.canvas.props.provider.getLogger()
+            logger.error("cannot navigate to a scene that doesn't exist",id)
+        }
     }
 
 
@@ -211,6 +217,7 @@ export class VRCanvas extends Component {
         this.rebuildNode(graph,"")
 
         const sceneObj = this.props.provider.getSelectedSceneObject()
+        if(!sceneObj.exists()) return this.props.provider.getLogger().error("no selected scene found")
         const sceneNode = this.findNode(sceneObj.id)
         this.setCurrentSceneWrapper(sceneNode, false)
     }
@@ -613,11 +620,11 @@ export class VRCanvas extends Component {
     }
 
     startImageRecognizer(info) {
-        this.props.getLogger().log("NOTHING DONE TO start image recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO start image recognizer")
     }
 
     stopImageRecognizer(info) {
-        this.props.getLogger().log("NOTHING DONE TO stop image recognizer")
+        this.props.provider.getLogger().log("NOTHING DONE TO stop image recognizer")
     }
 
     startGeoTracker(info) {

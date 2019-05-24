@@ -16,7 +16,7 @@ export class SceneGraphProvider {
     getAllBehaviors() { throw new Error("getAllBehaviors() not implemented")}
     getAllScenes() { throw new Error("getAllScenes not implemented")}
 
-    //navigate to the specified scene
+    //navigate to the specified scene. id is a graph object id
     navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
 
     playMediaAsset(id) { throw new Error("playMediaAsset(id) not implemented")}

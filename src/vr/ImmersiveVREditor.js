@@ -71,7 +71,13 @@ class Adapter extends SceneGraphProvider {
     }
 
     navigateScene(id) {
-        return this.editor.swapScene(id)
+        const obj = this.provider.accessObject(id)
+        if(obj.exists()) {
+            return this.editor.swapScene(id)
+        } else {
+            const logger = this.provider.getLogger()
+            logger.error("cannot navigate to scene that does not exist",id)
+        }
     }
     playMediaAsset(asset, trusted) {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
