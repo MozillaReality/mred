@@ -4,7 +4,6 @@ function cloneObjectDeep(shapeid, graph) {
     const props = graph.getPropertiesForObject(id)
     props.forEach(key => {
         if(key === 'children') {
-            console.log("we also need to clone the children")
             const children = graph.getPropertyValue(id,key)
             const children2 = cloneArrayDeep(children,graph)
             graph.createProperty(id2,key,children2)
