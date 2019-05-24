@@ -2,9 +2,10 @@ import {fetchGraphObject} from "../../syncgraph/utils";
 import * as THREE from "three";
 import {NONE_ASSET, PROP_DEFS} from '../Common'
 import GLTFLoader from '../GLTFLoader'
+import DRACOLoader from '../DRACOLoader'
+import SkeletonUtils from '../SkeletonUtils'
 import {MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
-import {DoubleSide} from 'three'
 
 export default class ModelDef extends ObjectDef {
     make(graph, scene) {
@@ -42,11 +43,53 @@ export default class ModelDef extends ObjectDef {
 
         node.enter = (evt, scriptManager) => {
             node.userData.clicker.visible = false
+            // if (node.userData.mixer) {
+            //     provider.addMixer(obj.id, node.userData.mixer)
+            // }
+            if (node.userData.currentClip) {
+                node.userData.action = node.userData.mixer.clipAction( node.userData.currentClip );
+                node.userData.action.play()
+            }
         }
         node.exit = (evt, scriptManager) => {
             const ob2 = provider.accessObject(obj.id)
             if(ob2.asset === NONE_ASSET.id) {
                 node.userData.clicker.visible = true
+            }
+            // if (node.userData.mixer) {
+            //     provider.removeMixer(obj.id)
+            // }
+        }
+        node.tick = (evt, scriptManager) => {
+            const dt = evt.deltaTime / 1000;
+            node.userData.mixer && node.userData.mixer.update(dt);
+        }
+
+        node.playAllClips = (evt, scriptManager) => {
+            node.userData.clips.forEach((clip) => {
+                node.userData.mixer.clipAction(clip).reset().play();
+            });
+        }
+        // need to get this into the render loop somehow
+
+        node.useClip = (name) => {
+            var clip = THREE.AnimationClip.findByName( node.userData.clips, name );
+            if (clip) {
+                node.userData.currentClip = clip
+            }
+        }
+
+        node.play = (evt, scriptManager) => {
+            if (node.userData.currentClip) {
+                node.userData.mixer.stopAllAction();
+                node.userData.action = node.userData.mixer.clipAction( node.userData.currentClip );
+                node.userData.action.play()
+            }
+        }
+
+        node.stop = (evt, scriptManager) => {
+            if (node.userData.mixer) {
+                node.userData.mixer.stopAllAction();            
             }
         }
         return node
@@ -57,9 +100,27 @@ export default class ModelDef extends ObjectDef {
         return super.updateProperty(node,obj,op,provider)
     }
 
+    setClips ( userData ) {
+        if (userData.mixer) {
+          userData.mixer.stopAllAction();
+          userData.mixer.uncacheRoot(userData.mixer.getRoot());
+          userData.mixer = null;
+        }
+    
+        userData.clips.forEach((clip) => {
+          if (clip.validate()) clip.optimize();
+        });
+        userData.currentClip = null
+
+        if (!userData.clips.length) return;
+    
+        userData.currentClip = userData.clips[0]
+        userData.mixer = new THREE.AnimationMixer( userData.model );
+    }
+        
     attachAsset(node, obj, provider) {
         if(obj.asset === NONE_ASSET.id) {
-            // node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            // node.material = new MeshLambertMaterial({color: obj.color, side:THREE.DoubleSide})
             console.log("REMOVE NODE CHILDREN")
             if(node.userData.model) {
                 node.remove(node.userData.model)
@@ -70,30 +131,61 @@ export default class ModelDef extends ObjectDef {
         }
         const asset = provider.accessObject(obj.asset)
         if(!asset.exists()) return
-        const loader = new GLTFLoader()
+
         const url = provider.assetsManager.getAssetURL(asset)
         provider.getLogger().log("ModelDef loading the model asset url",url)
         if(!url) {
             provider.getLogger().error("ModelDef: empty url. cannot load GLTF")
             return
         }
+    
+        const loader = new GLTFLoader()
+        loader.setCrossOrigin('anonymous');
+        const draco = new DRACOLoader() 
+        DRACOLoader.setDecoderPath( './draco/' );
+        loader.setDRACOLoader( draco );
+
         loader.load(url, (gltf)=> {
             console.log("loaded", gltf)
             //swap the model
             if(node.userData.model) node.remove(node.userData.model)
-            node.userData.model = gltf.scene.clone()
+
+            node.userData.model = gltf.scene || gltf.scenes[0]
+
+            // clone it, in case the loader is returning the same cached version?
+            node.userData.model = SkeletonUtils.clone( node.userData.model  );
+
+            node.userData.clips = gltf.animations || [];
+
             node.add(node.userData.model)
+            node.userData.model.updateMatrixWorld();
 
             //calculate the size of the model
-            if(node.userData.model.geometry) {
-                node.userData.model.geometry.computeBoundingSphere()
-                const bs = node.userData.model.geometry.boundingSphere
+            // if(node.userData.model.geometry) {
+                // node.userData.model.geometry.computeBoundingSphere()
+                // node.userData.boundingSphere = node.userData.model.geometry.boundingSphere
+                // const bs = node.userData.boundingSphere
                 const model = node.userData.model
-                model.position.x = -bs.center.x
-                model.position.y = -bs.center.y
-                model.position.z = -bs.center.z
-                node.userData.clicker.geometry = new THREE.SphereBufferGeometry(bs.radius)
-            }
+
+                node.userData.boundingBox = new THREE.Box3().setFromObject(model);
+                node.userData.boundingBoxSize = node.userData.boundingBox.getSize(new THREE.Vector3()).length();
+                node.userData.BoundingBoxCenter = node.userData.boundingBox.getCenter(new THREE.Vector3());     
+                      
+                node.userData.mixer = null
+                this.setClips(node.userData)
+
+                // Really don't want to move it
+                ///
+                // model.position.x += model.position.x - node.userData.BoundingBoxCenter.x
+                // model.position.y += model.position.y - node.userData.BoundingBoxCenter.y
+                // model.position.z += model.position.z - node.userData.BoundingBoxCenter.z
+
+                // model.position.x = -bs.center.x
+                // model.position.y = -bs.center.y
+                // model.position.z = -bs.center.z
+
+                node.userData.clicker.geometry = new THREE.SphereBufferGeometry(node.userData.boundingBoxSize / 2)
+            // }
             //disable the clicker sphere
             node.userData.clicker.visible = false
         })
