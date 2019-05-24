@@ -192,7 +192,7 @@ export default class PropSheet extends Component {
         const item = selMan.getSelection()
         return <ul className="prop-sheet">{props.map((prop, i) => {
             return [
-                <label key={prop.getKey()+'-label'}>{prop.getName()}</label>,
+                <label key={prop.getKey()+'-label'} title={prop.getKey()}>{prop.getName()}</label>,
                 this.renderIndeterminate(prop,i),
                 <PropEditor key={prop.getKey()+'-editor'} def={prop} provider={this.props.provider} item={item}/>
             ]
