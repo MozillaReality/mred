@@ -16,12 +16,23 @@ function isAnchorType(type) {
     return false
 }
 
+function generateUniqueTitle(prefix,count, root) {
+    const title = prefix + ' ' + count
+    const dup = root.getChildren().find(sc =>  sc.title == title)
+    if(dup) {
+        return generateUniqueTitle(prefix,count+1,root)
+    } else {
+        return title
+    }
+}
+
 export default class SceneDef {
     make(graph, root) {
         if(!root.id) throw new Error("can't create scene w/ missing parent")
+        let title = generateUniqueTitle('Scene ',0,root)
         return fetchGraphObject(graph,createGraphObjectFromObject(graph,{
             type:'scene',
-            title:'Scene '+COUNTER++,
+            title:title,
             autoRecenter:true,
             defaultFloor: false,
             parent:root.id,
