@@ -64,22 +64,6 @@ export class ImmersivePlayer extends Component {
 
     componentDidMount() {
         this.logger.log("mounted ImmersivePlayer")
-        // const canvas = this.canvas
-        // if(XRSupport.supportsARKit()) {
-        //     this.xr = new XRSupport()
-        //     this.xr.getContext(canvas).then((context) => {
-        //         this.initThreeJS(canvas,context)
-        //         this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
-        //         this.startScene()
-        //     }).catch(err => {
-        //         console.error('Error', err)
-        //     })
-        // } else {
-        //     this.initThreeJS(canvas,0)
-        //     this.renderer.setAnimationLoop(this.renderThree.bind(this))
-        //     this.startScene()
-        // }
-
     }
 
     startScene() {
@@ -135,6 +119,7 @@ export class ImmersivePlayer extends Component {
             <audio id={"test-audio"} src={"https://vr.josh.earth/assets/sounds/clang.mp3"}/>
             <div id="overlay">
                 <div id="inner">
+                    <div id="title">some title</div>
                     <button onClick={this.clickedStart}>click to start</button>
                     {/*<div id="loading-indicator">*/}
                     {/*    <label>loading</label>*/}
@@ -255,14 +240,10 @@ export class ImmersivePlayer extends Component {
         this.camera.matrixAutoUpdate = false
         this.scene.add(this.camera)
         window.addEventListener( 'resize', ()=>{
-            // const body = document.querySelector("body")
             const body = document.documentElement
-            this.logger.log("doc test",document.documentElement.clientWidth,document.documentElement.clientHeight)
             this.camera.aspect = body.clientWidth / body.clientHeight;
-            // this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize( body.clientWidth, body.clientHeight);
-            // this.renderer.setSize( window.innerWidth, window.innerHeight );
         }, false );
         const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
         light.position.set( 1, 1, 1 ).normalize();
@@ -273,43 +254,6 @@ export class ImmersivePlayer extends Component {
         this.scene.add(this.scenes)
 
         this.raycaster = new THREE.Raycaster();
-
-        // const $ = (sel) => document.querySelector(sel)
-        // const on = (elem, type, cb) => elem.addEventListener(type,cb)
-
-        // on($("#enter-button"),'click',()=>{
-        //     $("#overlay").style.display = 'none'
-        //     //we can start playing sound now
-        // })
-        /*
-        this.vrmanager.addEventListener(VR_DETECTED,()=>{
-            console.log("VR detected")
-            $("#enter-button").removeAttribute('disabled',false)
-            $("#enter-button").innerText = "enter vr"
-            on($("#enter-button"),'click',()=> this.vrmanager.enterVR())
-        })
-         */
-
-        // const WAIT_FOR_LOAD = false
-        /*
-        if(!WAIT_FOR_LOAD) {
-            $("#loading-indicator").style.display = 'none'
-            $("#enter-button").style.display = 'block'
-            $("#enter-button").removeAttribute('disabled')
-        }
-         */
-
-        /*
-        //class which handles mouse and VR controller
-        this.pointer = new Pointer(this, {
-            intersectionFilter: ((o) => o.userData.clickable),
-            cameraFollowMouse:false,
-            mouseSimulatesController:false,
-            enableLaser: true,
-            laserLength: 20,
-        })
-         */
-
     }
 
     renderThreeWithCamera = (bounds,projectionMatrix,viewMatrix, time,frame) => {
