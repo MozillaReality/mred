@@ -295,14 +295,15 @@ export class ImmersivePlayer extends Component {
             if(ch.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 const url = getScriptsURL()+ch.src
                 this.logger.log("loading behavior",ch,'from',url)
-                const prom = AuthModule.fetch(url,{
-                    method:'GET'
-                }) .then(res => res.text())
+                const prom = AuthModule.fetch(url,{ method:'GET' })
+                    .then(res => res.text())
                     .then(text => {
                         const info = parseBehaviorScript(text)
                         info.text = text
                         this.behavior_assets[ch.id] = info
                         return text
+                    }).catch((e)=>{
+                        this.logger.error("error loading behavior",e)
                     })
                 this.pendingAssets.push(prom)
             }

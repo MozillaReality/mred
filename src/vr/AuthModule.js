@@ -137,6 +137,10 @@ class AuthModuleSingleton {
         options.headers["access-key"] =  AuthModule.getAccessToken()
         console.log("fetching",url,'with options',options)
         return fetch(url,options)
+            .then(res => {
+                if(res.status === 404) throw new Error(res.statusText + " " + res.url)
+                return res
+            })
     }
     getJSON(url) {
         return this.fetch(url,{
