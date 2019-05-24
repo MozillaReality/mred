@@ -455,12 +455,14 @@ export function isImageType(type) {
     if (!type) return false
     if (type.toLowerCase() === MIME_TYPES.PNG) return true
     if (type.toLowerCase() === MIME_TYPES.JPEG) return true
+    if (type.toLowerCase() === MIME_TYPES.GIF) return true
     return false;
 }
 export function isAudioType(type) {
     if(!type) return false
     if(type.toLowerCase() === MIME_TYPES.MP3) return true
     if(type.toLowerCase() === MIME_TYPES.AAC) return true
+    if(type.toLowerCase() === MIME_TYPES.WAV) return true
     return false
 }
 
