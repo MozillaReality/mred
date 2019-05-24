@@ -432,7 +432,17 @@ export function get3DObjectDef(type) {
 
 export const toRad = (degrees) => degrees*Math.PI/180
 
-export const MIME_TYPES = { PNG:'image/png', JPEG:'image/jpeg', MP3: 'audio/mpeg', AAC: 'audio/aac', JAVASCRIPT: 'text/javascript', GLB: 'model/gltf-binary', MP4:'video/mp4' }
+export const MIME_TYPES = {
+    PNG:'image/png',
+    JPEG:'image/jpeg',
+    GIF:'image/gif',
+    MP3: 'audio/mpeg',
+    AAC: 'audio/aac',
+    WAV:'audio/wav',
+    JAVASCRIPT: 'text/javascript',
+    GLB: 'model/gltf-binary',
+    MP4:'video/mp4',
+}
 export const ASSET_TYPES = {
     BEHAVIOR:'behavior',
     IMAGE:'image',
