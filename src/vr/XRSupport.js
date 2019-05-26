@@ -35,6 +35,7 @@ export class XRSupport {
         this.xrCanvas = document.createElement('canvas')
         this.xrContext = this.xrCanvas.getContext('xrpresent')
         this._anchoredNodes = new Map() // { XRAnchorOffset, Three.js Object3D }
+        this.projectionMatrix = 0
 
         let that = this
         let prom = new Promise((resolve, reject) => {
@@ -119,6 +120,7 @@ export class XRSupport {
                 pose.getViewMatrix(view),
                 time,frame,
             )
+            this.projectionMatrix = view.projectionMatrix
             break
         }
     }
@@ -186,6 +188,56 @@ export class XRSupport {
         logger.log("Removing Scene Anchor")
         this.session.removeAnchor(sceneAnchor)
         this._removeAnchorFromNode(sceneAnchor)
+    }
+
+    async createAnchorFromHitTest(sceneNode,x,y,logger) {
+
+        if(!this.session) {
+            logger.error("no session")
+            return
+        }
+        if(!this.projectionMatrix) {
+            logger.error("No projection matrix")
+            return
+        }
+        if(!this.canvas || !this.canvas.width || !this.canvas.height) {
+            logger.error("No canvas or canvas size")
+            return
+        }
+
+        // normalize screen coords
+        let normalizedX = x / this.canvas.width * 2 - 1;
+        let normalizedY = x / this.canvas.height * 2;
+
+        // get a ray
+        var rayorigin = vec3.create();
+        mat4.invert(this._workingMatrix1, this.projectionMatrix.elements );
+        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix1);
+        vec3.normalize(raydir, raydir);
+
+        // get coordinate system
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+
+        // get collidants
+        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+
+        if (xrhitresults.length < 1) {
+            logger.error("No hit returned from hit test")
+            return
+        }
+
+        // create that anchor
+        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
+
+        if(!newAnchor) {
+            logger.error("No anchor returned from hit test")
+            return
+        }
+
+        this.addAnchoredNode(newAnchor,sceneNode,logger)
+
+        return newAnchor
     }
 
     _fetchImage(info,logger) {
