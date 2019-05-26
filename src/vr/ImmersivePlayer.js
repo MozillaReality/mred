@@ -455,6 +455,23 @@ class Adapter extends SceneGraphProvider {
         return this.player.tweenManager
     }
 
+    startLocalAnchor(info) {
+        this.logger.log("starting vanilla anchor")
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        // TODO - do something useful
+    }
+
+    stopLocalAnchor(info) {
+        this.logger.log("stopping vanilla anchor")
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+    }
+
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
@@ -472,6 +489,17 @@ class Adapter extends SceneGraphProvider {
         })
     }
 
+    stopImageRecognizer(info) {
+        this.logger.log("stopping the image recognizer")
+
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        this.player.xr.stopImageRecognizer(info, this.logger)
+    }
+
     startGeoTracker(info) {
         // WebXR loaded?
         return new Promise((res, rej) => {
@@ -485,17 +513,6 @@ class Adapter extends SceneGraphProvider {
                 this.player.xr.addGeoAnchoredNode(info, this.logger)
             })
         })
-    }
-
-    stopImageRecognizer(info) {
-        this.logger.log("stopping the image recognizer")
-
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
-            return
-        }
-
-        this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
     stopGeoTracker(info) {

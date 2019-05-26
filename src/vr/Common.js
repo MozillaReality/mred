@@ -8,6 +8,7 @@ import TextDef from './defs/TextDef'
 import Image2DDef from './defs/Image2DDef'
 import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
+import LocalAnchorDef from './defs/LocalAnchorDef'
 import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
 import {HudAnchorDef} from './defs/HudAnchorDef'
@@ -356,6 +357,7 @@ export const OBJ_TYPES = {
     img2d:'img2d',
     group:'group',
     particles:'particles',
+    localanchor:'localanchor',
     imageanchor:'imageanchor',
     geoanchor:'geoanchor',
     hudanchor:'hudanchor',
@@ -387,6 +389,7 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.img2d) return true
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.particles) return true
+    if(type === OBJ_TYPES.localanchor) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
     if(type === OBJ_TYPES.hudanchor) return true
@@ -395,6 +398,7 @@ export function is3DObjectType(type) {
 
 export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
+    if(type === OBJ_TYPES.localanchor) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
     if(type === OBJ_TYPES.hudanchor) return true
@@ -430,6 +434,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
+    if(type === OBJ_TYPES.localanchor) return new LocalAnchorDef()
     if(type === OBJ_TYPES.imageanchor) return new ImageAnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
     if(type === OBJ_TYPES.hudanchor) return new HudAnchorDef()
@@ -515,6 +520,7 @@ export const ITEM_ICONS = {
     group:'object-group',
     particles:'certificate',
     gltf:'cube',
+    localanchor:'anchor',
     imageanchor:'anchor',
     geoanchor:'globe',
     geolocation:'globe',
