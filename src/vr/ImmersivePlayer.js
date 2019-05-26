@@ -461,7 +461,7 @@ class Adapter extends SceneGraphProvider {
             this.logger.log("XR is not active?")
             return
         }
-        // TODO - do something useful
+        this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
     }
 
     stopLocalAnchor(info) {
@@ -470,6 +470,7 @@ class Adapter extends SceneGraphProvider {
             this.logger.log("XR is not active?")
             return
         }
+        this.player.xr.stopLocalAnchor(info,this.logger)
     }
 
     startImageRecognizer(info) {

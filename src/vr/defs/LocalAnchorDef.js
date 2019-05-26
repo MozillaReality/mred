@@ -9,8 +9,8 @@ export default class LocalAnchorDef extends ObjectDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't localanchor w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:OBJ_TYPES.anchor,
-            title:'anchor '+COUNTER++,
+            type:OBJ_TYPES.localanchor,
+            title:'localanchor '+COUNTER++,
             visible:true,
             tx:0, ty:0, tz:0,
             rx:0, ry:0, rz:0,

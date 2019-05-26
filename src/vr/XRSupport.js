@@ -190,7 +190,7 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
-    async createAnchorFromHitTest(sceneNode,x,y,logger) {
+    async createLocalAnchorFromHitTest(info,x,y,logger) {
 
         if(!this.session) {
             logger.error("no session")
@@ -202,6 +202,10 @@ export class XRSupport {
         }
         if(!this.canvas || !this.canvas.width || !this.canvas.height) {
             logger.error("No canvas or canvas size")
+            return
+        }
+        if (!info.node) {
+            logger.error("missing threejs node")
             return
         }
 
@@ -227,7 +231,10 @@ export class XRSupport {
             return
         }
 
-        // create that anchor
+        // remove previous if any
+        this._removeAnchorForNode(info.node)
+ 
+        // create
         let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
 
         if(!newAnchor) {
@@ -235,9 +242,21 @@ export class XRSupport {
             return
         }
 
-        this.addAnchoredNode(newAnchor,sceneNode,logger)
+        this.addAnchoredNode(newAnchor,info.node,logger)
 
         return newAnchor
+    }
+
+    stopLocalAnchor(info, logger) {
+        console.log("Stopping local anchor")
+        if(!this._anchoredNodes) return
+
+        if (!info.node) {
+            logger.error("missing threejs node")
+            return
+        }
+
+        this._removeAnchorFromNode(info.node)
     }
 
     _fetchImage(info,logger) {

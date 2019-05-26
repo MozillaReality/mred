@@ -25,9 +25,11 @@ export class SceneGraphProvider {
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
     getTweenManager() { throw new Error("getTweenManager() not implemented")}
+    startLocalAnchor(info) { throw new Error("startLocalAnchor not implemented")}
+    stopLocalAnchor(info) { throw new Error("stopLocalAnchor not implemented")}
     startImageRecognizer(info) { throw new Error("startImageRecognizer not implemented")}
-    startGeoTracker(info) { throw new Error("startGeoTracker not implemented")}
     stopImageRecognizer(info) { throw new Error("stopImageRecognizer not implemented")}
+    startGeoTracker(info) { throw new Error("startGeoTracker not implemented")}
     stopGeoTracker(info) { throw new Error("stopGeoTracker not implemented")}
 }
 
