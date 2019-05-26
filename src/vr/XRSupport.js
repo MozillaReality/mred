@@ -256,8 +256,8 @@ logger.log("got head level with results count " + xrhitresults.length )
 
         this.addAnchoredNode(newAnchor,info.node,logger)
 
-logger.log("made anchor and it is here in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
-console.log(info)
+logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+logger.log(info)
 
         return newAnchor
     }
