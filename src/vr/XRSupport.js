@@ -190,7 +190,17 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
+    sleeper(ms) {
+        return new Promise(resolve => setTimeout(() => resolve(), ms))
+    }
+
     async createLocalAnchorFromHitTest(info,x,y,logger) {
+
+        // TODO
+        // Right now this gets attached right away and will always fail because there is no ground detected that early
+        // However, users can call it again and then have it corrected - it should delete the previous anchor if any
+        // Philosophically I'd prefer a concept of dynamically creating nodes on the scene graph
+        //
 
         if(!this.session) {
             logger.error("no session")
@@ -215,9 +225,9 @@ export class XRSupport {
 
         // get a ray
         var rayorigin = vec3.create();
-        mat4.invert(this._workingMatrix1, this.projectionMatrix.elements );
+        mat4.invert(this._workingMatrix, this.projectionMatrix );
         var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
-        vec3.transformMat4(raydir,raydir,this._workingMatrix1);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix);
         vec3.normalize(raydir, raydir);
 
         // get coordinate system
@@ -225,6 +235,8 @@ export class XRSupport {
 
         // get collidants
         let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+
+logger.log("got head level with results count " + xrhitresults.length )
 
         if (xrhitresults.length < 1) {
             logger.error("No hit returned from hit test")
@@ -243,6 +255,9 @@ export class XRSupport {
         }
 
         this.addAnchoredNode(newAnchor,info.node,logger)
+
+logger.log("made anchor and it is here in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+console.log(info)
 
         return newAnchor
     }
