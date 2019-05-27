@@ -400,11 +400,11 @@ class Adapter extends SceneGraphProvider {
         this.player.setCurrentScene(scene)
     }
     playMediaAsset (asset, trusted=false)  {
-        this.assetsManager.playMediaAsset(asset,trusted)
+        this.player.assetsManager.playMediaAsset(asset,trusted)
     }
 
     stopMediaAsset(asset) {
-        this.assetsManager.stopMediaAsset(asset)
+        this.player.assetsManager.stopMediaAsset(asset)
     }
 
 
