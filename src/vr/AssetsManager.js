@@ -30,6 +30,10 @@ export class AssetsManager {
     }
 
     getAssetURL(asset) {
+        if(AuthModule.supportsAssetUpload() && !AuthModule.isLoggedIn()) {
+            //TODO: Josh hack to work around listing assets when not logged in on docserver
+            return getAssetsURL()+asset.assetId
+        }
         if(asset.assetId) {
             return this.assets_url_map[asset.assetId]
         } else {
