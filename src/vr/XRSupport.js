@@ -196,7 +196,7 @@ export class XRSupport {
 
         if (!this.session) {
             logger.log("no session")
-            return
+            return 0
         }
         let eyeLevel = await this.session.requestFrameOfReference('eye-level')
         let headLevel = await this.session.requestFrameOfReference('head-model')
@@ -210,7 +210,7 @@ export class XRSupport {
         // set the matrix to just the position, which means the orientation is EUS
         mat4.fromTranslation(this._workingMatrix, this._vec)
 
-        // get a ray shooting as down as possible given that it has to be in screen coordinates
+        // get a ray shooting reasonably down given that it has to be in screen coordinates
         // coordinates should be arranged such that y=-1 is down and z = 1 is forward
         // if user holds their phone in front of them then this should be aiming downwards at some angle
         var rayorigin = vec3.create();
@@ -224,21 +224,22 @@ export class XRSupport {
 
         if (xrhitresults.length < 1) {
             logger.error("No hit returned from hit test")
-            return
+            return 0
         }
 
         let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
 
         if(!newAnchor) {
             logger.error("No anchor returned from hit test")
-            return
+            return 0
         }
 
-        logger.log("Replacing the scene node on the existing scene anchor")
+        logger.log("Replacing the scene node on the existing scene anchor at the floor")
         if(sceneAnchor) this._removeAnchorFromNode(sceneAnchor)
 
         this.addAnchoredNode(newAnchor, sceneNode, logger)
 
+        return newAnchor
     }
 
     sleeper(ms) {
@@ -255,19 +256,19 @@ export class XRSupport {
 
         if(!this.session) {
             logger.error("no session")
-            return
+            return 0
         }
         if(!this.projectionMatrix) {
             logger.error("No projection matrix")
-            return
+            return 0
         }
         if(!this.canvas || !this.canvas.width || !this.canvas.height) {
             logger.error("No canvas or canvas size")
-            return
+            return 0
         }
         if (!info.node) {
             logger.error("missing threejs node")
-            return
+            return 0
         }
 
         // normalize screen coords
@@ -289,14 +290,14 @@ export class XRSupport {
 
         if (xrhitresults.length < 1) {
             logger.error("No hit returned from hit test")
-            return
+            return 0
         }
 
         let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
 
         if(!newAnchor) {
             logger.error("No anchor returned from hit test")
-            return
+            return 0
         }
 
         // remove previous if any

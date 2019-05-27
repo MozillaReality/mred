@@ -313,6 +313,10 @@ export class ImmersivePlayer extends Component {
         })
     }
 
+    sleeper(ms) {
+        return new Promise(resolve => setTimeout(() => resolve(), ms))
+    }
+
     setCurrentScene(scene) {
         // @blair
         const sceneNode = this.three_map[scene.id]
@@ -338,6 +342,16 @@ export class ImmersivePlayer extends Component {
                     }
                     this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
                         this.sceneAnchor = anchor
+/*
+sleeper(5000).then(anchor=>{
+    if(anchor) {
+        this.logger.log("found a floor")
+        this.updateSceneFloorAnchor(this.sceneAnchor,sceneAnchorNode,this.logger)
+    } else {
+        // TODO try again and again? What's the right strategy?
+    }
+})
+*/
                     }).catch(error => {
                         this.logger.error(`error creating new scene anchor: ${error}`)
                     })
