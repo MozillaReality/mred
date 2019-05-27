@@ -69,6 +69,12 @@ class SystemFacade {
         let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
         return new AssetFacade(this.manager,obj, trusted)
     }
+    getAssetById(id) {
+        const obj = this.getObjectById(id)
+        if(!obj || !obj.exists()) throw new Error(`asset '${id}' not found`)
+        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
+        return new AssetFacade(this.manager,obj,trusted)
+    }
     getObjectById(id) {
         return this.sgp.getGraphObjectById(id)
     }
@@ -323,7 +329,8 @@ export default class ScriptManager {
             }
 
             let scene = this.sgp.getCurrentScene()
-            while (this.bubbling && target.id !== scene.id) {
+            while (this.bubbling && target.id !== scene.id && target.type !== TOTAL_OBJ_TYPES.SCENE) {
+                console.log("getting behaviors for the object",target)
                 const behaviors = this.sgp.getBehaviorsForObject(target)
                 //this.logger.log("firing " + type + " at target " + target.id + ", " + behaviors.length + " behaviors")
 
@@ -383,6 +390,7 @@ class AssetFacade {
         this.trusted = trusted
     }
     play() {
+        console.log("assets manager playing",this.obj)
         this.manager.sgp.playMediaAsset(this.obj, this.trusted)
     }
     stop() {

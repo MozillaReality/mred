@@ -1,5 +1,5 @@
 import {ASSET_TYPES} from './Common'
-import {DoubleSide, MeshLambertMaterial, TextureLoader, VideoTexture} from 'three'
+import {TextureLoader, VideoTexture, Audio, AudioLoader} from 'three'
 import {AuthModule} from './AuthModule'
 import {getAssetsURL} from '../TreeItemProvider'
 
@@ -8,6 +8,7 @@ export class AssetsManager {
         this.provider = provider
         this.assets_url_map = {}
         this.videocache = {}
+        this.audiocache = {}
     }
 
     cacheAssetsList() {
@@ -29,9 +30,7 @@ export class AssetsManager {
     }
 
     getAssetURL(asset) {
-        console.log("getting asset url",asset)
         if(asset.assetId) {
-            console.log("converting asset id",asset.assetId)
             return this.assets_url_map[asset.assetId]
         } else {
             return asset.src
@@ -41,11 +40,55 @@ export class AssetsManager {
 
     playMediaAsset(asset, trusted=false) {
         const lg = this.provider.getLogger()
-        lg.log("playing the asset",asset)
-        const url = this.getAssetURL(asset)
-        lg.log("playing the url",url)
-        const cache = this.videocache
-        if(cache[url]) cache[url].play()
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            lg.log("playing the audio asset",asset)
+            const url = this.getAssetURL(asset)
+            lg.log("playing the audio from the url",url)
+            if(this.audiocache[asset.id]) {
+                //already loaded
+                const sound = this.audiocache[asset.id]
+                if(sound.isPlaying) sound.stop()
+                sound.play()
+            } else {
+                const sound = new Audio(this.provider.getAudioListener())
+                const audioLoader = new AudioLoader()
+                audioLoader.load(url, function (buffer) {
+                    sound.setBuffer(buffer);
+                    sound.setLoop(false);
+                    sound.setVolume(0.5);
+                    sound.play();
+                });
+                this.audiocache[asset.id] = sound
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            lg.log("playing the media asset", asset)
+            const url = this.getAssetURL(asset)
+            lg.log("playing the url yaeah", url)
+            const video = this.videocache[url]
+            if (video) {
+                if(trusted) video.muted = false
+                video.play()
+            }
+        }
+
+    }
+
+    stopMediaAsset(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.audiocache[asset.id]) {
+                this.audiocache[asset.id].stop()
+                delete this.audiocache[asset.id]
+                this.audiocache[asset.id] = null
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            if(this.videocache[asset.id]) {
+                this.videocache[asset.id].stop()
+                delete this.videocache[asset.id]
+                this.videocache[asset.id] = null
+            }
+        }
     }
 
     stopAllMedia() {
@@ -56,6 +99,12 @@ export class AssetsManager {
                 item.pause()
             }
         })
+        Object.keys(this.audiocache).forEach(key => {
+            if(this.audiocache[key].stop) {
+                this.audiocache[key].stop()
+            }
+        })
+
     }
 
 

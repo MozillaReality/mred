@@ -274,6 +274,9 @@ export default class VREditor extends SyncGraphProvider {
                 if(hints.type === 'video') {
                     return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
                 }
+                if(hints.type === 'media') {
+                    return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.AUDIO || a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
+                }
             }
         }
 
@@ -336,10 +339,12 @@ export default class VREditor extends SyncGraphProvider {
         const sel = SelectionManager.getSelection()
         if(sel === null) return this.getFirstSceneObject()
         const selected = this.accessObject(sel)
+        if(!selected.exists()) return selected
         if(selected.type === TOTAL_OBJ_TYPES.SCENE) return selected
         if(is3DObjectType(selected.type))  return this.findSceneObjectParent(selected)
         if(selected.type === TOTAL_OBJ_TYPES.BEHAVIOR) return this.findSceneObjectParent(selected)
-        return null
+        this.getLogger().error("We shouldn't ever get here")
+        return this.accessObject(0)
     }
     getFirstSceneObject() {
         return this.accessObject(this.getSceneRoot()).getChildren()[0]
@@ -758,6 +763,13 @@ export default class VREditor extends SyncGraphProvider {
     }
     setCachedBehaviorAsset(id, asset) {
         this.behaviorCache[id] = asset
+    }
+
+    setAudioListener(al) {
+        this.audioListener = al
+    }
+    getAudioListener() {
+        return this.audioListener
     }
 }
 

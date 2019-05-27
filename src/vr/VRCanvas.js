@@ -21,6 +21,9 @@ class Adapter extends SceneGraphProvider {
         super()
         this.canvas = canvas
     }
+    logger() {
+        return this.canvas.props.provider.getLogger()
+    }
 
     getCurrentScene() {
         const scene = this.canvas.props.provider.getSelectedSceneObject()
@@ -67,30 +70,11 @@ class Adapter extends SceneGraphProvider {
 
 
     playMediaAsset(asset, trusted=false) {
-        if(asset.subtype === ASSET_TYPES.AUDIO) {
-            const sound = new THREE.Audio(this.canvas.audioListener)
-            const audioLoader = new THREE.AudioLoader()
-            audioLoader.load(asset.src, function (buffer) {
-                sound.setBuffer(buffer);
-                sound.setLoop(false);
-                sound.setVolume(0.5);
-                sound.play();
-            });
-            this.canvas.playing_audio[asset.id] = sound
-        }
-        if(asset.subtype === ASSET_TYPES.VIDEO) {
-            this.canvas.props.provider.assetsManager.playMediaAsset(asset, trusted)
-        }
+        this.canvas.props.provider.assetsManager.playMediaAsset(asset, trusted)
     }
 
     stopMediaAsset(asset) {
-        if(asset.subtype === ASSET_TYPES.AUDIO) {
-            if(this.canvas.playing_audio[asset.id]) {
-                this.canvas.playing_audio[asset.id].stop()
-                delete this.canvas.playing_audio[asset.id]
-                this.canvas.playing_audio[asset.id] = null
-            }
-        }
+        this.canvas.props.provider.assetsManager.stopMediaAsset(asset)
     }
     getGraphObjectByName(title) {
         const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
@@ -183,7 +167,6 @@ export class VRCanvas extends Component {
             running:props.running
         }
         this.current_scene_wrapper = null
-        this.playing_audio = {}
         this.scriptManager = new ScriptManager(new Adapter(this),this.props.provider.getLogger())
     }
 
@@ -310,6 +293,7 @@ export class VRCanvas extends Component {
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.gammaOutput = true
         this.audioListener = new THREE.AudioListener()
+        this.props.provider.setAudioListener(this.audioListener)
         this.camera.add(this.audioListener)
         //only set a background if there is no XR active
         if(!this.xr) this.scene.background = new THREE.Color(0x000000);
@@ -609,11 +593,6 @@ export class VRCanvas extends Component {
     }
 
     stopAllMedia() {
-        Object.keys(this.playing_audio).forEach(key => {
-            const media = this.playing_audio[key]
-            console.log("stopping",media)
-            media.stop()
-        })
         this.props.provider.assetsManager.stopAllMedia()
     }
 
