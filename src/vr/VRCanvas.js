@@ -94,6 +94,12 @@ class Adapter extends SceneGraphProvider {
     getTweenManager() {
         return this.canvas.tweenManager
     }
+    startLocalAnchor(info) {
+        return this.canvas.startLocalAnchor(info)
+    }
+    stopLocalAnchor(info) {
+        return this.canvas.stopLocalAnchor(info)
+    }
     startImageRecognizer(info) {
         return this.canvas.startImageRecognizer(info)
     }
@@ -602,6 +608,14 @@ export class VRCanvas extends Component {
 
     stopRecognizers() {
         //called when script running is started
+    }
+
+    startLocalAnchor(info) {
+        this.props.provider.getLogger().log("NOTHING DONE TO start local anchor")
+    }
+
+    stopLocalAnchor(info) {
+        this.props.provider.getLogger().log("NOTHING DONE TO stop local anchor")
     }
 
     startImageRecognizer(info) {

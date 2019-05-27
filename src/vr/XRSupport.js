@@ -35,6 +35,7 @@ export class XRSupport {
         this.xrCanvas = document.createElement('canvas')
         this.xrContext = this.xrCanvas.getContext('xrpresent')
         this._anchoredNodes = new Map() // { XRAnchorOffset, Three.js Object3D }
+        this.projectionMatrix = 0
 
         let that = this
         let prom = new Promise((resolve, reject) => {
@@ -119,6 +120,7 @@ export class XRSupport {
                 pose.getViewMatrix(view),
                 time,frame,
             )
+            this.projectionMatrix = view.projectionMatrix
             break
         }
     }
@@ -186,6 +188,140 @@ export class XRSupport {
         logger.log("Removing Scene Anchor")
         this.session.removeAnchor(sceneAnchor)
         this._removeAnchorFromNode(sceneAnchor)
+    }
+
+    async updateSceneFloorAnchor(sceneAnchor,sceneNode,logger) {
+
+        logger.log("Finding floor Scene Anchor")
+
+        if (!this.session) {
+            logger.log("no session")
+            return 0
+        }
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+
+        // get the pose of the camera in the world
+        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+
+        // get just the position
+        mat4.getTranslation(this._vec, this._workingMatrix) 
+
+        // set the matrix to just the position, which means the orientation is EUS
+        mat4.fromTranslation(this._workingMatrix, this._vec)
+
+        // get a ray shooting reasonably down given that it has to be in screen coordinates
+        // coordinates should be arranged such that y=-1 is down and z = 1 is forward
+        // if user holds their phone in front of them then this should be aiming downwards at some angle
+        var rayorigin = vec3.create();
+        mat4.invert(this._workingMatrix, this.projectionMatrix );
+        var raydir = vec3.fromValues(0,-1,1);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix);
+        vec3.normalize(raydir, raydir);
+
+        // get collidants
+        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+
+        if (xrhitresults.length < 1) {
+            logger.error("No hit returned from hit test")
+            return 0
+        }
+
+        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
+
+        if(!newAnchor) {
+            logger.error("No anchor returned from hit test")
+            return 0
+        }
+
+        logger.log("Replacing the scene node on the existing scene anchor at the floor")
+        if(sceneAnchor) this._removeAnchorFromNode(sceneAnchor)
+
+        this.addAnchoredNode(newAnchor, sceneNode, logger)
+
+        return newAnchor
+    }
+
+    sleeper(ms) {
+        return new Promise(resolve => setTimeout(() => resolve(), ms))
+    }
+
+    async createLocalAnchorFromHitTest(info,x,y,logger) {
+
+        // TODO
+        // Right now this gets attached right away and will always fail because there is no ground detected that early
+        // However, users can call it again and then have it corrected - it should delete the previous anchor if any
+        // Philosophically I'd prefer a concept of dynamically creating nodes on the scene graph
+        //
+
+        if(!this.session) {
+            logger.error("no session")
+            return 0
+        }
+        if(!this.projectionMatrix) {
+            logger.error("No projection matrix")
+            return 0
+        }
+        if(!this.canvas || !this.canvas.width || !this.canvas.height) {
+            logger.error("No canvas or canvas size")
+            return 0
+        }
+        if (!info.node) {
+            logger.error("missing threejs node")
+            return 0
+        }
+
+        // normalize screen coords
+        let normalizedX = x / this.canvas.width * 2 - 1;
+        let normalizedY = x / this.canvas.height * 2;
+
+        // get a ray
+        var rayorigin = vec3.create();
+        mat4.invert(this._workingMatrix, this.projectionMatrix );
+        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix);
+        vec3.normalize(raydir, raydir);
+
+        // get coordinate system
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+
+        // get collidants
+        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+
+        if (xrhitresults.length < 1) {
+            logger.error("No hit returned from hit test")
+            return 0
+        }
+
+        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
+
+        if(!newAnchor) {
+            logger.error("No anchor returned from hit test")
+            return 0
+        }
+
+        // remove previous if any
+        this._removeAnchorForNode(info.node)
+ 
+        // add new
+        this.addAnchoredNode(newAnchor,info.node,logger)
+
+logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+logger.log(info)
+
+        return newAnchor
+    }
+
+    stopLocalAnchor(info, logger) {
+        console.log("Stopping local anchor")
+        if(!this._anchoredNodes) return
+
+        if (!info.node) {
+            logger.error("missing threejs node")
+            return
+        }
+
+        this._removeAnchorFromNode(info.node)
     }
 
     _fetchImage(info,logger) {

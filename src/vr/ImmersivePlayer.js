@@ -313,6 +313,10 @@ export class ImmersivePlayer extends Component {
         })
     }
 
+    sleeper(ms) {
+        return new Promise(resolve => setTimeout(() => resolve(), ms))
+    }
+
     setCurrentScene(scene) {
         // @blair
         const sceneNode = this.three_map[scene.id]
@@ -338,6 +342,16 @@ export class ImmersivePlayer extends Component {
                     }
                     this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
                         this.sceneAnchor = anchor
+/*
+sleeper(5000).then(anchor=>{
+    if(anchor) {
+        this.logger.log("found a floor")
+        this.updateSceneFloorAnchor(this.sceneAnchor,sceneAnchorNode,this.logger)
+    } else {
+        // TODO try again and again? What's the right strategy?
+    }
+})
+*/
                     }).catch(error => {
                         this.logger.error(`error creating new scene anchor: ${error}`)
                     })
@@ -422,6 +436,24 @@ class Adapter extends SceneGraphProvider {
         return this.player.tweenManager
     }
 
+    startLocalAnchor(info) {
+        this.logger.log("starting vanilla anchor")
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
+    }
+
+    stopLocalAnchor(info) {
+        this.logger.log("stopping vanilla anchor")
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        this.player.xr.stopLocalAnchor(info,this.logger)
+    }
+
     startImageRecognizer(info) {
         this.logger.log("starting the image recognizer")
         return new Promise((res,rej) => {
@@ -439,6 +471,17 @@ class Adapter extends SceneGraphProvider {
         })
     }
 
+    stopImageRecognizer(info) {
+        this.logger.log("stopping the image recognizer")
+
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+
+        this.player.xr.stopImageRecognizer(info, this.logger)
+    }
+
     startGeoTracker(info) {
         // WebXR loaded?
         return new Promise((res, rej) => {
@@ -452,17 +495,6 @@ class Adapter extends SceneGraphProvider {
                 this.player.xr.addGeoAnchoredNode(info, this.logger)
             })
         })
-    }
-
-    stopImageRecognizer(info) {
-        this.logger.log("stopping the image recognizer")
-
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
-            return
-        }
-
-        this.player.xr.stopImageRecognizer(info, this.logger)
     }
 
     stopGeoTracker(info) {

@@ -11,6 +11,7 @@ let COUNTER = 0
 
 function isAnchorType(type) {
     if(type === OBJ_TYPES.geoanchor) return true
+    if(type === OBJ_TYPES.localanchor) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.hudanchor) return true
     return false
@@ -52,6 +53,7 @@ export default class SceneDef {
                 if(!chObj.exists()) return
                 if(isAnchorType(chObj.type)) return
                 if(chObj.type === OBJ_TYPES.geoanchor) return
+                if(chObj.type === OBJ_TYPES.localanchor) return
                 if(chObj.type === OBJ_TYPES.imageanchor) return
                 scene.userData.sceneAnchor.add(chNode)
             })

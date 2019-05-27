@@ -105,6 +105,14 @@ class Adapter extends SceneGraphProvider {
         return this.editor.tweenManager
     }
 
+    startLocalAnchor(info) {
+        this.provider.getLogger().log("NOTHING DONE TO start local anchor")
+    }
+
+    stopLocalAnchor(info) {
+        this.provider.getLogger().log("NOTHING DONE TO stop local anchor")
+    }
+
     startImageRecognizer(info) {
         this.provider.getLogger().log("NOTHING DONE TO start image recognizer")
     }
