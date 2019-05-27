@@ -190,6 +190,57 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
+    async updateSceneFloorAnchor(sceneAnchor,sceneNode,logger) {
+
+        logger.log("Finding floor Scene Anchor")
+
+        if (!this.session) {
+            logger.log("no session")
+            return
+        }
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+
+        // get the pose of the camera in the world
+        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+
+        // get just the position
+        mat4.getTranslation(this._vec, this._workingMatrix) 
+
+        // set the matrix to just the position, which means the orientation is EUS
+        mat4.fromTranslation(this._workingMatrix, this._vec)
+
+        // get a ray shooting as down as possible given that it has to be in screen coordinates
+        // coordinates should be arranged such that y=-1 is down and z = 1 is forward
+        // if user holds their phone in front of them then this should be aiming downwards at some angle
+        var rayorigin = vec3.create();
+        mat4.invert(this._workingMatrix, this.projectionMatrix );
+        var raydir = vec3.fromValues(0,-1,1);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix);
+        vec3.normalize(raydir, raydir);
+
+        // get collidants
+        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+
+        if (xrhitresults.length < 1) {
+            logger.error("No hit returned from hit test")
+            return
+        }
+
+        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
+
+        if(!newAnchor) {
+            logger.error("No anchor returned from hit test")
+            return
+        }
+
+        logger.log("Replacing the scene node on the existing scene anchor")
+        if(sceneAnchor) this._removeAnchorFromNode(sceneAnchor)
+
+        this.addAnchoredNode(newAnchor, sceneNode, logger)
+
+    }
+
     sleeper(ms) {
         return new Promise(resolve => setTimeout(() => resolve(), ms))
     }
@@ -236,17 +287,11 @@ export class XRSupport {
         // get collidants
         let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
 
-logger.log("got head level with results count " + xrhitresults.length )
-
         if (xrhitresults.length < 1) {
             logger.error("No hit returned from hit test")
             return
         }
 
-        // remove previous if any
-        this._removeAnchorForNode(info.node)
- 
-        // create
         let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
 
         if(!newAnchor) {
@@ -254,6 +299,10 @@ logger.log("got head level with results count " + xrhitresults.length )
             return
         }
 
+        // remove previous if any
+        this._removeAnchorForNode(info.node)
+ 
+        // add new
         this.addAnchoredNode(newAnchor,info.node,logger)
 
 logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
