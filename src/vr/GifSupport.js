@@ -90,7 +90,7 @@ class GIFTexture extends Texture {
         this.frame = 0;
         this.frameStartTime = Date.now();
         this.firstDrawCount = 0
-        this.playing = false
+        this.playing = true
     }
 
     update() {
