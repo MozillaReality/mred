@@ -10,9 +10,7 @@ export default class GLTFAssetView extends Component {
         this.initThreeJS()
     }
     render() {
-        return <div>GLTF viewer
-            <div ref={c => this.sceneContainer = c}></div>
-        </div>
+        return <div id={"gltf-viewer"} ref={c => this.sceneContainer = c}/>
     }
     initThreeJS() {
         const asset = this.props.asset
@@ -29,14 +27,8 @@ export default class GLTFAssetView extends Component {
         this.mixer = null
         this.model = null
 
-        window.addEventListener( 'resize', ()=>{
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
-        }, false );
-  
-       this.controls = new OrbitControls( this.camera, this.renderer.domElement );
-       this.controls.screenSpacePanning = true;
+        this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+        this.controls.screenSpacePanning = true;
 
         this.renderer.setAnimationLoop(this.renderThree)
 
@@ -123,10 +115,25 @@ export default class GLTFAssetView extends Component {
         this.clips = clips
         this.mixer = new THREE.AnimationMixer( this.model );
     }
-        
+
+    checkAspectRatio() {
+        if(!this.renderer
+            || !this.renderer.domElement
+            || !this.sceneContainer
+        ) return
+        const w = this.sceneContainer.clientWidth
+        const h = this.sceneContainer.clientHeight
+        const aspect = w/h
+        if(Math.abs(this.camera.aspect - aspect) > 0.001 ) {
+            this.camera.aspect = aspect
+            this.camera.updateProjectionMatrix()
+            this.renderer.setSize(w-4,h-4)
+        }
+    }
 
     renderThree = (time) => {
         const dt = (time - this.prevTime) / 1000;
+        this.checkAspectRatio()
 
         this.controls.update();
         this.mixer && this.mixer.update(dt);
