@@ -59,15 +59,17 @@ class SystemFacade {
     }
     getThreeObjectByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
-        if(!obj) throw new Error(`object '${title}' not found`)
+        if(!obj) throw new Error(`three object '${title}' not found`)
         return this.sgp.getThreeObject(obj)
     }
     getObjectByTitle(title) {
-        return this.sgp.getGraphObjectByName(title)
+        const obj = this.sgp.getGraphObjectByName(title)
+        if(!obj || !obj.exists()) throw new Error(`object '${title}' not found`)
+        return obj
     }
     getAssetByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
-        if(!obj) throw new Error(`asset '${title}' not found`)
+        if(!obj || !obj.exists()) throw new Error(`asset '${title}' not found`)
         let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
         return new AssetFacade(this.manager,obj, trusted)
     }
@@ -78,7 +80,9 @@ class SystemFacade {
         return new AssetFacade(this.manager,obj,trusted)
     }
     getObjectById(id) {
-        return this.sgp.getGraphObjectById(id)
+        const obj = this.sgp.getGraphObjectById(id)
+        if(!obj || !obj.exists()) throw new Error(`object '${id}' not found`)
+        return obj
     }
     getThreeObjectById(id) {
         return this.sgp.getThreeObject(id)
@@ -89,17 +93,21 @@ class SystemFacade {
 
     playMedia(id) {
         const asset = this.sgp.getGraphObjectById(id)
+        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
         let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
         this.manager.sgp.playMediaAsset(asset, trusted)
     }
 
     stopMedia(id) {
         const asset = this.sgp.getGraphObjectById(id)
+        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
         this.manager.sgp.stopMediaAsset(asset)
     }
 
     getCurrentScene() {
-        return this.sgp.getCurrentScene()
+        const obj = this.sgp.getCurrentScene()
+        if(!obj || !obj.exists()) throw new Error(`current scene not found`)
+        return obj
     }
     navigateScene(id) {
         this.manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
@@ -363,7 +371,6 @@ class AssetFacade {
         this.trusted = trusted
     }
     play() {
-        console.log("assets manager playing", this.obj.id)
         this.manager.sgp.playMediaAsset(this.obj, this.trusted)
     }
     stop() {
