@@ -152,7 +152,6 @@ class AuthModuleSingleton {
     }
 
     uploadFile(file) {
-        console.log("auth module uploading",file)
         const url = getAssetsURL()+file.name
         return this.fetch(url,{
             method:'POST',

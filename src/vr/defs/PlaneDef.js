@@ -47,15 +47,4 @@ export default class PlaneDef extends ObjectDef {
         return super.updateProperty(node,obj,op,provider)
     }
 
-    attachAsset(node, obj, provider) {
-        if(obj.asset === NONE_ASSET.id) {
-            node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
-            return
-        }
-        const tex = provider.assetsManager.getTexture(obj.asset)
-        if(tex) {
-            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
-        }
-
-    }
 }
