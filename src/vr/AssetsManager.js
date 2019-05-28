@@ -2,6 +2,7 @@ import {ASSET_TYPES} from './Common'
 import {TextureLoader, VideoTexture, Audio, AudioLoader} from 'three'
 import {AuthModule} from './AuthModule'
 import {getAssetsURL} from '../TreeItemProvider'
+import {createGIFTexture} from './GifSupport'
 
 export class AssetsManager {
     constructor(provider) {
@@ -118,12 +119,24 @@ export class AssetsManager {
         const url = this.getAssetURL(asset)
         if(!url) {
             this.provider.getLogger().error("==== null url from asset",asset)
-            return
+            return Promise.resolve(null)
         }
         this.provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            const tex = new TextureLoader().load(url)
-            return tex
+            console.log("asset info",asset)
+            if(asset.format === 'image/gif') {
+                return createGIFTexture(url)
+            } else {
+                return new Promise((res,rej)=>{
+                    new TextureLoader().load(url,
+                        (tex)=>res(tex),
+                        (p)=>console.log("Progress",p),
+                        (e)=>{
+                            console.log("error loading texture",e)
+                            rej(e)
+                        })
+                    })
+            }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
             let video
@@ -142,9 +155,8 @@ export class AssetsManager {
             } else {
                 video = this.videocache[url]
             }
-            const tex = new VideoTexture(video)
-            return tex
+            return Promise.resolve(new VideoTexture(video))
         }
-        return null
+        return Promise.resolve(null)
     }
 }

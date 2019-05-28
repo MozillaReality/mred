@@ -46,13 +46,5 @@ export default class Image2DDef extends ObjectDef {
         }
         return super.updateProperty(node,obj,op,provider)
     }
-    attachAsset(node, obj, provider) {
-        if(obj.asset === NONE_ASSET.id) {
-            node.material = new MeshLambertMaterial({color: 'white', side:DoubleSide})
-            return
-        }
-        const tex = provider.assetsManager.getTexture(obj.asset)
-        if(tex) node.material = new MeshLambertMaterial({color: 'white', side: DoubleSide, map: tex})
-    }
 
 }

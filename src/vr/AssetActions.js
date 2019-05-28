@@ -41,7 +41,7 @@ export function addGeoAnchorAsset(info,title,prov) {
 
 export function addImageAssetFromFile (file, prov) {
     ToasterManager.add('uploading ' + file.name)
-    prov.uploadFile(file).then((ans)=>{
+    AuthModule.uploadFile(file).then((ans)=>{
         ToasterManager.add('uploaded')
         if(ans.success === false) return console.log("there was an error uploading! :(")
         return addImageAssetFromExpandedURL(null,getAssetsURL()+ans.asset.id, ans.asset.mimeType, file.name, prov)
