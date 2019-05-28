@@ -125,7 +125,7 @@ export class AssetsManager {
         if(asset.subtype === ASSET_TYPES.IMAGE) {
             this.provider.getLogger().log("asset info",asset)
             if(asset.format === 'image/gif') {
-                return createGIFTexture(url)
+                return createGIFTexture(url,this.provider)
             } else {
                 return new Promise((res,rej)=>{
                     new TextureLoader().load(url,

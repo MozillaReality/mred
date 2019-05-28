@@ -111,11 +111,24 @@ class GIFTexture extends Texture {
 }
 
 
-export function createGIFTexture(url) {
+export function createGIFTexture(url, prov) {
     return new Promise((resolve, reject) => {
         AuthModule.fetch(url,{ mode: "cors" })
             .then(r => r.arrayBuffer())
             .then(r => new Uint8Array(r))
+            .then(r => {
+                if(prov) {
+                    if(r.length < 100) {
+                        prov.getLogger().log("array length is too short", String.fromCharCode(115))
+                        let str = ""
+                        for(let i=0; i<r.length; i++) {
+                            str += String.fromCharCode(r[i])
+                        }
+                        prov.getLogger().log(str)
+                    }
+                }
+                return r
+            })
             .then(rawImageData => parseGIF(rawImageData, [rawImageData]))
             .then(result => {
                 console.log("result of gif parsing is",result)
