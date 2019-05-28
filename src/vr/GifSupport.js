@@ -89,10 +89,13 @@ class GIFTexture extends Texture {
 
         this.frame = 0;
         this.frameStartTime = Date.now();
+        this.firstDrawCount = 0
+        this.playing = false
     }
 
     update() {
         if (!this.frames || !this.delays || !this.disposals) return;
+        if(this.firstDrawCount > this.frames.length && !this.playing) return;
         const now = Date.now();
         if (now - this.frameStartTime > this.delays[this.frame]) {
             if (this.disposals[this.frame] === 2) {
@@ -102,6 +105,7 @@ class GIFTexture extends Texture {
             this.frameStartTime = now;
             this._ctx.drawImage(this.frames[this.frame], 0, 0, this.image.width, this.image.height);
             this.needsUpdate = true;
+            this.firstDrawCount+=1
         }
     }
 }
