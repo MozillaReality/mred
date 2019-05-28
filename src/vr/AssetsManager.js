@@ -123,7 +123,7 @@ export class AssetsManager {
         }
         this.provider.getLogger().log("loading asset url",url)
         if(asset.subtype === ASSET_TYPES.IMAGE) {
-            console.log("asset info",asset)
+            this.provider.getLogger().log("asset info",asset)
             if(asset.format === 'image/gif') {
                 return createGIFTexture(url)
             } else {
