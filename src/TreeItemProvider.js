@@ -1,4 +1,4 @@
-import {setQuery} from './utils'
+import {setQuery, toQueryString} from './utils'
 import Selection from './SelectionManager'
 import {AuthModule} from './vr/AuthModule'
 
@@ -124,16 +124,30 @@ class TreeItemProviderInterface {
     getTitle() { throw new Error("getTitle() not implemented") }
 }
 
+const AUTO_DETECT_GLITCH = false
+function calculateServerUrl(SERVER_URL) {
+    if(options.SERVER_URL) {
+        return `https://${options.SERVER_URL}/`
+    }
+
+    if(AUTO_DETECT_GLITCH) {
+        console.log("no server url, checking the document")
+        const host = document.location.host
+        if (host.endsWith(".glitch.me")) {
+            console.log("this is a glitch. using autodetected server")
+            return host
+        }
+    }
+    return URLS.BASE
+}
+
 export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor(options) {
         super()
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null
-        // URLS.BASE = SERVER_URL
-        if(options.SERVER_URL) {
-            URLS.BASE = `https://${options.SERVER_URL}/`
-        }
+        URLS.BASE = calculateServerUrl(options.SERVER_URL)
         console.log("using server",URLS.BASE)
         AuthModule.init()
     }
