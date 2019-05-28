@@ -1,4 +1,4 @@
-import {canHaveBehavior, TOTAL_OBJ_TYPES} from './Common'
+import {TOTAL_OBJ_TYPES} from './Common'
 import * as THREE from "three"
 import WebLayer3D from 'three-web-layer'
 import GPUParticles from './defs/GPUParticles'
@@ -142,9 +142,6 @@ export default class ScriptManager {
         if (!window.WebLayer3D) window.WebLayer3D = WebLayer3D
     }
 
-    makeSystemFacade(behavior) {
-        return new SystemFacade(this,this.sgp, behavior)
-    }
 
     fireLifecycleEvent(type) {
         this.logger.log(`doing ${type} event`)
@@ -292,25 +289,6 @@ export default class ScriptManager {
 
     performClickAction(target, e) {
         this.fireEventAtTarget(target, "click", {event: e})
-        // if(!this.running) return
-        // try {
-        //     this.logger.log("script manager, got a click event",target)
-        //     if (!target || !target.exists || !target.exists()) return
-        //     const evt = {
-        //         type: 'click',
-        //         target: this.sgp.getThreeObject(target),
-        //         graphTarget: target
-        //     }
-        //     this.sgp.getBehaviorsForObject(target).forEach(b => {
-        //         const asset = this.sgp.getParsedBehaviorAsset(b)
-        //         const system = this.getSystemFacadeFromCache(b)
-        //         if (asset.click) asset.click.call(system,evt)
-        //     })
-        // } catch (error) {
-        //     this.logger.error("error in performClickAction",error.message)
-        //     this.logger.error(error)
-        //     this.stopRunning()
-        // }
     }
 
     captureEvent() {
@@ -369,16 +347,9 @@ export default class ScriptManager {
         this.listeners[target.id][type].push(cb)
     }
 
-    // fireEventFromTarget(target, type, payload) {
-    //     if(!this.listeners) return
-    //     if(!this.listeners[target.id]) return
-    //     if(!this.listeners[target.id][type]) return
-    //     this.listeners[target.id][type].forEach(cb => cb(payload))
-    // }
-
     getSystemFacadeFromCache(behavior) {
         if(!this.system_cache[behavior.id]) {
-            this.system_cache[behavior.id] = this.makeSystemFacade(behavior)
+            this.system_cache[behavior.id] = new SystemFacade(this, this.sgp, behavior)
         }
         return this.system_cache[behavior.id]
     }
@@ -397,31 +368,5 @@ class AssetFacade {
     }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)
-    }
-}
-class ThreeObjectFacade {
-    constructor(manager,obj) {
-        this.manager = manager
-        this._TYPE = 'ThreeObjectFacade'
-        this.obj = obj
-    }
-    get position() {
-        return this.manager.sgp.getThreeObject(this.obj).position
-    }
-    set position(val) {
-        this.manager.sgp.getThreeObject(this.obj).position.copy(val)
-    }
-
-    get rotation() {
-        return this.manager.sgp.getThreeObject(this.obj).rotation
-    }
-    get visible() {
-        return this.manager.sgp.getThreeObject(this.obj).visible
-    }
-    set visible(val) {
-        return this.manager.sgp.getThreeObject(this.obj).visible = val
-    }
-    lookAt(vec) {
-        return this.manager.sgp.getThreeObject(this.obj).lookAt(vec)
     }
 }
