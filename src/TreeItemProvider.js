@@ -124,7 +124,7 @@ class TreeItemProviderInterface {
     getTitle() { throw new Error("getTitle() not implemented") }
 }
 
-const AUTO_DETECT_GLITCH = false
+const AUTO_DETECT_GLITCH = true
 function calculateServerUrl(SERVER_URL) {
     if(SERVER_URL) {
         return `https://${SERVER_URL}/`
