@@ -680,7 +680,7 @@ export default class VREditor extends SyncGraphProvider {
                     type:TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT,
                     title:ans.script.title,
                     description:ans.script.description,
-                    src:url,
+                    src:fname,
                     parent:0
                 }))
                 this.accessObject(this.getBehaviorsObject()).insertChildLast(behavior)
