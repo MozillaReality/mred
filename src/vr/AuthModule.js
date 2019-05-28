@@ -1,4 +1,4 @@
-import {getInfoURL, getUserURL} from '../TreeItemProvider'
+import {getAssetsURL, getInfoURL, getUserURL} from '../TreeItemProvider'
 import * as ToasterMananager from './ToasterManager'
 import {genID} from "../utils"
 
@@ -148,6 +148,15 @@ class AuthModuleSingleton {
             headers: {
                 "Content-Type": "application/json",
             }
+        }).then(res => res.json())
+    }
+
+    uploadFile(file) {
+        console.log("auth module uploading",file)
+        const url = getAssetsURL()+file.name
+        return this.fetch(url,{
+            method:'POST',
+            body:file
         }).then(res => res.json())
     }
 
