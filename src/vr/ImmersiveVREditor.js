@@ -434,7 +434,7 @@ export default class ImmersiveVREditor extends Component {
                 if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
-                console.log("objects are",this.obj_node_map)
+                //console.log("objects are",this.obj_node_map)
             }
             return
         }
@@ -461,7 +461,8 @@ export default class ImmersiveVREditor extends Component {
         // this.setState({scene: -1})
         //make new stuff
         const graph = this.props.provider.getDocGraph()
-        console.log("we are rebuilding using this graph",graph)
+        console.log("we are building the graph")
+        //console.log("we are rebuilding using this graph",graph)
         this.rebuildNode(graph,"")
     }
 

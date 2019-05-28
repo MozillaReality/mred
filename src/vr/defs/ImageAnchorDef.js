@@ -97,7 +97,7 @@ export default class ImageAnchorDef extends ObjectDef {
             let height = (targetImage.height / targetImage.width)
             let width = 1
             node.userData.preview.geometry = new PlaneBufferGeometry(width,height)
-            console.log(obj)
+            //console.log(obj)
             let scale = obj.imageRealworldWidth
             node.userData.preview.scale.set(scale,scale,scale)
         }

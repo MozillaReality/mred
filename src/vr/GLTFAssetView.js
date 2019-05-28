@@ -44,7 +44,7 @@ export default class GLTFAssetView extends Component {
         light.position.set( 1, 1, 1 ).normalize();
         this.scene.add( light );
         this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
-        console.log("rendering the asset",asset)
+        //console.log("rendering the asset",asset)
 
         const loader = new GLTFLoader()
         loader.setCrossOrigin('anonymous');
@@ -62,7 +62,7 @@ export default class GLTFAssetView extends Component {
 
 
         loader.load(url, (gltf)=> {
-            console.log("loaded", gltf)
+            console.log("loaded", url)
 
             let model = gltf.scene || gltf.scenes[0]
 

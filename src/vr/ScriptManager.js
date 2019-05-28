@@ -332,7 +332,7 @@ export default class ScriptManager {
 
             let scene = this.sgp.getCurrentScene()
             while (this.bubbling && target.id !== scene.id && target.type !== TOTAL_OBJ_TYPES.SCENE) {
-                console.log("getting behaviors for the object",target)
+                //console.log("getting behaviors for the object",target)
                 const behaviors = this.sgp.getBehaviorsForObject(target)
                 //this.logger.log("firing " + type + " at target " + target.id + ", " + behaviors.length + " behaviors")
 
@@ -392,7 +392,7 @@ class AssetFacade {
         this.trusted = trusted
     }
     play() {
-        console.log("assets manager playing",this.obj)
+        console.log("assets manager playing", this.obj.id)
         this.manager.sgp.playMediaAsset(this.obj, this.trusted)
     }
     stop() {
