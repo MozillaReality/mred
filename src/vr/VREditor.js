@@ -563,6 +563,7 @@ export default class VREditor extends SyncGraphProvider {
     }
     requestImageCache(src) {
         const img = new Image()
+        img.crossOrigin = "Anonymous"
         this.imagecache[src] = img
         return new Promise((res,rej) => {
             img.src = src
