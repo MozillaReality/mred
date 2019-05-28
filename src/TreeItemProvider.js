@@ -126,8 +126,8 @@ class TreeItemProviderInterface {
 
 const AUTO_DETECT_GLITCH = false
 function calculateServerUrl(SERVER_URL) {
-    if(options.SERVER_URL) {
-        return `https://${options.SERVER_URL}/`
+    if(SERVER_URL) {
+        return `https://${SERVER_URL}/`
     }
 
     if(AUTO_DETECT_GLITCH) {
