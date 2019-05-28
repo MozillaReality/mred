@@ -41,7 +41,7 @@ export default class ModelDef extends ObjectDef {
         node.visible = obj.visible
         this.attachAsset(node, obj, provider)
 
-        node.enter = (evt) => {
+        node.enter = (evt,scriptManager) => {
             node.userData.clicker.visible = false
             // if (node.userData.mixer) {
             //     provider.addMixer(obj.id, node.userData.mixer)
@@ -55,7 +55,7 @@ export default class ModelDef extends ObjectDef {
                 node.userData.shouldPlay = true
             }
         }
-        node.exit = (evt) => {
+        node.exit = (evt,scriptManager) => {
             const ob2 = provider.accessObject(obj.id)
             if(ob2.asset === NONE_ASSET.id) {
                 node.userData.clicker.visible = true
@@ -64,7 +64,7 @@ export default class ModelDef extends ObjectDef {
             //     provider.removeMixer(obj.id)
             // }
         }
-        node.tick = (evt) => {
+        node.tick = (evt,scriptManager) => {
             const dt = evt.deltaTime / 1000;
             node.userData.mixer && node.userData.mixer.update(dt);
         }
@@ -158,7 +158,7 @@ export default class ModelDef extends ObjectDef {
         node.userData.currentClipName = null
 
         loader.load(url, (gltf)=> {
-            console.log("loaded", gltf)
+            console.log("loaded", url)
             //swap the model
             if(node.userData.model) node.remove(node.userData.model)
 
