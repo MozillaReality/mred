@@ -171,11 +171,11 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     }
 
-    duplicateDocument() {
+    duplicateDocument(title) {
         const newDocId = this.genID("doc")
         this.save().then(()=> {
             this.docid = newDocId
-            this.setDocTitle("copy of "+this.getDocTitle())
+            this.setDocTitle(title)
             const graph = this.getDocGraph()
             const new_doc = new DocGraph()
             const new_root = toDocGraphFromObjectGraph(graph,new_doc)

@@ -63,6 +63,7 @@ import {GithubAuthDialog} from './dialogs/GithubAuthDialog'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
+import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -775,6 +776,9 @@ export default class VREditor extends SyncGraphProvider {
 }
 
 class VREditorApp extends Component {
+    showSaveAsDialog = () => {
+        DialogManager.show(<SaveDocumentAsDialog provider={this.props.provider}/>)
+    }
 
     constructor(props) {
         super(props)
@@ -900,7 +904,7 @@ class VREditorApp extends Component {
             <Toolbar center top>
                 <button className="fa fa-file" onClick={this.newDoc} title={'new project'}></button>
                 <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
-                <button className="fa fa-clone" onClick={()=>prov.duplicateDocument()} title={"duplicate project"}></button>
+                <button className="fa fa-clone" onClick={this.showSaveAsDialog} title={"duplicate project"}></button>
                 <button onClick={() => prov.editIn2D()}>2D Edit</button>
                 <button onClick={() => prov.editInVR()}>AR Edit</button>
                 <button onClick={() => prov.viewInVR()}>XR View</button>
