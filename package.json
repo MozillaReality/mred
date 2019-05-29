@@ -17,7 +17,7 @@
     "react-ace": "^6.5.0",
     "react-dom": "^16.2.0",
     "react-scripts": "2.0.3",
-    "syncing_protocol": "0.0.8",
+    "syncing_protocol": "0.0.10",
     "three": "^0.104.0",
     "three-gltf2-loader": "^1.2.0",
     "three-web-layer": "0.0.21",

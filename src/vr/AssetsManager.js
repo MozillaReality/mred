@@ -115,7 +115,10 @@ export class AssetsManager {
 
     getTexture(id) {
         const asset = this.provider.accessObject(id)
-        if(!asset.exists()) return null
+        if(!asset.exists()) {
+            this.provider.getLogger().error("==== invalid asset reference",id)
+            return Promise.resolve(null)
+        }
         const url = this.getAssetURL(asset)
         if(!url) {
             this.provider.getLogger().error("==== null url from asset",asset)

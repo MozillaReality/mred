@@ -11,23 +11,8 @@ import {MissingDocDialog} from './MissingDocDialog'
 import React from 'react'
 import {AuthModule} from '../vr/AuthModule'
 
-const {DocGraph, CommandGenerator} = require("syncing_protocol");
+const {DocGraph, CommandGenerator, toDocGraphFromObjectGraph, toObjectGraphFromDocGraph} = require("syncing_protocol");
 
-
-function DocGraphToObjectGraph(doc, id) {
-    const props = doc.getPropertiesForObject(id)
-    const obj = {}
-    props.forEach(name => {
-        obj[name] = doc.getPropertyValue(id,name)
-        if(name === 'children') {
-            obj.children = propToArray(doc,obj[name]).map(child => {
-                return DocGraphToObjectGraph(doc,child)
-            })
-        }
-    })
-    obj.id = id
-    return obj
-}
 
 
 export default class SyncGraphProvider extends TreeItemProvider {
@@ -49,7 +34,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     getDocHistory = () => this.getDataGraph().getHistory()
     getDocGraph = () => {
         const root = this.getDataGraph().getObjectByProperty('type','root')
-        return DocGraphToObjectGraph(this.getDataGraph(),root)
+        return toObjectGraphFromDocGraph(this.getDataGraph(),root)
     }
     onRawChange = cb => this.rawlisteners.push(cb)
     getRawGraph = () => this.coalescer
@@ -191,6 +176,10 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.save().then(()=> {
             this.docid = newDocId
             this.setDocTitle("copy of "+this.getDocTitle())
+            const graph = this.getDocGraph()
+            const new_doc = new DocGraph()
+            const new_root = toDocGraphFromObjectGraph(graph,new_doc)
+            this.syncdoc = new_doc
             return this.save()
         }).then(()=>{
             ToasterMananager.add('duplicating doc')
