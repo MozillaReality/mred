@@ -124,7 +124,7 @@ class TreeItemProviderInterface {
     getTitle() { throw new Error("getTitle() not implemented") }
 }
 
-const AUTO_DETECT_GLITCH = false
+const AUTO_DETECT_GLITCH = true
 function calculateServerUrl(SERVER_URL) {
     if(SERVER_URL) {
         return `https://${SERVER_URL}/`
@@ -135,7 +135,7 @@ function calculateServerUrl(SERVER_URL) {
         const host = document.location.host
         if (host.endsWith(".glitch.me")) {
             console.log("this is a glitch. using autodetected server")
-            return host
+            return `https://${host}/`
         }
     }
     return URLS.BASE
