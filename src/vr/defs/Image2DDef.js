@@ -26,7 +26,7 @@ export default class Image2DDef extends ObjectDef {
     makeNode(obj, provider) {
         const node = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(obj.width, obj.width*obj.ratio),
-            new THREE.MeshLambertMaterial({color: 'white', side: THREE.DoubleSide})
+            new THREE.MeshLambertMaterial({color: 'white', side: THREE.DoubleSide, transparent: true, alphaTest: 0.5})
         )
         node.name = obj.title
         node.userData.clickable = true
