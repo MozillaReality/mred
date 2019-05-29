@@ -37,6 +37,7 @@ export default class PlaneDef extends ObjectDef {
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         node.visible = obj.visible
+        node.renderOrder = 2
         return node
     }
 
