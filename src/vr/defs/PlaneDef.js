@@ -28,7 +28,7 @@ export default class PlaneDef extends ObjectDef {
     makeNode(obj, provider) {
         const node = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(obj.width,obj.height),
-            new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, alphaTest: 0.5})
+            new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide, transparent: true})
         )
         this.attachAsset(node, obj, provider)
         node.userData.clickable = true
