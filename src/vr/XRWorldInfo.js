@@ -19,23 +19,30 @@ var requestNextHit = true
 let singleton = 0
 let eyeLevelFrameOfReference = 0
 
-export class XRWorldInfo extends THREE.Group {
+export class XRWorldInfo { // extends THREE.Group {
 
-    constructor(session) {
+    constructor(engine,scene,logger) {
 
         // run as a singleton
-        super()
         if(singleton) {
-            console.error("XRWorldInfo called more than once")
+            logger.error("XRWorldInfo called more than once")
             return singleton
         }
         singleton = this
 
-        this.session = session
+        this.engine = engine
+        this.session = engine.session
+        this.logger = logger
+        this.scene = scene
+
+        if(!this.scene) {
+            logger.error("no scene")
+            return
+        }
 
         // turn on some things
 
-        let sensingState = session.updateWorldSensingState({
+        let sensingState = this.session.updateWorldSensingState({
             illuminationDetectionState : {
                 enabled : true
             },
@@ -45,11 +52,9 @@ export class XRWorldInfo extends THREE.Group {
             }
         })
 
-        console.log("********** WORLDINFO STARTING")
-
         // I guess I want this thing to be at the starting point persistently?
-        let headFrameOfReference = session.requestFrameOfReference('head-model').then((results)=>{
-            eyeLevelFrameOfReference = session.requestFrameOfReference('eye-level').then((moreresults)=>{
+        let headFrameOfReference = this.session.requestFrameOfReference('head-model').then((results)=>{
+            eyeLevelFrameOfReference = this.session.requestFrameOfReference('eye-level').then((moreresults)=>{
                 mat4.getTranslation(workingVec3, workingMatrix)
                 mat4.fromTranslation(workingMatrix, workingVec3)
                 //session.addAnchor(workingMatrix, eyeLevelFrameOfReference).then((anchor)=>{
@@ -65,12 +70,12 @@ export class XRWorldInfo extends THREE.Group {
                 reticleParent.visible = false
 
                 // stuff everything inside self
-                this.add(reticleParent)
+                this.scene.add(reticleParent)
 
                 // don't waste time remaking this every frame
                 this._handleHitResults = this.handleHitResults.bind(this)
 
-                console.log("********** WORLDINFO UP")
+console.log("*********** started world info *********************")
             })
         })
     }
@@ -79,7 +84,7 @@ export class XRWorldInfo extends THREE.Group {
         let worldInfo = frame.worldInformation
         if(!worldInfo || !worldInfo.meshes) return
         if(!worldInfo.meshes.forEach) {
-            console.error("WHAT?")
+            this.logger.error("WHAT?")
         }
 
         // mark
@@ -109,7 +114,7 @@ export class XRWorldInfo extends THREE.Group {
                 this.session.requestHitTest(savedOrigin, savedDirection, headFrameOfReference)
                     .then(this._handleHitResults)
                     .catch(err => {
-                        console.error('Error testing hits', err)
+                        this.logger.error('Error testing hits', err)
                     })
             })
         }
@@ -131,7 +136,7 @@ export class XRWorldInfo extends THREE.Group {
             if (worldMesh.vertexPositionsChanged) {
                 let position = object.threeMesh.geometry.attributes.position
                 if (position.array.length != worldMesh.vertexPositions.length) {
-                    console.error("position and vertex arrays are different sizes", position, worldMesh)
+                    this.logger.error("position and vertex arrays are different sizes", position, worldMesh)
                 }
                 position.setArray(worldMesh.vertexPositions);
                 position.needsUpdate = true;
@@ -139,7 +144,7 @@ export class XRWorldInfo extends THREE.Group {
             if (worldMesh.textureCoordinatesChanged) {
                 let uv = object.threeMesh.geometry.attributes.uv
                 if (uv.array.length != worldMesh.textureCoordinates.length) {
-                    console.error("uv and vertex arrays are different sizes", uv, worldMesh)
+                    this.logger.error("uv and vertex arrays are different sizes", uv, worldMesh)
                 }
                 uv.setArray(worldMesh.textureCoordinates);
                 uv.needsUpdate = true;
@@ -147,7 +152,7 @@ export class XRWorldInfo extends THREE.Group {
             if (worldMesh.triangleIndicesChanged) {
                 let index = object.threeMesh.geometry.index
                 if (index.array.length != worldMesh.triangleIndices) {
-                    console.error("uv and vertex arrays are different sizes", index, worldMesh)
+                    this.logger.error("uv and vertex arrays are different sizes", index, worldMesh)
                 }
                 index.setArray(worldMesh.triangleIndices);
                 index.needsUpdate = true;
@@ -156,7 +161,7 @@ export class XRWorldInfo extends THREE.Group {
                 // normals are optional
                 let normals = object.threeMesh.geometry.attributes.normals
                 if (normals.array.length != worldMesh.vertexNormals) {
-                    console.error("uv and vertex arrays are different sizes", normals, worldMesh)
+                    this.logger.error("uv and vertex arrays are different sizes", normals, worldMesh)
                 }
                 normals.setArray(worldMesh.vertexNormals);
                 normals.needsUpdate = true;
@@ -165,15 +170,18 @@ export class XRWorldInfo extends THREE.Group {
     }
 
     handleRemoveNode(object) {
+        this.scene.remove(object.node)
         object.threeMesh.geometry.dispose()
+        this.engine._removeAnchorForNode(object.node,this.logger)
         meshMap.delete(object.worldMesh.uid)
-        this.remove(object)
     }
 
     handleNewNode(worldMesh) {
         let worldMeshGroup = new THREE.Group();
         var mesh = this.newMeshNode(worldMesh)
-        this.add(mesh)
+        worldMeshGroup.add(mesh)
+        this.scene.add(worldMeshGroup)
+        this.engine.addAnchoredNode(worldMesh, worldMeshGroup,this.logger)
         meshMap.set(worldMesh.uid, {
             ts: worldMesh.timeStamp, 
             worldMesh: worldMesh, 

@@ -505,15 +505,15 @@ class Adapter extends SceneGraphProvider {
             return
         }
         if(!this.player.worldInfo) {
-            this.player.worldInfo = new XRWorldInfo(this.player.xr.session,this.logger)
+            this.player.worldInfo = new XRWorldInfo(this.player.xr,this.player.scene,this.logger)
         }
-        this.player.scene.add(this.player.worldInfo)
+       // this.player.scene.add(this.player.worldInfo)
     }
 
     stopWorldInfo(info) {
         this.player.showWorldInfo = false
         if(this.player.worldInfo) {
-            this.scene.remove(this.player.worldInfo)
+            //this.player.scene.remove(this.player.worldInfo)
             // this.player.worldInfo = 0
         }
     }

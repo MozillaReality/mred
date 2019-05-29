@@ -634,5 +634,12 @@ export class VRCanvas extends Component {
         this.props.provider.getLogger().log("NOTHING DONE TO stop geo recognizer")
     }
 
+    startWorldInfo(info) {
+        this.props.provider.getLogger().log("NOTHING DONE TO start world info")
+    }
+
+    stopWorldInfo(info) {
+        this.props.provider.getLogger().log("NOTHING DONE TO stop world info")
+    }
 
 }
