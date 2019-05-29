@@ -131,6 +131,9 @@ export default class VREditor extends SyncGraphProvider {
                     }
                 })
             })
+        // if(this.syncdoc.getHistory().length > 300) {
+        //     throw new Error("pretending to crash loading the doc " + this.syncdoc.getHistory().length)
+        // }
         //get a list of assets for calculating the correct URLS.
         return this.assetsManager.cacheAssetsList()
     }
