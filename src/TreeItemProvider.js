@@ -135,7 +135,7 @@ function calculateServerUrl(SERVER_URL) {
         const host = document.location.host
         if (host.endsWith(".glitch.me")) {
             console.log("this is a glitch. using autodetected server")
-            return host
+            return `https://${host}/`
         }
     }
     return URLS.BASE
