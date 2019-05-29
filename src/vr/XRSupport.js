@@ -15,6 +15,7 @@ export class XRSupport {
         this._vec = vec3.create()
         this.lastFrameTime = 0
         
+        this.heightAboveFloor = 1.3; // for now
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -51,7 +52,7 @@ export class XRSupport {
                     that.session = xrSession
 
                     // we want to always use the estimated elevation
-                    XRGeospatialAnchor.useEstimatedElevation(true)
+                    XRGeospatialAnchor.useEstimatedElevation(true, this.heightAboveFloor)
 
                     // enable smooth tracking of image targets
                     that.session.nonStandard_setNumberOfTrackedImages(4)
@@ -327,7 +328,7 @@ logger.log(info)
     _fetchImage(info,logger) {
         return new Promise((res,rej) => {
             const img = new Image()
-            img.crossOrigin = "anonymous"
+            img.crossOrigin = "Anonymous"
             img.src = info.image.src
             logger.log("Loading image",img.src)
             img.onload = () => {
