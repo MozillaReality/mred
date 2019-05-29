@@ -11,23 +11,8 @@ import {MissingDocDialog} from './MissingDocDialog'
 import React from 'react'
 import {AuthModule} from '../vr/AuthModule'
 
-const {DocGraph, CommandGenerator} = require("syncing_protocol");
+const {DocGraph, CommandGenerator, toDocGraphFromObjectGraph, toObjectGraphFromDocGraph} = require("syncing_protocol");
 
-
-function DocGraphToObjectGraph(doc, id) {
-    const props = doc.getPropertiesForObject(id)
-    const obj = {}
-    props.forEach(name => {
-        obj[name] = doc.getPropertyValue(id,name)
-        if(name === 'children') {
-            obj.children = propToArray(doc,obj[name]).map(child => {
-                return DocGraphToObjectGraph(doc,child)
-            })
-        }
-    })
-    obj.id = id
-    return obj
-}
 
 
 export default class SyncGraphProvider extends TreeItemProvider {
@@ -49,7 +34,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     getDocHistory = () => this.getDataGraph().getHistory()
     getDocGraph = () => {
         const root = this.getDataGraph().getObjectByProperty('type','root')
-        return DocGraphToObjectGraph(this.getDataGraph(),root)
+        return toObjectGraphFromDocGraph(this.getDataGraph(),root)
     }
     onRawChange = cb => this.rawlisteners.push(cb)
     getRawGraph = () => this.coalescer
@@ -122,10 +107,19 @@ export default class SyncGraphProvider extends TreeItemProvider {
                 console.log("got the payload",payload)
                 if(!payload.id) return this.showMissingDocDialog(docid)
                 const doc = this.makeDocFromServerHistory(payload.history)
-                this.setupDocFlow(doc,docid)
+                return this.setupDocFlow(doc,docid)
             })
             .catch((e)=> {
-                console.error("there was an error loading doc",docid,e)
+                console.error("there was an error loading doc", docid, e)
+                console.log("trying to load again without the history")
+                return AuthModule.getJSON(getDocsURL() + docid)
+                    .then((payload) => {
+                        console.log("got the payload", payload)
+                        const doc = this.makeDocFromServerGraph(payload.graph)
+                        return this.setupDocFlow(doc, docid)
+                    })
+            }).catch((e) => {
+                console.error("there was an error loading doc", docid, e)
                 const doc = new DocGraph()
                 this.makeEmptyRoot(doc)
                 this.setupDocFlow(doc,this.genID('doc'))
@@ -164,7 +158,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
         this.pubnub = new PubnubSyncWrapper(this,this.syncdoc)
         this.pubnub.unpause()
         this.pubnub.start()
-        this.docLoaded().then(()=>{
+        return this.docLoaded().then(()=>{
             this.fire(TREE_ITEM_PROVIDER.DOCUMENT_SWAPPED,{provider:this})
             setQuery({mode:this.mode,doc:this.getDocId(), doctype:this.getDocType()})
             this.connected = true
@@ -186,11 +180,15 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     }
 
-    duplicateDocument() {
+    duplicateDocument(title) {
         const newDocId = this.genID("doc")
         this.save().then(()=> {
             this.docid = newDocId
-            this.setDocTitle("copy of "+this.getDocTitle())
+            this.setDocTitle(title)
+            const graph = this.getDocGraph()
+            const new_doc = new DocGraph()
+            const new_root = toDocGraphFromObjectGraph(graph,new_doc)
+            this.syncdoc = new_doc
             return this.save()
         }).then(()=>{
             ToasterMananager.add('duplicating doc')
@@ -242,5 +240,12 @@ export default class SyncGraphProvider extends TreeItemProvider {
 
     showMissingDocDialog(docid) {
         DialogManager.show(<MissingDocDialog docid={docid} provider={this}/>)
+    }
+
+    makeDocFromServerGraph(graph) {
+        console.log("Making Doc from Server Graph",graph)
+        const doc = new DocGraph()
+        toDocGraphFromObjectGraph(graph,doc)
+        return doc
     }
 }

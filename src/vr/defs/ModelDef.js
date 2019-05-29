@@ -136,29 +136,13 @@ export default class ModelDef extends ObjectDef {
             node.userData.clicker.visible = true
             return
         }
-        const asset = provider.accessObject(obj.asset)
-        if(!asset.exists()) return
-
-        const url = provider.assetsManager.getAssetURL(asset)
-        provider.getLogger().log("ModelDef loading the model asset url",url)
-        if(!url) {
-            provider.getLogger().error("ModelDef: empty url. cannot load GLTF")
-            return
-        }
-    
-        const loader = new GLTFLoader()
-        loader.setCrossOrigin('anonymous');
-        const draco = new DRACOLoader() 
-        DRACOLoader.setDecoderPath( './draco/' );
-        loader.setDRACOLoader( draco );
 
         node.userData.shouldPlay = false
         node.userData.currentClip = null
         node.userData.model = null
         node.userData.currentClipName = null
 
-        loader.load(url, (gltf)=> {
-            console.log("loaded", url)
+        provider.assetsManager.getGLTF(obj.asset).then(gltf => {
             //swap the model
             if(node.userData.model) node.remove(node.userData.model)
 

@@ -3,6 +3,8 @@ import {TextureLoader, VideoTexture, Audio, AudioLoader} from 'three'
 import {AuthModule} from './AuthModule'
 import {getAssetsURL} from '../TreeItemProvider'
 import {createGIFTexture} from './GifSupport'
+import GLTFLoader from './GLTFLoader'
+import DRACOLoader from './DRACOLoader'
 
 export class AssetsManager {
     constructor(provider) {
@@ -115,7 +117,10 @@ export class AssetsManager {
 
     getTexture(id) {
         const asset = this.provider.accessObject(id)
-        if(!asset.exists()) return null
+        if(!asset.exists()) {
+            this.provider.getLogger().error("==== invalid asset reference",id)
+            return Promise.resolve(null)
+        }
         const url = this.getAssetURL(asset)
         if(!url) {
             this.provider.getLogger().error("==== null url from asset",asset)
@@ -132,7 +137,7 @@ export class AssetsManager {
                         (tex)=>res(tex),
                         (p)=>console.log("Progress",p),
                         (e)=>{
-                            console.log("error loading texture",e)
+                            this.provider.getLogger().error("error loading texture",e)
                             rej(e)
                         })
                     })
@@ -158,5 +163,35 @@ export class AssetsManager {
             return Promise.resolve(new VideoTexture(video))
         }
         return Promise.resolve(null)
+    }
+
+    getGLTF(id) {
+        const asset = this.provider.accessObject(id)
+        if(!asset.exists()) {
+            this.provider.getLogger().error("==== invalid asset reference",id)
+            return Promise.resolve(null)
+        }
+
+        const url = this.getAssetURL(asset)
+        if(!url) {
+            this.provider.getLogger().error("==== null url from asset",asset)
+            return Promise.resolve(null)
+        }
+        this.provider.getLogger().log("ModelDef loading the model asset url",url)
+
+        const loader = new GLTFLoader()
+        loader.setCrossOrigin('anonymous');
+        const draco = new DRACOLoader()
+        DRACOLoader.setDecoderPath( './draco/' );
+        loader.setDRACOLoader( draco );
+        return new Promise((res,rej)=>{
+            loader.load(url, (gltf)=> res(gltf),
+                (xhr)=> console.log('Progress',xhr),
+                (error)=>{
+                    this.provider.getLogger().error("error loading texture",error)
+                    rej(error)
+                })
+        })
+
     }
 }
