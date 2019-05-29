@@ -64,6 +64,7 @@ import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
 import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
+import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -72,6 +73,7 @@ export default class VREditor extends SyncGraphProvider {
         this.imagecache = {}
         this.behaviorCache = {}
         this.orbit_state = {}
+        this.badAssets = []
         this.assetsManager = new AssetsManager(this)
     }
     getDocType() { return "vr" }
@@ -136,6 +138,47 @@ export default class VREditor extends SyncGraphProvider {
         // }
         //get a list of assets for calculating the correct URLS.
         return this.assetsManager.cacheAssetsList()
+            .then(()=>{
+                Promise.all(this.accessObject(this.getAssetsObject()).getChildren()
+                    .map(asset => {
+                        // this.getLogger().log("checking asset",asset)
+                        if(asset.subtype === ASSET_TYPES.VIDEO) {
+                            return this.assetsManager.getTexture(asset.id).then(tex => {
+                                if (!tex) {
+                                    this.getLogger().error("error loading a texture", asset)
+                                    this.addAssetLoadingError(asset)
+                                }
+                            })
+                        }
+                        if(asset.subtype === ASSET_TYPES.IMAGE) {
+                            return this.assetsManager.getTexture(asset.id).then(tex => {
+                                if (!tex) {
+                                    this.getLogger().error("error loading a texture", asset)
+                                    this.addAssetLoadingError(asset)
+                                }
+                            })
+                        }
+                        if(asset.subtype === ASSET_TYPES.GLTF) {
+                            return this.assetsManager.getGLTF(asset.id).then(model => {
+                                if (!model) {
+                                    this.getLogger().error("error loading a model", asset)
+                                    this.addAssetLoadingError(asset)
+                                }
+                            })
+                        }
+                        return Promise.resolve("all good")
+                    })).then((answers)=>{
+                        console.log("fully loaded all assets now")
+                        console.log("error count is",this.badAssets.length)
+                    if(this.badAssets.length > 0) {
+                        this.showBadAssetsDialog()
+                    }
+                })
+            })
+    }
+
+    addAssetLoadingError(asset) {
+        this.badAssets.push(asset)
     }
 
     getRendererForItem = (item) => {
@@ -775,6 +818,10 @@ export default class VREditor extends SyncGraphProvider {
     }
     getAudioListener() {
         return this.audioListener
+    }
+
+    showBadAssetsDialog() {
+        DialogManager.show(<BadAssetsDialog provider={this}/>)
     }
 }
 
