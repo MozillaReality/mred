@@ -1,3 +1,6 @@
+import {NONE_ASSET} from '../Common'
+import {DoubleSide, MeshLambertMaterial} from 'three'
+
 export default class ObjectDef {
     updateProperty(node, obj, op, provider) {
         if (op.name === 'tx') node.position.x = parseFloat(op.value)
@@ -22,5 +25,20 @@ export default class ObjectDef {
     reset(node, obj) {
         node.position.set(obj.tx,obj.ty,obj.tz)
         node.visible = obj.visible
+    }
+
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({color: obj.color, side:DoubleSide})
+            return
+        }
+        provider.assetsManager.getTexture(obj.asset).then(tex => {
+            provider.getLogger().log("loadded asset",obj.asset)
+            provider.getLogger().log(tex)
+            if(!tex) provider.getLogger().error("error loading asset",obj.asset)
+            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
+        }).catch(err => {
+            provider.getLogger().error('error somwhere',err.message,err)
+        })
     }
 }

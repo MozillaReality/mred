@@ -80,27 +80,11 @@ class Adapter extends SceneGraphProvider {
         }
     }
     playMediaAsset(asset, trusted) {
-        if(asset.subtype === ASSET_TYPES.AUDIO) {
-            const sound = new Audio(this.editor.audioListener)
-            const audioLoader = new AudioLoader()
-            audioLoader.load(asset.src, function (buffer) {
-                sound.setBuffer(buffer);
-                sound.setLoop(false);
-                sound.setVolume(0.5);
-                sound.play();
-            });
-            this.editor.playing_audio[asset.id] = sound
-        }
+        this.provider.assetsManager.playMediaAsset(asset, trusted)
     }
 
     stopMediaAsset(asset) {
-        if(asset.subtype === ASSET_TYPES.AUDIO) {
-            if(this.editor.playing_audio[asset.id]) {
-                this.editor.playing_audio[asset.id].stop()
-                delete this.editor.playing_audio[asset.id]
-                this.canvas.playing_audio[asset.id] = null
-            }
-        }
+        this.provider.assetsManager.stopMediaAsset(asset)
     }
 
     getGraphObjectByName(title) {
@@ -162,7 +146,6 @@ export default class ImmersiveVREditor extends Component {
         super(props)
         this.obj_node_map = {}
         this.previewUpdateNodes = []
-        this.playing_audio = []
         const opts = parseOptions({})
         if(!opts.doc) throw new Error("doc not specified")
         this.logger = new PubnubLogger(opts.doc)
@@ -232,6 +215,7 @@ export default class ImmersiveVREditor extends Component {
         this.vrmanager = new VRManager(renderer)
 
         this.audioListener = new AudioListener()
+        this.props.provider.setAudioListener(this.audioListener)
         this.camera.add(this.audioListener)
 
         this.initContent()
@@ -460,7 +444,7 @@ export default class ImmersiveVREditor extends Component {
                 if(is3DObjectType(obj.type)) return get3DObjectDef(obj.type).updateProperty(node,obj,op, this.props.provider)
             } else {
                 console.log("could not find the node for object id:", op)
-                console.log("objects are",this.obj_node_map)
+                //console.log("objects are",this.obj_node_map)
             }
             return
         }
@@ -487,7 +471,8 @@ export default class ImmersiveVREditor extends Component {
         // this.setState({scene: -1})
         //make new stuff
         const graph = this.props.provider.getDocGraph()
-        console.log("we are rebuilding using this graph",graph)
+        console.log("we are building the graph")
+        //console.log("we are rebuilding using this graph",graph)
         this.rebuildNode(graph,"")
     }
 

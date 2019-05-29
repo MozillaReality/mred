@@ -327,7 +327,7 @@ logger.log(info)
     _fetchImage(info,logger) {
         return new Promise((res,rej) => {
             const img = new Image()
-            img.crossOrigin = "Anonymous"
+            img.crossOrigin = "anonymous"
             img.src = info.image.src
             logger.log("Loading image",img.src)
             img.onload = () => {

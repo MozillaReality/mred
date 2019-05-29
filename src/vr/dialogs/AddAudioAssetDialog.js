@@ -53,7 +53,7 @@ export class AddAudioAssetDialog extends Component {
     }
 
     selectedFile = (e) => {
-        console.log("selected a file", e.target)
+        //console.log("selected a file", e.target)
         this.setState({fileInput:e.target.value})
     }
 

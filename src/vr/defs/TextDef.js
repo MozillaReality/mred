@@ -46,11 +46,22 @@ font-size: 200%;
         divLayer.refresh(true)
         divLayer.userData.clickable = true
         const node = new THREE.Object3D()
+
         node.previewUpdate = function() {
             divLayer.update()
+        }        
+        node.setText = function (text) {
+            if (text !== node.userData.text) {
+                node.userData.text = text
+                node.userData.div.innerHTML = text
+                //if(obj.cssStyle) node.userData.div.setAttribute('style',obj.cssStyle)
+                node.userData.divLayer.refresh(true)
+            }
         }
+
         node.add(divLayer)
         node.userData.divLayer = divLayer
+        node.userData.text = obj.text
         node.userData.div = div
         node.name = obj.title
         node.userData.clickable = true

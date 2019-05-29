@@ -9,48 +9,17 @@ export default class GLTFAssetView extends Component {
     componentDidMount() {
         this.initThreeJS()
     }
-    render() {
-        return <div>GLTF viewer
-            <div ref={c => this.sceneContainer = c}></div>
-        </div>
+    componentWillReceiveProps(nextProps, nextContext) {
+        if(this.props.asset && nextProps.asset.id !== this.props.asset.id) {
+            this.swapModel(nextProps.asset)
+        }
     }
-    initThreeJS() {
-        const asset = this.props.asset
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x000000 );
-        this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
-        this.scene.add(this.camera)
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
-        this.renderer.setPixelRatio( window.devicePixelRatio );
-        this.renderer.setSize( window.innerWidth, window.innerHeight );
-        this.renderer.gammaOutput = true
-        this.sceneContainer.appendChild( this.renderer.domElement );
-        this.clips = []
-        this.mixer = null
-        this.model = null
 
-        window.addEventListener( 'resize', ()=>{
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
-        }, false );
-  
-       this.controls = new OrbitControls( this.camera, this.renderer.domElement );
-       this.controls.screenSpacePanning = true;
+    swapModel(asset) {
+        if(this.model) {
+            this.scene.remove(this.model)
+        }
 
-        this.renderer.setAnimationLoop(this.renderThree)
-
-        const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
-        light.position.set( 1, 1, 1 ).normalize();
-        this.scene.add( light );
-        this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
-        console.log("rendering the asset",asset)
-
-        const loader = new GLTFLoader()
-        loader.setCrossOrigin('anonymous');
-        const draco = new DRACOLoader() 
-        DRACOLoader.setDecoderPath( './draco/' );
-        loader.setDRACOLoader( draco );
 
         const url = this.props.provider.assetsManager.getAssetURL(asset)
 
@@ -61,8 +30,14 @@ export default class GLTFAssetView extends Component {
         }
 
 
+        const loader = new GLTFLoader()
+        loader.setCrossOrigin('anonymous');
+        const draco = new DRACOLoader()
+        DRACOLoader.setDecoderPath( './draco/' );
+        loader.setDRACOLoader( draco );
+
         loader.load(url, (gltf)=> {
-            console.log("loaded", gltf)
+            console.log("loaded", url)
 
             let model = gltf.scene || gltf.scenes[0]
 
@@ -76,30 +51,62 @@ export default class GLTFAssetView extends Component {
 
             let boundingBox = new THREE.Box3().setFromObject(model);
             let boundingBoxSize = boundingBox.getSize(new THREE.Vector3()).length();
-            let BoundingBoxCenter = boundingBox.getCenter(new THREE.Vector3());     
-                    
-           this.controls.reset();
+            let BoundingBoxCenter = boundingBox.getCenter(new THREE.Vector3());
+
+            this.controls.reset();
 
             // this.setClips(node.userData)
             model.position.x += model.position.x -BoundingBoxCenter.x
             model.position.y += model.position.y -BoundingBoxCenter.y
             model.position.z += model.position.z -BoundingBoxCenter.z
 
-           this.controls.maxDistance = boundingBoxSize * 10;
+            this.controls.maxDistance = boundingBoxSize * 10;
             this.camera.near = boundingBoxSize / 100;
             this.camera.far = boundingBoxSize * 100;
             this.camera.updateProjectionMatrix();
-        
+
             this.camera.position.copy(BoundingBoxCenter);
             this.camera.position.x += boundingBoxSize / 2.0;
             this.camera.position.y += boundingBoxSize / 5.0;
             this.camera.position.z += boundingBoxSize / 2.0;
             this.camera.lookAt(BoundingBoxCenter);
-    
-           this.controls.enabled = true;
+
+            this.controls.enabled = true;
             this.playAllClips()
             this.scene.add(model)
         })
+
+    }
+
+    render() {
+        return <div id={"gltf-viewer"} ref={c => this.sceneContainer = c}/>
+    }
+    initThreeJS() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color( 0x000000 );
+        this.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
+        this.scene.add(this.camera)
+        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.renderer.gammaOutput = true
+        this.sceneContainer.appendChild( this.renderer.domElement );
+        this.clips = []
+        this.mixer = null
+        this.model = null
+
+        this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+        this.controls.screenSpacePanning = true;
+
+        this.renderer.setAnimationLoop(this.renderThree)
+
+        const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+        light.position.set( 1, 1, 1 ).normalize();
+        this.scene.add( light );
+        this.scene.add(new THREE.AmbientLight(0xffffff,0.2))
+        //console.log("rendering the asset",asset)
+
+        this.swapModel(this.props.asset)
     }
 
     playAllClips () {
@@ -123,10 +130,25 @@ export default class GLTFAssetView extends Component {
         this.clips = clips
         this.mixer = new THREE.AnimationMixer( this.model );
     }
-        
+
+    checkAspectRatio() {
+        if(!this.renderer
+            || !this.renderer.domElement
+            || !this.sceneContainer
+        ) return
+        const w = this.sceneContainer.clientWidth
+        const h = this.sceneContainer.clientHeight
+        const aspect = w/h
+        if(Math.abs(this.camera.aspect - aspect) > 0.001 ) {
+            this.camera.aspect = aspect
+            this.camera.updateProjectionMatrix()
+            this.renderer.setSize(w-4,h-4)
+        }
+    }
 
     renderThree = (time) => {
         const dt = (time - this.prevTime) / 1000;
+        this.checkAspectRatio()
 
         this.controls.update();
         this.mixer && this.mixer.update(dt);

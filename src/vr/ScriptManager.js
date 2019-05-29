@@ -1,4 +1,4 @@
-import {canHaveBehavior, TOTAL_OBJ_TYPES} from './Common'
+import {TOTAL_OBJ_TYPES} from './Common'
 import * as THREE from "three"
 import WebLayer3D from 'three-web-layer'
 import GPUParticles from './defs/GPUParticles'
@@ -62,20 +62,30 @@ class SystemFacade {
     }
     getThreeObjectByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
-        if(!obj) throw new Error(`object '${title}' not found`)
+        if(!obj) throw new Error(`three object '${title}' not found`)
         return this.sgp.getThreeObject(obj)
     }
     getObjectByTitle(title) {
-        return this.sgp.getGraphObjectByName(title)
+        const obj = this.sgp.getGraphObjectByName(title)
+        if(!obj || !obj.exists()) throw new Error(`object '${title}' not found`)
+        return obj
     }
     getAssetByTitle(title) {
         const obj = this.sgp.getGraphObjectByName(title)
-        if(!obj) throw new Error(`asset '${title}' not found`)
+        if(!obj || !obj.exists()) throw new Error(`asset '${title}' not found`)
         let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
         return new AssetFacade(this.manager,obj, trusted)
     }
+    getAssetById(id) {
+        const obj = this.getObjectById(id)
+        if(!obj || !obj.exists()) throw new Error(`asset '${id}' not found`)
+        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
+        return new AssetFacade(this.manager,obj,trusted)
+    }
     getObjectById(id) {
-        return this.sgp.getGraphObjectById(id)
+        const obj = this.sgp.getGraphObjectById(id)
+        if(!obj || !obj.exists()) throw new Error(`object '${id}' not found`)
+        return obj
     }
     getThreeObjectById(id) {
         return this.sgp.getThreeObject(id)
@@ -86,17 +96,21 @@ class SystemFacade {
 
     playMedia(id) {
         const asset = this.sgp.getGraphObjectById(id)
+        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
         let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
         this.manager.sgp.playMediaAsset(asset, trusted)
     }
 
     stopMedia(id) {
         const asset = this.sgp.getGraphObjectById(id)
+        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
         this.manager.sgp.stopMediaAsset(asset)
     }
 
     getCurrentScene() {
-        return this.sgp.getCurrentScene()
+        const obj = this.sgp.getCurrentScene()
+        if(!obj || !obj.exists()) throw new Error(`current scene not found`)
+        return obj
     }
     navigateScene(id) {
         this.manager.fireSceneLifecycleEvent('exit',this.getCurrentScene())
@@ -139,9 +153,6 @@ export default class ScriptManager {
         if (!window.WebLayer3D) window.WebLayer3D = WebLayer3D
     }
 
-    makeSystemFacade(behavior) {
-        return new SystemFacade(this,this.sgp, behavior)
-    }
 
     fireLifecycleEvent(type) {
         this.logger.log(`doing ${type} event`)
@@ -289,25 +300,6 @@ export default class ScriptManager {
 
     performClickAction(target, e) {
         this.fireEventAtTarget(target, "click", {event: e})
-        // if(!this.running) return
-        // try {
-        //     this.logger.log("script manager, got a click event",target)
-        //     if (!target || !target.exists || !target.exists()) return
-        //     const evt = {
-        //         type: 'click',
-        //         target: this.sgp.getThreeObject(target),
-        //         graphTarget: target
-        //     }
-        //     this.sgp.getBehaviorsForObject(target).forEach(b => {
-        //         const asset = this.sgp.getParsedBehaviorAsset(b)
-        //         const system = this.getSystemFacadeFromCache(b)
-        //         if (asset.click) asset.click.call(system,evt)
-        //     })
-        // } catch (error) {
-        //     this.logger.error("error in performClickAction",error.message)
-        //     this.logger.error(error)
-        //     this.stopRunning()
-        // }
     }
 
     captureEvent() {
@@ -328,7 +320,8 @@ export default class ScriptManager {
             }
 
             let scene = this.sgp.getCurrentScene()
-            while (this.bubbling && target.id !== scene.id) {
+            while (this.bubbling && target.id !== scene.id && target.type !== TOTAL_OBJ_TYPES.SCENE) {
+                //console.log("getting behaviors for the object",target)
                 const behaviors = this.sgp.getBehaviorsForObject(target)
                 //this.logger.log("firing " + type + " at target " + target.id + ", " + behaviors.length + " behaviors")
 
@@ -365,16 +358,9 @@ export default class ScriptManager {
         this.listeners[target.id][type].push(cb)
     }
 
-    // fireEventFromTarget(target, type, payload) {
-    //     if(!this.listeners) return
-    //     if(!this.listeners[target.id]) return
-    //     if(!this.listeners[target.id][type]) return
-    //     this.listeners[target.id][type].forEach(cb => cb(payload))
-    // }
-
     getSystemFacadeFromCache(behavior) {
         if(!this.system_cache[behavior.id]) {
-            this.system_cache[behavior.id] = this.makeSystemFacade(behavior)
+            this.system_cache[behavior.id] = new SystemFacade(this, this.sgp, behavior)
         }
         return this.system_cache[behavior.id]
     }
@@ -392,31 +378,5 @@ class AssetFacade {
     }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)
-    }
-}
-class ThreeObjectFacade {
-    constructor(manager,obj) {
-        this.manager = manager
-        this._TYPE = 'ThreeObjectFacade'
-        this.obj = obj
-    }
-    get position() {
-        return this.manager.sgp.getThreeObject(this.obj).position
-    }
-    set position(val) {
-        this.manager.sgp.getThreeObject(this.obj).position.copy(val)
-    }
-
-    get rotation() {
-        return this.manager.sgp.getThreeObject(this.obj).rotation
-    }
-    get visible() {
-        return this.manager.sgp.getThreeObject(this.obj).visible
-    }
-    set visible(val) {
-        return this.manager.sgp.getThreeObject(this.obj).visible = val
-    }
-    lookAt(vec) {
-        return this.manager.sgp.getThreeObject(this.obj).lookAt(vec)
     }
 }

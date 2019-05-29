@@ -85,13 +85,5 @@ export default class BG360Def {
         }
     }
 
-    attachAsset(node, obj, provider) {
-        if(obj.asset === NONE_ASSET.id) {
-            node.material = new MeshLambertMaterial({color: 'white', side:DoubleSide})
-            return
-        }
-        const tex = provider.assetsManager.getTexture(obj.asset)
-        if(tex) node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
-    }
 
 }

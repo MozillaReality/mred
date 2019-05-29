@@ -37,13 +37,13 @@ export class HudAnchorDef extends ObjectDef {
         node.userData.clicker = clicker
         node.add(clicker)
 
-        node.start = (evt,scriptManager) => {
+        node.enter = (evt,scriptManager) => {
             node.parent.remove(node)
             node.position.z = 0
             clicker.visible = false
             scriptManager.sgp.getCamera().add(node)
         }
-        node.stop = (evt,scriptManager) => {
+        node.exit = (evt,scriptManager) => {
             scriptManager.sgp.getCamera().remove(node)
             clicker.visible = true
             const scene = scriptManager.sgp.getThreeObject(obj.parent)

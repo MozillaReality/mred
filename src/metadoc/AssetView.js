@@ -8,7 +8,7 @@ export default class AssetView extends Component {
     render() {
         const prov = this.props.provider
         const asset = fetchGraphObject(prov.getDataGraph(),this.props.asset)
-        return <div>
+        return <div id={"asset-view"}>
             <h3>{asset.subtype} : <b>{asset.title}</b></h3>
             {this.renderAsset(asset)}
         </div>

@@ -55,6 +55,7 @@ export default class SceneDef {
                 if(chObj.type === OBJ_TYPES.geoanchor) return
                 if(chObj.type === OBJ_TYPES.localanchor) return
                 if(chObj.type === OBJ_TYPES.imageanchor) return
+                if(chObj.type === OBJ_TYPES.hudanchor) return
                 scene.userData.sceneAnchor.add(chNode)
             })
         }
