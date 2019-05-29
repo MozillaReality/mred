@@ -55,7 +55,9 @@ font-size: 200%;
                 node.userData.text = text
                 node.userData.div.innerHTML = text
                 //if(obj.cssStyle) node.userData.div.setAttribute('style',obj.cssStyle)
-                node.userData.divLayer.refresh(true)
+
+                // shouldn't be explicitly calling refresh
+                //node.userData.divLayer.refresh(true)
             }
         }
 
