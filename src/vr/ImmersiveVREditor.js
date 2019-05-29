@@ -145,6 +145,16 @@ class Adapter extends SceneGraphProvider {
         this.provider.getLogger().log("NOTHING DONE TO stop geo recognizer")
     }
 
+    startWorldInformation(info) {
+        this.provider.getLogger().log("NOTHING DONE TO start world information")
+        return 0
+    }
+
+    stopWorldInformation(info) {
+        this.provider.getLogger().log("NOTHING DONE TO stop world information")
+        return 0
+    }
+
 }
 
 export default class ImmersiveVREditor extends Component {

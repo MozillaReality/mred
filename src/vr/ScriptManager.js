@@ -31,6 +31,9 @@ export class SceneGraphProvider {
     stopImageRecognizer(info) { throw new Error("stopImageRecognizer not implemented")}
     startGeoTracker(info) { throw new Error("startGeoTracker not implemented")}
     stopGeoTracker(info) { throw new Error("stopGeoTracker not implemented")}
+    startWorldInfo(info) { throw new Error("startWorldInformation not implemented")}
+    stopWorldInfo(info) { throw new Error("stopWorldInformation not implemented")}
+
 }
 
 class SystemFacade {

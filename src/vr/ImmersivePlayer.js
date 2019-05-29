@@ -10,6 +10,7 @@ import SceneDef from './defs/SceneDef'
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, NONE_ASSET, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
+import {XRWorldInfo} from './XRWorldInfo'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
@@ -262,6 +263,9 @@ export class ImmersivePlayer extends Component {
 
     renderThreeWithCamera = (bounds,projectionMatrix,viewMatrix, time,frame) => {
         if(!this.scene || !this.camera) return
+        if(this.showWorldInfo && this.worldInfo) {
+            this.worldInfo.refreshWorldInfo(frame)
+        }
         this.camera.matrix.fromArray(viewMatrix)
         this.camera.matrixWorldNeedsUpdate = true
         this.camera.updateMatrixWorld()
@@ -313,10 +317,6 @@ export class ImmersivePlayer extends Component {
         })
     }
 
-    sleeper(ms) {
-        return new Promise(resolve => setTimeout(() => resolve(), ms))
-    }
-
     setCurrentScene(scene) {
         // @blair
         const sceneNode = this.three_map[scene.id]
@@ -342,16 +342,6 @@ export class ImmersivePlayer extends Component {
                     }
                     this.xr.createSceneAnchor(sceneAnchorNode, this.logger).then(anchor => {
                         this.sceneAnchor = anchor
-/*
-sleeper(5000).then(anchor=>{
-    if(anchor) {
-        this.logger.log("found a floor")
-        this.updateSceneFloorAnchor(this.sceneAnchor,sceneAnchorNode,this.logger)
-    } else {
-        // TODO try again and again? What's the right strategy?
-    }
-})
-*/
                     }).catch(error => {
                         this.logger.error(`error creating new scene anchor: ${error}`)
                     })
@@ -539,6 +529,26 @@ class Adapter extends SceneGraphProvider {
 
         // decorate the info.node with an xr anchor
         this.player.xr.stopGeoTracker(info, this.logger)
+    }
+
+    startWorldInfo(info) {
+        this.player.showWorldInfo = true
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        if(!this.player.worldInfo) {
+            this.player.worldInfo = new XRWorldInfo(this.player.xr.session,this.logger)
+        }
+        this.player.scene.add(this.player.worldInfo)
+    }
+
+    stopWorldInfo(info) {
+        this.player.showWorldInfo = false
+        if(this.player.worldInfo) {
+            this.scene.remove(this.player.worldInfo)
+            // this.player.worldInfo = 0
+        }
     }
 
 }
