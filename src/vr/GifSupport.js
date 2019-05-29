@@ -113,7 +113,7 @@ class GIFTexture extends Texture {
 
 export function createGIFTexture(url, prov) {
     return new Promise((resolve, reject) => {
-        AuthModule.fetch(url,{ mode: "cors" })
+        fetch(url,{ mode: "cors" })
             .then(r => r.arrayBuffer())
             .then(r => new Uint8Array(r))
             .then(r => {
@@ -136,7 +136,7 @@ export function createGIFTexture(url, prov) {
                 let loadCnt = 0;
                 for (let i = 0; i < frames.length; i++) {
                     const img = new Image();
-                    img.crossOrigin = "Anonymous"
+                    img.crossOrigin = "anonymous"
                     img.onload = e => {
                         loadCnt++;
                         frames[i] = e.target;
