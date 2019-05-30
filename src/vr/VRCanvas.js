@@ -480,7 +480,12 @@ export class VRCanvas extends Component {
             const obj3d = get3DObjectDef(obj.type).makeNode(obj,this.props.provider)
             this.insertNodeMapping(nodeid, obj3d)
             const parent = this.findNode(obj.parent)
+            if(!parent)
+                //this must be a nested pasted child. we can fix the parent links later
+                return null
+            }
             parent.add(obj3d)
+            this.rebuildChildLinks(obj)
             return obj3d
         }
         if (obj.type === TOTAL_OBJ_TYPES.SCENE) {
@@ -492,6 +497,14 @@ export class VRCanvas extends Component {
         }
 
         console.warn("cannot populate node for type", obj.type)
+    }
+
+    rebuildParentLink(obj) {
+        obj.getChildren().forEach((ch)=>{
+            const ch3 = this.findNode(ch.id)
+            if(!ch3.parent) this.findNode(obj.id).add(ch3)
+            this.rebuildChildLinks(ch)
+        })
     }
 
     addSceneWrapper(scene) {

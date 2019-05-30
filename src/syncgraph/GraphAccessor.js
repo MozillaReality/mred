@@ -1,25 +1,27 @@
-function cloneObjectDeep(shapeid, graph) {
+function cloneObjectDeep(shapeid, graph, newParent) {
     const id = shapeid
     const id2 = graph.createObject()
     const props = graph.getPropertiesForObject(id)
     props.forEach(key => {
         if(key === 'children') {
-            const children = graph.getPropertyValue(id,key)
-            const children2 = cloneArrayDeep(children,graph)
-            graph.createProperty(id2,key,children2)
+            const children = graph.getPropertyValue(id, key)
+            const children2 = cloneArrayDeep(children, graph, id2)
+            graph.createProperty(id2, key, children2)
         } else {
-            graph.createProperty(id2, key, graph.getPropertyValue(id, key))
+            let value = graph.getPropertyValue(id, key)
+            if(key === 'parent') value = newParent
+            graph.createProperty(id2, key, value)
         }
     })
     return id2
 }
 
-function cloneArrayDeep(arr,graph) {
+function cloneArrayDeep(arr,graph,newParent) {
     const arr2 = graph.createArray()
     const len = graph.getArrayLength(arr)
     for (let i = 0; i < len; i++) {
         const ch = graph.getElementAt(arr,i)
-        const ch2 = cloneObjectDeep(ch,graph)
+        const ch2 = cloneObjectDeep(ch,graph,newParent)
         graph.insertElement(arr2,i,ch2)
     }
     return arr2
@@ -95,7 +97,7 @@ export default class GraphAccessor {
                 return this.object(obj.parent)
             }
             obj.clone = () => {
-                const id2 = cloneObjectDeep(obj.id,this.graph)
+                const id2 = cloneObjectDeep(obj.id,this.graph,obj.parent)
                 return this.object(id2)
             }
             obj.find = (match,list) => {
