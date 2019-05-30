@@ -480,7 +480,7 @@ export class VRCanvas extends Component {
             const obj3d = get3DObjectDef(obj.type).makeNode(obj,this.props.provider)
             this.insertNodeMapping(nodeid, obj3d)
             const parent = this.findNode(obj.parent)
-            if(!parent)
+            if(!parent) {
                 //this must be a nested pasted child. we can fix the parent links later
                 return null
             }
