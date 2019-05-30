@@ -2761,7 +2761,7 @@ class ARKitWrapper extends EventTarget {
 				var anchor = this._anchors.get(uid);
 				if (anchor) {
 					console.warn("anchor for image target '" + uid + "' still exists after deactivation");
-					removeAnchor(anchor);
+					this.removeAnchor(anchor);
 				}
 				resolve();
 			}).catch((...params) => {
