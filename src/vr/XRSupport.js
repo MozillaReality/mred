@@ -209,58 +209,6 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
-    async updateSceneFloorAnchor(sceneAnchor,sceneNode,logger) {
-
-        logger.log("Finding floor Scene Anchor")
-
-        if (!this.session) {
-            logger.log("no session")
-            return 0
-        }
-        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
-        let headLevel = await this.session.requestFrameOfReference('head-model')
-
-        // get the pose of the camera in the world
-        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-
-        // get just the position
-        mat4.getTranslation(this._vec, this._workingMatrix) 
-
-        // set the matrix to just the position, which means the orientation is EUS
-        mat4.fromTranslation(this._workingMatrix, this._vec)
-
-        // get a ray shooting reasonably down given that it has to be in screen coordinates
-        // coordinates should be arranged such that y=-1 is down and z = 1 is forward
-        // if user holds their phone in front of them then this should be aiming downwards at some angle
-        var rayorigin = vec3.create();
-        mat4.invert(this._workingMatrix, this.projectionMatrix );
-        var raydir = vec3.fromValues(0,-1,1);
-        vec3.transformMat4(raydir,raydir,this._workingMatrix);
-        vec3.normalize(raydir, raydir);
-
-        // get collidants
-        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
-
-        if (xrhitresults.length < 1) {
-            logger.error("No hit returned from hit test")
-            return 0
-        }
-
-        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
-
-        if(!newAnchor) {
-            logger.error("No anchor returned from hit test")
-            return 0
-        }
-
-        logger.log("Replacing the scene node on the existing scene anchor at the floor")
-        if(sceneAnchor) this._removeAnchorFromNode(sceneAnchor)
-
-        this.addAnchoredNode(newAnchor, sceneNode, logger)
-
-        return newAnchor
-    }
-
     async createLocalAnchorFromHitTest(info,x,y,logger) {
 
         // TODO
@@ -337,6 +285,62 @@ logger.log(info)
         }
 
         this._removeAnchorFromNode(info.node)
+    }
+
+    sleeper(time) {
+        return new Promise((resolve) => setTimeout(resolve, time))
+    }
+
+    async floorFinderLoop() {
+
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+
+        // shoot from the eye downwardish [0,-1,-1]
+        let hits = await this.session.requestHitTest( [0,0,0], [0,-1,-1], headLevel )
+
+        // find the best hit for the floor
+        if(hits && hits.length) {
+
+            let hit = 0
+
+            // strategy 1: look for the surface that is say 0.2 or lower? or take lowest
+
+            if(false) {
+                for(let i = 0; hits && i<hits.length;i++) {
+                    let hit = hits[i]
+                    // TODO does this need to be relative? Should I subtract eye position? Or is this already transformed?
+                    // set workingMatrix = to hit result in eye level coordinate system
+                    headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+                    mat4.multiply(this._workingMatrix, this._workingMatrix, hits.hitMatrix)
+                    mat4.getTranslation(this._vec, this._workingMatrix)
+                    if(this._vec.y < 0.2) {
+                        break
+                    }
+                }
+            }
+
+            // strategy 2: take the lowest hit
+
+            hit = hits[hits.length-1]
+
+            // set workingMatrix = to hit result in eye level coordinate system
+            headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+            mat4.multiply(this._workingMatrix, this._workingMatrix, hit.hitMatrix)
+            mat4.getTranslation(this._vec, this._workingMatrix)
+
+            // adjust floor height
+
+            this.heightAboveFloor = this._vec.y
+
+            // could add or revise an anchor at this breadcrumb
+            // let newAnchor = await this.session.addAnchor(hit, headLevel )
+
+        }
+
+        // we want to call the above immediately the first time, then after done, and do a setInterval() kind of behavior, but not accumulate recursive stack
+        await this.sleeper(1000)
+        setTimeout(() => this.floorFinderLoop(), 1)
     }
 
     _fetchImage(info,logger) {
