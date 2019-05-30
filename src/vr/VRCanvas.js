@@ -503,7 +503,7 @@ export class VRCanvas extends Component {
         obj.getChildren().forEach((ch)=>{
             const ch3 = this.findNode(ch.id)
             if(!ch3.parent) this.findNode(obj.id).add(ch3)
-            this.rebuildChildLinks(ch)
+            this.rebuildParentLink(ch)
         })
     }
 
