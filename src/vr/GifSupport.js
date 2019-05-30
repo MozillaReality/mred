@@ -15,6 +15,8 @@ const parseGIF = function(gif) {
     let graphicControl = null;
     const frames = [];
     const disposals = [];
+    const transparencies = [];
+    const transparentColors= [];
     let loopCnt = 0;
     if (
         gif[0] === 0x47 &&
@@ -39,6 +41,8 @@ const parseGIF = function(gif) {
                     if (label === 0xf9) {
                         graphicControl = gif.subarray(offset, pos + 1);
                         disposals.push((graphicControl[3] >> 2) & 0x07);
+                        transparencies.push((graphicControl[3]) & 0x01);
+                        transparentColors.push(graphicControl[6]);
                     }
                 } else {
                     throw new Error("parseGIF: unknown label");
@@ -57,7 +61,7 @@ const parseGIF = function(gif) {
     } else {
         throw new Error("parseGIF: no GIF89a");
     }
-    return { delayTimes, loopCnt, frames, disposals };
+    return { delayTimes, loopCnt, frames, disposals, transparencies, transparentColors };
 };
 
 //
@@ -72,7 +76,7 @@ const parseGIF = function(gif) {
 //
 
 class GIFTexture extends Texture {
-    constructor(frames, delays, disposals) {
+    constructor(frames, delays, disposals, transparencies, transparentColors) {
         super(document.createElement("canvas"));
         this.image.width = frames[0].width;
         this.image.height = frames[0].height;
@@ -86,7 +90,14 @@ class GIFTexture extends Texture {
         this.frames = frames;
         this.delays = delays;
         this.disposals = disposals;
+        this.transparencies = transparencies // is each frame transparent or not
 
+        this.transparent = false
+        this.transparencies.forEach( (value) => {
+            if (value) this.transparent = true
+        })
+ 
+        this.transparentColors = transparentColors // the color index for transparent colors
         this.frame = 0;
         this.frameStartTime = Date.now();
         this.firstDrawCount = 0
@@ -132,7 +143,7 @@ export function createGIFTexture(url, prov) {
             .then(rawImageData => parseGIF(rawImageData, [rawImageData]))
             .then(result => {
                 console.log("result of gif parsing is",result)
-                const { frames, delayTimes, disposals } = result;
+                const { frames, delayTimes, disposals, transparencies, transparentColors } = result;
                 let loadCnt = 0;
                 for (let i = 0; i < frames.length; i++) {
                     const img = new Image();
@@ -141,7 +152,7 @@ export function createGIFTexture(url, prov) {
                         loadCnt++;
                         frames[i] = e.target;
                         if (loadCnt === frames.length) {
-                            const texture = new GIFTexture(frames, delayTimes, disposals);
+                            const texture = new GIFTexture(frames, delayTimes, disposals, transparencies, transparentColors);
                             texture.image.src = url;
                             texture.encoding = sRGBEncoding;
                             texture.minFilter = LinearFilter;
