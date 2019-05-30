@@ -47,8 +47,7 @@ export default class SceneDef {
         scene.start = () => {
             scene.userData.sceneAnchor = new Group()
             scene.userData.sceneAnchor.name = "SceneAnchor"
-            scene.add(scene.userData.sceneAnchor)
-            scene.children.forEach(chNode => {
+            scene.children.slice().forEach(chNode => {
                 const chObj = provider.accessObject(chNode.userData.graphid)
                 if(!chObj.exists()) return
                 if(isAnchorType(chObj.type)) return
@@ -58,6 +57,7 @@ export default class SceneDef {
                 if(chObj.type === OBJ_TYPES.hudanchor) return
                 scene.userData.sceneAnchor.add(chNode)
             })
+            scene.add(scene.userData.sceneAnchor)
         }
         scene.stop = () => {
             const toMove = scene.userData.sceneAnchor.children.slice()
