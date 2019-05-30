@@ -15,7 +15,7 @@ export class XRSupport {
         this._vec = vec3.create()
         this.lastFrameTime = 0
         
-        this.heightAboveFloor = 1.3; // for now
+        this.heightAboveFloor = 1.1; // for now
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -53,6 +53,7 @@ export class XRSupport {
 
                     // we want to always use the estimated elevation
                     XRGeospatialAnchor.useEstimatedElevation(true, this.heightAboveFloor)
+                    this.updateGeoElevationLoop()
 
                     // enable smooth tracking of image targets
                     that.session.nonStandard_setNumberOfTrackedImages(4)
@@ -71,6 +72,23 @@ export class XRSupport {
             })
         })
         return prom
+    }
+
+    async updateGeoElevationLoop () {
+        let sleep = function (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+        }
+    
+        //let deviceCarto = await XRGeospatialAnchor.getDeviceCartographic()
+        //let txt = textBox.myText + "<p>device altitude " + deviceCarto.height.toPrecision(6) + "</p>" 
+        //let defElev = await XRGeospatialAnchor.getDefaultElevation(deviceCarto)
+        //txt = txt + textBox.myText + "<p>estimated altitude " + defElev.toPrecision(6) + "</p>"
+        //textBox.innerHTML = txt 
+
+        await XRGeospatialAnchor.useEstimatedElevation(true, this.heightAboveFloor)
+
+        await sleep(100)
+        setTimeout(() => this.updateGeoElevationLoop(), 1)
     }
 
     setAnimationLoop(userAnimationCallback) {

@@ -518,9 +518,8 @@ function resetState() {
     _overrideGeoOrientation = false;
     _geoAnchorsWaiting = [];
 }
-var _altScratchCart = null;
 async function getAltitude(cart) {
-    _altScratchCart = Cesium.Cartographic.clone(cart, _altScratchCart);
+    var _altScratchCart = Cesium.Cartographic.clone(cart, _altScratchCart);
     await updateHeightFromTerrain(_altScratchCart);
     return _altScratchCart.height
 }
@@ -530,7 +529,7 @@ function updateHeightFromTerrain(cartographic) {
         return results[0]
     }))
 }
-async function cartesianToFixed(longitude, latitude, altitude=null) {
+async function cartographicToFixed(longitude, latitude, altitude=null) {
     if (!altitude) {
         let cart = Cesium.Cartographic.fromDegrees(longitude,latitude);
         altitude = await getAltitude(cart);
@@ -570,29 +569,61 @@ function updateECEFToLocal(cartesian) {
  }
 var _useEstimatedElevationForViewer = false;
 var _savedViewHeight = 0;
-async function _useEstimatedElevation(setting) {
+var _savedHeightOffset = 0;
+async function _useEstimatedElevation(setting, offsetFromGround) {
     let sleep = function (time) {
         return new Promise((resolve) => setTimeout(resolve, time));
     };
     if (_useEstimatedElevationForViewer != setting) {
         _useEstimatedElevationForViewer = setting;
+        _savedHeightOffset = offsetFromGround;
         if (_geoOrigin) {
             if (_useEstimatedElevationForViewer) {
-                _geoOrigin.coords.altitude = _saveViewHeight;
+                _geoOrigin.coords.altitude = _savedViewHeight;
             }
             while (_updateOrigin) {
                 await sleep(1);
                 await updatePositionCallback(_geoOrigin, true);
             }
         }
+    } else if (_useEstimatedElevation) {
+        _updateOffsetFromGround(offsetFromGround);
+    }
+}
+async function _updateOffsetFromGround (offsetFromGround) {
+    if (_useEstimatedElevationForViewer) {
+        var offsetDiff = offsetFromGround - _savedHeightOffset;
+        _savedHeightOffset += offsetDiff;
+        if (_geoOrigin) {
+            _geoOrigin.coords.altitude += offsetDiff;
+            let _headLevelFrameOfReference = await _XRsession.requestFrameOfReference('head-model');
+            _headLevelFrameOfReference.getTransformTo(_eyeLevelFrameOfReference, _scratchMat4);
+            getTranslation(_scratchVec3, _scratchMat4);
+            getTranslation(_scratch2Vec3, currentGeoOriginAnchor().modelMatrix);
+            subtract$2(_scratchVec3, _scratchVec3, _scratch2Vec3);
+            var yAtDevice = _scratchVec3[1];
+            transformMat4(_scratch2Vec3, _scratchVec3, _geoOrigin._localToFixed);
+            _scratchCartesian = Cesium.Cartesian3.unpack(_scratch2Vec3, 0, _scratchCartesian);
+            let cart = Cesium.Cartographic.fromCartesian(_scratchCartesian);
+            let defaultHeight = await getAltitude(cart) + offsetFromGround;
+            let diffXR = yAtDevice;
+            let diffGeo = defaultHeight - _geoOrigin.coords.altitude;
+            _scratchVec3[0] = _scratchVec3[2] = 0;
+            _scratchVec3[1] = offsetDiff;
+            _scratchVec3[1] += (diffGeo - diffXR);
+            transformMat4(_geoCartesian, _scratchVec3, _geoOrigin._localToFixed);
+            if (!_overrideGeolocation) {
+                updateGeoCartesian(_geoCartesian, _geoOriginAnchor);
+            }
+        }
     }
 }
 var _updatingOrigin = false;
-var _scratchCartographic = null;
+var _geoAnchorDeleted = false;
 async function updatePositionCallback (position, force=false)
 {
     if (!_updatingOrigin &&
-        (!_geoOrigin || force ||
+        (!_geoOrigin || _geoAnchorDeleted || force ||
             _geoOrigin.coords.accuracy > position.coords.accuracy ||
             (_geoOrigin.coords.accuracy == position.coords.accuracy &&
                 _geoOrigin.coords.altitudeAccuracy > position.coords.altitudeAccuracy))) {
@@ -612,12 +643,20 @@ async function updatePositionCallback (position, force=false)
         try {
             if (_useEstimatedElevationForViewer) {
                 _savedViewHeight = position.coords.altitude;
-                _scratchCartographic = Cesium.Cartographic.fromDegrees(position.coords.longitude, position.coords.latitude, position.coords.altitude);
+                let _scratchCartographic = Cesium.Cartographic.fromDegrees(position.coords.longitude, position.coords.latitude, position.coords.altitude);
                 await updateHeightFromTerrain(_scratchCartographic);
-                position.coords.altitude = _scratchCartographic.height;
+                position.coords.altitude = _scratchCartographic.height + _savedHeightOffset;
+                position.cartesian = Cesium.Cartesian3.fromDegrees(position.coords.longitude, position.coords.latitude, position.coords.altitude);
+                position._fixedToLocal = create();
+                position._localToFixed = create();
+                _eastUpSouthToFixedFrame(position.cartesian, undefined, position._localToFixed);
+                Cesium.Matrix4.inverseTransformation(position._localToFixed, position._fixedToLocal);
             }
+            console.log("new geo anchor: ", position.coords);
             let _headLevelFrameOfReference = await _XRsession.requestFrameOfReference('head-model');
             let newAnchor = await _XRsession.addAnchor(_identity, _headLevelFrameOfReference);
+            _geoAnchorDeleted = false;
+            newAnchor.addEventListener("remove", _handleGeoAnchorDelete);
             newAnchor._isInternalGeoAnchor = true;
             if (!_overrideGeolocation && _geoOriginAnchor) {
                 sendNewGeoAnchorEvent (_geoOriginAnchor, newAnchor);
@@ -625,7 +664,7 @@ async function updatePositionCallback (position, force=false)
             }
             _geoOriginAnchor = newAnchor;
             _geoOrigin = position;
-            _geoCartesian = await cartesianToFixed(position.coords.longitude, position.coords.latitude, position.coords.altitude);
+            _geoCartesian = await cartographicToFixed(position.coords.longitude, position.coords.latitude, position.coords.altitude);
             if (!_overrideGeolocation) {
                 updateGeoCartesian(_geoCartesian, _geoOriginAnchor);
             }
@@ -635,6 +674,10 @@ async function updatePositionCallback (position, force=false)
             console.error("error setting the geospatial origin: ", e);
         }
     }
+}
+function _handleGeoAnchorDelete() {
+    console.log("geoAnchor deleted by system, will use next geospatial report");
+    _geoAnchorDeleted = true;
 }
 function geoErrorCallback (positionError)
 {
@@ -734,8 +777,11 @@ class XRGeospatialAnchor extends XRAnchor {
             enqueueOrExec(createAnchor);
         })
     }
-    static useEstimatedElevation(setting) {
-        _useEstimatedElevation(setting);
+    static useEstimatedElevation(setting, offsetFromGround=0) {
+        return _useEstimatedElevation(setting, offsetFromGround)
+    }
+    static updateOffsetFromGround(offsetFromGround) {
+        return _updateOffsetFromGround(offsetFromGround)
     }
     static overrideGeoOrientation(anchor){
         _overrideGeoOrientation = true;
