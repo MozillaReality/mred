@@ -17,7 +17,6 @@ var reticleNotTrackedColor = new THREE.Color( 0xFF6666 );
 var reticleMaterial = new THREE.MeshStandardMaterial({ color: reticleTrackedColor })
 var requestNextHit = true
 let singleton = 0
-let eyeLevelFrameOfReference = 0
 
 export class XRWorldInfo { // extends THREE.Group {
 
@@ -40,8 +39,7 @@ export class XRWorldInfo { // extends THREE.Group {
             return
         }
 
-        // turn on some things
-
+        // enable extended world sensing
         let sensingState = this.session.updateWorldSensingState({
             illuminationDetectionState : {
                 enabled : true
@@ -52,32 +50,18 @@ export class XRWorldInfo { // extends THREE.Group {
             }
         })
 
-        // I guess I want this thing to be at the starting point persistently?
-        let headFrameOfReference = this.session.requestFrameOfReference('head-model').then((results)=>{
-            eyeLevelFrameOfReference = this.session.requestFrameOfReference('eye-level').then((moreresults)=>{
-                mat4.getTranslation(workingVec3, workingMatrix)
-                mat4.fromTranslation(workingMatrix, workingVec3)
-                //session.addAnchor(workingMatrix, eyeLevelFrameOfReference).then((anchor)=>{
-                //   // TODO - actually wire up this anchor
-                //})
+        // don't waste time remaking this every frame
+        this._handleHitResults = this.handleHitResults.bind(this)
 
-                // a reticule
-                reticle = new THREE.Mesh( new THREE.RingGeometry(0.04, 0.05, 36, 64), reticleMaterial)
-                reticle.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)))
-                reticleParent = new THREE.Object3D()
-                reticleParent.add(reticle)
-                reticleParent.matrixAutoUpdate = false
-                reticleParent.visible = false
+        // a reticule
+        reticle = new THREE.Mesh( new THREE.RingGeometry(0.04, 0.05, 36, 64), reticleMaterial)
+        reticle.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(THREE.Math.degToRad(-90)))
+        reticleParent = new THREE.Object3D()
+        reticleParent.add(reticle)
+        reticleParent.matrixAutoUpdate = false
+        reticleParent.visible = false
+        this.scene.add(reticleParent)
 
-                // stuff everything inside self
-                this.scene.add(reticleParent)
-
-                // don't waste time remaking this every frame
-                this._handleHitResults = this.handleHitResults.bind(this)
-
-console.log("*********** started world info *********************")
-            })
-        })
     }
 
     refreshWorldInfo(frame) {
@@ -118,6 +102,32 @@ console.log("*********** started world info *********************")
                     })
             })
         }
+    }
+
+    // handle hit testing slightly differently than other samples, since we're doing
+    // it per frame.  The "boiler plate" code below is slightly different, setting 
+    // requestNextHit on tap instead of executing the hit test.  The custom XREngineHits
+    // does a hit test each frame if the previous one has resolved
+    handleHitResults(hits) {
+        let size = 0.05;
+        if (hits && hits.length > 0) {
+            let hit = hits[0]
+            this.session.requestFrameOfReference('head-model').then(headFrameOfReference => {
+                this.session.requestFrameOfReference('eye-level').then((eyeLevelFrameOfReference)=>{
+                    // convert hit matrices from head to eye level coordinate systems
+                    headFrameOfReference.getTransformTo(eyeLevelFrameOfReference, workingMatrix)
+                    mat4.multiply(workingMatrix, workingMatrix, hit.hitMatrix)
+                    const node = reticleParent
+                    node.matrix.fromArray(workingMatrix)
+                    reticleParent.visible = true   // it starts invisible
+                    reticle.material.color = reticleTrackedColor
+                    node.updateMatrixWorld(true)
+                })
+            })
+        } else {
+            reticle.material.color = reticleNotTrackedColor
+        }
+        requestNextHit = true
     }
 
     handleUpdateNode(worldMesh, object) {
@@ -228,30 +238,6 @@ console.log("*********** started world info *********************")
         mesh.geometry = geometry;  // for later use
         //worldMesh.mesh = mesh;
         return mesh
-    }
-
-    // handle hit testing slightly differently than other samples, since we're doing
-    // it per frame.  The "boiler plate" code below is slightly different, setting 
-    // requestNextHit on tap instead of executing the hit test.  The custom XREngineHits
-    // does a hit test each frame if the previous one has resolved
-    handleHitResults(session,hits) {
-        let size = 0.05;
-        if (hits.length > 0) {
-            let hit = hits[0]
-            session.requestFrameOfReference('head-model').then(headFrameOfReference => {
-                // convert hit matrices from head to eye level coordinate systems
-                headFrameOfReference.getTransformTo(eyeLevelFrameOfReference, workingMatrix)
-                mat4.multiply(workingMatrix, workingMatrix, hit.hitMatrix)
-                const node = reticleParent
-                node.matrix.fromArray(workingMatrix)
-                reticleParent.visible = true   // it starts invisible
-                reticle.material.color = reticleTrackedColor
-                node.updateMatrixWorld(true)
-            })
-        } else {
-            reticle.material.color = reticleNotTrackedColor
-        }
-        requestNextHit = true
     }
 
 }

@@ -261,10 +261,6 @@ export class XRSupport {
         return newAnchor
     }
 
-    sleeper(ms) {
-        return new Promise(resolve => setTimeout(() => resolve(), ms))
-    }
-
     async createLocalAnchorFromHitTest(info,x,y,logger) {
 
         // TODO
