@@ -13,9 +13,12 @@ export class XRSupport {
         this._workingMatrix = mat4.create()
         this._identity = mat4.create()
         this._vec = vec3.create()
+        this._vec2 = vec3.create()
         this.lastFrameTime = 0
         
         this.heightAboveFloor = 1.1; // for now
+        this.floorHeightInLocalCoordinates = 0
+        this.floorAnchor = 0
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -303,8 +306,11 @@ logger.log(info)
         if(hits && hits.length) {
 
             let hit = 0
+            let minDistanceBetweenEyeAndGround = 1
+            let maxDistanceBetweeenEyeAndGround = 2
 
-            // strategy 1: look for the surface that is say 0.2 or lower? or take lowest
+            // strategy 1: look for the surface that is say 0.2 or lower? or take lowest - or fall through to the last one
+            // this seems like a reasonable strategy?
 
             if(false) {
                 for(let i = 0; hits && i<hits.length;i++) {
@@ -312,29 +318,43 @@ logger.log(info)
                     // TODO does this need to be relative? Should I subtract eye position? Or is this already transformed?
                     // set workingMatrix = to hit result in eye level coordinate system
                     headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+                    mat4.getTranslation(this._vec2, this._workingMatrix)
                     mat4.multiply(this._workingMatrix, this._workingMatrix, hits.hitMatrix)
                     mat4.getTranslation(this._vec, this._workingMatrix)
-                    if(this._vec.y < 0.2) {
+                    let dist = this._vec2[1] - this._vec[1]
+                    if( dist > minDistanceBetweenEyeAndGround &&
+                        dist < maxDistanceBetweeenEyeAndGround ) {
                         break
                     }
                 }
             }
 
             // strategy 2: take the lowest hit
+            // TODO this will fail if you walked up some stairs
 
             hit = hits[hits.length-1]
 
             // set workingMatrix = to hit result in eye level coordinate system
             headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+            mat4.getTranslation(this._vec2, this._workingMatrix)
             mat4.multiply(this._workingMatrix, this._workingMatrix, hit.hitMatrix)
             mat4.getTranslation(this._vec, this._workingMatrix)
 
             // adjust floor height
+            // this is literally how high the players eyeball is above the floor
 
-            this.heightAboveFloor = this._vec.y
+            this.heightAboveFloor = this._vec2[1] - this._vec[1]
 
-            // could add or revise an anchor at this breadcrumb
-            // let newAnchor = await this.session.addAnchor(hit, headLevel )
+            // this is where the floor is in local coordinates
+
+            this.floorHeightInLocalCoordinates = this._vec[1]
+
+            // TODO do we want some kind of anchor or more dependable estimation of the floor?
+            // TODO do we want to keep a bread crumb trail
+            // TODO what about existing features that were on the floor but you walked down a hill?
+
+            if(this.floorAnchor) this.removeAnchor(this.floorAnchor)
+            this.floorAnchor = await this.session.addAnchor(hit, headLevel )
 
         }
 
