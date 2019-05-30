@@ -15,6 +15,8 @@ import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 
+const $ = (sel) => document.querySelector(sel)
+
 
 function attachUtilFunctions(obj, obj_map) {
     obj.find = (match,list) => {
@@ -34,6 +36,11 @@ function attachUtilFunctions(obj, obj_map) {
 export class ImmersivePlayer extends Component {
     constructor(props) {
         super(props)
+        this.state = {
+            docLoaded:false,
+            title:'Loading...',
+            splashImage:null
+        }
         const opts = parseOptions({})
         if(!opts.doc) throw new Error("doc not specified")
         new TreeItemProvider(props.options)
@@ -68,36 +75,63 @@ export class ImmersivePlayer extends Component {
 
     componentDidMount() {
         this.logger.log("mounted ImmersivePlayer")
+        this.loadDocument()
+        $("#progress").value = 0
     }
 
-    startScene() {
+    loadDocument() {
         const opts = parseOptions({})
+        this.logger.log("loading assets")
         this.assetsManager.cacheAssetsList().then(()=> {
+            this.logger.log("loading document")
             AuthModule.getJSON(getDocsURL() + opts.doc).then((payload) => {
-                this.root = payload.graph
                 this.logger.log("loaded payload", this.root)
-                this.buildRoot(this.root)
-                this.logger.log(this.root)
-                Promise.all(this.pendingAssets).then(() => {
-                    this.logger.log("all assets loaded now. starting script manager")
-                    this.scriptManager.startRunning()
-                    if (this.root.defaultScene && this.root.defaultScene !== NONE_ASSET.id) {
-                        const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
-                        if(!sc) return this.logger.error("cannot find the default scene")
-                        this.setCurrentScene(sc)
-                    } else {
-                        const sc = this.root.children[0]
-                        this.setCurrentScene(sc)
-                    }
-                    this.scriptManager.startFirstScene()
+                this.root = payload.graph
+                this.root.children.forEach(ch => {
+                    if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
+                })
+
+                this.logger.log("the title is",this.root.title)
+                if(this.root.splashImage && this.root.splashImage !== NONE_ASSET.id) {
+                    this.logger.log("the splash image is",this.root.splashImage)
+                    const asset = this.provider.accessObject(this.root.splashImage)
+                    this.logger.log("the asset is",asset)
+                    const url = this.assetsManager.getAssetURL(asset)
+                    this.logger.log("the url is",url)
+                    this.setState({
+                        splashImage:url
+                    })
+                }
+                $("#progress").value = 100
+                $("#loading-indicator").style.display = 'none'
+                this.setState({
+                    docLoaded:true,
+                    title:this.root.title,
                 })
             })
         })
     }
 
+    startScene() {
+        this.buildRoot(this.root)
+        this.logger.log(this.root)
+        Promise.all(this.pendingAssets).then(() => {
+            this.logger.log("all assets loaded now. starting script manager")
+            this.scriptManager.startRunning()
+            if (this.root.defaultScene && this.root.defaultScene !== NONE_ASSET.id) {
+                const sc = this.root.children.find(ch => ch.id === this.root.defaultScene)
+                if(!sc) return this.logger.error("cannot find the default scene")
+                this.setCurrentScene(sc)
+            } else {
+                const sc = this.root.children[0]
+                this.setCurrentScene(sc)
+            }
+            this.scriptManager.startFirstScene()
+        })
+    }
+
     clickedStart = () => {
         console.log("clicked. play the sample audio")
-        const $ = (sel) => document.querySelector(sel)
         $("#overlay").style.display = 'none'
         $("#test-audio").play()
 
@@ -124,13 +158,14 @@ export class ImmersivePlayer extends Component {
             <audio id={"test-audio"} src={"https://vr.josh.earth/assets/sounds/clang.mp3"}/>
             <div id="overlay">
                 <div id="inner">
-                    <div id="title">some title</div>
-                    <button onClick={this.clickedStart}>click to start</button>
-                    {/*<div id="loading-indicator">*/}
-                    {/*    <label>loading</label>*/}
-                    {/*    <progress max="100" value="0" id="progress"></progress>*/}
-                    {/*</div>*/}
-                    {/*<button id="enter-button" disabled>VR not supported, play anyway</button>*/}
+                    <h1 id="title">{this.state.title}
+                        <button onClick={this.clickedStart} disabled={!this.state.docLoaded}>click to start</button>
+                    </h1>
+                    <div id="loading-indicator">
+                        <label>loading</label>
+                        <progress max="100" value="0" id="progress"/>
+                    </div>
+                    {this.renderSplashImage()}
                 </div>
             </div>
             <ErrorCatcher logger={this.logger}>
@@ -180,9 +215,6 @@ export class ImmersivePlayer extends Component {
 
     buildRoot(graph) {
         //init assets first
-        graph.children.forEach(ch => {
-            if(ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST) return this.initAssets(ch)
-        })
         graph.children.forEach(ch => {
             attachUtilFunctions(ch, this.obj_map)
             if(ch.type === TOTAL_OBJ_TYPES.SCENE) return this.initObject(ch)
@@ -287,7 +319,7 @@ export class ImmersivePlayer extends Component {
 
     initAssets(assets) {
         assets.children.forEach(obj => {
-            this.logger.log("loading asset",obj)
+            this.logger.log("initing asset",obj)
             attachUtilFunctions(obj, this.obj_map)
             this.obj_map[obj.id] =  obj
             if(obj.title) this.title_map[obj.title] = obj
@@ -355,6 +387,13 @@ export class ImmersivePlayer extends Component {
         this.current_scene = scene
     }
 
+    renderSplashImage() {
+        if(this.state.splashImage) {
+            return <img src={this.state.splashImage}/>
+        } else {
+            return ""
+        }
+    }
 }
 
 // ================  SGP implementation =====================
