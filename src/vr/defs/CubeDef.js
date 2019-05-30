@@ -19,6 +19,7 @@ export default class CubeDef extends ObjectDef {
             color:'#00ff00',
             children:graph.createArray(),
             asset:NONE_ASSET.id,
+            transparent:false,
             parent:scene.id
         }))
     }
@@ -44,7 +45,7 @@ export default class CubeDef extends ObjectDef {
             node.geometry = new BoxGeometry(obj.width, obj.height, obj.depth)
             return
         }
-        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
+        if (op.name === PROP_DEFS.asset.key || op.name === PROP_DEFS.transparent.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 

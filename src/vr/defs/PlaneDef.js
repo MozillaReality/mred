@@ -22,13 +22,14 @@ export default class PlaneDef extends ObjectDef {
             color:'#ffffff',
             children:graph.createArray(),
             asset:NONE_ASSET.id,
+            transparent:false,
             parent:scene.id
         }))
     }
     makeNode(obj, provider) {
         const node = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(obj.width,obj.height),
-            new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide}) //, transparent: true, alphaTest: 0.5})
+            new THREE.MeshLambertMaterial({color: obj.color, side: THREE.DoubleSide})
         )
         this.attachAsset(node, obj, provider)
         node.userData.clickable = true
@@ -37,14 +38,13 @@ export default class PlaneDef extends ObjectDef {
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         node.visible = obj.visible
-//        node.renderOrder = 2
         return node
     }
 
     updateProperty(node, obj, op, provider) {
         if (op.name === 'width') node.geometry = new THREE.PlaneBufferGeometry(op.value,obj.height)
         if (op.name === 'height') node.geometry = new THREE.PlaneBufferGeometry(obj.width,op.value)
-        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
+        if (op.name === PROP_DEFS.asset.key || op.name === PROP_DEFS.transparent.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 

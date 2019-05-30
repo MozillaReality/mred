@@ -36,7 +36,16 @@ export default class ObjectDef {
             provider.getLogger().log("loadded asset",obj.asset)
             provider.getLogger().log(tex)
             if(!tex) provider.getLogger().error("error loading asset",obj.asset)
-            node.material = new MeshLambertMaterial({color: obj.color, side: DoubleSide, map: tex})
+            const opts = {
+                color: obj.color,
+                side: DoubleSide,
+                map:tex
+            }
+            if(obj.transparent) {
+                opts.transparent = true
+                opts.alphaTest = 0.5
+            }
+            node.material = new MeshLambertMaterial(opts)
         }).catch(err => {
             provider.getLogger().error('error somwhere',err.message,err)
         })

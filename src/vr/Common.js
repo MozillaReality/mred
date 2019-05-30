@@ -168,6 +168,11 @@ export const PROP_DEFS = {
             incrementValue:0.05,
         }
     },
+    transparent: {
+        key:'transparent',
+        name:"Transparent",
+        type:TYPES.BOOLEAN
+    },
     imageRealworldWidth: {
         key:'imageRealworldWidth',
         name:'Image width in meters',

@@ -17,6 +17,7 @@ export default class SphereDef extends ObjectDef {
             color:'#0000ff',
             children:graph.createArray(),
             asset:NONE_ASSET.id,
+            transparent:false,
             parent:scene.id
         }))
     }
@@ -37,7 +38,7 @@ export default class SphereDef extends ObjectDef {
 
     updateProperty(node, obj, op, provider) {
         if (op.name === 'radius') node.geometry = new SphereBufferGeometry(op.value)
-        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
+        if (op.name === PROP_DEFS.asset.key || op.name === PROP_DEFS.transparent.key) return this.attachAsset(node, obj, provider)
         return super.updateProperty(node,obj,op,provider)
     }
 

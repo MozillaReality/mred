@@ -20,6 +20,7 @@ export default class ModelDef extends ObjectDef {
             color:'#ffffff',
             children:graph.createArray(),
             asset:NONE_ASSET.id,
+            transparent:false,
             parent:scene.id
         }))
     }

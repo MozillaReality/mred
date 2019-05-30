@@ -1,10 +1,8 @@
 import {fetchGraphObject} from '../../syncgraph/utils'
-import {ASSET_TYPES, NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
+import {NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 import * as THREE from 'three'
 import {MeshLambertMaterial} from 'three'
 import {DoubleSide} from 'three'
-import {TextureLoader} from 'three'
-import {VideoTexture} from 'three'
 
 function customize(node,mat,obj) {
     mat.onBeforeCompile = (shader) => {
@@ -57,6 +55,7 @@ export default class BG360Def {
             title:'background',
             visible:true,
             asset:NONE_ASSET.id,
+            transparent:false,
             parent:scene.id,
             imageOffsetAngle:0.0, //offset in UV coords, 0 to 1
             imageCropStartAngle:0.0, //crop left edge of image
@@ -66,16 +65,15 @@ export default class BG360Def {
     makeNode(obj, provider) {
         const mat = new THREE.MeshLambertMaterial({color: 'white', side: THREE.BackSide})
         const node = new THREE.Mesh(new THREE.SphereBufferGeometry(20.0, 50,50),mat)
+        this.attachAsset(node, obj, provider)
         customize(node,mat,obj)
         node.name = obj.title
         node.userData.clickable = true
         node.visible = obj.visible
-        // on(node,POINTER_CLICK,e =>SelectionManager.setSelection(node.userData.graphid))
-        this.attachAsset(node, obj, provider)
         return node
     }
     updateProperty(node, obj, op, provider) {
-        if (op.name === PROP_DEFS.asset.key) return this.attachAsset(node, obj, provider)
+        if (op.name === PROP_DEFS.asset.key || op.name === PROP_DEFS.transparent.key) return this.attachAsset(node, obj, provider)
         if(node.userData.matShader) {
             if (op.name === 'imageOffsetAngle') node.userData.matShader.uniforms.imageOffsetAngle.value = op.value
             if (op.name === 'imageCropStartAngle') node.userData.matShader.uniforms.imageCropStartAngle.value = op.value
@@ -85,5 +83,27 @@ export default class BG360Def {
         }
     }
 
+    attachAsset(node, obj, provider) {
+        if(obj.asset === NONE_ASSET.id) {
+            node.material = new MeshLambertMaterial({side:DoubleSide})
+            return
+        }
+        provider.assetsManager.getTexture(obj.asset).then(tex => {
+            provider.getLogger().log("loadded asset",obj.asset)
+            provider.getLogger().log(tex)
+            if(!tex) provider.getLogger().error("error loading asset",obj.asset)
+            const opts = {
+                side: DoubleSide,
+                map:tex
+            }
+            if(obj.transparent) {
+                opts.transparent = true
+                opts.alphaTest = 0.5
+            }
+            node.material = new MeshLambertMaterial(opts)
+        }).catch(err => {
+            provider.getLogger().error('error somwhere',err.message,err)
+        })
+    }
 
 }
