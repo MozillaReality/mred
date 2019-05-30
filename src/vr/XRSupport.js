@@ -59,7 +59,7 @@ export class XRSupport {
                     this.updateGeoElevationLoop()
 
                     // start floor finder
-                    this.floorFinderLoop()
+                    // this.floorFinderLoop()
 
                     // enable smooth tracking of image targets
                     that.session.nonStandard_setNumberOfTrackedImages(4)
