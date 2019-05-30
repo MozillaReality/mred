@@ -485,7 +485,7 @@ export class VRCanvas extends Component {
                 return null
             }
             parent.add(obj3d)
-            this.rebuildChildLinks(obj)
+            this.rebuildParentLink(obj)
             return obj3d
         }
         if (obj.type === TOTAL_OBJ_TYPES.SCENE) {
