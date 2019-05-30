@@ -58,6 +58,9 @@ export class XRSupport {
                     XRGeospatialAnchor.useEstimatedElevation(true, this.heightAboveFloor)
                     this.updateGeoElevationLoop()
 
+                    // start floor finder
+                    this.floorFinderLoop()
+
                     // enable smooth tracking of image targets
                     that.session.nonStandard_setNumberOfTrackedImages(4)
 
@@ -296,14 +299,18 @@ logger.log(info)
 
     async floorFinderLoop() {
 
+        console.log("*********** looking for floor")
+
         let eyeLevel = await this.session.requestFrameOfReference('eye-level')
         let headLevel = await this.session.requestFrameOfReference('head-model')
 
         // shoot from the eye downwardish [0,-1,-1]
-        let hits = await this.session.requestHitTest( [0,0,0], [0,-1,-1], headLevel )
+        let hits = await this.session.requestHitTest( [0,0,0], [0,0,-1], headLevel )
 
         // find the best hit for the floor
         if(hits && hits.length) {
+
+console.log("********* found something ")
 
             let hit = 0
             let minDistanceBetweenEyeAndGround = 1
@@ -349,11 +356,13 @@ logger.log(info)
 
             this.floorHeightInLocalCoordinates = this._vec[1]
 
+console.log("******** floor is this far below eye " + this.heightAboveFloor )
+console.log("******** floor is at " + this.floorHeightInLocalCoordinates )
             // TODO do we want some kind of anchor or more dependable estimation of the floor?
             // TODO do we want to keep a bread crumb trail
             // TODO what about existing features that were on the floor but you walked down a hill?
 
-            if(this.floorAnchor) this.removeAnchor(this.floorAnchor)
+            if(this.floorAnchor) this.session.removeAnchor(this.floorAnchor)
             this.floorAnchor = await this.session.addAnchor(hit, headLevel )
 
         }
