@@ -464,6 +464,7 @@ export class ImmersivePlayer extends Component {
                     return <li key={i}><b>{asset.title}</b> <i>{asset.src}</i></li>
                 })}
                 </ul>
+                <button onClick={()=>this.setState({showErrors:false})}>dismiss</button>
                 </div>
         }
         return ""
