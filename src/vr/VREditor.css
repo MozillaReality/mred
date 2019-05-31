@@ -38,6 +38,19 @@ button:disabled {
     flex-direction: column;
     align-items: center;
 }
+#overlay #errors-dialog {
+    border: 5px solid red;
+    background-color: #ffdddd;
+    width: 80vw;
+    height: 60vh;
+    position: absolute;
+    overflow: auto;
+}
+#overlay #errors-dialog li {
+    border:0px solid black;
+    text-align: left;
+    padding: 0.5em;
+}
 #loading-indicator {
     display: block;
 }

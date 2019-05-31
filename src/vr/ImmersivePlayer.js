@@ -39,6 +39,7 @@ export class ImmersivePlayer extends Component {
         this.state = {
             docLoaded:false,
             title:'Loading...',
+            showErrors:false,
             splashImage:null
         }
         const opts = parseOptions({})
@@ -54,6 +55,7 @@ export class ImmersivePlayer extends Component {
         this.behavior_assets = {}
         this.assets_url_map = {}
         this.pendingAssets = []
+        this.badAssets = []
 
         this.sceneAnchor = null
 
@@ -71,6 +73,9 @@ export class ImmersivePlayer extends Component {
         }
         this.assetsManager = new AssetsManager(this.provider)
         this.provider.assetsManager = this.assetsManager
+    }
+    getLogger() {
+        return this.logger
     }
 
     componentDidMount() {
@@ -102,11 +107,19 @@ export class ImmersivePlayer extends Component {
                         splashImage:url
                     })
                 }
-                $("#progress").value = 100
-                $("#loading-indicator").style.display = 'none'
+
                 this.setState({
-                    docLoaded:true,
                     title:this.root.title,
+                })
+
+                const assetsRoot = this.root.children.find(ch => ch.type === TOTAL_OBJ_TYPES.ASSETS_LIST)
+                this.validateAssets(assetsRoot).then(()=>{
+                    console.log("fully validated!")
+                    $("#progress").value = 100
+                    $("#loading-indicator").style.display = 'none'
+                    this.setState({
+                        docLoaded:true,
+                    })
                 })
             })
         })
@@ -167,6 +180,7 @@ export class ImmersivePlayer extends Component {
                     </div>
                     {this.renderSplashImage()}
                 </div>
+                {this.renderErrors()}
             </div>
             <ErrorCatcher logger={this.logger}>
                 <canvas ref={c => this.canvas = c} width={600} height={400}
@@ -393,6 +407,66 @@ export class ImmersivePlayer extends Component {
         } else {
             return ""
         }
+    }
+
+    validateAssets(assetsList) {
+        return Promise.all(assetsList.children.map(asset => {
+                // this.getLogger().log("checking asset",asset)
+                if(asset.subtype === ASSET_TYPES.VIDEO) {
+                    return this.assetsManager.getTexture(asset.id).then(tex => {
+                        if (!tex) {
+                            this.getLogger().error("error loading a texture", asset)
+                            this.addAssetLoadingError(asset)
+                        }
+                    })
+                }
+                if(asset.subtype === ASSET_TYPES.IMAGE) {
+                    return this.assetsManager.getTexture(asset.id).then(tex => {
+                        if (!tex) {
+                            this.getLogger().error("error loading a texture", asset)
+                            this.addAssetLoadingError(asset)
+                        }
+                    })
+                }
+                if(asset.subtype === ASSET_TYPES.GLTF) {
+                    return this.assetsManager.getGLTF(asset.id).then(model => {
+                        if (!model) {
+                            this.getLogger().error("error loading a model", asset)
+                            this.addAssetLoadingError(asset)
+                        }
+                    })
+                }
+                return Promise.resolve("all good")
+            })).then((answers)=>{
+            console.log("fully loaded all assets now")
+            console.log("error count is",this.badAssets.length)
+            if(this.badAssets.length > 0) {
+                this.showBadAssetsDialog()
+            }
+        })
+    }
+
+    showBadAssetsDialog() {
+        this.logger.log("showing a bad assets dialog")
+        this.setState({
+            showErrors:true
+        })
+    }
+    addAssetLoadingError(asset) {
+        this.badAssets.push(asset)
+    }
+    renderErrors() {
+        if(this.state.showErrors) {
+            return <div id="errors-dialog">
+                <h3>Bad or Missing Assets</h3>
+                <ul>
+                {this.badAssets.map((asset,i) => {
+                    return <li key={i}><b>{asset.title}</b> <i>{asset.src}</i></li>
+                })}
+                </ul>
+                </div>
+        }
+        return ""
     }
 }
 
