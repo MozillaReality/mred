@@ -458,6 +458,7 @@ export const MIME_TYPES = {
     JAVASCRIPT: 'text/javascript',
     GLB: 'model/gltf-binary',
     MP4:'video/mp4',
+    MOV:'video/quicktime',
 }
 export const ASSET_TYPES = {
     BEHAVIOR:'behavior',
@@ -485,6 +486,7 @@ export function isAudioType(type) {
 export function isVideoType(type) {
     if(!type) return false
     if(type.toLowerCase() === MIME_TYPES.MP4) return true
+    if(type.toLowerCase() === MIME_TYPES.MOV) return true
     return false
 }
 export function isGLTFType(type) {

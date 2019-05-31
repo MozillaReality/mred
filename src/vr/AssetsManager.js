@@ -148,11 +148,11 @@ export class AssetsManager {
             if(!this.videocache[url]) {
                 video = document.createElement('video')
                 video.crossOrigin = 'anonymous'
-
+                video.preload = "auto"
                 // video will only play inline on mobile devices if it's muted
                 // we will loop video
                 video.muted = true;
-                video.loop = true;
+                //video.loop = true;
                 video.setAttribute( 'playsinline', '' );
 
                 video.src = url
