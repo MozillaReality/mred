@@ -163,7 +163,7 @@ export default class ImmersiveVREditor extends Component {
                 <div id="inner">
                     <h1>Application Name</h1>
                     <div id="loading-indicator">
-                        <label>loading</label>
+                        <label>loading...</label><br></br>
                         <progress max="100" value="0" id="progress"></progress>
                     </div>
                     <button id="enter-button" disabled>VR not supported, play anyway</button>

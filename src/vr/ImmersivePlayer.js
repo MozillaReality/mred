@@ -15,6 +15,8 @@ import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 
+import startupsound from "./startup-sound.m4a"
+
 const $ = (sel) => document.querySelector(sel)
 
 
@@ -166,16 +168,18 @@ export class ImmersivePlayer extends Component {
 
     }
 
+    // start-sound is from https://freesound.org/people/soneproject/sounds/244356/
+    // old one: https://vr.josh.earth/assets/sounds/clang.mp3
     render() {
         return <div>
-            <audio id={"test-audio"} src={"https://vr.josh.earth/assets/sounds/clang.mp3"}/>
+            <audio id={"test-audio"} src={startupsound}/>
             <div id="overlay">
                 <div id="inner">
-                    <h1 id="title">{this.state.title}
-                        <button onClick={this.clickedStart} disabled={!this.state.docLoaded}>click to start</button>
-                    </h1>
+                    <h1 id="title">{this.state.title}</h1>
+                    <button onClick={this.clickedStart} disabled={!this.state.docLoaded}>click to start</button>
+                    
                     <div id="loading-indicator">
-                        <label>loading</label>
+                        <label>loading...</label><br></br>
                         <progress max="100" value="0" id="progress"/>
                     </div>
                     {this.renderSplashImage()}
