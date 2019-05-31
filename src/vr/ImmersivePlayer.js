@@ -176,7 +176,7 @@ export class ImmersivePlayer extends Component {
             <div id="overlay">
                 <div id="inner">
                     <h1 id="title">{this.state.title}</h1>
-                    <button onClick={this.clickedStart} disabled={!this.state.docLoaded}>click to start</button>
+                    <h2><button onClick={this.clickedStart} disabled={!this.state.docLoaded}>click to start</button></h2>
                     
                     <div id="loading-indicator">
                         <label>loading...</label><br></br>
@@ -407,7 +407,7 @@ export class ImmersivePlayer extends Component {
 
     renderSplashImage() {
         if(this.state.splashImage) {
-            return <img src={this.state.splashImage}/>
+            return <img src={this.state.splashImage} width="80%" height="auto"/>
         } else {
             return ""
         }
