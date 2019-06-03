@@ -260,13 +260,13 @@ export class XRWorldInfo { // extends THREE.Group {
         let player = vec3.create()
 
         // an incantation which yields the head position
-        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-        mat4.getTranslation(player, this._workingMatrix)
+        headLevel.getTransformTo(eyeLevel, workingMatrix)
+        mat4.getTranslation(player, workingMatrix)
 
         let floor = 0
         let distance = -1
         let final_closest = 0
-        let center = vec3.create()
+        let final_center = 0
 
         // visit all meshes
         meshMap.forEach(object => {
@@ -276,9 +276,9 @@ export class XRWorldInfo { // extends THREE.Group {
             // skip non horizontal features
             //if(worldMesh.alignment()) return
 
-            // where is mesh in world coords?
-            vec3.copy(center,worldMesh.center())
-            vec3.transformMat4(center,center,object.transform)
+            // where is mesh center point in world coords?
+            let center = vec3.fromValues(worldMesh._center.x,worldMesh._center.y,worldMesh._center.z)
+            vec3.transformMat4(center,center,worldMesh.modelMatrix)
 
             // is mesh too high?
             if(player[1] + player_top < center[1]) return
@@ -290,7 +290,8 @@ export class XRWorldInfo { // extends THREE.Group {
             // center[1] = player[1]
 
             // get a crude radius out of the extent (could use squaredLength() )
-            let meshRadius = vec3.length( worldMesh.extent() ) / 2
+            let extent = vec3.fromValues(worldMesh._extent.x,worldMesh._extent.y,worldMesh._extent.z)
+            let meshRadius = vec3.length( extent ) / 2
 
             // how far? (could use squaredDistance() )
             let dist = vec3.distance(player,center) - player_radius - meshRadius
@@ -300,11 +301,12 @@ export class XRWorldInfo { // extends THREE.Group {
                 distance = dist
                 floor = center[1]
                 final_closest = object
+                final_center = center
             }
         })
 
         if(final_closest) {
-            console.log("************** floor is at " + center[1] )
+            console.log("************** floor is at " + final_center[1] )
         }
     }
 
