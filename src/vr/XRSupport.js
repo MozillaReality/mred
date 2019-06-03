@@ -13,12 +13,9 @@ export class XRSupport {
         this._workingMatrix = mat4.create()
         this._identity = mat4.create()
         this._vec = vec3.create()
-        this._vec2 = vec3.create()
         this.lastFrameTime = 0
         
         this.heightAboveFloor = 1.1; // for now
-        this.floorHeightInLocalCoordinates = 0
-        this.floorAnchor = 0
     }
     static supportsARKit() {
         if (navigator.xr && navigator.xr._mozillaXRViewer) {
@@ -57,9 +54,6 @@ export class XRSupport {
                     // we want to always use the estimated elevation
                     XRGeospatialAnchor.useEstimatedElevation(true, this.heightAboveFloor)
                     this.updateGeoElevationLoop()
-
-                    // start floor finder
-                    // this.floorFinderLoop()
 
                     // enable smooth tracking of image targets
                     that.session.nonStandard_setNumberOfTrackedImages(4)
@@ -295,81 +289,6 @@ logger.log(info)
 
     sleeper(time) {
         return new Promise((resolve) => setTimeout(resolve, time))
-    }
-
-    async floorFinderLoop() {
-
-        console.log("*********** looking for floor")
-
-        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
-        let headLevel = await this.session.requestFrameOfReference('head-model')
-
-        // shoot from the eye downwardish [0,-1,-1]
-        let hits = await this.session.requestHitTest( [0,0,0], [0,0,-1], headLevel )
-
-        // find the best hit for the floor
-        if(hits && hits.length) {
-
-console.log("********* found something ")
-
-            let hit = 0
-            let minDistanceBetweenEyeAndGround = 1
-            let maxDistanceBetweeenEyeAndGround = 2
-
-            // strategy 1: look for the surface that is say 0.2 or lower? or take lowest - or fall through to the last one
-            // this seems like a reasonable strategy?
-
-            if(false) {
-                for(let i = 0; hits && i<hits.length;i++) {
-                    let hit = hits[i]
-                    // TODO does this need to be relative? Should I subtract eye position? Or is this already transformed?
-                    // set workingMatrix = to hit result in eye level coordinate system
-                    headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-                    mat4.getTranslation(this._vec2, this._workingMatrix)
-                    mat4.multiply(this._workingMatrix, this._workingMatrix, hits.hitMatrix)
-                    mat4.getTranslation(this._vec, this._workingMatrix)
-                    let dist = this._vec2[1] - this._vec[1]
-                    if( dist > minDistanceBetweenEyeAndGround &&
-                        dist < maxDistanceBetweeenEyeAndGround ) {
-                        break
-                    }
-                }
-            }
-
-            // strategy 2: take the lowest hit
-            // TODO this will fail if you walked up some stairs
-
-            hit = hits[hits.length-1]
-
-            // set workingMatrix = to hit result in eye level coordinate system
-            headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-            mat4.getTranslation(this._vec2, this._workingMatrix)
-            mat4.multiply(this._workingMatrix, this._workingMatrix, hit.hitMatrix)
-            mat4.getTranslation(this._vec, this._workingMatrix)
-
-            // adjust floor height
-            // this is literally how high the players eyeball is above the floor
-
-            this.heightAboveFloor = this._vec2[1] - this._vec[1]
-
-            // this is where the floor is in local coordinates
-
-            this.floorHeightInLocalCoordinates = this._vec[1]
-
-console.log("******** floor is this far below eye " + this.heightAboveFloor )
-console.log("******** floor is at " + this.floorHeightInLocalCoordinates )
-            // TODO do we want some kind of anchor or more dependable estimation of the floor?
-            // TODO do we want to keep a bread crumb trail
-            // TODO what about existing features that were on the floor but you walked down a hill?
-
-            if(this.floorAnchor) this.session.removeAnchor(this.floorAnchor)
-            this.floorAnchor = await this.session.addAnchor(hit, headLevel )
-
-        }
-
-        // we want to call the above immediately the first time, then after done, and do a setInterval() kind of behavior, but not accumulate recursive stack
-        await this.sleeper(1000)
-        setTimeout(() => this.floorFinderLoop(), 1)
     }
 
     _fetchImage(info,logger) {

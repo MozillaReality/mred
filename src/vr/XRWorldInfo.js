@@ -91,15 +91,25 @@ export class XRWorldInfo { // extends THREE.Group {
             } 
         })
 
-        // udpate reticule
+        // update frame of reference when ready to do so
         if (requestNextHit) {
             requestNextHit = false
             this.session.requestFrameOfReference('head-model').then(headFrameOfReference => {
-                this.session.requestHitTest(savedOrigin, savedDirection, headFrameOfReference)
-                    .then(this._handleHitResults)
-                    .catch(err => {
-                        this.logger.error('Error testing hits', err)
-                    })
+                this.session.requestFrameOfReference('eye-level').then((eyeLevelFrameOfReference)=>{
+
+                    // update floor estimation
+                    this.updateFloor(headFrameOfReference,eyeLevelFrameOfReference)
+
+                    // update reticule
+                    this.session.requestHitTest(savedOrigin, savedDirection, headFrameOfReference)
+                        .then(this._handleHitResults)
+                        .catch(err => {
+                            this.logger.error('Error testing hits', err)
+                        })
+
+                    //(done elsewhere)
+                    //requestNextHit = true
+                })
             })
         }
 
@@ -241,13 +251,24 @@ export class XRWorldInfo { // extends THREE.Group {
         return mesh
     }
 
-    findFloor(x,y,z,radius=2,top=-1,bottom=-2) {
+    updateFloor(headLevel,eyeLevel) {
 
+        // defaults for floor
+        let player_radius=3
+        let player_top=-1
+        let player_bottom=-2
+        let player = vec3.create()
+
+        // an incantation which yields the head position
+        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+        mat4.getTranslation(player, this._workingMatrix)
+
+        let floor = 0
         let distance = -1
         let final_closest = 0
         let center = vec3.create()
-        let point = vec3.fromValues(x,y,z)
 
+        // visit all meshes
         meshMap.forEach(object => {
 
             let worldMesh = object.worldMesh
@@ -260,30 +281,32 @@ export class XRWorldInfo { // extends THREE.Group {
             vec3.transformMat4(center,center,object.transform)
 
             // is mesh too high?
-            if(point[1] + top < center[1]) return
+            if(player[1] + player_top < center[1]) return
 
             // is mesh too low?
-            if(point[1] + bottom > center[1]) return
+            if(player[1] + player_bottom > center[1]) return
 
             // the remaining calculations take place in 2d
-            center[1] = point[1]
+            // center[1] = player[1]
 
             // get a crude radius out of the extent (could use squaredLength() )
             let meshRadius = vec3.length( worldMesh.extent() ) / 2
 
             // how far? (could use squaredDistance() )
-            let dist = vec3.distance(point,center) - radius - meshRadius
+            let dist = vec3.distance(player,center) - player_radius - meshRadius
 
             // take best
             if(distance == -1 || dist < distance) {
                 distance = dist
+                floor = center[1]
                 final_closest = object
             }
         })
 
-        return final_closest
+        if(final_closest) {
+            console.log("************** floor is at " + center[1] )
+        }
     }
-
 
 }
 
