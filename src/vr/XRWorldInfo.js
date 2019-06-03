@@ -102,6 +102,7 @@ export class XRWorldInfo { // extends THREE.Group {
                     })
             })
         }
+
     }
 
     // handle hit testing slightly differently than other samples, since we're doing
@@ -216,7 +217,7 @@ export class XRWorldInfo { // extends THREE.Group {
         let indices = new THREE.BufferAttribute(worldMesh.triangleIndices, 1)
         indices.dynamic = true
         geometry.setIndex(indices)
-        
+
         let verticesBufferAttribute = new THREE.BufferAttribute( worldMesh.vertexPositions, 3 )
         verticesBufferAttribute.dynamic = true
         geometry.addAttribute( 'position', verticesBufferAttribute );
@@ -239,6 +240,50 @@ export class XRWorldInfo { // extends THREE.Group {
         //worldMesh.mesh = mesh;
         return mesh
     }
+
+    findFloor(x,y,z,radius=2,top=-1,bottom=-2) {
+
+        let distance = -1
+        let final_closest = 0
+        let center = vec3.create()
+        let point = vec3.fromValues(x,y,z)
+
+        meshMap.forEach(object => {
+
+            let worldMesh = object.worldMesh
+
+            // skip non horizontal features
+            //if(worldMesh.alignment()) return
+
+            // where is mesh in world coords?
+            vec3.copy(center,worldMesh.center())
+            vec3.transformMat4(center,center,object.transform)
+
+            // is mesh too high?
+            if(point[1] + top < center[1]) return
+
+            // is mesh too low?
+            if(point[1] + bottom > center[1]) return
+
+            // the remaining calculations take place in 2d
+            center[1] = point[1]
+
+            // get a crude radius out of the extent (could use squaredLength() )
+            let meshRadius = vec3.length( worldMesh.extent() ) / 2
+
+            // how far? (could use squaredDistance() )
+            let dist = vec3.distance(point,center) - radius - meshRadius
+
+            // take best
+            if(distance == -1 || dist < distance) {
+                distance = dist
+                final_closest = object
+            }
+        })
+
+        return final_closest
+    }
+
 
 }
 
