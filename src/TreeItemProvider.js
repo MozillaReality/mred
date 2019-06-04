@@ -144,6 +144,7 @@ function calculateServerUrl(SERVER_URL) {
 export default class TreeItemProvider extends TreeItemProviderInterface {
     constructor(options) {
         super()
+        if(!options) options = {}
         this.listeners = {};
         this.expanded_map = {};
         this.docid = null

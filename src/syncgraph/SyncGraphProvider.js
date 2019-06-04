@@ -19,13 +19,13 @@ export default class SyncGraphProvider extends TreeItemProvider {
     constructor(options) {
         super(options)
         this.options = options || {}
-        this.mode = options.mode || 'edit'
+        this.mode = this.options.mode || 'edit'
         this.datalisteners = []
         this.rawlisteners = []
         this.expanded = {}
 
-        if(options.doc) {
-            this.loadDoc(options.doc)
+        if(this.options.doc) {
+            this.loadDoc(this.options.doc)
         } else {
             this.createNewDocument()
         }

@@ -1,7 +1,6 @@
 import {toFlatString} from '../utils'
 import * as ToasterManager from './ToasterManager'
-import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
-import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
+import {mat4, vec3} from "gl-matrix/dist/gl-matrix.js"
 
 let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor

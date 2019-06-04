@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 
-import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
-import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
+import {mat4, vec3} from "gl-matrix/dist/gl-matrix.js"
 
 var meshMap = new Map()
 
