@@ -10,6 +10,7 @@ import {DialogManager} from 'appy-comps'
 import {MissingDocDialog} from './MissingDocDialog'
 import React from 'react'
 import {AuthModule} from '../vr/AuthModule'
+import GraphAccessor from './GraphAccessor'
 
 const {DocGraph, CommandGenerator, toDocGraphFromObjectGraph, toObjectGraphFromDocGraph} = require("syncing_protocol");
 
@@ -40,6 +41,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
     getRawGraph = () => this.coalescer
     getDataGraph = () => this.syncdoc
     getSceneRoot = () => this.getDataGraph().getObjectByProperty('type','root')
+    getSceneRootObject = () => new GraphAccessor(this.getDataGraph()).object(this.getSceneRoot())
     hasChildren = (item) => item && this.getDataGraph().hasPropertyValue(item,'children')
     getChildren = (item) => {
         const doc = this.getDataGraph()

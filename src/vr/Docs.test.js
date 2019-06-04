@@ -2,10 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {DocGraph} from 'syncing_protocol'
 import VREditor from './VREditor'
+import {TOTAL_OBJ_TYPES} from './Common'
 
-it('makes a doc', () => {
+it('makes an empty doc', () => {
     const doc = new DocGraph()
     const editor = new VREditor()
     editor.makeEmptyRoot(doc)
-    console.log("made the doc",doc)
+    expect(editor.getSceneRootObject().type).toEqual(TOTAL_OBJ_TYPES.ROOT)
 });
