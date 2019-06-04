@@ -18,13 +18,13 @@ var reticleMaterial = new THREE.MeshStandardMaterial({ color: reticleTrackedColo
 var requestNextHit = true
 let singleton = 0
 
-export class XRWorldInfo { // extends THREE.Group {
+export class XRWorldInfo extends THREE.Group {
 
-    constructor(engine,scene,logger) {
+    constructor(engine,logger) {
 
         // run as a singleton
         if(singleton) {
-            logger.error("XRWorldInfo called more than once")
+            logger.error("XRWorldInfo called more than once - very bad")
             return singleton
         }
         singleton = this
@@ -32,12 +32,9 @@ export class XRWorldInfo { // extends THREE.Group {
         this.engine = engine
         this.session = engine.session
         this.logger = logger
-        this.scene = scene
 
-        if(!this.scene) {
-            logger.error("no scene")
-            return
-        }
+        this._floorAnchor = 0
+        this._floorPos = vec3.create()
 
         // enable extended world sensing
         let sensingState = this.session.updateWorldSensingState({
@@ -60,15 +57,18 @@ export class XRWorldInfo { // extends THREE.Group {
         reticleParent.add(reticle)
         reticleParent.matrixAutoUpdate = false
         reticleParent.visible = false
-        this.scene.add(reticleParent)
 
     }
 
     refreshWorldInfo(frame) {
+
+        if(!this.visible) {
+            return
+        }
+
         let worldInfo = frame.worldInformation
-        if(!worldInfo || !worldInfo.meshes) return
-        if(!worldInfo.meshes.forEach) {
-            this.logger.error("WHAT?")
+        if(!worldInfo || !worldInfo.meshes) {
+            return
         }
 
         // mark
@@ -98,7 +98,7 @@ export class XRWorldInfo { // extends THREE.Group {
                 this.session.requestFrameOfReference('eye-level').then((eyeLevelFrameOfReference)=>{
 
                     // update floor estimation
-                    this.updateFloor(headFrameOfReference,eyeLevelFrameOfReference)
+                    this.floorUpdate(headFrameOfReference,eyeLevelFrameOfReference)
 
                     // update reticule
                     this.session.requestHitTest(savedOrigin, savedDirection, headFrameOfReference)
@@ -107,18 +107,18 @@ export class XRWorldInfo { // extends THREE.Group {
                             this.logger.error('Error testing hits', err)
                         })
 
-                    //(done elsewhere)
+                    //(TODO done elsewhere because I am unsure about asyncronity of handleHitResults)
                     //requestNextHit = true
                 })
             })
         }
-
     }
 
     // handle hit testing slightly differently than other samples, since we're doing
     // it per frame.  The "boiler plate" code below is slightly different, setting 
     // requestNextHit on tap instead of executing the hit test.  The custom XREngineHits
     // does a hit test each frame if the previous one has resolved
+    // TODO unsure why this has to request these frames of reference again
     handleHitResults(hits) {
         let size = 0.05;
         if (hits && hits.length > 0) {
@@ -191,7 +191,7 @@ export class XRWorldInfo { // extends THREE.Group {
     }
 
     handleRemoveNode(object) {
-        this.scene.remove(object.node)
+        this.remove(object.node)
         object.threeMesh.geometry.dispose()
         this.engine._removeAnchorForNode(object.node,this.logger)
         meshMap.delete(object.worldMesh.uid)
@@ -201,7 +201,7 @@ export class XRWorldInfo { // extends THREE.Group {
         let worldMeshGroup = new THREE.Group();
         var mesh = this.newMeshNode(worldMesh)
         worldMeshGroup.add(mesh)
-        this.scene.add(worldMeshGroup)
+        this.add(worldMeshGroup)
         this.engine.addAnchoredNode(worldMesh, worldMeshGroup,this.logger)
         meshMap.set(worldMesh.uid, {
             ts: worldMesh.timeStamp, 
@@ -251,24 +251,28 @@ export class XRWorldInfo { // extends THREE.Group {
         return mesh
     }
 
-    updateFloor(headLevel,eyeLevel) {
+    floorUpdate(headLevel,eyeLevel) {
 
-        // defaults for floor
-        let player_radius=3
-        let player_top=-1
-        let player_bottom=-2
-        let player = vec3.create()
+        // how close does a floor mesh extent need to be to the player to be a candidate?
+        let playerRadiusSq=3*3
 
-        // an incantation which yields the head position
+        // how far below a player does a floor mesh need to be to be a candidate?
+        let playerTop=-0.5
+
+        // how far below a player does a floor mesh need to be to be rejected as a candidate?
+        let playerBottom=-2
+
+        // scratch variables
+        let playerPos = vec3.create()
+        let meshPos = vec3.create()
+        let bestPos = vec3.create()
+        let bestY = 0
+
+        // get player position
         headLevel.getTransformTo(eyeLevel, workingMatrix)
-        mat4.getTranslation(player, workingMatrix)
+        mat4.getTranslation(playerPos, workingMatrix)
 
-        let floor = 0
-        let distance = -1
-        let final_closest = 0
-        let final_center = 0
-
-        // visit all meshes
+        // visit all candidate meshes
         meshMap.forEach(object => {
 
             let worldMesh = object.worldMesh
@@ -277,38 +281,63 @@ export class XRWorldInfo { // extends THREE.Group {
             //if(worldMesh.alignment()) return
 
             // where is mesh center point in world coords?
-            let center = vec3.fromValues(worldMesh._center.x,worldMesh._center.y,worldMesh._center.z)
-            vec3.transformMat4(center,center,worldMesh.modelMatrix)
+            vec3.set(meshPos, worldMesh._center.x, worldMesh._center.y, worldMesh._center.z)
+            vec3.transformMat4(meshPos,meshPos,worldMesh.modelMatrix)
 
-            // is mesh too high?
-            if(player[1] + player_top < center[1]) return
+            // an ideally negative number expressing the distance below the player Y
+            let distanceY = meshPos[1] - playerPos[1]
 
-            // is mesh too low?
-            if(player[1] + player_bottom > center[1]) return
+            // candidate mesh is vertically to high?
+            if(distanceY > playerTop) return
 
-            // the remaining calculations take place in 2d
-            // center[1] = player[1]
+            // candidate mesh is vertically too low?
+            if(distanceY < playerBottom) return
 
-            // get a crude radius out of the extent (could use squaredLength() )
-            let extent = vec3.fromValues(worldMesh._extent.x,worldMesh._extent.y,worldMesh._extent.z)
-            let meshRadius = vec3.length( extent ) / 2
+            // how far is a rough mesh extent from player in 2d in distance squared?
+            let distSq = (playerPos[0]-meshPos[0])*(playerPos[0]-meshPos[0])
+                       + (playerPos[2]-meshPos[2])*(playerPos[2]-meshPos[2])
+                       - worldMesh._extent.x * worldMesh._extent.x
+                       - worldMesh._extent.z * worldMesh._extent.z
+                       - playerRadiusSq;
 
-            // how far? (could use squaredDistance() )
-            let dist = vec3.distance(player,center) - player_radius - meshRadius
+            // is too far away to be of interest?
+            if(distSq > 0) return
 
-            // take best
-            if(distance == -1 || dist < distance) {
-                distance = dist
-                floor = center[1]
-                final_closest = object
-                final_center = center
-            }
+            // is the lowest candidate so far?
+            if(bestY > distanceY) return
+
+            // remember lowest area so far
+            bestY = distanceY
+            vec3.set(bestPos,playerPos[0],meshPos[1],playerPos[2])
+
         })
 
-        if(final_closest) {
-            console.log("************** floor is at " + final_center[1] )
-        }
+        // no new results? stick with previous state
+        if(!bestY) return
+
+        // insignificant change? stick with previous state
+        if( vec3.squaredDistance(bestPos,this._floorPos) < 0.01) return
+
+        // throw away old floor anchor and make a new one
+        vec3.copy(this._floorPos,bestPos)
+        mat4.fromTranslation(workingMatrix, this._floorPos)
+        if(this._floorAnchor) this.session.removeAnchor(this._floorAnchor)
+        this._floorAnchor = this.session.addAnchor(workingMatrix,eyeLevel)
+
+        // debug
+        this.logger.log("************** floor is at " + this._floorPos[1] )
+
     }
 
+    get floorPos() {
+        return this._floorPos
+    }
+
+    get floorAnchor() {
+        // TODO I need a clone method for anchors that is synchronous
+        let temp = this._floorAnchor
+        this._floorAnchor = 0
+        return temp
+    }
 }
 

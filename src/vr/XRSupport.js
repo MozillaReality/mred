@@ -3,8 +3,11 @@ import * as ToasterManager from './ToasterManager'
 import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
 import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
 
+import {XRWorldInfo} from './XRWorldInfo'
+
 let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor
+
 
 export class XRSupport {
     constructor() {
@@ -14,6 +17,7 @@ export class XRSupport {
         this._identity = mat4.create()
         this._vec = vec3.create()
         this.lastFrameTime = 0
+        this.worldInfo = 0
         
         this.heightAboveFloor = 1.1; // for now
     }
@@ -133,6 +137,11 @@ export class XRSupport {
         }
 
         for (let view of frame.views) {
+            // paint world info in a special way for now
+            if(this.worldInfo && this.worldInfo.visible) {
+                this.worldInfo.refreshWorldInfo(frame)
+            }
+            // let higher level update itself
             this.userAnimationCallback(
                 this.session.baseLayer.getViewport(view),
                 view.projectionMatrix,
@@ -270,6 +279,72 @@ export class XRSupport {
         this.addAnchoredNode(newAnchor,info.node,logger)
 
 logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+logger.log(info)
+
+        return newAnchor
+    }
+
+    async createFloorAnchorFromHitTest(info,x,y,logger) {
+
+        // TODO
+        // Right now this gets attached right away and will always fail because there is no ground detected that early
+        // However, users can call it again and then have it corrected - it should delete the previous anchor if any
+        // Philosophically I'd prefer a concept of dynamically creating nodes on the scene graph
+        //
+
+        if(!this.worldInfo) {
+            logger.error("no world info")
+            return
+        }
+
+        if(!this.session) {
+            logger.error("no session")
+            return 0
+        }
+        if(!this.projectionMatrix) {
+            logger.error("No projection matrix")
+            return 0
+        }
+        if(!this.canvas || !this.canvas.width || !this.canvas.height) {
+            logger.error("No canvas or canvas size")
+            return 0
+        }
+        if (!info.node) {
+            logger.error("missing threejs node")
+            return 0
+        }
+
+        // normalize screen coords
+        let normalizedX = x / this.canvas.width * 2 - 1;
+        let normalizedY = x / this.canvas.height * 2;
+
+        // get a ray
+        var rayorigin = vec3.create();
+        mat4.invert(this._workingMatrix, this.projectionMatrix );
+        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
+        vec3.transformMat4(raydir,raydir,this._workingMatrix);
+        vec3.normalize(raydir, raydir);
+
+        // get coordinate system
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+
+// TODO improve
+// just steal one from XRWorldInfo for now
+let newAnchor = this.worldInfo.floorAnchor
+
+        if(!newAnchor) {
+            logger.error("No anchor returned from hit test for floor")
+            return 0
+        }
+
+        // remove previous if any
+        this._removeAnchorForNode(info.node)
+ 
+        // add new
+        this.addAnchoredNode(newAnchor,info.node,logger)
+
+logger.log("made floor anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
 logger.log(info)
 
         return newAnchor
@@ -688,6 +763,24 @@ logger.log(info)
             node.matrixAutoUpdate = false
             node.matrix.fromArray(anchor.modelMatrix)
             node.updateMatrixWorld(true)
+        }
+    }
+
+    startWorldInfo(logger) {
+        // make if needed
+        if(!this.worldInfo) {
+            this.worldInfo = new XRWorldInfo(this,this.logger)
+        }
+        // visible = true determines if the world info is updated
+        this.worldInfo.visible = true
+        // return as a threejs group to caller
+        return this.worldInfo
+    }
+
+    stopWorldInfo() {
+        if(this.worldInfo) {
+            // stop but do not delete
+            this.worldInfo.visible = false
         }
     }
 

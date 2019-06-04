@@ -10,7 +10,6 @@ import SceneDef from './defs/SceneDef'
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, NONE_ASSET, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
-import {XRWorldInfo} from './XRWorldInfo'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
@@ -313,9 +312,6 @@ export class ImmersivePlayer extends Component {
 
     renderThreeWithCamera = (bounds,projectionMatrix,viewMatrix, time,frame) => {
         if(!this.scene || !this.camera) return
-        if(this.showWorldInfo && this.worldInfo) {
-            this.worldInfo.refreshWorldInfo(frame)
-        }
         this.camera.matrix.fromArray(viewMatrix)
         this.camera.matrixWorldNeedsUpdate = true
         this.camera.updateMatrixWorld()
@@ -550,7 +546,11 @@ class Adapter extends SceneGraphProvider {
             this.logger.log("XR is not active?")
             return
         }
-        this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
+        if(info.floor) {
+            this.player.xr.createFloorAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
+        } else {
+            this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)            
+        }
     }
 
     stopLocalAnchor(info) {
@@ -617,22 +617,27 @@ class Adapter extends SceneGraphProvider {
     }
 
     startWorldInfo(info) {
-        this.player.showWorldInfo = true
         if(!this.player.xr || !this.player.xr.session) {
             this.logger.log("XR is not active?")
             return
         }
-        if(!this.player.worldInfo) {
-            this.player.worldInfo = new XRWorldInfo(this.player.xr,this.player.scene,this.logger)
-        }
-       // this.player.scene.add(this.player.worldInfo)
+        // clear any previous state
+        this.stopWorldInfo(info)
+        // start up worldInfo - which returns a threejs group
+        this.worldInfoMesh = this.player.xr.startWorldInfo(this.logger)
+        // add worldInfo as a group to the scene
+        this.player.scene.add(this.worldInfoMesh)
     }
 
     stopWorldInfo(info) {
-        this.player.showWorldInfo = false
-        if(this.player.worldInfo) {
-            //this.player.scene.remove(this.player.worldInfo)
-            // this.player.worldInfo = 0
+        if(!this.player.xr || !this.player.xr.session) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        if(this.worldInfoMesh) {
+            this.player.scene.remove(this.worldInfoMesh)
+            this.worldInfoMesh = 0
+            this.player.xr.stopWorldInfo()
         }
     }
 
