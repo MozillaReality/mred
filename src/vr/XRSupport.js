@@ -315,19 +315,19 @@ logger.log(info)
         }
 
         // normalize screen coords
-        let normalizedX = x / this.canvas.width * 2 - 1;
-        let normalizedY = x / this.canvas.height * 2;
+ //       let normalizedX = x / this.canvas.width * 2 - 1;
+ //       let normalizedY = x / this.canvas.height * 2;
 
         // get a ray
-        var rayorigin = vec3.create();
-        mat4.invert(this._workingMatrix, this.projectionMatrix );
-        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
-        vec3.transformMat4(raydir,raydir,this._workingMatrix);
-        vec3.normalize(raydir, raydir);
+//        var rayorigin = vec3.create();
+//        mat4.invert(this._workingMatrix, this.projectionMatrix );
+//        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
+//        vec3.transformMat4(raydir,raydir,this._workingMatrix);
+//        vec3.normalize(raydir, raydir);
 
         // get coordinate system
-        let headLevel = await this.session.requestFrameOfReference('head-model')
-        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+ //       let headLevel = await this.session.requestFrameOfReference('head-model')
+ //       let eyeLevel = await this.session.requestFrameOfReference('eye-level')
 
 // TODO improve
 // just steal one from XRWorldInfo for now
@@ -486,7 +486,7 @@ logger.log(info)
         let callback = info.callback
 
         let node = info.node
-        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+        //let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
         if (!this.imageDetectorMap[info.image.src]) {
             logger.error("not detection object for image", info.image.src)
@@ -579,7 +579,7 @@ logger.log(info)
             }
 
             if (this.geoAnchorMap[info.location.id]) {
-                let det = this.geoAnchorMap[info.location.id]
+                //let det = this.geoAnchorMap[info.location.id]
                 logger.log("found geoanchor: already created, returning it")
                 res()
                 return
@@ -595,9 +595,9 @@ logger.log(info)
             */
 
             let location = info.location
-            let object = info.object // object that represents anchor variables that users can edit in general-editor
-            let node = info.node
-            let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+            //let object = info.object // object that represents anchor variables that users can edit in general-editor
+            //let node = info.node
+            //let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
             // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
 
@@ -704,7 +704,7 @@ logger.log(info)
 
         let callback = info.callback
         let node = info.node
-        let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
+        //let recType = 0 // unused. currently set to SCENE_START -> meaning we should recognize as soon as the scene starts up
 
 
         this._removeAnchorFromNode(det.anchor)
@@ -769,7 +769,7 @@ logger.log(info)
     startWorldInfo(logger) {
         // make if needed
         if(!this.worldInfo) {
-            this.worldInfo = new XRWorldInfo(this,this.logger)
+            this.worldInfo = new XRWorldInfo(this,logger)
         }
         // visible = true determines if the world info is updated
         this.worldInfo.visible = true

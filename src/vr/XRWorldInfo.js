@@ -6,7 +6,6 @@ import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
 var meshMap = new Map()
 
 const workingMatrix = mat4.create()
-const workingVec3 = vec3.create()
 var savedOrigin = [0,0,0]
 var savedDirection = [0,0,-1]
 var reticleParent = null
@@ -21,6 +20,8 @@ let singleton = 0
 export class XRWorldInfo extends THREE.Group {
 
     constructor(engine,logger) {
+
+        super()
 
         // run as a singleton
         if(singleton) {
@@ -37,7 +38,7 @@ export class XRWorldInfo extends THREE.Group {
         this._floorPos = vec3.create()
 
         // enable extended world sensing
-        let sensingState = this.session.updateWorldSensingState({
+        this.session.updateWorldSensingState({
             illuminationDetectionState : {
                 enabled : true
             },
@@ -120,7 +121,6 @@ export class XRWorldInfo extends THREE.Group {
     // does a hit test each frame if the previous one has resolved
     // TODO unsure why this has to request these frames of reference again
     handleHitResults(hits) {
-        let size = 0.05;
         if (hits && hits.length > 0) {
             let hit = hits[0]
             this.session.requestFrameOfReference('head-model').then(headFrameOfReference => {
@@ -296,15 +296,15 @@ export class XRWorldInfo extends THREE.Group {
             // how far is a rough mesh extent from player in 2d in distance squared?
             let distSq = (playerPos[0]-meshPos[0])*(playerPos[0]-meshPos[0])
                        + (playerPos[2]-meshPos[2])*(playerPos[2]-meshPos[2])
-                       - worldMesh._extent.x * worldMesh._extent.x
-                       - worldMesh._extent.z * worldMesh._extent.z
+                       - worldMesh._extent[0] * worldMesh._extent[0]
+                       - worldMesh._extent[1] * worldMesh._extent[1]
                        - playerRadiusSq;
 
             // is too far away to be of interest?
             if(distSq > 0) return
 
-            // is the lowest candidate so far?
-            if(bestY > distanceY) return
+            // distanceY fails to be the lowest acceptable candidate?
+            if(bestY < distanceY) return
 
             // remember lowest area so far
             bestY = distanceY
@@ -321,8 +321,10 @@ export class XRWorldInfo extends THREE.Group {
         // throw away old floor anchor and make a new one
         vec3.copy(this._floorPos,bestPos)
         mat4.fromTranslation(workingMatrix, this._floorPos)
-        if(this._floorAnchor) this.session.removeAnchor(this._floorAnchor)
-        this._floorAnchor = this.session.addAnchor(workingMatrix,eyeLevel)
+//        if(this._floorAnchor) {
+//            this.session.removeAnchor(this._floorAnchor)
+//        }
+//        this._floorAnchor = this.session.addAnchor(workingMatrix,eyeLevel)
 
         // debug
         this.logger.log("************** floor is at " + this._floorPos[1] )
