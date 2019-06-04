@@ -456,6 +456,7 @@ export default class VREditor extends SyncGraphProvider {
         parent.insertFirstChild(obj)
         SelectionManager.setSelection(obj.id)
         ToasterMananager.add('added '+type)
+        return obj
     }
 
     calculateContextMenu(item) {
