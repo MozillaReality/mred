@@ -218,7 +218,7 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
-    async createLocalAnchorFromHitTest(info,x,y,logger) {
+    createLocalAnchorFromHitTest(info,x,y,logger) {
 
         // TODO
         // Right now this gets attached right away and will always fail because there is no ground detected that early
@@ -228,19 +228,19 @@ export class XRSupport {
 
         if(!this.session) {
             logger.error("no session")
-            return 0
+            return
         }
         if(!this.projectionMatrix) {
             logger.error("No projection matrix")
-            return 0
+            return
         }
         if(!this.canvas || !this.canvas.width || !this.canvas.height) {
             logger.error("No canvas or canvas size")
-            return 0
+            return
         }
         if (!info.node) {
             logger.error("missing threejs node")
-            return 0
+            return
         }
 
         // normalize screen coords
@@ -254,37 +254,35 @@ export class XRSupport {
         vec3.transformMat4(raydir,raydir,this._workingMatrix);
         vec3.normalize(raydir, raydir);
 
-        // get coordinate system
-        let headLevel = await this.session.requestFrameOfReference('head-model')
+        this.session.requestFrameOfReference('head-model').then((headLevel)=>{
+            this.session.requestFrameOfReference('eye-level').then((eyeLevel)=>{
 
-        // get collidants
-        let xrhitresults = await this.session.requestHitTest(rayorigin, raydir, headLevel )
+                // get collidants
+                this.session.requestHitTest(rayorigin, raydir, headLevel ).then((xrhitresults)=>{
 
-        if (xrhitresults.length < 1) {
-            logger.error("No hit returned from hit test")
-            return 0
-        }
+                    if (xrhitresults.length < 1) {
+                        logger.error("No hit returned from hit test")
+                        return
+                    }
 
-        let newAnchor = await this.session.addAnchor(xrhitresults[0], headLevel )
+                    this.session.addAnchor(xrhitresults[0], headLevel ).then((newAnchor)=> {
 
-        if(!newAnchor) {
-            logger.error("No anchor returned from hit test")
-            return 0
-        }
+                        // remove previous if any
+                        this._removeAnchorForNode(info.node)
+                 
+                        // add new
+                        this.addAnchoredNode(newAnchor,info.node,logger)
 
-        // remove previous if any
-        this._removeAnchorForNode(info.node)
- 
-        // add new
-        this.addAnchoredNode(newAnchor,info.node,logger)
-
-logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
-logger.log(info)
-
-        return newAnchor
+                        logger.log("made anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+                    })
+                })
+            })
+        })
     }
 
-    async createFloorAnchorFromHitTest(info,x,y,logger) {
+    createFloorAnchorFromHitTest(info,x,y,logger) {
+
+        logger.log("trying to make floor anchor at " + x + " " + y)
 
         // TODO
         // Right now this gets attached right away and will always fail because there is no ground detected that early
@@ -299,19 +297,19 @@ logger.log(info)
 
         if(!this.session) {
             logger.error("no session")
-            return 0
+            return
         }
         if(!this.projectionMatrix) {
             logger.error("No projection matrix")
-            return 0
+            return
         }
         if(!this.canvas || !this.canvas.width || !this.canvas.height) {
             logger.error("No canvas or canvas size")
-            return 0
+            return
         }
         if (!info.node) {
             logger.error("missing threejs node")
-            return 0
+            return
         }
 
         let floorPos = this.worldInfo.floorPos
@@ -327,27 +325,22 @@ logger.log(info)
         // TODO compute plane intersection
 
         // get coordinate system
-        let headLevel = await this.session.requestFrameOfReference('head-model')
-        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
-        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-        mat4.fromTranslation(this._workingMatrix,this.worldInfo.floorPos)
-        let newAnchor = this.session.addAnchor(this._workingMatrix,eyeLevel)
+        this.session.requestFrameOfReference('head-model').then((headLevel)=>{
+            this.session.requestFrameOfReference('eye-level').then((eyeLevel)=>{
+                headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+                mat4.fromTranslation(this._workingMatrix,this.worldInfo.floorPos)
+                this.session.addAnchor(this._workingMatrix,eyeLevel).then((newAnchor)=>{
+                    // remove previous if any
+                    this._removeAnchorForNode(info.node)
+             
+                    // add new
+                    this.addAnchoredNode(newAnchor,info.node,logger)
 
-        if(!newAnchor) {
-            logger.error("No anchor returned from hit test for floor")
-            return 0
-        }
-
-        // remove previous if any
-        this._removeAnchorForNode(info.node)
- 
-        // add new
-        this.addAnchoredNode(newAnchor,info.node,logger)
-
-logger.log("made floor anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
-logger.log(info)
-
-        return newAnchor
+                    // done
+                    logger.log("made floor anchor" )
+                })
+            })
+        })
     }
 
     stopLocalAnchor(info, logger) {

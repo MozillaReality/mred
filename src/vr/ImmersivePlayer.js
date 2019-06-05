@@ -546,9 +546,9 @@ class Adapter extends SceneGraphProvider {
             this.logger.log("XR is not active?")
             return
         }
-        if(info.floor) {
+        if(info.style == "floor") {
             this.player.xr.createFloorAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
-        } else {
+        } else if(info.style == "ray") {
             this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)            
         }
     }
