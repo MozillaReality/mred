@@ -330,12 +330,5 @@ export class XRWorldInfo extends THREE.Group {
         return this._floorPos
     }
 
-    async getFloorAnchor() {
-        let headFrameOfReference = await this.session.requestFrameOfReference('head-model')
-        let eyeLevelFrameOfReference = await this.session.requestFrameOfReference('eye-level')
-        headFrameOfReference.getTransformTo(eyeLevelFrameOfReference, workingMatrix)
-        mat4.fromTranslation(workingMatrix,this._floorPos)
-        return this.session.addAnchor(workingMatrix,eyeLevelFrameOfReference)
-    }
 }
 

@@ -314,24 +314,24 @@ logger.log(info)
             return 0
         }
 
-        // normalize screen coords
- //       let normalizedX = x / this.canvas.width * 2 - 1;
- //       let normalizedY = x / this.canvas.height * 2;
+        let floorPos = this.worldInfo.floorPos
 
-        // get a ray
-//        var rayorigin = vec3.create();
-//        mat4.invert(this._workingMatrix, this.projectionMatrix );
-//        var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
-//        vec3.transformMat4(raydir,raydir,this._workingMatrix);
-//        vec3.normalize(raydir, raydir);
+        // compute a ray intersection with the floor elevation of an infinite plane
+        // (actually for now, just use a point directly beneath player)
+
+        // var rayorigin = vec3.create();
+        // mat4.invert(this._workingMatrix, this.projectionMatrix );
+        // var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
+        // vec3.transformMat4(raydir,raydir,this._workingMatrix);
+        // vec3.normalize(raydir, raydir);
+        // TODO compute plane intersection
 
         // get coordinate system
- //       let headLevel = await this.session.requestFrameOfReference('head-model')
- //       let eyeLevel = await this.session.requestFrameOfReference('eye-level')
-
-// TODO improve
-// just steal one from XRWorldInfo for now
-let newAnchor = this.worldInfo.floorAnchor
+        let headLevel = await this.session.requestFrameOfReference('head-model')
+        let eyeLevel = await this.session.requestFrameOfReference('eye-level')
+        headLevel.getTransformTo(eyeLevel, this._workingMatrix)
+        mat4.fromTranslation(this._workingMatrix,this.worldInfo.floorPos)
+        let newAnchor = this.session.addAnchor(this._workingMatrix,eyeLevel)
 
         if(!newAnchor) {
             logger.error("No anchor returned from hit test for floor")
