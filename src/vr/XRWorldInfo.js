@@ -34,7 +34,6 @@ export class XRWorldInfo extends THREE.Group {
         this.session = engine.session
         this.logger = logger
 
-        this._floorAnchor = 0
         this._floorPos = vec3.create()
 
         // enable extended world sensing
@@ -321,10 +320,6 @@ export class XRWorldInfo extends THREE.Group {
         // throw away old floor anchor and make a new one
         vec3.copy(this._floorPos,bestPos)
         mat4.fromTranslation(workingMatrix, this._floorPos)
-//        if(this._floorAnchor) {
-//            this.session.removeAnchor(this._floorAnchor)
-//        }
-//        this._floorAnchor = this.session.addAnchor(workingMatrix,eyeLevel)
 
         // debug
         this.logger.log("************** floor is at " + this._floorPos[1] )
@@ -335,11 +330,12 @@ export class XRWorldInfo extends THREE.Group {
         return this._floorPos
     }
 
-    get floorAnchor() {
-        // TODO I need a clone method for anchors that is synchronous
-        let temp = this._floorAnchor
-        this._floorAnchor = 0
-        return temp
+    async getFloorAnchor() {
+        let headFrameOfReference = await this.session.requestFrameOfReference('head-model')
+        let eyeLevelFrameOfReference = await this.session.requestFrameOfReference('eye-level')
+        headFrameOfReference.getTransformTo(eyeLevelFrameOfReference, workingMatrix)
+        mat4.fromTranslation(workingMatrix,this._floorPos)
+        return this.session.addAnchor(workingMatrix,eyeLevelFrameOfReference)
     }
 }
 
