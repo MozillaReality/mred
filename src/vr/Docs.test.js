@@ -19,5 +19,29 @@ it('makes a cube',() => {
     const child = editor.getSceneRootObject().find(ch => ch.id === obj.id)[0]
     console.log("found the child",child)
     expect(child.title).toEqual(obj.title)
+})
+
+it('loads a doc with a cube',() => {
+    const editor = new VREditor()
+    const doc = {
+        type:TOTAL_OBJ_TYPES.ROOT,
+        children:[
+            {
+                type:TOTAL_OBJ_TYPES.SCENE,
+                children: [
+                    {
+                        type:OBJ_TYPES.cube,
+                        tx:0,
+                        ty:88,
+                        tz:0,
+                        title:'the awesome cube'
+                    }
+                ]
+            }
+        ]
+    }
+    editor.loadDocFromJSON(doc)
+    const child = editor.getSceneRootObject().find(ch => ch.type === 'cube')[0]
+    expect(child.title).toEqual('the awesome cube')
 
 })
