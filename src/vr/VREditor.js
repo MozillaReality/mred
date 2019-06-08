@@ -65,7 +65,7 @@ import {AssetsManager} from './AssetsManager'
 import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
 import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
-
+import preval from 'preval.macro'
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
@@ -922,6 +922,8 @@ class VREditorApp extends Component {
     }
 
     render() {
+        const dateTimeStamp = preval`module.exports = new Date().toLocaleString();`
+
         if(this.state.connected === false) {
             return <div>
                 <h1>connecting to server</h1>
@@ -981,6 +983,7 @@ class VREditorApp extends Component {
                 {this.renderLoginButton()}
             </Toolbar>
             <Toolbar right bottom>
+                {dateTimeStamp}
             </Toolbar>
             <DialogContainer/>
             <PopupContainer/>
