@@ -367,6 +367,10 @@ export default class VREditor extends SyncGraphProvider {
                 .map(a => a.id)
             return withNone(assets)
         }
+        if(key === PROP_DEFS.cloneTarget.key) {
+            let nodes = this.accessObject(this.getSceneRoot()).find(ch => is3DObjectType(ch.type)).map(a => a.id)
+            return withNone(nodes)
+        }
     }
     getRendererForEnum(key,obj) {
         const realobj = this.accessObject(obj)
@@ -378,6 +382,7 @@ export default class VREditor extends SyncGraphProvider {
             case PROP_DEFS.targetImage.key: return EnumTitleRenderer
             case PROP_DEFS.targetGeoLocation.key: return EnumTitleRenderer
             case PROP_DEFS.splashImage.key: return EnumTitleRenderer
+            case PROP_DEFS.cloneTarget.key: return EnumTitleRenderer
             default: return null
         }
     }

@@ -1,4 +1,4 @@
-import {TOTAL_OBJ_TYPES} from './Common'
+import {OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import * as THREE from "three"
 import WebLayer3D from 'three-web-layer'
 import GPUParticles from './defs/GPUParticles'
@@ -190,24 +190,30 @@ export default class ScriptManager {
             this.lastTime = time
         }
         scene.find(child => {
-            if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
-            if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
-                evt.target = this.sgp.getThreeObject(child.parent)
-                evt.graphTarget = this.sgp.getGraphObjectById(child.parent)
-                //evt.props = child.props()
-                const asset = this.sgp.getParsedBehaviorAsset(child)
-                const system = this.getSystemFacadeFromCache(child)
-                system.code = asset
-                if (asset[type]) asset[type].call(system,evt)
-                // if(asset[type]) asset[type](evt)
-            } else {
-                evt.target = this.sgp.getThreeObject(child)
-                evt.graphTarget = child
-                if(evt.target && evt.target[type]) {
-                    evt.target[type](evt, this)
-                }
-            }
+            const parentId = child.parent
+            this.fireSceneLifecycleEventAtChild(type,evt,child,parentId)
         })
+    }
+
+    fireSceneLifecycleEventAtChild(type,evt,child, parentId) {
+        if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
+        if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
+            evt.target = this.sgp.getThreeObject(parentId)
+            evt.graphTarget = this.sgp.getGraphObjectById(parentId)
+            //evt.props = child.props()
+            const asset = this.sgp.getParsedBehaviorAsset(child)
+            const system = this.getSystemFacadeFromCache(child)
+            system.code = asset
+            if (asset[type]) asset[type].call(system,evt)
+            // if(asset[type]) asset[type](evt)
+        } else {
+            evt.target = this.sgp.getThreeObject(child)
+            evt.graphTarget = child
+            if(evt.target && evt.target[type]) evt.target[type](evt, this)
+            if(child.type === OBJ_TYPES.clone) {
+                if (type !== 'tick') console.log(`also doing ${type} event on a clone`)
+            }
+        }
     }
 
     tick(time, session) {

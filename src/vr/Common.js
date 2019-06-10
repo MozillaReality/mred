@@ -12,6 +12,7 @@ import LocalAnchorDef from './defs/LocalAnchorDef'
 import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
 import {HudAnchorDef} from './defs/HudAnchorDef'
+import CloneDef from './defs/CloneDef'
 
 export const NONE_ASSET = {
     id:-30,
@@ -347,7 +348,13 @@ export const PROP_DEFS = {
         key:'autoRecenter',
         name:"Recenter on Load",
         type:TYPES.BOOLEAN
-    }
+    },
+
+    cloneTarget: {
+        key:'cloneTarget',
+        name:'clone target',
+        type: TYPES.ENUM,
+    },
 }
 
 export const SIMPLE_COLORS = ["#ffffff","#ff0000","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#000000"]
@@ -366,6 +373,7 @@ export const OBJ_TYPES = {
     imageanchor:'imageanchor',
     geoanchor:'geoanchor',
     hudanchor:'hudanchor',
+    clone:'clone',
 }
 
 export const TOTAL_OBJ_TYPES = {
@@ -398,6 +406,7 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
     if(type === OBJ_TYPES.hudanchor) return true
+    if(type === OBJ_TYPES.clone) return true
     return false
 }
 
@@ -443,6 +452,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.imageanchor) return new ImageAnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
     if(type === OBJ_TYPES.hudanchor) return new HudAnchorDef()
+    if(type === OBJ_TYPES.clone) return new CloneDef()
     throw new Error(`unknown 3d object type ${type}`)
 }
 
