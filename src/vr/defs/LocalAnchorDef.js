@@ -28,35 +28,25 @@ export default class LocalAnchorDef extends ObjectDef {
         node.position.set(obj.tx, obj.ty, obj.tz)
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
-        node.visible = obj.visible
+        node.visible = true
 
         const clicker =  new Mesh(
             new SphereBufferGeometry(1),
-            new MeshLambertMaterial({color:"blue", transparent:true, opacity: 0.2})
+            new MeshLambertMaterial({color:"green", transparent:true, opacity: 0.2})
         )
         clicker.material.visible = true
         clicker.userData.clickable = true
         node.userData.clicker = clicker
         node.add(clicker)
 
-        const preview = new Mesh(
-            new PlaneBufferGeometry(1,1),
-            new MeshLambertMaterial({color:'white',transparent:true, opacity: 0.5, side: DoubleSide})
-        )
-        preview.rotation.x = toRad(90)
-        node.add(preview)
-        node.userData.preview = preview
-
         node.enter = (evt, scriptManager) => {
             clicker.visible = false
-            node.visible = false
-            preview.visible = false
+            node.visible = true
             node.userData.info = {
                 recType: obj.recType,
                 object: obj,
                 node: node,
                 callback: (info) => {
-                    scriptManager.fireEventAtTarget(obj, 'recognized', info)
                     node.visible = true
                 }
             }
@@ -64,7 +54,6 @@ export default class LocalAnchorDef extends ObjectDef {
         }
         node.exit = (evt, scriptManager) => {
             clicker.visible = true
-            preview.visible = true
             scriptManager.sgp.stopLocalAnchor(node.userData.info)
         }
         return node

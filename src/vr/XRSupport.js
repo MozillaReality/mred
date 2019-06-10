@@ -3,8 +3,6 @@ import * as ToasterManager from './ToasterManager'
 import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
 import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
 
-import {XRWorldInfo} from './XRWorldInfo'
-
 let Cesium = window.Cesium
 let XRGeospatialAnchor = window.XRGeospatialAnchor
 
@@ -16,9 +14,7 @@ export class XRSupport {
         this._workingMatrix = mat4.create()
         this._identity = mat4.create()
         this._vec = vec3.create()
-        this.lastFrameTime = 0
-        this.worldInfo = 0
-        
+        this.lastFrameTime = 0        
         this.heightAboveFloor = 1.1; // for now
     }
     static supportsARKit() {
@@ -137,10 +133,6 @@ export class XRSupport {
         }
 
         for (let view of frame.views) {
-            // paint world info in a special way for now
-            if(this.worldInfo && this.worldInfo.visible) {
-                this.worldInfo.refreshWorldInfo(frame)
-            }
             // let higher level update itself
             this.userAnimationCallback(
                 this.session.baseLayer.getViewport(view),
@@ -218,18 +210,8 @@ export class XRSupport {
         this._removeAnchorFromNode(sceneAnchor)
     }
 
-    createLocalAnchorFromHitTest(info,x,y,logger) {
+    updateRayAnchor(info,logger) {
 
-        // TODO
-        // Right now this gets attached right away and will always fail because there is no ground detected that early
-        // However, users can call it again and then have it corrected - it should delete the previous anchor if any
-        // Philosophically I'd prefer a concept of dynamically creating nodes on the scene graph
-        //
-
-        if(!this.session) {
-            logger.error("no session")
-            return
-        }
         if(!this.projectionMatrix) {
             logger.error("No projection matrix")
             return
@@ -238,14 +220,12 @@ export class XRSupport {
             logger.error("No canvas or canvas size")
             return
         }
-        if (!info.node) {
-            logger.error("missing threejs node")
-            return
-        }
 
         // normalize screen coords
+        let x = this.screenx || 0
+        let y = this.screeny || 0
         let normalizedX = x / this.canvas.width * 2 - 1;
-        let normalizedY = x / this.canvas.height * 2;
+        let normalizedY = y / this.canvas.height * 2;
 
         // get a ray
         var rayorigin = vec3.create();
@@ -280,55 +260,17 @@ export class XRSupport {
         })
     }
 
-    createFloorAnchorFromHitTest(info,x,y,logger) {
+    updatePointAnchor(info,logger) {
 
-        logger.log("trying to make floor anchor at " + x + " " + y)
+        let point = info.point
 
-        // TODO
-        // Right now this gets attached right away and will always fail because there is no ground detected that early
-        // However, users can call it again and then have it corrected - it should delete the previous anchor if any
-        // Philosophically I'd prefer a concept of dynamically creating nodes on the scene graph
-        //
-
-        if(!this.worldInfo) {
-            logger.error("no world info")
-            return
-        }
-
-        if(!this.session) {
-            logger.error("no session")
-            return
-        }
-        if(!this.projectionMatrix) {
-            logger.error("No projection matrix")
-            return
-        }
-        if(!this.canvas || !this.canvas.width || !this.canvas.height) {
-            logger.error("No canvas or canvas size")
-            return
-        }
-        if (!info.node) {
-            logger.error("missing threejs node")
-            return
-        }
-
-        let floorPos = this.worldInfo.floorPos
-
-        // compute a ray intersection with the floor elevation of an infinite plane
-        // (actually for now, just use a point directly beneath player)
-
-        // var rayorigin = vec3.create();
-        // mat4.invert(this._workingMatrix, this.projectionMatrix );
-        // var raydir = vec3.fromValues(normalizedX, normalizedY, 0.5);
-        // vec3.transformMat4(raydir,raydir,this._workingMatrix);
-        // vec3.normalize(raydir, raydir);
-        // TODO compute plane intersection
-
-        // get coordinate system
         this.session.requestFrameOfReference('head-model').then((headLevel)=>{
             this.session.requestFrameOfReference('eye-level').then((eyeLevel)=>{
                 headLevel.getTransformTo(eyeLevel, this._workingMatrix)
-                mat4.fromTranslation(this._workingMatrix,this.worldInfo.floorPos)
+                mat4.fromTranslation(this._workingMatrix,point)
+
+logger.log(this._workingMatrix)
+
                 this.session.addAnchor(this._workingMatrix,eyeLevel).then((newAnchor)=>{
                     // remove previous if any
                     this._removeAnchorForNode(info.node)
@@ -337,21 +279,20 @@ export class XRSupport {
                     this.addAnchoredNode(newAnchor,info.node,logger)
 
                     // done
-                    logger.log("made floor anchor" )
+                    logger.log("updated anchor in local coords: " + info.node.position.x + " " + info.node.position.y + " " + info.node.position.z )
+                    logger.log(point)
                 })
             })
         })
     }
 
-    stopLocalAnchor(info, logger) {
-        console.log("Stopping local anchor")
+    stopAnchor(info, logger) {
+        console.log("Stopping anchor of various flavors")
         if(!this._anchoredNodes) return
-
         if (!info.node) {
             logger.error("missing threejs node")
             return
         }
-
         this._removeAnchorFromNode(info.node)
     }
 
@@ -742,13 +683,11 @@ export class XRSupport {
             anchor._handleAnchorUpdateCallback = null
             anchor._handleAnchorDeleteCallback = null
 
-            // NOTIFY SOMEBODY? TODO
             this._anchoredNodes.delete(anchor.uid)
         }
     }
 
     _handleAnchorUpdate(logger, details) {
-        // logger.log("anchor update")
         const anchor = details.source
         const anchoredNode = this._anchoredNodes.get(anchor.uid)
         if (anchoredNode) {
@@ -758,23 +697,4 @@ export class XRSupport {
             node.updateMatrixWorld(true)
         }
     }
-
-    startWorldInfo(logger) {
-        // make if needed
-        if(!this.worldInfo) {
-            this.worldInfo = new XRWorldInfo(this,logger)
-        }
-        // visible = true determines if the world info is updated
-        this.worldInfo.visible = true
-        // return as a threejs group to caller
-        return this.worldInfo
-    }
-
-    stopWorldInfo() {
-        if(this.worldInfo) {
-            // stop but do not delete
-            this.worldInfo.visible = false
-        }
-    }
-
 }
