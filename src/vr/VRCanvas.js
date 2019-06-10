@@ -94,6 +94,9 @@ class Adapter extends SceneGraphProvider {
     getTweenManager() {
         return this.canvas.tweenManager
     }
+    getFloorNear(info) {
+        return this.canvas.getFloorNear(info)
+    }
     startLocalAnchor(info) {
         return this.canvas.startLocalAnchor(info)
     }
@@ -621,6 +624,10 @@ export class VRCanvas extends Component {
 
     stopRecognizers() {
         //called when script running is started
+    }
+
+    getFloorNear(info) {
+        this.props.provider.getLogger().log("NOTHING DONE TO get floor near")
     }
 
     startLocalAnchor(info) {

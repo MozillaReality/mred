@@ -10,9 +10,13 @@ import SceneDef from './defs/SceneDef'
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, NONE_ASSET, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
 import {XRSupport} from './XRSupport'
+import {XRWorldInfo} from './XRWorldInfo'
 import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
+
+import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
+import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
 
 import startupsound from "./startup-sound.m4a"
 
@@ -155,6 +159,8 @@ export class ImmersivePlayer extends Component {
             this.xr.getContext(canvas).then((context) => {
                 this.initThreeJS(canvas,context)
                 this.xr.setAnimationLoop( this.renderThreeWithCamera.bind(this))
+                this.xrWorldInfo = new XRWorldInfo(this.xr,this.logger)
+                this.scene.add(this.xrWorldInfo)
                 this.startScene()
             }).catch(err => {
                 console.error('Error', err)
@@ -316,6 +322,9 @@ export class ImmersivePlayer extends Component {
         this.camera.matrixWorldNeedsUpdate = true
         this.camera.updateMatrixWorld()
         this.camera.projectionMatrix.fromArray(projectionMatrix)
+        if(this.xrWorldInfo) {
+            this.xrWorldInfo.refreshWorldInfo(frame)
+        }
         this.renderThree(time,frame)
     }
 
@@ -540,16 +549,49 @@ class Adapter extends SceneGraphProvider {
         return this.player.tweenManager
     }
 
-    startLocalAnchor(info) {
-        this.logger.log("starting vanilla anchor")
-        if(!this.player.xr || !this.player.xr.session) {
+    getFloorNear(info) {
+        if(!this.player.xr || !this.player.xr.session || !this.player.xrWorldInfo) {
             this.logger.log("XR is not active?")
             return
         }
-        if(info.style == "floor") {
-            this.player.xr.createFloorAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)
-        } else if(info.style == "ray") {
-            this.player.xr.createLocalAnchorFromHitTest(info,info.screenx || 0,info.screeny || 0,this.logger)            
+
+        let targetPos = vec3.fromValues(info.point.x,info.point.y,info.point.z)
+        let targetRadiusSq = info.targetRadiusSq || 9
+        let targetTop = info.targetTop || -0.5
+        let targetBottom = info.targetBottom || -2
+
+        if(this.player.xrWorldInfo.findFloorNear(targetPos,targetRadiusSq,targetTop,targetBottom)) {
+            return new THREE.Vector3(targetPos[0],targetPos[1],targetPos[2])
+        }
+        return 0
+    }
+
+    startLocalAnchor(info) {
+        this.logger.log("start or update anchor of various flavors")
+        if(!this.player.xr || !this.player.xr.session || !this.player.xrWorldInfo) {
+            this.logger.log("XR is not active?")
+            return
+        }
+        if(!info.node || !info.node.position) {
+            this.logger.log("Node is not present or wrong type?")
+        }
+        switch(info.style) {
+            case "ray":
+                this.player.xr.updateRayAnchor(info,this.logger)
+                break
+            case "floor":
+            default:
+                {
+                    let point = vec3.fromValues(info.node.position.x, info.node.position.y, info.node.position.z )
+                    if(this.player.xrWorldInfo.findFloorNear(point)) {
+                        this.logger.log("Found a floor at " + point[1])
+                        info.point = point
+                        // this.player.xr.updatePointAnchor(info,this.logger)
+                        // just force it there ... do not bother placing an anchor
+                        info.node.position.y = point[1]
+                    }
+                }
+                break
         }
     }
 
@@ -559,7 +601,7 @@ class Adapter extends SceneGraphProvider {
             this.logger.log("XR is not active?")
             return
         }
-        this.player.xr.stopLocalAnchor(info,this.logger)
+        this.player.xr.stopAnchor(info,this.logger)
     }
 
     startImageRecognizer(info) {
@@ -617,28 +659,19 @@ class Adapter extends SceneGraphProvider {
     }
 
     startWorldInfo(info) {
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
+        if(!this.player.xrWorldInfo) {
+            this.logger.log("World Info is not active?")
             return
         }
-        // clear any previous state
-        this.stopWorldInfo(info)
-        // start up worldInfo - which returns a threejs group
-        this.worldInfoMesh = this.player.xr.startWorldInfo(this.logger)
-        // add worldInfo as a group to the scene
-        this.player.scene.add(this.worldInfoMesh)
+        this.player.xrWorldInfo.setVisible(true)
     }
 
     stopWorldInfo(info) {
-        if(!this.player.xr || !this.player.xr.session) {
-            this.logger.log("XR is not active?")
+        if(!this.player.xrWorldInfo) {
+            this.logger.log("World Info is not active?")
             return
         }
-        if(this.worldInfoMesh) {
-            this.player.scene.remove(this.worldInfoMesh)
-            this.worldInfoMesh = 0
-            this.player.xr.stopWorldInfo()
-        }
+        this.player.xrWorldInfo.setVisible(false)
     }
 
 }

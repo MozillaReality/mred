@@ -105,6 +105,10 @@ class Adapter extends SceneGraphProvider {
         return this.editor.tweenManager
     }
 
+    getFloorNear(info) {
+        this.provider.getLogger().log("NOTHING DONE TO get floor near")
+    }
+
     startLocalAnchor(info) {
         this.provider.getLogger().log("NOTHING DONE TO start local anchor")
     }

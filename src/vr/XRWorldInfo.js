@@ -33,6 +33,7 @@ export class XRWorldInfo extends THREE.Group {
         this.engine = engine
         this.session = engine.session
         this.logger = logger
+        this.visible = false
 
         this._floorPos = vec3.create()
 
@@ -60,11 +61,13 @@ export class XRWorldInfo extends THREE.Group {
 
     }
 
-    refreshWorldInfo(frame) {
+    setVisible(status) {
+        this.visible = status
+        reticleParent.visible = status
+        meshMap.forEach(object => { object.node.visible = object.mesh.visible = status })
+    }
 
-        if(!this.visible) {
-            return
-        }
+    refreshWorldInfo(frame) {
 
         let worldInfo = frame.worldInformation
         if(!worldInfo || !worldInfo.meshes) {
@@ -97,8 +100,24 @@ export class XRWorldInfo extends THREE.Group {
             this.session.requestFrameOfReference('head-model').then(headFrameOfReference => {
                 this.session.requestFrameOfReference('eye-level').then((eyeLevelFrameOfReference)=>{
 
-                    // update floor estimation
-                    this.floorUpdate(headFrameOfReference,eyeLevelFrameOfReference)
+                    // update floor at player
+                    if(true) {
+                        // get player position
+                        let targetPos = vec3.create()
+                        headFrameOfReference.getTransformTo(eyeLevelFrameOfReference, workingMatrix)
+                        mat4.getTranslation(targetPos, workingMatrix)
+
+                        // find floor at player
+                        if( this.findFloorNear(targetPos) ) {
+
+                            // has floor moved significantly?
+                            if( vec3.squaredDistance(targetPos,this._floorPos) > 0.01) {
+                                vec3.copy(this._floorPos,targetPos)
+                                this.logger.log("************** floor is at " + this._floorPos[1] )
+                            }
+
+                        }
+                    }
 
                     // update reticule
                     this.session.requestHitTest(savedOrigin, savedDirection, headFrameOfReference)
@@ -129,7 +148,7 @@ export class XRWorldInfo extends THREE.Group {
                     mat4.multiply(workingMatrix, workingMatrix, hit.hitMatrix)
                     const node = reticleParent
                     node.matrix.fromArray(workingMatrix)
-                    reticleParent.visible = true   // it starts invisible
+                    reticleParent.visible = this.visible   // it starts invisible
                     reticle.material.color = reticleTrackedColor
                     node.updateMatrixWorld(true)
                 })
@@ -187,6 +206,7 @@ export class XRWorldInfo extends THREE.Group {
                 normals.needsUpdate = true;
             }
         }
+        object.threeMesh.visible = this.visible
     }
 
     handleRemoveNode(object) {
@@ -201,6 +221,7 @@ export class XRWorldInfo extends THREE.Group {
         var mesh = this.newMeshNode(worldMesh)
         worldMeshGroup.add(mesh)
         this.add(worldMeshGroup)
+        worldMeshGroup.visible = mesh.visible = this.visible
         this.engine.addAnchoredNode(worldMesh, worldMeshGroup,this.logger)
         meshMap.set(worldMesh.uid, {
             ts: worldMesh.timeStamp, 
@@ -246,30 +267,24 @@ export class XRWorldInfo extends THREE.Group {
         mesh.add(new THREE.Mesh(geometry, material))
         mesh.add(new THREE.Mesh(geometry, wireMaterial))
         mesh.geometry = geometry;  // for later use
-        //worldMesh.mesh = mesh;
         return mesh
     }
 
-    floorUpdate(headLevel,eyeLevel) {
+    ///
+    /// Given a point of interest in local coordinates (targetPos)
+    /// And a radius of consideration - sqrt(targetRadiusSq)
+    /// And a height below the target that is the acceptable highest point (targetTop)
+    /// And a height below the target that is the acceptable lowest point (targetBottom)
+    /// Find a point on the floor if any and update supplied input (targetPos)
+    /// May return false if fails to find a point
+    ///
 
-        // how close does a floor mesh extent need to be to the player to be a candidate?
-        let playerRadiusSq=3*3
-
-        // how far below a player does a floor mesh need to be to be a candidate?
-        let playerTop=-0.5
-
-        // how far below a player does a floor mesh need to be to be rejected as a candidate?
-        let playerBottom=-2
+    findFloorNear(targetPos,targetRadiusSq=9,targetTop=-0.5,targetBottom=-2) {
 
         // scratch variables
-        let playerPos = vec3.create()
         let meshPos = vec3.create()
         let bestPos = vec3.create()
         let bestY = 0
-
-        // get player position
-        headLevel.getTransformTo(eyeLevel, workingMatrix)
-        mat4.getTranslation(playerPos, workingMatrix)
 
         // visit all candidate meshes
         meshMap.forEach(object => {
@@ -283,21 +298,21 @@ export class XRWorldInfo extends THREE.Group {
             vec3.set(meshPos, worldMesh._center.x, worldMesh._center.y, worldMesh._center.z)
             vec3.transformMat4(meshPos,meshPos,worldMesh.modelMatrix)
 
-            // an ideally negative number expressing the distance below the player Y
-            let distanceY = meshPos[1] - playerPos[1]
+            // a number expressing the distance below the target Y
+            let distanceY = meshPos[1] - targetPos[1]
 
             // candidate mesh is vertically to high?
-            if(distanceY > playerTop) return
+            if(distanceY > targetTop) return
 
             // candidate mesh is vertically too low?
-            if(distanceY < playerBottom) return
+            if(distanceY < targetBottom) return
 
-            // how far is a rough mesh extent from player in 2d in distance squared?
-            let distSq = (playerPos[0]-meshPos[0])*(playerPos[0]-meshPos[0])
-                       + (playerPos[2]-meshPos[2])*(playerPos[2]-meshPos[2])
+            // how far is a rough mesh extent from target in 2d in distance squared?
+            let distSq = (targetPos[0]-meshPos[0])*(targetPos[0]-meshPos[0])
+                       + (targetPos[2]-meshPos[2])*(targetPos[2]-meshPos[2])
                        - worldMesh._extent[0] * worldMesh._extent[0]
                        - worldMesh._extent[1] * worldMesh._extent[1]
-                       - playerRadiusSq;
+                       - targetRadiusSq;
 
             // is too far away to be of interest?
             if(distSq > 0) return
@@ -307,23 +322,17 @@ export class XRWorldInfo extends THREE.Group {
 
             // remember lowest area so far
             bestY = distanceY
-            vec3.set(bestPos,playerPos[0],meshPos[1],playerPos[2])
+            vec3.set(bestPos,targetPos[0],meshPos[1],targetPos[2])
 
         })
 
-        // no new results? stick with previous state
-        if(!bestY) return
+        // found nothing
+        if(!bestY) return false
 
-        // insignificant change? stick with previous state
-        if( vec3.squaredDistance(bestPos,this._floorPos) < 0.01) return
+        // get local coordinates floor elevation
+        vec3.copy(targetPos,bestPos)
 
-        // throw away old floor anchor and make a new one
-        vec3.copy(this._floorPos,bestPos)
-        mat4.fromTranslation(workingMatrix, this._floorPos)
-
-        // debug
-        this.logger.log("************** floor is at " + this._floorPos[1] )
-
+        return true
     }
 
     get floorPos() {
