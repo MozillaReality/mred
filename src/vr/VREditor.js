@@ -65,6 +65,7 @@ import {AssetsManager} from './AssetsManager'
 import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
 import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
+import {ToasterNotification} from './ToasterNotification'
 
 
 export default class VREditor extends SyncGraphProvider {
@@ -986,6 +987,7 @@ class VREditorApp extends Component {
             </Toolbar>
             <Toolbar right bottom>
             </Toolbar>
+            <ToasterNotification/>
             <DialogContainer/>
             <PopupContainer/>
 

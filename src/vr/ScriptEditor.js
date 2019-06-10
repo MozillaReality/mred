@@ -5,6 +5,7 @@ import {TOTAL_OBJ_TYPES} from './Common'
 import AceEditor from 'react-ace'
 import 'brace/mode/javascript'
 import 'brace/theme/github'
+import * as ToasterManager from '../vr/ToasterManager'
 
 export default class ScriptEditor extends Component {
     constructor(props) {
@@ -12,7 +13,6 @@ export default class ScriptEditor extends Component {
         this.refresh = () => {
             const id = selMan.getSelection()
             const obj = this.props.provider.accessObject(id)
-            console.log('id',id,obj.exists(), obj.type)
             if(obj.exists() && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 this.props.provider.fetchBehaviorAssetContents(id).then(text => {
                     this.setState({id:id, text:text})
@@ -43,7 +43,14 @@ export default class ScriptEditor extends Component {
     }
     changeText = (value) => this.setState({text:value})
     save = (e) => {
-        this.props.provider.updateBehaviorAssetContents(this.state.id,this.state.text)
+        const ann = this.editor.editor.getSession().getAnnotations()
+        const errors = ann.filter(a => a.type === 'error')
+        if(errors.length > 0) {
+            ToasterManager.add("errors in behavior")
+        } else {
+            ToasterManager.add("saved behavior")
+            this.props.provider.updateBehaviorAssetContents(this.state.id,this.state.text)
+        }
     }
     render() {
         if(this.state.id === null) return <div>loading</div>
@@ -56,6 +63,7 @@ export default class ScriptEditor extends Component {
                           showGutter={true}
                           width={'100%'}
                           height={'100%'}
+                          ref={ed => this.editor = ed}
         />
     }
 

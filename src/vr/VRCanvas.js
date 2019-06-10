@@ -472,7 +472,6 @@ export class VRCanvas extends Component {
                         onKeyDown={this.handleKeyPress}
                         tabIndex={0}
                 />
-                <ToasterNotification/>
             </div>
         </div>
     }
