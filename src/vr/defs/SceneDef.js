@@ -7,8 +7,6 @@ import {
 } from 'three'
 import {OBJ_TYPES, PROP_DEFS} from '../Common'
 
-let COUNTER = 0
-
 function isAnchorType(type) {
     if(type === OBJ_TYPES.geoanchor) return true
     if(type === OBJ_TYPES.localanchor) return true

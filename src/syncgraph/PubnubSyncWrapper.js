@@ -204,9 +204,6 @@ export class PubnubLogger {
 }
 
 export class ConsoleLogger {
-    constructor() {
-
-    }
     log() {
         console.log("DUMMY LOGGER",...arguments)
     }

@@ -187,7 +187,7 @@ export default class SyncGraphProvider extends TreeItemProvider {
             this.setDocTitle(title)
             const graph = this.getDocGraph()
             const new_doc = new DocGraph()
-            const new_root = toDocGraphFromObjectGraph(graph,new_doc)
+            toDocGraphFromObjectGraph(graph,new_doc)
             this.syncdoc = new_doc
             return this.save()
         }).then(()=>{

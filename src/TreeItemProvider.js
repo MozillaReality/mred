@@ -1,4 +1,4 @@
-import {setQuery, toQueryString} from './utils'
+import {setQuery} from './utils'
 import Selection from './SelectionManager'
 import {AuthModule} from './vr/AuthModule'
 

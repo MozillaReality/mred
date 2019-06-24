@@ -1,5 +1,5 @@
 import ObjectDef from './ObjectDef'
-import {NONE_ASSET, OBJ_TYPES, PROP_DEFS, TOTAL_OBJ_TYPES} from '../Common'
+import {NONE_ASSET, OBJ_TYPES} from '../Common'
 import {fetchGraphObject} from '../../syncgraph/utils'
 import * as THREE from 'three'
 import {MeshLambertMaterial} from 'three'
