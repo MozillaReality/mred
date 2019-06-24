@@ -173,7 +173,7 @@ export class XRWorldInfo extends THREE.Group {
         } else {
             if (worldMesh.vertexPositionsChanged) {
                 let position = object.threeMesh.geometry.attributes.position
-                if (position.array.length != worldMesh.vertexPositions.length) {
+                if (position.array.length !== worldMesh.vertexPositions.length) {
                     this.logger.error("position and vertex arrays are different sizes", position, worldMesh)
                 }
                 position.setArray(worldMesh.vertexPositions);
@@ -181,7 +181,7 @@ export class XRWorldInfo extends THREE.Group {
             }
             if (worldMesh.textureCoordinatesChanged) {
                 let uv = object.threeMesh.geometry.attributes.uv
-                if (uv.array.length != worldMesh.textureCoordinates.length) {
+                if (uv.array.length !== worldMesh.textureCoordinates.length) {
                     this.logger.error("uv and vertex arrays are different sizes", uv, worldMesh)
                 }
                 uv.setArray(worldMesh.textureCoordinates);
@@ -189,7 +189,7 @@ export class XRWorldInfo extends THREE.Group {
             }
             if (worldMesh.triangleIndicesChanged) {
                 let index = object.threeMesh.geometry.index
-                if (index.array.length != worldMesh.triangleIndices) {
+                if (index.array.length !== worldMesh.triangleIndices) {
                     this.logger.error("uv and vertex arrays are different sizes", index, worldMesh)
                 }
                 index.setArray(worldMesh.triangleIndices);
@@ -198,7 +198,7 @@ export class XRWorldInfo extends THREE.Group {
             if (worldMesh.vertexNormalsChanged && worldMesh.vertexNormals.length > 0) {
                 // normals are optional
                 let normals = object.threeMesh.geometry.attributes.normals
-                if (normals.array.length != worldMesh.vertexNormals) {
+                if (normals.array.length !== worldMesh.vertexNormals) {
                     this.logger.error("uv and vertex arrays are different sizes", normals, worldMesh)
                 }
                 normals.setArray(worldMesh.vertexNormals);
@@ -237,10 +237,10 @@ export class XRWorldInfo extends THREE.Group {
 //            edgeColor = '#999999'
 //           polyColor = '#999900'
 //        } else
-        {
-            edgeColor = '#11FF11'
-            polyColor = '#009900'
-        }
+
+        edgeColor = '#11FF11'
+        polyColor = '#009900'
+
         let mesh = new THREE.Group();
         let geometry = new THREE.BufferGeometry()
         let indices = new THREE.BufferAttribute(worldMesh.triangleIndices, 1)

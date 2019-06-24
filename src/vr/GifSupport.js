@@ -147,6 +147,7 @@ export function createGIFTexture(url, prov) {
                 for (let i = 0; i < frames.length; i++) {
                     const img = new Image();
                     img.crossOrigin = "anonymous"
+                    // eslint-disable-next-line
                     img.onload = e => {
                         loadCnt++;
                         frames[i] = e.target;

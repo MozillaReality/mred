@@ -174,6 +174,7 @@ export default class ScriptManager {
                     evt.graphTarget = child
                     if(evt.target && evt.target[type]) evt.target[type](evt, this)
                 }
+                return true
             })
         })
     }
@@ -193,6 +194,7 @@ export default class ScriptManager {
         scene.find(child => {
             const parentId = child.parent
             this.fireSceneLifecycleEventAtChild(type,evt,child,parentId)
+            return true
         })
     }
 

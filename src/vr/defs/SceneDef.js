@@ -17,7 +17,7 @@ function isAnchorType(type) {
 
 function generateUniqueTitle(prefix,count, root) {
     const title = prefix + ' ' + count
-    const dup = root.getChildren().find(sc =>  sc.title == title)
+    const dup = root.getChildren().find(sc =>  sc.title === title)
     if(dup) {
         return generateUniqueTitle(prefix,count+1,root)
     } else {
