@@ -1,0 +1,33 @@
+.tree-table {
+    padding: 0.0rem;
+    margin:0;
+}
+.tree-table .tree-node {
+    margin: 0.25rem 0 0.5rem 0;
+    display: flex;
+    flex-direction: row;
+    align-content: baseline;
+}
+
+.tree-table .tree-node.selected {
+    background-color: #3498db;
+    color: white;
+}
+
+.tree-table .tree-node button {
+    height: inherit;
+    border: 0px solid red;
+    background-color: transparent;
+    color: inherit;
+}
+
+.tree-table .tree-node span {
+    height: inherit;
+    border: 0px solid red;
+    background-color: transparent;
+    color: inherit;
+}
+.tree-table .tree-node .drag {
+    padding-right: 1em;
+}
+
