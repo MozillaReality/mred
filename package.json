@@ -13,6 +13,7 @@
     "gl-matrix": "^2.5.1",
     "hsluv": "0.0.1",
     "leaflet": "^1.5.1",
+    "preval.macro": "^3.0.0",
     "pubnub": "^4.20.1",
     "qrcode": "^1.2.0",
     "react": "^16.2.0",

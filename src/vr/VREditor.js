@@ -66,7 +66,7 @@ import {ConsoleLogger} from '../syncgraph/PubnubSyncWrapper'
 import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
 import {ToasterNotification} from './ToasterNotification'
-
+import preval from "preval.macro"
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
@@ -945,8 +945,13 @@ class VREditorApp extends Component {
                 <DialogContainer/>
             </div>
         }
+        const dateTimeStamp = preval`module.exports = new Date().toLocaleString();`
+
         return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
-            <Toolbar left top><label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label></Toolbar>
+            <Toolbar left top>
+                <label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label>
+                <label>{dateTimeStamp}</label>
+            </Toolbar>
             <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
 
             <Toolbar left bottom>
