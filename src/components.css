@@ -1,0 +1,44 @@
+.toolbar {
+    background-color:#ffffff;
+    display: flex;
+    flex-direction: row;
+    border: 0px solid gray;
+    border-right-width: 1px;
+    align-items: center;
+    margin:0;
+    padding:0;
+}
+.toolbar > * {
+    margin: 0.25rem;
+    box-sizing: border-box;
+}
+.toolbar label {
+    font-weight: bold;
+}
+.toolbar button {
+    border: 0px solid black;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+}
+.toolbar input[type='text'] {
+    border: 1px solid #888;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+}
+
+.toolbar.gray {
+    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
+}
+
+
+
+.panel {
+    height: 100%;
+    border: 1px solid #aaa;
+    border-width: 0px 1px 0px 0px;
+    padding: 0rem;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
