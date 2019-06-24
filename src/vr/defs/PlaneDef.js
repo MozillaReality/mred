@@ -1,11 +1,7 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
-import {ASSET_TYPES, NONE_ASSET, PROP_DEFS} from '../Common'
+import {fetchGraphObject} from "../../syncgraph/utils"
+import * as THREE from "three"
+import {NONE_ASSET, PROP_DEFS} from '../Common'
 import ObjectDef from './ObjectDef'
-import {MeshLambertMaterial} from 'three'
-import {DoubleSide} from 'three'
-import {TextureLoader} from 'three'
-import {VideoTexture} from 'three'
 
 export default class PlaneDef extends ObjectDef {
     make(graph, scene) {

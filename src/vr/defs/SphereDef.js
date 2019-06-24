@@ -1,7 +1,7 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
+import {fetchGraphObject} from "../../syncgraph/utils"
 import ObjectDef from './ObjectDef'
-import {ASSET_TYPES, NONE_ASSET, PROP_DEFS} from '../Common'
-import {TextureLoader, MeshLambertMaterial, DoubleSide, VideoTexture, Mesh, SphereBufferGeometry} from 'three'
+import {NONE_ASSET, PROP_DEFS} from '../Common'
+import {Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
 
 export default class SphereDef extends ObjectDef {
     make(graph, scene) {

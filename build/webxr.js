@@ -2794,10 +2794,10 @@ class ARKitWrapper extends EventTarget {
 						resolve(ARKitWorldMap.worldMap);
 				} else if (ARKitWorldMap.error !== null) {
 						reject(ARKitWorldMap.error);
-						return;
+
 				} else {
 						reject(null);
-						return;
+
 				}
 			}).catch((...params) => {
 				console.error('could not get world map', ...params);

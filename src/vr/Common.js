@@ -551,6 +551,7 @@ export const ITEM_ICONS = {
 
 
 export function parseBehaviorScript(contents) {
+    // eslint-disable-next-line
     return Function(`"use strict";
     const toRadians = (deg) => Math.PI/180*deg; 
     return(${contents})`)();

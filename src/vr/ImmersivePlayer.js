@@ -1,11 +1,11 @@
 import React, {Component} from 'react'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import TreeItemProvider, {getAssetsURL, getDocsURL, getScriptsURL} from '../TreeItemProvider'
-import {on, parseOptions, toFlatString} from '../utils'
+import TreeItemProvider, {getDocsURL, getScriptsURL} from '../TreeItemProvider'
+import {on, parseOptions} from '../utils'
 import {TweenManager} from '../common/tween'
 import * as THREE from 'three'
-import {Group} from "three"
-import {VRManager, VR_DETECTED, Pointer} from 'webxr-boilerplate'
+import {Group} from 'three'
+import {VRManager} from 'webxr-boilerplate'
 import SceneDef from './defs/SceneDef'
 import {ASSET_TYPES, get3DObjectDef, is3DObjectType, NONE_ASSET, parseBehaviorScript, TOTAL_OBJ_TYPES} from './Common'
 import {AuthModule} from './AuthModule'
@@ -411,7 +411,7 @@ export class ImmersivePlayer extends Component {
 
     renderSplashImage() {
         if(this.state.splashImage) {
-            return <img src={this.state.splashImage} width="80%" height="auto"/>
+            return <img src={this.state.splashImage} width="80%" height="auto" alt={"splash image"}/>
         } else {
             return ""
         }
