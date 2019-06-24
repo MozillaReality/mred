@@ -877,21 +877,21 @@ class VREditorApp extends Component {
 
     toggleLeftPane = (e) => {
         if(this.state.leftDivider === '0px') {
-            this.setState({leftDivider:'200px'})
+            this.setState({leftDivider:'250px'})
         } else {
             this.setState({leftDivider:'0px'})
         }
     }
     toggleRightPane = (e) => {
         if(this.state.rightDivider === '0px') {
-            this.setState({rightDivider:'200px'})
+            this.setState({rightDivider:'250px'})
         } else {
             this.setState({rightDivider:'0px'})
         }
     }
     toggleBottomPane = (e) => {
         if(this.state.bottomDivider === '0px') {
-            this.setState({bottomDivider:'200px'})
+            this.setState({bottomDivider:'250px'})
         } else {
             this.setState({bottomDivider:'0px'})
         }
@@ -907,9 +907,9 @@ class VREditorApp extends Component {
             running:false,
             connected:false,
             dirty:true,
-            leftDivider: '200px',
-            rightDivider: '200px',
-            bottomDivider:'200px',
+            leftDivider: '250px',
+            rightDivider: '250px',
+            bottomDivider:'250px',
         }
 
         this.im = new InputManager()
@@ -1023,27 +1023,27 @@ class VREditorApp extends Component {
                 <div className="toolbar gray">
                     {this.renderLoginButton()}
                     <Spacer/>
-                    <button className="fa fa-file" onClick={this.newDoc} title={'new project'}/>
-                    <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}/>
-                    <button className="fa fa-clone" onClick={this.showSaveAsDialog} title={"duplicate project"}/>
+                    <button className="fa fa-file green" onClick={this.newDoc} title={'new project'}/>
+                    <button className="fa fa-save green" onClick={() => prov.save()} title={'save project'}/>
+                    <button className="fa fa-clone green" onClick={this.showSaveAsDialog} title={"duplicate project"}/>
                 </div>
                 <Resizer onMouseDown={this.resizeLeft}/>
                 <div className="toolbar gray">
-                    <button className="fa fa-cube"        onClick={(e)=>showAddPopup(e,prov)}/>
+                    <button className="fa fa-cube yellow"        onClick={(e)=>showAddPopup(e,prov)}/>
                     {/*<button className="fa fa-globe"       onClick={(e)=>addScene(prov)}/>*/}
-                    <button className="fa fa-archive"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
-                    <button className="fab fa-superpowers" onClick={(e)=>showAddBehaviorPopup(e,prov)}/>
+                    <button className="fa fa-archive yellow"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
+                    <button className="fab fa-superpowers yellow" onClick={(e)=>showAddBehaviorPopup(e,prov)}/>
                     {/*<button onClick={() => prov.editIn2D()}>2D Edit</button>*/}
                     {/*<button onClick={() => prov.editInVR()}>AR Edit</button>*/}
                     {/*<button onClick={() => prov.viewInVR()}>XR View</button>*/}
                     <Spacer/>
                     <RunButton onClick={this.toggleRunning} active={this.state.running}/>
                     <Spacer/>
-                    <button className="fa fa-cut" onClick={prov.cutSelection}/>
-                    <button className="fa fa-copy" onClick={prov.copySelection}/>
-                    <button className="fa fa-paste" onClick={prov.pasteSelection}/>
-                    <button className="fas fa-undo" onClick={prov.performUndo}/>
-                    <button className="fas fa-redo" onClick={prov.performRedo}/>
+                    <button className="fa fa-cut purple" onClick={prov.cutSelection}/>
+                    <button className="fa fa-copy purple" onClick={prov.copySelection}/>
+                    <button className="fa fa-paste purple" onClick={prov.pasteSelection}/>
+                    <button className="fas fa-undo purple" onClick={prov.performUndo}/>
+                    <button className="fas fa-redo purple" onClick={prov.performRedo}/>
                 </div>
                 <Resizer onMouseDown={this.resizeRight}/>
                 <div className="toolbar gray">
@@ -1065,19 +1065,19 @@ class VREditorApp extends Component {
 
                 <Resizer onMouseDown={this.resizeLeft}/>
                 <div className="toolbar borderless">
-                    <button className={'far' + ((this.state.leftDivider !== '0px') ? ' fa-caret-square-left' : ' fa-caret-square-right')}
+                    <button className={'borderless gray far' + ((this.state.leftDivider !== '0px') ? ' fa-caret-square-left' : ' fa-caret-square-right')}
                             onClick={this.toggleLeftPane}/>
-                    <button className={'far' + ((this.state.bottomDivider !== '0px') ? ' fa-caret-square-down' : ' fa-caret-square-up')}
+                    <button className={'borderless gray far' + ((this.state.bottomDivider !== '0px') ? ' fa-caret-square-down' : ' fa-caret-square-up')}
                             onClick={this.toggleBottomPane}/>
 
                     <Spacer/>
-                    <a href="" className="button blue">
+                    <a href="#" className="button blue">
                         <i className="fas fa-external-link-alt"/>
                         <b>Phone View</b>
                     </a>
                     {this.props.bottomText}
                     <Spacer/>
-                    <button className={'far' + ((this.state.rightDivider !== '0px') ? ' fa-caret-square-right' : ' fa-caret-square-left')}
+                    <button className={'borderless gray far' + ((this.state.rightDivider !== '0px') ? ' fa-caret-square-right' : ' fa-caret-square-left')}
                             onClick={this.toggleRightPane}/>
                 </div>
                 <Resizer onMouseDown={this.resizeRight}/>
@@ -1085,9 +1085,9 @@ class VREditorApp extends Component {
 
                 <ResizerH onMouseDown={this.resizeBottom}/>
                 <ConsoleView/>
-                {/*<ToasterNotification/>*/}
-                {/*<DialogContainer/>*/}
-                {/*<PopupContainer/>*/}
+                <ToasterNotification/>
+                <DialogContainer/>
+                <PopupContainer/>
 
                 {/*<div className="glitchButton" style={{position:'fixed',top:'4px',right:'4px'}}/>*/}
                 {/*<script src="https://button.glitch.me/button.js"/>*/}
@@ -1105,20 +1105,20 @@ class VREditorApp extends Component {
 
         if(AuthModule.supportsAuth()) {
             if(AuthModule.isLoggedIn()) {
-                buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout} title={'logout'}>logout</button>)
+                buttons.push(<a href="#" key="logout" className="blue button" onClick={AuthModule.logout}><i className="fa fa-user"/><b>logout</b></a>)
             } else {
-                buttons.push(<button key="login" className="fa fa-user" onClick={()=>{
+                buttons.push(<a href="#" key="login" className="blue button" onClick={()=>{
                     if(AuthModule.supportsPassword()) {
                         this.props.provider.showPasswordDialog()
                     } else {
                         this.props.provider.showGithubDialog()
 //                        AuthModule.login()
                     }
-                }} title={'login'}/>)
+                }}><i className="fa fa-user"></i><b>login</b></a>)
             }
         }
         if(AuthModule.supportsDocList()) {
-            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.showOpenDocumentDialog} title={"open"}/>)
+            buttons.push(<button key="open" className="fa fa-folder-open blue" onClick={this.showOpenDocumentDialog} title={"open"}/>)
         }
         return buttons
     }
@@ -1135,7 +1135,7 @@ const ConsoleView = (props) => {
         <div className="toolbar gray">
             <button className="action gray fa fa-trash borderless"/>
             <button className="action gray fa fa-exclamation-triangle borderless"/>
-            <input type="text" placeholder="filter messages" className="grow"/>
+            <input type="text" placeholder="filter messages" className="spacer"/>
         </div>
     </div>
 }
@@ -1206,7 +1206,7 @@ function acceptsVideoAsset(type) {
 
 const RunButton = (props) => {
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
-    return <button onClick={props.onClick} className={clss}/>
+    return <button onClick={props.onClick} className={clss + " blue"}/>
 }
 
 function withNone(array) {

@@ -13,7 +13,7 @@ import {
     WebGLRenderer
 } from 'three'
 
-import './VREditor.css'
+// import './VREditor.css'
 
 import {Pointer, POINTER_CLICK, VR_DETECTED, VRManager, VRStats} from "webxr-boilerplate"
 
