@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {map, tileLayer, marker, Icon, divIcon, latLng} from "leaflet/dist/leaflet-src.esm"
+import {map, tileLayer, marker, Icon, divIcon, latLng} from "leaflet/dist/leaflet-src.js"
 import "leaflet/dist/leaflet.css"
 import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {HBox} from 'appy-comps'

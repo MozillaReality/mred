@@ -15,8 +15,7 @@ import {PubnubLogger} from '../syncgraph/PubnubSyncWrapper'
 import {ErrorCatcher} from './ErrorCatcher'
 import {AssetsManager} from './AssetsManager'
 
-import * as mat4 from 'gl-matrix/src/gl-matrix/mat4'
-import * as vec3 from 'gl-matrix/src/gl-matrix/vec3'
+import {vec3} from "gl-matrix/dist/gl-matrix.js"
 
 import startupsound from "./startup-sound.m4a"
 
