@@ -6,9 +6,11 @@
   "dependencies": {
     "appy-comps": "^0.1.17",
     "appy-style": "0.0.7",
+    "caniuse-lite": "^1.0.30000976",
     "cors": "^2.8.4",
     "dagre": "^0.8.2",
     "font-awesome": "^4.7.0",
+    "gl-matrix": "^2.5.1",
     "hsluv": "0.0.1",
     "leaflet": "^1.5.1",
     "pubnub": "^4.20.1",
@@ -21,8 +23,7 @@
     "three": "^0.104.0",
     "three-gltf2-loader": "^1.2.0",
     "three-web-layer": "0.0.21",
-    "webxr-boilerplate": "^0.1.9",
-    "gl-matrix": "^2.5.1"
+    "webxr-boilerplate": "^0.1.9"
   },
   "scripts": {
     "start": "react-scripts start",
