@@ -410,7 +410,7 @@ export default class MetadocEditor extends  SyncGraphProvider {
         const obj2 = cloneShape(graph,obj1)
         graph.setProperty(obj2.id, 'parent', parent.id)
         insertAsFirstChild(graph, parent, obj2)
-        return
+
     }
 
     exportSVG = () => {

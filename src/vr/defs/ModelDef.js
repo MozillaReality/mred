@@ -1,10 +1,8 @@
-import {fetchGraphObject} from "../../syncgraph/utils";
-import * as THREE from "three";
+import {fetchGraphObject} from "../../syncgraph/utils"
+import * as THREE from "three"
+import {MeshLambertMaterial} from "three"
 import {NONE_ASSET, PROP_DEFS} from '../Common'
-import GLTFLoader from '../GLTFLoader'
-import DRACOLoader from '../DRACOLoader'
 import SkeletonUtils from '../SkeletonUtils'
-import {MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
 
 export default class ModelDef extends ObjectDef {

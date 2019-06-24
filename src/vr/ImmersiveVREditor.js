@@ -458,7 +458,6 @@ export default class ImmersiveVREditor extends Component {
                 const node = this.findNode(obj.id)
                 this.findNode(obj.parent).remove(node)
             }
-            return
         }
         // console.log('skipping', op.type)
     }

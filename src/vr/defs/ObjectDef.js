@@ -18,7 +18,6 @@ export default class ObjectDef {
             let color = op.value
             if(color.indexOf('#') === 0) color = color.substring(1)
             node.material.color.set(parseInt(color,16))
-            return
         }
 
     }
