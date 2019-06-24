@@ -35,7 +35,7 @@ class AuthModuleSingleton {
                 if(info.assetUpload === true)         this.assetUploadSupported = true
                 if(info.scriptEditing === true)       this.scriptEditingSupported = true
                 if(info.docDeleteSupported === true)  this.docDeleteSupported = true
-                this.serverID = getInfoURL().replace(/[\.\:\/]/g,"")
+                this.serverID = getInfoURL().replace(/[.:/]/g,"")
 
 
                 this.getJSON(getUserURL()).then(res=>{

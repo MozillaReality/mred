@@ -1,5 +1,5 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
-import {AdditiveBlending, Color, DoubleSide, MeshLambertMaterial, TextureLoader, Vector3} from 'three'
+import {AdditiveBlending, Color, TextureLoader, Vector3} from 'three'
 import ObjectDef from './ObjectDef'
 import {NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 import GPUParticles from './GPUParticles'

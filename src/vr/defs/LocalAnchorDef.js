@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
-import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry, PlaneBufferGeometry, TextureLoader, DoubleSide} from 'three'
+import {Group, Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
 import ObjectDef from './ObjectDef'
-import {OBJ_TYPES, REC_TYPES, PROP_DEFS, toRad} from '../Common'
+import {OBJ_TYPES, REC_TYPES} from '../Common'
 
 let COUNTER = 0
 
