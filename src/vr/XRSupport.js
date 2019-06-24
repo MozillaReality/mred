@@ -330,7 +330,7 @@ logger.log(this._workingMatrix)
 
             if (this.imageDetectorMap[info.image.src]) {
                 let det = this.imageDetectorMap[info.image.src]
-                if (imageRealworldWidth != det.realWorldWidth) {
+                if (imageRealworldWidth !== det.realWorldWidth) {
                     logger.log("can't create the same image with different real world width")
                     rej("can't create the same image with different real world width")
                     return
@@ -535,7 +535,7 @@ logger.log(this._workingMatrix)
             // As a slight hack, look for any non zero value in latitude or longitude as a hint to not use your current location
 
             // these values are 0 by default, we need to change at least one of them by a bit!
-            if (location.latitude != 0 || location.longitude != 0) {
+            if (location.latitude !== 0 || location.longitude !== 0) {
                 // use supplied altitude?
 
                 let lla = new Cesium.Cartographic(location.longitude * Math.PI / 180, location.latitude * Math.PI / 180, location.altitude)
@@ -664,9 +664,8 @@ logger.log(this._workingMatrix)
 
     _removeAnchorForNode(node) {
         this._anchoredNodes.forEach( (value) => {
-            if(value.node == node) {
+            if(value.node === node) {
                 this._removeAnchorFromNode(node.anchor)
-                return
             }
         })
     }

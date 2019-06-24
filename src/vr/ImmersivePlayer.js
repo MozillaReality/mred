@@ -411,7 +411,7 @@ export class ImmersivePlayer extends Component {
 
     renderSplashImage() {
         if(this.state.splashImage) {
-            return <img src={this.state.splashImage} width="80%" height="auto" alt={"splash image"}/>
+            return <img src={this.state.splashImage} width="80%" height="auto" alt={"splash screen"}/>
         } else {
             return ""
         }

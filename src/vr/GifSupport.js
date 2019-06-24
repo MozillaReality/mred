@@ -1,5 +1,4 @@
 import {LinearFilter, NearestFilter, sRGBEncoding, Texture} from 'three'
-import {AuthModule} from './AuthModule'
 
 /**
  *
