@@ -15,6 +15,8 @@
     background-color: white;
     padding: 0;
     max-height: 70vh;
+    display: flex;
+    flex-direction: column;
 }
 .dialog-body > * {
     padding: 0.5rem 1rem;
@@ -28,6 +30,7 @@
 .dialog-body section {
     border: 0px solid black;
     min-height: 10rem;
+    overflow: scroll;
 }
 .dialog-body footer {
     border: 0px solid black;
