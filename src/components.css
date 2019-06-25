@@ -80,7 +80,7 @@ a.button b {
     padding: 0.5em 0;
 }
 
-.popup-menu button {
+.popup-menu > * {
     border: 1px solid blue;
     border-width: 0 0 0 0;
     text-align: left;
@@ -88,7 +88,7 @@ a.button b {
     border-radius: 0;
     background-color: white;
 }
-.popup-menu button:hover {
+.popup-menu > *:hover {
     background-color: aqua;
 }
 
