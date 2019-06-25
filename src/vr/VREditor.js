@@ -1103,16 +1103,16 @@ class VREditorApp extends Component {
 
         if(AuthModule.supportsAuth()) {
             if(AuthModule.isLoggedIn()) {
-                buttons.push(<a href="#" key="logout" className="blue button" onClick={AuthModule.logout}><i className="fa fa-user"/><b>logout</b></a>)
+                buttons.push(<span key="logout" className="blue button" onClick={AuthModule.logout}><i className="fa fa-user"/><b>logout</b></span>)
             } else {
-                buttons.push(<a href="#" key="login" className="blue button" onClick={()=>{
+                buttons.push(<span key="login" className="blue button" onClick={()=>{
                     if(AuthModule.supportsPassword()) {
                         this.props.provider.showPasswordDialog()
                     } else {
                         this.props.provider.showGithubDialog()
 //                        AuthModule.login()
                     }
-                }}><i className="fa fa-user"></i><b>login</b></a>)
+                }}><i className="fa fa-user"></i><b>login</b></span>)
             }
         }
         if(AuthModule.supportsDocList()) {
