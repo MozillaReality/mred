@@ -1,0 +1,50 @@
+.dialog-scrim {
+    position: fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background-color: rgba(100,100,100,0.5);
+}
+.dialog-scrim .dialog-body {
+    width: 80vw;
+    margin: auto;
+    border: 0px solid #666;
+    margin-top: 10vh;
+    border-radius: 1rem;
+    background-color: white;
+    padding: 0;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+.dialog-body > * {
+    padding: 0.5rem 1rem;
+}
+.dialog-body header {
+    border: 0px solid red;
+    background-color: #f0f0f0;
+    font-size: 150%;
+    border-radius: 1rem 1rem 0rem 0rem;
+}
+.dialog-body section {
+    border: 0px solid black;
+    min-height: 10rem;
+    overflow: auto;
+}
+.dialog-body footer {
+    border: 0px solid black;
+    background-color: #f0f0f0;
+    border-radius: 0 0 1rem 1rem;
+}
+
+
+.dialog-body footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.dialog-body footer button {
+    padding: 0.5rem 1.0rem;
+}

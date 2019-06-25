@@ -45,7 +45,7 @@ export const Panel = (props) => {
     if (props.center) cls += " center";
     if (props.middle) cls += " middle";
     if (props.scroll) cls += " scroll";
-    if(props.transparent) cls += " transparent"
+    if (props.transparent) cls += " transparent"
     return <div className={cls}>{props.children}</div>
 };
 export const Spacer = (props) => {
@@ -122,15 +122,6 @@ export default class GridEditorApp extends Component {
                            leftWidth={this.state.leftWidth}
                            rightWidth={this.state.rightWidth}
         >
-            <Toolbar center bottom>
-                <button className={'fa' + (this.state.showLeft ? ' fa-caret-left' : ' fa-caret-right')}
-                        onClick={this.toggleLeftPane}/>
-                <Spacer/>
-                {this.props.bottomText}
-                <Spacer/>
-                <button className={'fa' + (this.state.showRight ? ' fa-caret-right' : ' fa-caret-left')}
-                        onClick={this.toggleRightPane}/>
-            </Toolbar>
 
             <div className={'left-resize'}  onMouseDown={this.onMouseDownLeft}/>
             <div className={'right-resize'} onMouseDown={this.onMouseDownRight}/>

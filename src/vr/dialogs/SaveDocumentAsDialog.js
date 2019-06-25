@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {Dialog} from '../../common/Dialog'
 import {Spacer} from '../../common/GridEditorApp'
 
@@ -23,16 +23,16 @@ export class SaveDocumentAsDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.dismiss} width="600px" height="auto">
-            <h3>Save Document As</h3>
-            <HBox>
+            <header>Save Document As</header>
+            <section>
                 <label>title</label>
                 <input type="text" value={this.state.newTitle} onChange={this.edited} style={{flex:1.0}}/>
-            </HBox>
-            <HBox className={"footer"}>
+            </section>
+            <footer>
                 <Spacer/>
                 <button onClick={this.dismiss}>cancel</button>
                 <button onClick={this.saveAs}>save as</button>
-            </HBox>
+            </footer>
         </Dialog>
     }
 

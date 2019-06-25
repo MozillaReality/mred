@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
-import {ToggleButton, Toolbar} from '../../common/GridEditorApp'
+import {ToggleButton} from '../../common/GridEditorApp'
 import {addImageAssetFromFile, addImageAssetFromURL} from '../AssetActions'
 import {Dialog} from '../../common/Dialog'
 
@@ -35,20 +35,18 @@ export class AddImageAssetDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox grow>
-                <h3>add image to assets</h3>
-                <VBox grow>
-                    <Toolbar>
-                        <ToggleButton onClick={this.switchLocal} selected={this.state.view==='local'}>local</ToggleButton>
-                        <ToggleButton onClick={this.switchRemote} selected={this.state.view==='remote'}>remote</ToggleButton>
-                    </Toolbar>
-                    {this.renderSelectedPanel()}
-                </VBox>
+            <header>add image to assets</header>
+            <section>
                 <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
+                    <ToggleButton onClick={this.switchLocal} selected={this.state.view==='local'}>local</ToggleButton>
+                    <ToggleButton onClick={this.switchRemote} selected={this.state.view==='remote'}>remote</ToggleButton>
                 </HBox>
-            </VBox>
+                {this.renderSelectedPanel()}
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.okay}>okay</button>
+            </footer>
         </Dialog>
     }
 

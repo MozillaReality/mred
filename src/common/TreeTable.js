@@ -5,6 +5,8 @@ import {PopupManager, VBox} from "appy-comps";
 import {fetchGraphObject, removeFromParent} from "../syncgraph/utils";
 import {Spacer} from './GridEditorApp'
 
+import "./treetable.css"
+
 
 const ContextMenu = (props) => {
     return <VBox className={"popup-menu"}>
@@ -71,9 +73,9 @@ class TreeTableItem extends Component {
         if (prov.hasChildren(node)) {
             const expanded = prov.isExpanded(node)
             if (expanded) {
-                arrow = <button className="fa fa-caret-down fa-fw borderless" onClick={this.toggleItemCollapsed}/>;
+                arrow = <button className="fa fa-caret-down fa-fw" onClick={this.toggleItemCollapsed}/>;
             } else {
-                arrow = <button className="fa fa-caret-right fa-fw borderless" onClick={this.toggleItemCollapsed}/>;
+                arrow = <button className="fa fa-caret-right fa-fw" onClick={this.toggleItemCollapsed}/>;
             }
         } else {
             arrow = <span className="fa fa-fw borderless"/>
@@ -87,7 +89,7 @@ class TreeTableItem extends Component {
                     onDrop={this.onDrop}
         >
             <span style={{
-                width:this.props.depth*1.5+'em'
+                width:this.props.depth*2.5+'em'
             }}></span>
             {arrow}
             {prov.getRendererForItem(node)}

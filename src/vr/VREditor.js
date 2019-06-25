@@ -1,6 +1,9 @@
+import '../grid.css'
+import '../components.css'
+import "./dialogs.css"
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Spacer, Toolbar} from '../common/GridEditorApp'
+import {Spacer} from '../common/GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
@@ -67,6 +70,7 @@ import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
 import {ToasterNotification} from './ToasterNotification'
 import preval from "preval.macro"
+import {ConsoleView} from './ConsoleView'
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
@@ -90,7 +94,8 @@ export default class VREditor extends SyncGraphProvider {
     setDocTitle = (title) => this.accessObject(this.getSceneRoot()).set('title',title)
     getLogger = () => {
         if(this.pubnub) return this.pubnub.getLogger()
-        return new ConsoleLogger()
+        if(!this.consoleLogger)  this.consoleLogger = new ConsoleLogger()
+        return this.consoleLogger
     }
 
     makeEmptyRoot(doc) {
@@ -835,6 +840,66 @@ class VREditorApp extends Component {
     showSaveAsDialog = () => {
         DialogManager.show(<SaveDocumentAsDialog provider={this.props.provider}/>)
     }
+    resizeLeft = (e) => {
+        window.addEventListener('mousemove',this.resizeLeftWindow)
+        window.addEventListener('mouseup', this.endResizeLeftWindow)
+    }
+    resizeLeftWindow =(e) => {
+        this.setState({leftDivider:e.clientX+'px'})
+    }
+    endResizeLeftWindow = (e) => {
+        window.removeEventListener('mousemove', this.resizeLeftWindow)
+        window.removeEventListener('mouseup', this.endResizeLeftWindow)
+    }
+
+    resizeRight = (e) => {
+        window.addEventListener('mousemove', this.resizeRightWindow)
+        window.addEventListener('mouseup', this.endResizeRightWindow)
+    }
+    resizeRightWindow = (e)=>{
+        const size = document.querySelector('.grid').getBoundingClientRect()
+        this.setState({rightDivider:(size.width-e.clientX)+'px'})
+    }
+    endResizeRightWindow = (e) => {
+        window.removeEventListener('mousemove', this.resizeRightWindow)
+        window.removeEventListener('mouseup', this.endResizeRightWindow)
+    }
+
+    resizeBottom = (e) => {
+        window.addEventListener('mousemove', this.resizeBottomWindow)
+        window.addEventListener('mouseup', this.endResizeBottomWindow)
+    }
+    resizeBottomWindow = (e) => {
+        const size = document.querySelector('.grid').getBoundingClientRect()
+        this.setState({bottomDivider:(size.height-e.clientY)+'px'})
+    }
+    endResizeBottomWindow = (e) => {
+        window.removeEventListener('mousemove', this.resizeBottomWindow)
+        window.removeEventListener('mouseup', this.endResizeBottomWindow)
+    }
+
+    toggleLeftPane = (e) => {
+        if(this.state.leftDivider === '0px') {
+            this.setState({leftDivider:'250px'})
+        } else {
+            this.setState({leftDivider:'0px'})
+        }
+    }
+    toggleRightPane = (e) => {
+        if(this.state.rightDivider === '0px') {
+            this.setState({rightDivider:'250px'})
+        } else {
+            this.setState({rightDivider:'0px'})
+        }
+    }
+    toggleBottomPane = (e) => {
+        if(this.state.bottomDivider === '0px') {
+            this.setState({bottomDivider:'250px'})
+        } else {
+            this.setState({bottomDivider:'0px'})
+        }
+    }
+
 
     constructor(props) {
         super(props)
@@ -844,7 +909,10 @@ class VREditorApp extends Component {
             user:null,
             running:false,
             connected:false,
-            dirty:true
+            dirty:true,
+            leftDivider: '250px',
+            rightDivider: '250px',
+            bottomDivider:'250px',
         }
 
         this.im = new InputManager()
@@ -934,9 +1002,6 @@ class VREditorApp extends Component {
             </div>
         }
         const prov = this.props.provider
-        const bot = <div>
-            doc id: <b>{prov.getDocId()}</b>
-        </div>
         let logger = null
         if(prov.pubnub) logger = prov.getLogger()
         if(!prov.getDataGraph()) {
@@ -946,57 +1011,88 @@ class VREditorApp extends Component {
             </div>
         }
         const dateTimeStamp = preval`module.exports = new Date().toLocaleString();`
+        const gridStyle = {
+            gridTemplateColumns: `${this.state.leftDivider} 0px 1fr 0px ${this.state.rightDivider}`,
+            gridTemplateRows: `2rem 1fr 2rem 0px ${this.state.bottomDivider}`,
+        }
 
-        return <ErrorCatcher logger={logger}><GridEditorApp bottomText={bot}>
-            <Toolbar left top>
-                <label>{prov.getTitle()} {this.state.dirty?"dirty":"clean"}</label>
-                <label>{dateTimeStamp}</label>
-            </Toolbar>
-            <Panel scroll left middle><TreeTable root={prov.getSceneRoot()} provider={prov}/></Panel>
-
-            <Toolbar left bottom>
-                <button className="fa fa-cube"        onClick={(e)=>showAddPopup(e,prov)}/>
-                <button className="fa fa-globe"       onClick={(e)=>addScene(prov)}/>
-                <button className="fa fa-archive"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
-                <button className="fa fa-superpowers" onClick={(e)=>showAddBehaviorPopup(e,prov)}/>
-            </Toolbar>
+        return <ErrorCatcher logger={logger}>
+            <div className="grid" style={gridStyle}>
 
 
-            <Toolbar center top>
-                <button className="fa fa-file" onClick={this.newDoc} title={'new project'}></button>
-                <button className="fa fa-save" onClick={() => prov.save()} title={'save project'}></button>
-                <button className="fa fa-clone" onClick={this.showSaveAsDialog} title={"duplicate project"}></button>
-                <button onClick={() => prov.editIn2D()}>2D Edit</button>
-                <button onClick={() => prov.editInVR()}>AR Edit</button>
-                <button onClick={() => prov.viewInVR()}>XR View</button>
-                <Spacer/>
-                <RunButton onClick={this.toggleRunning} active={this.state.running}/>
-                <Spacer/>
-                <button className="fa fa-cut" onClick={prov.cutSelection}/>
-                <button className="fa fa-copy" onClick={prov.copySelection}/>
-                <button className="fa fa-paste" onClick={prov.pasteSelection}/>
-                <button className="fa fa-undo" onClick={prov.performUndo}/>
-                <button className="fa fa-repeat" onClick={prov.performRedo}/>
-            </Toolbar>
+                <div className="toolbar gray">
+                    {this.renderLoginButton()}
+                    <Spacer/>
+                    <button className="fa fa-file green" onClick={this.newDoc} title={'new project'}/>
+                    <button className="fa fa-save green" onClick={() => prov.save()} title={'save project'}/>
+                    <button className="fa fa-clone green" onClick={this.showSaveAsDialog} title={"duplicate project"}/>
+                </div>
+                <Resizer onMouseDown={this.resizeLeft}/>
+                <div className="toolbar gray">
+                    <button className="fa fa-cube yellow"        onClick={(e)=>showAddPopup(e,prov)}/>
+                    {/*<button className="fa fa-globe"       onClick={(e)=>addScene(prov)}/>*/}
+                    <button className="fa fa-archive yellow"     onClick={(e)=>showAddAssetPopup(e,prov)}/>
+                    <button className="fab fa-superpowers yellow" onClick={(e)=>showAddBehaviorPopup(e,prov)}/>
+                    {/*<button onClick={() => prov.editIn2D()}>2D Edit</button>*/}
+                    {/*<button onClick={() => prov.editInVR()}>AR Edit</button>*/}
+                    {/*<button onClick={() => prov.viewInVR()}>XR View</button>*/}
+                    <Spacer/>
+                    <RunButton onClick={this.toggleRunning} active={this.state.running}/>
+                    <Spacer/>
+                    <button className="fa fa-cut purple" onClick={prov.cutSelection}/>
+                    <button className="fa fa-copy purple" onClick={prov.copySelection}/>
+                    <button className="fa fa-paste purple" onClick={prov.pasteSelection}/>
+                    <button className="fas fa-undo purple" onClick={prov.performUndo}/>
+                    <button className="fas fa-redo purple" onClick={prov.performRedo}/>
+                </div>
+                <Resizer onMouseDown={this.resizeRight}/>
+                <div className="toolbar gray">
+                    <i className="fa fa-horse-head" title={dateTimeStamp}/>
+                    <label>MrEd</label>
+                </div>
+
+                <div className={'panel high-2'}>
+                    <TreeTable root={prov.getSceneRoot()} provider={prov}/>
+                </div>
+                <Resizer onMouseDown={this.resizeLeft}/>
+                <div className="panel">
+                    {this.renderCenterPane(this.state.mode)}
+                </div>
+                <Resizer onMouseDown={this.resizeRight}/>
+                <div className={'panel high-2'} style={{ backgroundColor: '#ecf0f1'}}>
+                    <PropSheet provider={prov}/>
+                </div>
+
+                <Resizer onMouseDown={this.resizeLeft}/>
+                <div className="toolbar borderless">
+                    <button className={'borderless gray far' + ((this.state.leftDivider !== '0px') ? ' fa-caret-square-left' : ' fa-caret-square-right')}
+                            onClick={this.toggleLeftPane}/>
+                    <button className={'borderless gray far' + ((this.state.bottomDivider !== '0px') ? ' fa-caret-square-down' : ' fa-caret-square-up')}
+                            onClick={this.toggleBottomPane}/>
+
+                    <Spacer/>
+                    <span className="button blue" onClick={() => prov.viewInVR()}>
+                        <i className="fas fa-external-link-alt"/>
+                        <b>Phone View</b>
+                    </span>
+                    {this.props.bottomText}
+                    <Spacer/>
+                    <button className={'borderless gray far' + ((this.state.rightDivider !== '0px') ? ' fa-caret-square-right' : ' fa-caret-square-left')}
+                            onClick={this.toggleRightPane}/>
+                </div>
+                <Resizer onMouseDown={this.resizeRight}/>
 
 
-            <Panel center middle scroll transparent>
-                {this.renderCenterPane(this.state.mode)}
-            </Panel>
+                <ResizerH onMouseDown={this.resizeBottom}/>
+                <ConsoleView logger={this.props.provider.getLogger()}/>
+                <ToasterNotification/>
+                <DialogContainer/>
+                <PopupContainer/>
 
-            <Panel scroll right><PropSheet provider={prov}/></Panel>
-
-
-            <Toolbar right top>
-                {this.renderLoginButton()}
-            </Toolbar>
-            <Toolbar right bottom>
-            </Toolbar>
-            <ToasterNotification/>
-            <DialogContainer/>
-            <PopupContainer/>
-
-        </GridEditorApp></ErrorCatcher>
+                {/*<div className="glitchButton" style={{position:'fixed',top:'4px',right:'4px'}}/>*/}
+                {/*<script src="https://button.glitch.me/button.js"/>*/}
+            </div>
+        </ErrorCatcher>
     }
     renderCenterPane(mode) {
         if (mode === 'script') return <ScriptEditor provider={this.props.provider}/>
@@ -1009,23 +1105,30 @@ class VREditorApp extends Component {
 
         if(AuthModule.supportsAuth()) {
             if(AuthModule.isLoggedIn()) {
-                buttons.push(<button key="logout" className="fa fa-user" onClick={AuthModule.logout} title={'logout'}>logout</button>)
+                buttons.push(<span key="logout" className="blue button" onClick={AuthModule.logout}><i className="fa fa-user"/><b>logout</b></span>)
             } else {
-                buttons.push(<button key="login" className="fa fa-user" onClick={()=>{
+                buttons.push(<span key="login" className="blue button" onClick={()=>{
                     if(AuthModule.supportsPassword()) {
                         this.props.provider.showPasswordDialog()
                     } else {
                         this.props.provider.showGithubDialog()
 //                        AuthModule.login()
                     }
-                }} title={'login'}/>)
+                }}><i className="fa fa-user"></i><b>login</b></span>)
             }
         }
         if(AuthModule.supportsDocList()) {
-            buttons.push(<button key="open" className="fa fa-folder-open" onClick={this.showOpenDocumentDialog} title={"open"}/>)
+            buttons.push(<button key="open" className="fa fa-folder-open blue" onClick={this.showOpenDocumentDialog} title={"open"}/>)
         }
         return buttons
     }
+}
+
+const Resizer = (props) => {
+    return <div className="resizer" {...props}/>
+}
+const ResizerH = (props) => {
+    return <div className="resizer-h" {...props}/>
 }
 const EnumTitleRenderer = (props) => {
     let value = "---"
@@ -1064,7 +1167,7 @@ class GroupPropertyEditor extends Component {
                           onChange={(e)=>{ this.changed(e,key)}}
                           step={0.1}/>
         })
-        return <HBox className="scale-editor">
+        return <HBox className="combined">
             <input type="checkbox" checked={this.state.sync} onChange={this.syncChanged}/>
             {boxes}
         </HBox>
@@ -1094,7 +1197,7 @@ function acceptsVideoAsset(type) {
 
 const RunButton = (props) => {
     const clss = props.active?"run-button active fa fa-stop":"run-button fa fa-play"
-    return <button onClick={props.onClick} className={clss}/>
+    return <button onClick={props.onClick} className={clss + " blue"}/>
 }
 
 function withNone(array) {

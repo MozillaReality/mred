@@ -7,6 +7,7 @@ import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import {StringEditor} from "./StringEditor";
 import {EnumEditor} from "./EnumEditor";
 import {ArrayEditor} from "./ArrayEditor";
+import "./propsheet.css"
 
 export const TYPES = {
     STRING:'string',
@@ -190,13 +191,13 @@ export default class PropSheet extends Component {
     render() {
         const props = this.calculateGroups(this.calculateProps())
         const item = selMan.getSelection()
-        return <ul className="prop-sheet">{props.map((prop, i) => {
+        return <div className="prop-sheet">{props.map((prop, i) => {
             return [
                 <label key={prop.getKey()+'-label'} title={prop.getKey()}>{prop.getName()}</label>,
                 this.renderIndeterminate(prop,i),
                 <PropEditor key={prop.getKey()+'-editor'} def={prop} provider={this.props.provider} item={item}/>
             ]
-        })}</ul>
+        })}</div>
     }
     renderIndeterminate(prop, i) {
         if(prop.isIndeterminate()) {

@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {addGLBAssetFromFile} from '../AssetActions'
 import {Dialog} from '../../common/Dialog'
@@ -17,17 +17,15 @@ export class AddGLBAssetDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox>
-                <h3>add GLB to assets</h3>
-                <p>
-                    choose a GLB file
-                </p>
+            <header>add GLB to assets</header>
+            <section>
+                <p>choose a local GLB file</p>
                 <input type="file" ref={(obj) => this.fileinput = obj} onChange={this.selectedFile} multiple={true}/>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.okay}>okay</button>
+            </footer>
         </Dialog>
     }
 

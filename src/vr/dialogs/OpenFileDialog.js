@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {toQueryString} from '../../utils'
 import {AuthModule} from '../AuthModule'
 import {Dialog} from '../../common/Dialog'
@@ -39,8 +39,8 @@ export class OpenFileDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.dismiss}>
-            <h3>Open document</h3>
-            <VBox scroll style={{flex:1}}>
+            <header>Open document</header>
+            <section>
                 <ul>{this.state.docList.map((doc, i) => {
 
                     return <li key={i}>
@@ -50,10 +50,10 @@ export class OpenFileDialog extends Component {
                     </li>
                 })}
                 </ul>
-            </VBox>
-            <HBox className={"footer"}>
+            </section>
+            <footer>
                 <button onClick={this.dismiss}>dismiss</button>
-            </HBox>
+            </footer>
         </Dialog>
     }
 

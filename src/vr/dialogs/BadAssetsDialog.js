@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {Dialog} from '../../common/Dialog'
 
 export class BadAssetsDialog extends Component {
@@ -8,19 +8,19 @@ export class BadAssetsDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox grow>
-                <h3>Warning. There were errors loading some assets</h3>
+            <header>Warning. There were errors loading some assets</header>
+            <section>
                 <ul>
-                {this.props.provider.badAssets.map((asset,i) => {
-                    return <li key={i}><b>{asset.title}</b>
-                        <br/>{asset.src}
-                    </li>
-                })}
+                    {this.props.provider.badAssets.map((asset,i) => {
+                        return <li key={i}><b>{asset.title}</b>
+                            <br/>{asset.src}
+                        </li>
+                    })}
                 </ul>
-                <HBox>
-                    <button onClick={this.dismiss}>keep going anyway</button>
-                </HBox>
-            </VBox>
+            </section>
+            <footer>
+                <button onClick={this.dismiss}>keep going anyway</button>
+            </footer>
         </Dialog>
     }
 }

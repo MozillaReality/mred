@@ -23,6 +23,7 @@ export class PubnubSyncWrapper {
         graph.onChange((e)=>this.handleGraphChange(e))
 
         this.pubnub = new PubNub(settings)
+        this.logger = new PubnubLogger(this.provider.getDocId(),this.pubnub)
     }
 
     calculateChannelName() {
@@ -169,7 +170,7 @@ export class PubnubSyncWrapper {
     }
 
     getLogger() {
-        return new PubnubLogger(this.provider.getDocId(),this.pubnub)
+        return this.logger
     }
 }
 
@@ -178,11 +179,15 @@ export class PubnubLogger {
     constructor(docid, pubnub) {
         this.count = 0
         this.docid = docid
+        this.listeners = {}
         if(!pubnub) {
             this.pubnub = new PubNub(settings)
         } else {
             this.pubnub = pubnub
         }
+    }
+    addEventListener(type,cb) {
+        this.getListeners(type).push(cb)
     }
     calculateLoggerChannelName() {
         return "metadoc-log-" + this.docid+"_"+AuthModule.getServerID()
@@ -193,6 +198,7 @@ export class PubnubLogger {
             channel:this.calculateLoggerChannelName(),
             message:Array.from(arguments).concat(this.count++)
         })
+        this.fire('log',Array.from(arguments),this.count++)
     }
     error () {
         console.log("LOGGER ERROR",...arguments)
@@ -200,14 +206,52 @@ export class PubnubLogger {
             channel:this.calculateLoggerChannelName(),
             message:Array.from(arguments).concat(this.count++)
         })
+        this.fire('error',Array.from(arguments),this.count++)
+    }
+
+    getListeners(type) {
+        if(!this.listeners) this.listeners = {}
+        if(!this.listeners[type]) this.listeners[type] = []
+        return this.listeners[type]
+    }
+
+    fire(type, messages,count) {
+        this.getListeners(type).forEach(cb => cb({
+            type:type,
+            messages:messages,
+            count:count,
+        }))
     }
 }
 
 export class ConsoleLogger {
+
+    constructor() {
+        this.listeners = {}
+    }
+
+    addEventListener(type,cb) {
+        this.getListeners(type).push(cb)
+    }
+    getListeners(type) {
+        if(!this.listeners) this.listeners = {}
+        if(!this.listeners[type]) this.listeners[type] = []
+        return this.listeners[type]
+    }
+
+    fire(type, messages,count) {
+        this.getListeners(type).forEach(cb => cb({
+            type:type,
+            messages:messages,
+            count:count,
+        }))
+    }
     log() {
         console.log("DUMMY LOGGER",...arguments)
+        this.fire('log',Array.from(arguments))
     }
     error () {
         console.log("DUMMY LOGGER ERROR",...arguments)
+        this.fire('error',Array.from(arguments))
     }
 }

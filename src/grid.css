@@ -1,0 +1,51 @@
+body {
+    margin:0;
+    font-size: 9pt;
+    font-family: 'Open Sans', sans-serif;
+    padding: 0;
+    border: 0px solid green;
+    box-sizing: border-box;
+}
+
+
+.grid {
+    margin:0;
+    display: grid;
+    grid-template-columns: 1fr 0px 2fr 0px 1fr;
+    grid-template-rows: 2rem 2fr 2rem 0px 2rem 1fr;
+    border: 0px solid black;
+    height: 100vh;
+}
+
+.resizer {
+    background-color: transparent;
+    cursor: crosshair;
+    width: 8px;
+    height: 100%;
+    border: 0px solid red;
+    z-index: 10;
+}
+
+.resizer-h {
+    background-color: transparent;
+    grid-column-start: span 5;
+    cursor: crosshair;
+    height: 8px;
+    z-index: 10;
+    border-top-width: 1px;
+    border: 1px solid #aaa;
+    border-width: 1px 0 0 0;
+}
+
+.wide {
+    grid-column-start: span 5;
+}
+
+.high-2 {
+    grid-row-start: span 2;
+}
+
+
+.spacer {
+    flex:1.0;
+}

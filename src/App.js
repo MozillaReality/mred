@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import './App.css'
+// import './App.css'
 import VREditor from './vr/VREditor'
 import {ImmersivePlayer} from './vr/ImmersivePlayer'
 

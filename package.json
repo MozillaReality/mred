@@ -9,7 +9,6 @@
     "caniuse-lite": "^1.0.30000976",
     "cors": "^2.8.4",
     "dagre": "^0.8.2",
-    "font-awesome": "^4.7.0",
     "gl-matrix": "^2.5.1",
     "hsluv": "0.0.1",
     "leaflet": "^1.5.1",
@@ -40,6 +39,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.9.0",
     "nwb": "^0.23.0"
   },
   "homepage": "./",

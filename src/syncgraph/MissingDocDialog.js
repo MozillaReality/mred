@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {Dialog} from '../common/Dialog'
 
 export class MissingDocDialog extends Component {
@@ -15,16 +15,14 @@ export class MissingDocDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox grow>
-                <h3>Document "<b>{this.props.docid}</b>" not found</h3>
-                <VBox grow>
+                <header>Document "<b>{this.props.docid}</b>" not found</header>
+                <section>
                     Create a new document?
-                </VBox>
-                <HBox>
+                </section>
+                <footer>
                     <button onClick={this.cancel}>cancel</button>
                     <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
+                </footer>
         </Dialog>
     }
 
