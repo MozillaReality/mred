@@ -1,5 +1,6 @@
 import '../grid.css'
 import '../components.css'
+import "./dialogs.css"
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import GridEditorApp, {Panel, Spacer, Toolbar} from '../common/GridEditorApp'

@@ -29,17 +29,17 @@ export class GithubAuthDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox grow>
-                <h3>Github Auth</h3>
+            <header>Github Auth</header>
+            <section>
                 <p>To log into MrEd you need a github account. Press the button
                 below to log into github and approve MrEd's access. The app will only use
                 Github for authentication. It does not have access to any of your projects or code.
                 </p>
                 <button onClick={this.okay}>Open Github</button>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                </HBox>
-            </VBox>
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+            </footer>
         </Dialog>
     }
 }

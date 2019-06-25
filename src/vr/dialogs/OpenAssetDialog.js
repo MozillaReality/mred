@@ -55,8 +55,8 @@ export class OpenAssetDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.okay}>
-            <h3>Add Asset</h3>
-            <VBox scroll grow>
+            <header>Add Asset</header>
+            <section>
                 <ul>{this.state.assetList.map((doc, i) => {
                     return <li key={i}>
                         <b>{doc.title} </b>
@@ -66,10 +66,10 @@ export class OpenAssetDialog extends Component {
                     </li>
                 })}
                 </ul>
-            </VBox>
-            <HBox className={"footer"}>
+            </section>
+            <footer>
                 <button onClick={this.okay}>close</button>
-            </HBox>
+            </footer>
         </Dialog>
     }
 
