@@ -138,3 +138,39 @@ https://flatuicolors.com/palette/defo
     background: transparent;
     border-width: 0;
 }
+
+
+
+
+
+.console {
+    display: flex;
+    flex-direction: column;
+}
+
+.console .message-log {
+    overflow: scroll;
+    flex: 1.0;
+    margin: 0;
+    list-style: none;
+    padding-left: 0;
+}
+
+.console .message-log li {
+    padding: 0.25rem 0.5rem;
+}
+
+.console .message-log li b {
+    border-radius: 0.5rem;
+    padding: 0 0.25rem;
+    font-size: 90%;
+}
+
+.console .message-log li b.log {
+    border: 1px solid lightgoldenrodyellow;
+    background-color: lightgoldenrodyellow;
+}
+.console .message-log li b.error {
+    border: 1px solid lightpink;
+    background-color: lightpink;
+}

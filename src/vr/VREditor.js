@@ -70,6 +70,7 @@ import {SaveDocumentAsDialog} from './dialogs/SaveDocumentAsDialog'
 import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
 import {ToasterNotification} from './ToasterNotification'
 import preval from "preval.macro"
+import {ConsoleView} from './ConsoleView'
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
@@ -93,7 +94,8 @@ export default class VREditor extends SyncGraphProvider {
     setDocTitle = (title) => this.accessObject(this.getSceneRoot()).set('title',title)
     getLogger = () => {
         if(this.pubnub) return this.pubnub.getLogger()
-        return new ConsoleLogger()
+        if(!this.consoleLogger)  this.consoleLogger = new ConsoleLogger()
+        return this.consoleLogger
     }
 
     makeEmptyRoot(doc) {
@@ -1082,7 +1084,7 @@ class VREditorApp extends Component {
 
 
                 <ResizerH onMouseDown={this.resizeBottom}/>
-                <ConsoleView/>
+                <ConsoleView logger={this.props.provider.getLogger()}/>
                 <ToasterNotification/>
                 <DialogContainer/>
                 <PopupContainer/>
@@ -1127,15 +1129,6 @@ const Resizer = (props) => {
 }
 const ResizerH = (props) => {
     return <div className="resizer-h" {...props}/>
-}
-const ConsoleView = (props) => {
-    return <div className="console wide">
-        <div className="toolbar gray">
-            <button className="action gray fa fa-trash borderless"/>
-            <button className="action gray fa fa-exclamation-triangle borderless"/>
-            <input type="text" placeholder="filter messages" className="spacer"/>
-        </div>
-    </div>
 }
 const EnumTitleRenderer = (props) => {
     let value = "---"
