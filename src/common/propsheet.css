@@ -1,0 +1,125 @@
+
+/* property sheet groups */
+
+/*.group {*/
+/*    border: 1px solid #888;*/
+/*    margin:0;*/
+/*    padding:0;*/
+/*    background-color: #ecf0f1;*/
+/*    box-sizing: border-box;*/
+/*    border-width: 0 0 1px 0;*/
+/*}*/
+
+/*.group:first-child {*/
+/*}*/
+/*.title {*/
+/*    background-color: #ddd;*/
+/*    border: 0px solid gray;*/
+/*    padding:0.25rem;*/
+/*    margin:0;*/
+/*    background-color: #f0f0f0;*/
+/*}*/
+
+
+
+.prop-sheet {
+    margin: 0.25rem;
+    border: 0px solid green;
+    font-size: 8pt;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: auto;
+}
+
+.prop-sheet label {
+    padding: 0.25rem;
+    border: 0px solid red;
+    align-self: start;
+    text-transform: capitalize;
+    white-space: nowrap;
+    margin: 0.25rem 0;
+    grid-column-start: 1;
+}
+.prop-sheet input, .prop-sheet select, .prop-sheet button {
+    font-size: 100%;
+    font-family: sans-serif;
+    border: 1px solid #ccc;
+    justify-self: stretch;
+    align-self: center;
+    height: 1.5rem;
+    padding: 0.25rem;
+    box-sizing: border-box;
+    margin: 0.25rem 0;
+    width:100%;
+    border-radius: 0.25rem;
+}
+.prop-sheet input:focus {
+    border-color:orange;
+}
+.prop-sheet input[type=checkbox] {
+    justify-self: start;
+}
+.prop-sheet input[type=number] {
+    width: auto;
+    width: 100%;
+}
+.prop-sheet .select {
+    box-sizing: border-box;
+    background:white;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    position: relative;
+    padding:0;
+    height: 1.5rem;
+    display:inline-block;
+    justify-self: stretch;
+    align-self: center;
+}
+.prop-sheet .select i {
+    position: absolute;
+    top: 0.25rem;
+    right:0.5rem;
+}
+.prop-sheet select {
+    -webkit-appearance:none;
+    border-width:0;
+    padding:0;
+    margin:0;
+    height: 1.4rem;
+}
+.prop-sheet p {
+    grid-column-start: span 2;
+    border: 1px solid red;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin:0;
+    background-color: #fff;
+    border: 1px solid #aaa;
+}
+
+.prop-sheet button {
+    background-color: #fff;
+    border-radius: 0.25rem;
+}
+
+
+
+
+.combined {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+.combined label {
+    flex:0;
+}
+.combined input {
+    flex:1.0;
+    min-width: 0;
+    width: 2rem;
+}
+
+
+/*.scale-editor input[type=number] {*/
+/*    width: 3em;*/
+/*}*/

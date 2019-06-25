@@ -1059,7 +1059,7 @@ class VREditorApp extends Component {
                     {this.renderCenterPane(this.state.mode)}
                 </div>
                 <Resizer onMouseDown={this.resizeRight}/>
-                <div className={'panel high-2'}>
+                <div className={'panel high-2'} style={{ backgroundColor: '#ecf0f1'}}>
                     <PropSheet provider={prov}/>
                 </div>
 
@@ -1176,7 +1176,7 @@ class GroupPropertyEditor extends Component {
                           onChange={(e)=>{ this.changed(e,key)}}
                           step={0.1}/>
         })
-        return <HBox className="scale-editor">
+        return <HBox className="combined">
             <input type="checkbox" checked={this.state.sync} onChange={this.syncChanged}/>
             {boxes}
         </HBox>
