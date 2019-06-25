@@ -1,8 +1,7 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {AuthModule} from '../AuthModule'
 import {Dialog} from '../../common/Dialog'
-import {Spacer} from '../../common/GridEditorApp'
 
 export class PasswordDialog extends Component {
     constructor(props) {
@@ -23,20 +22,19 @@ export class PasswordDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel} width="600px" height="auto">
-            <VBox grow>
-                <h3>login with the password from your env file</h3>
+            <header>login with the password from your env file</header>
+            <section>
                 <label>password</label>
                 <input type={"password"} value={this.state.field}
                        onKeyDown={this.keyDown}
                        onChange={(e)=>{
                     this.setState({field:e.target.value})
                 }}/>
-                <HBox>
-                    <Spacer/>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.okay}>okay</button>
+            </footer>
         </Dialog>
     }
 }

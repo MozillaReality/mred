@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager, HBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
-import {ToggleButton, Toolbar} from '../../common/GridEditorApp'
+import {ToggleButton} from '../../common/GridEditorApp'
 import {addAudioAssetFromFile, addAudioAssetFromURL} from '../AssetActions'
 import {Dialog} from '../../common/Dialog'
 

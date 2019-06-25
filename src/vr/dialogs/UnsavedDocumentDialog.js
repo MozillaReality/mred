@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {Dialog} from '../../common/Dialog'
 
 export class UnsavedDocumentDialog extends Component {
@@ -12,15 +12,15 @@ export class UnsavedDocumentDialog extends Component {
     }
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel} width="600px" height="auto">
-            <VBox grow>
-                <h3>Warning. Your document has unsaved changes.</h3>
-                <p>Press cancel to go back</p>
-                <p>Press continue to continue anyway and lose the unsaved changes</p>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>continue!</button>
-                </HBox>
-            </VBox>
+            <header>Warning. Your document has unsaved changes.</header>
+            <section>
+            <p>Press cancel to go back</p>
+            <p>Press continue to continue anyway and lose the unsaved changes</p>
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.okay}>continue!</button>
+            </footer>
         </Dialog>
     }
 }
