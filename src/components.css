@@ -74,6 +74,29 @@ a.button b {
 }
 
 
+.popup-menu {
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 0.5em 0;
+}
+
+.popup-menu button {
+    border: 1px solid blue;
+    border-width: 0 0 0 0;
+    text-align: left;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0;
+    background-color: white;
+}
+.popup-menu button:hover {
+    background-color: aqua;
+}
+
+.popup-menu .divider {
+    border: 1px solid #ccc;
+    border-width: 0 0 2px 0;
+}
+
 
 /*
 https://flatuicolors.com/palette/defo

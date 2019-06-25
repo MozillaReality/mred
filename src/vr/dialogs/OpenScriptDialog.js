@@ -35,8 +35,8 @@ export class OpenScriptDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.okay}>
-            <h3>Choose Behavior Script</h3>
-            <VBox scroll>
+            <header>Choose Behavior Script</header>
+            <section>
                 <ul className="behaviors-list">{this.state.scripts.map((doc, i) => {
                     return <HBox key={doc.name}>
                         <VBox>
@@ -52,10 +52,10 @@ export class OpenScriptDialog extends Component {
                     </HBox>
                 })}
                 </ul>
-            </VBox>
-            <HBox className={"footer"}>
+            </section>
+            <footer>
                 <button onClick={this.okay}>close</button>
-            </HBox>
+            </footer>
         </Dialog>
     }
 
