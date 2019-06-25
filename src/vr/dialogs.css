@@ -30,7 +30,7 @@
 .dialog-body section {
     border: 0px solid black;
     min-height: 10rem;
-    overflow: scroll;
+    overflow: auto;
 }
 .dialog-body footer {
     border: 0px solid black;
@@ -38,19 +38,13 @@
     border-radius: 0 0 1rem 1rem;
 }
 
-.dialog-body button {
-    border: 0px solid #444;
-    padding: 0.5rem 1.0rem;
-    border-radius: 0.25rem;
-    margin: 0.25rem 0.5rem;
-    background-color: #ddd;
-}
-.dialog-body button:hover {
-    background-color: #888;
-}
 
 .dialog-body footer {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
+}
+
+.dialog-body footer button {
+    padding: 0.5rem 1.0rem;
 }

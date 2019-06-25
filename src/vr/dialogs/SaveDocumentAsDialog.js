@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {Dialog} from '../../common/Dialog'
 import {Spacer} from '../../common/GridEditorApp'
 

@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
+import {DialogManager} from 'appy-comps'
 import {AuthModule} from '../AuthModule'
 import {getLoginURL} from '../../TreeItemProvider'
 import {Dialog} from '../../common/Dialog'

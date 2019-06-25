@@ -1,29 +1,24 @@
 
-button {
+button, .button {
+    background-color: #ddd;
     border: 0px solid black;
     font-size: 100%;
-    border-radius: 0.5rem;
-    padding: 0rem;
-    height: 1.5rem;
+    color: black;
+    padding: 0.25rem;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 0.25rem;
+    margin: 0.25rem 0.5rem;
+}
+button:hover, .button:hover {
+    background-color: #888;
 }
 
 .toolbar button {
     width: 1.5rem;
 }
-.button {
-    border: 0px solid black;
-    /*font-size: inherit;*/
-    border-radius: 0.5rem;
-    padding: 0rem;
-}
-a.button {
-    border: 0px solid black;
-    border-radius: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    text-decoration: none;
-    white-space:nowrap;
-}
-a.button b {
+
+.button b {
     padding-left: 0.25rem;
 }
 

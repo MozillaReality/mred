@@ -3,7 +3,7 @@ import '../components.css'
 import "./dialogs.css"
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import GridEditorApp, {Panel, Spacer, Toolbar} from '../common/GridEditorApp'
+import {Spacer} from '../common/GridEditorApp'
 import TreeTable from '../common/TreeTable'
 import PropSheet, {TYPES} from '../common/PropSheet'
 import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
@@ -1000,9 +1000,6 @@ class VREditorApp extends Component {
             </div>
         }
         const prov = this.props.provider
-        const bot = <div>
-            doc id: <b>{prov.getDocId()}</b>
-        </div>
         let logger = null
         if(prov.pubnub) logger = prov.getLogger()
         if(!prov.getDataGraph()) {
@@ -1072,10 +1069,10 @@ class VREditorApp extends Component {
                             onClick={this.toggleBottomPane}/>
 
                     <Spacer/>
-                    <a href="#" className="button blue">
+                    <span className="button blue" onClick={() => prov.viewInVR()}>
                         <i className="fas fa-external-link-alt"/>
                         <b>Phone View</b>
-                    </a>
+                    </span>
                     {this.props.bottomText}
                     <Spacer/>
                     <button className={'borderless gray far' + ((this.state.rightDivider !== '0px') ? ' fa-caret-square-right' : ' fa-caret-square-left')}

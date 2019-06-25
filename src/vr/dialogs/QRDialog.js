@@ -15,16 +15,14 @@ export class QRDialog extends Component {
         let wurl = url.replace("https","wxrv")
         wurl = wurl.replace("http","wxrv")
         return <Dialog visible={true} onScrimClick={this.okay}>
-            <VBox grow>
-                <h3>{this.props.text?this.props.text:'Scan'}</h3>
-                <VBox grow>
+                <header>{this.props.text?this.props.text:'Scan'}</header>
+                <section>
                     <label><a href={url}>{url}</a></label>
                     <QRCanvas url={wurl} width={160} height={160}/>
-                </VBox>
-                <HBox>
+                </section>
+                <footer>
                     <button onClick={this.okay}>dismiss</button>
-                </HBox>
-            </VBox>
+                </footer>
         </Dialog>
     }
 
