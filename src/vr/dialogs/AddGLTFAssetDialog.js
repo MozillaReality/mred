@@ -16,18 +16,18 @@ export class AddGLTFAssetDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox>
-                <h3>add GLTF file assets</h3>
+            <header>add GLTF file assets</header>
+            <section>
                 <p>
                     chose <b>the directory</b> containing the GLTF file
                 </p>
                 <input type="file" ref={(obj) => this.fileinput = obj} onChange={this.selectedFile} multiple={true}
                        webkitdirectory="true"/>
-                <HBox>
-                    <button onClick={this.cancel}>cancel</button>
-                    <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
+            </section>
+            <footer>
+                <button onClick={this.cancel}>cancel</button>
+                <button onClick={this.okay}>okay</button>
+            </footer>
         </Dialog>
     }
 

@@ -35,20 +35,18 @@ export class AddAudioAssetDialog extends Component {
 
     render() {
         return <Dialog visible={true} onScrimClick={this.cancel}>
-            <VBox grow>
-                <h3>add audio to assets</h3>
-                <VBox grow>
-                    <Toolbar>
+                <header>add audio to assets</header>
+                <section>
+                    <HBox>
                         <ToggleButton onClick={this.switchLocal} selected={this.state.view==='local'}>local</ToggleButton>
                         <ToggleButton onClick={this.switchRemote} selected={this.state.view==='remote'}>remote</ToggleButton>
-                    </Toolbar>
+                    </HBox>
                     {this.renderSelectedPanel()}
-                </VBox>
-                <HBox>
+                </section>
+                <footer>
                     <button onClick={this.cancel}>cancel</button>
                     <button onClick={this.okay}>okay</button>
-                </HBox>
-            </VBox>
+                </footer>
         </Dialog>
     }
 
