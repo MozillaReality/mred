@@ -15,6 +15,7 @@ body {
     grid-template-rows: 2rem 2fr 2rem 0px 2rem 1fr;
     border: 0px solid black;
     height: 100vh;
+    z-index: 1;
 }
 
 .resizer {
@@ -31,7 +32,7 @@ body {
     grid-column-start: span 5;
     cursor: crosshair;
     height: 8px;
-    z-index: 10;
+    z-index: 1;
     border-top-width: 1px;
     border: 1px solid #aaa;
     border-width: 1px 0 0 0;
@@ -48,4 +49,9 @@ body {
 
 .spacer {
     flex:1.0;
+}
+
+
+#mapid {
+    z-index: 0;
 }
