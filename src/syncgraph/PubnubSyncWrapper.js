@@ -137,7 +137,7 @@ export class PubnubSyncWrapper {
 //        console.log("channel is",evt.channel)
         if(evt.channel === this.calculateLoggerChannelName()) {
             if(evt.publisher !== this.pubnub.getUUID()) {
-                console.log("REMOTE LOGGER", evt.message.length, evt.message)
+                console.log("REMOTE LOGGER", evt.message.length, evt.message.substring(200))
             }
             return
         }

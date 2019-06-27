@@ -200,7 +200,7 @@ export default class ScriptManager {
     }
 
     fireSceneLifecycleEventAtChild(type,evt,child, parentId) {
-        if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
+        // if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
         if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
             evt.target = this.sgp.getThreeObject(parentId)
             evt.graphTarget = this.sgp.getGraphObjectById(parentId)

@@ -73,9 +73,7 @@ export class AssetsManager {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            lg.log("playing the media asset", asset)
             const url = this.getAssetURL(asset)
-            lg.log("playing the url yaeah", url)
             const video = this.videocache[url]
             if (video) {
                 if(trusted) video.muted = false
@@ -94,10 +92,10 @@ export class AssetsManager {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            if(this.videocache[asset.id]) {
-                this.videocache[asset.id].stop()
-                delete this.videocache[asset.id]
-                this.videocache[asset.id] = null
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if (video) {
+                video.pause()
             }
         }
     }
@@ -106,6 +104,16 @@ export class AssetsManager {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             if(this.audiocache[asset.id]) {
                 return this.audiocache[asset.id].isPlaying
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if(video) {
+                //TODO: @josh this probably isn't right.
+                //TODO: instead we should listen for media events and track the status
+                const val = !(video.paused)
+                return val
             }
         }
         return false
