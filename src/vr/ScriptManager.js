@@ -21,6 +21,7 @@ export class SceneGraphProvider {
 
     playMediaAsset(id) { throw new Error("playMediaAsset(id) not implemented")}
     stopMediaAsset(id) { throw new Error("stopMediaAsset(id) not implemented")}
+    isMediaAssetPlaying(id) { throw new Error("isMediaAssetPlaying(id) not implemented")}
     getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
@@ -384,6 +385,9 @@ class AssetFacade {
     }
     play() {
         this.manager.sgp.playMediaAsset(this.obj, this.trusted)
+    }
+    isPlaying() {
+        return this.manager.sgp.isMediaAssetPlaying(this.obj)
     }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)

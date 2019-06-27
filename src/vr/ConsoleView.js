@@ -45,7 +45,7 @@ export class ConsoleView extends Component {
     }
 
     formatMessage(msg) {
-        console.log("formatting",msg.data)
+        // console.log("formatting",msg.data)
         const msgs =  msg.data.map((str,i) => {
             if(typeof str === 'string' || str instanceof String) {
                 return <b key={i}>{str}</b>

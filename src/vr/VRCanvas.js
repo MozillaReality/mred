@@ -74,6 +74,9 @@ class Adapter extends SceneGraphProvider {
     stopMediaAsset(asset) {
         this.canvas.props.provider.assetsManager.stopMediaAsset(asset)
     }
+    isMediaAssetPlaying(asset) {
+        return this.canvas.props.provider.assetsManager.isMediaAssetPlaying(asset)
+    }
     getGraphObjectByName(title) {
         const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)
         if(!list || list.length<1) return null

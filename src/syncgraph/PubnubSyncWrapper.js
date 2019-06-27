@@ -205,7 +205,7 @@ export class PubnubLogger {
     }
 
     fire(type, payload) {
-        console.log(`LOGGER ${type} `, inspect(payload, {depth:3}))
+        // console.log(`LOGGER ${type} `, inspect(payload, {depth:3}))
         payload.type = type
         this.pubnub.publish({
             channel: this.calculateLoggerChannelName(),
@@ -238,7 +238,7 @@ export class ConsoleLogger {
     }
 
     fire(type, payload) {
-        console.log(`DUMMY LOGGER ${type} `, payload)
+        // console.log(`DUMMY LOGGER ${type} `, payload)
         payload.type = type
         this.getListeners(type).forEach(cb => cb(payload))
     }

@@ -102,6 +102,15 @@ export class AssetsManager {
         }
     }
 
+    isMediaAssetPlaying(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.audiocache[asset.id]) {
+                return this.audiocache[asset.id].isPlaying
+            }
+        }
+        return false
+    }
+
     stopAllMedia() {
         const cache = this.videocache
         Object.keys(cache).forEach(key => {
@@ -111,7 +120,7 @@ export class AssetsManager {
             }
         })
         Object.keys(this.audiocache).forEach(key => {
-            if(this.audiocache[key].stop) {
+            if(this.audiocache[key] && this.audiocache[key].stop) {
                 this.audiocache[key].stop()
             }
         })
