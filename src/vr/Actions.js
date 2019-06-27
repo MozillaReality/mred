@@ -1,7 +1,7 @@
 import SceneDef from './defs/SceneDef'
 import SelectionManager from '../SelectionManager'
 import {toQueryString} from '../utils'
-import {ITEM_ICONS, OBJ_TYPES} from './Common'
+import {ITEM_ICONS, OBJ_TYPES, PROP_DEFS, TOTAL_OBJ_TYPES} from './Common'
 import {PopupManager} from 'appy-comps'
 import {MenuPopup} from '../common/GridEditorApp'
 import React from 'react'
@@ -9,8 +9,15 @@ import {AuthModule} from './AuthModule'
 
 export function addScene(provider) {
     const root = provider.accessObject(provider.getSceneRoot())
+    const scenes = root.getChildren().filter(ch => ch.type === TOTAL_OBJ_TYPES.SCENE)
+    let prev = null
+    if(scenes.length >= 1) prev = scenes[scenes.length-1]
     const scene = new SceneDef().make(provider.getDataGraph(),root)
-    root.insertFirstChild(scene)
+    if(prev) {
+        root.insertChildAfter(scene,prev)
+    } else {
+        root.insertFirstChild(scene)
+    }
     SelectionManager.setSelection(scene.id)
 }
 
