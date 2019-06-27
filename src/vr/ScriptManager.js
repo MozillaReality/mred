@@ -95,22 +95,6 @@ class SystemFacade {
     getThreeObjectById(id) {
         return this.sgp.getThreeObject(id)
     }
-    playSound(id) {
-        this.playMedia(id)
-    }
-
-    playMedia(id) {
-        const asset = this.sgp.getGraphObjectById(id)
-        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
-        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
-        this.manager.sgp.playMediaAsset(asset, trusted)
-    }
-
-    stopMedia(id) {
-        const asset = this.sgp.getGraphObjectById(id)
-        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
-        this.manager.sgp.stopMediaAsset(asset)
-    }
 
     getCurrentScene() {
         const obj = this.sgp.getCurrentScene()
