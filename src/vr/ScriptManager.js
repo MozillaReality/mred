@@ -19,9 +19,12 @@ export class SceneGraphProvider {
     //navigate to the specified scene. id is a graph object id
     navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
 
+    //media stuff
     playMediaAsset(id) { throw new Error("playMediaAsset(id) not implemented")}
     stopMediaAsset(id) { throw new Error("stopMediaAsset(id) not implemented")}
     isMediaAssetPlaying(id) { throw new Error("isMediaAssetPlaying(id) not implemented")}
+    setMediaVolume(id,vol) { throw new Error("setMediaVolume(asset,vol) not implemented")}
+
     getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
@@ -391,5 +394,8 @@ class AssetFacade {
     }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)
+    }
+    setVolume(vol) {
+        this.manager.sgp.setMediaVolume(this.obj, vol)
     }
 }

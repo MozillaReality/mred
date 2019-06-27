@@ -74,6 +74,9 @@ class Adapter extends SceneGraphProvider {
     stopMediaAsset(asset) {
         this.canvas.props.provider.assetsManager.stopMediaAsset(asset)
     }
+    setMediaVolume(asset,vol) {
+        this.canvas.props.provider.assetsManager.setMediaVolume(asset,vol)
+    }
     isMediaAssetPlaying(asset) {
         return this.canvas.props.provider.assetsManager.isMediaAssetPlaying(asset)
     }

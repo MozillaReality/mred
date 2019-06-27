@@ -119,6 +119,21 @@ export class AssetsManager {
         return false
     }
 
+    setMediaVolume(asset, vol) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.audiocache[asset.id]) {
+                this.audiocache[asset.id].setVolume(vol)
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if (video) {
+                video.volume = vol
+            }
+        }
+    }
+
     stopAllMedia() {
         const cache = this.videocache
         Object.keys(cache).forEach(key => {
