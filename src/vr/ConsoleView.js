@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import inspect from "util-inspect"
 
 export class ConsoleView extends Component {
     clearLog = () => {
@@ -44,13 +45,12 @@ export class ConsoleView extends Component {
     }
 
     formatMessage(msg) {
-        // console.log("formatting",typeof (msg.messages), (msg.messages instanceof Array), msg)
-        const msgs =  msg.messages.map((str,i) => {
+        console.log("formatting",msg.data)
+        const msgs =  msg.data.map((str,i) => {
             if(typeof str === 'string' || str instanceof String) {
                 return <b key={i}>{str}</b>
             }
-            // console.log("formatting", str)
-            return <b key={i}>{str.toString()}</b>
+            return <b key={i}>{inspect(str,{depth: 2})}</b>
         })
         return <span>{msgs}</span>
     }

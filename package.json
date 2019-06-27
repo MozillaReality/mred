@@ -23,6 +23,7 @@
     "three": "^0.104.0",
     "three-gltf2-loader": "^1.2.0",
     "three-web-layer": "0.0.21",
+    "util-inspect": "^0.1.8",
     "webxr-boilerplate": "^0.1.9"
   },
   "scripts": {

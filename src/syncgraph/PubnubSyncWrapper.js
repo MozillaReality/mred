@@ -1,5 +1,7 @@
 import PubNub from "pubnub";
 import {AuthModule} from '../vr/AuthModule'
+import inspect from "util-inspect";
+
 function short(op) {
     let str = `${op.type} ${op.uuid} |  `
     if(op.name) {
@@ -135,11 +137,7 @@ export class PubnubSyncWrapper {
 //        console.log("channel is",evt.channel)
         if(evt.channel === this.calculateLoggerChannelName()) {
             if(evt.publisher !== this.pubnub.getUUID()) {
-                if(evt.message.length) {
-                    console.log("REMOTE LOGGER",...evt.message)
-                } else {
-                    console.log("REMOTE LOGGER", evt.message)
-                }
+                console.log("REMOTE LOGGER", evt.message.length, evt.message)
             }
             return
         }
@@ -192,21 +190,12 @@ export class PubnubLogger {
     calculateLoggerChannelName() {
         return "metadoc-log-" + this.docid+"_"+AuthModule.getServerID()
     }
+
     log() {
-        console.log("LOGGER",...arguments)
-        this.pubnub.publish({
-            channel:this.calculateLoggerChannelName(),
-            message:Array.from(arguments).concat(this.count++)
-        })
-        this.fire('log',Array.from(arguments),this.count++)
+        this.fire('log',this.makePayload(Array.from(arguments)))
     }
     error () {
-        console.log("LOGGER ERROR",...arguments)
-        this.pubnub.publish({
-            channel:this.calculateLoggerChannelName(),
-            message:Array.from(arguments).concat(this.count++)
-        })
-        this.fire('error',Array.from(arguments),this.count++)
+        this.fire('error',this.makePayload(Array.from(arguments)))
     }
 
     getListeners(type) {
@@ -215,43 +204,57 @@ export class PubnubLogger {
         return this.listeners[type]
     }
 
-    fire(type, messages,count) {
-        this.getListeners(type).forEach(cb => cb({
-            type:type,
-            messages:messages,
-            count:count,
-        }))
+    fire(type, payload) {
+        console.log(`LOGGER ${type} `, inspect(payload, {depth:3}))
+        payload.type = type
+        this.pubnub.publish({
+            channel: this.calculateLoggerChannelName(),
+            message: inspect(payload,{depth:3})
+        })
+        this.getListeners(type).forEach(cb => cb(payload))
+    }
+    makePayload(arr) {
+        return {
+            data: arr,
+            count: this.count++,
+        }
     }
 }
 
 export class ConsoleLogger {
-
     constructor() {
         this.listeners = {}
+        this.count = 0
     }
 
-    addEventListener(type,cb) {
+    addEventListener(type, cb) {
         this.getListeners(type).push(cb)
     }
+
     getListeners(type) {
-        if(!this.listeners) this.listeners = {}
-        if(!this.listeners[type]) this.listeners[type] = []
+        if (!this.listeners) this.listeners = {}
+        if (!this.listeners[type]) this.listeners[type] = []
         return this.listeners[type]
     }
 
-    fire(type, messages,count) {
-        this.getListeners(type).forEach(cb => cb({
-            type:type,
-            messages:messages,
-            count:count,
-        }))
+    fire(type, payload) {
+        console.log(`DUMMY LOGGER ${type} `, payload)
+        payload.type = type
+        this.getListeners(type).forEach(cb => cb(payload))
     }
+
     log() {
-        console.log("DUMMY LOGGER",...arguments)
-        this.fire('log',Array.from(arguments))
+        this.fire('log', this.makePayload(Array.from(arguments)))
     }
-    error () {
-        console.log("DUMMY LOGGER ERROR",...arguments)
-        this.fire('error',Array.from(arguments))
+
+    error() {
+        this.fire('error', this.makePayload(Array.from(arguments)))
+    }
+
+    makePayload(arr) {
+        return {
+            data: arr,
+            count: this.count++,
+        }
     }
 }

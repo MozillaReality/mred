@@ -50,6 +50,10 @@ export class AssetsManager {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             lg.log("playing the audio asset",asset)
             const url = this.getAssetURL(asset)
+            if(!url) {
+                lg.error('could not find the url for the asset',asset)
+                return
+            }
             lg.log("playing the audio from the url",url)
             if(this.audiocache[asset.id]) {
                 //already loaded
