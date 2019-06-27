@@ -382,4 +382,7 @@ class AssetFacade {
     setVolume(vol) {
         this.manager.sgp.setMediaVolume(this.obj, vol)
     }
+    getType() {
+        return this.obj.subtype
+    }
 }
