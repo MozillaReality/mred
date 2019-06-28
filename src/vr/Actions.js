@@ -1,7 +1,7 @@
 import SceneDef from './defs/SceneDef'
 import SelectionManager from '../SelectionManager'
 import {toQueryString} from '../utils'
-import {ITEM_ICONS, OBJ_TYPES, PROP_DEFS, TOTAL_OBJ_TYPES} from './Common'
+import {ITEM_ICONS, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {PopupManager} from 'appy-comps'
 import {MenuPopup} from '../common/GridEditorApp'
 import React from 'react'
