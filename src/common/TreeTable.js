@@ -21,7 +21,7 @@ const ContextMenu = (props) => {
                 PopupManager.hide()
                 if(item.fun) item.fun()
             }}
-            ><i className={'fa fa-'+item.icon}/> {item.title}</button>
+            ><i className={item.icon}/> {item.title}</button>
         })}
     </VBox>
 }

@@ -3,10 +3,12 @@
     margin:0;
 }
 .tree-table .tree-node {
-    margin: 0.25rem 0 0.5rem 0;
+    margin: 0;
     display: flex;
     flex-direction: row;
-    align-content: baseline;
+    align-items: center;
+    padding:0;
+    border: 3px solid transparent;
 }
 
 .tree-table .tree-node.selected {
@@ -27,7 +29,19 @@
     background-color: transparent;
     color: inherit;
 }
+
 .tree-table .tree-node .drag {
-    padding-right: 1em;
+    padding: 0.25rem;
+    background-color: transparent;
+}
+.tree-table .tree-node .drag:hover {
+    background-color: lightblue;
 }
 
+.tree-table .tree-node.drop-target {
+    border-bottom: 3px solid red;
+}
+
+.tree-table .tree-node.drop-target.drop-parent {
+    border: 3px solid blue;
+}

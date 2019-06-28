@@ -70,7 +70,7 @@ export const MenuPopup = (props) => {
                             onClick={()=>{
                 PopupManager.hide();
                 if(act.fun) act.fun()
-            }}><i className={'fa fa-' + act.icon}/> {act.title}</button>
+            }}><i className={act.icon}/> {act.title}</button>
         })}
     </VBox>
 

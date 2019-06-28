@@ -69,7 +69,12 @@ button:hover, .button:hover {
 }
 
 
+#popup-wrapper {
+    background-color: transparent !important;
+}
+
 .popup-menu {
+    background-color: white;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
     padding: 0.5em 0;
@@ -82,6 +87,7 @@ button:hover, .button:hover {
     padding: 0.25rem 0.5rem;
     border-radius: 0;
     background-color: white;
+    margin:0;
 }
 .popup-menu > *:hover {
     background-color: aqua;
@@ -183,5 +189,6 @@ https://flatuicolors.com/palette/defo
 #mapid {
     z-index: 0;
 }
+
 
 
