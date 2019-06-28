@@ -174,3 +174,14 @@ https://flatuicolors.com/palette/defo
     border: 1px solid lightpink;
     background-color: lightpink;
 }
+
+
+
+.map-icon {
+    border: 5px solid red;
+}
+#mapid {
+    z-index: 0;
+}
+
+
