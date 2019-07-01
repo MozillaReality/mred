@@ -505,6 +505,12 @@ logger.log(this._workingMatrix)
                 return
             }
 
+            if (!info.location || !info.location.id) {
+                logger.log("User must attach a geo location first")
+                rej("Missing geo location")
+                return
+            }
+
             if (!this.session) {
                 logger.log("no session")
                 rej("no session")
