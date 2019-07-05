@@ -1,14 +1,16 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
 import ObjectDef from './ObjectDef'
-import {NONE_ASSET, PROP_DEFS} from '../Common'
+import {NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
 import {Mesh, MeshLambertMaterial, SphereBufferGeometry} from 'three'
+
+let COUNTER = 0
 
 export default class SphereDef extends ObjectDef {
     make(graph, scene) {
         if(!scene.id) throw new Error("can't create sphere w/ missing parent")
         return fetchGraphObject(graph,graph.createObject({
-            type:'sphere',
-            title:'a sphere',
+            type:OBJ_TYPES.sphere,
+            title:'sphere '+COUNTER++,
             visible:true,
             radius: 0.3/2,
             tx:0, ty:0, tz:0,

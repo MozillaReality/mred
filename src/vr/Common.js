@@ -8,6 +8,7 @@ import TextDef from './defs/TextDef'
 import Image2DDef from './defs/Image2DDef'
 import GroupDef from './defs/GroupDef'
 import ParticlesDef from './defs/ParticlesDef'
+import PortalDef from './defs/PortalDef'
 import LocalAnchorDef from './defs/LocalAnchorDef'
 import ImageAnchorDef from './defs/ImageAnchorDef'
 import GeoAnchorDef from './defs/GeoAnchorDef'
@@ -369,6 +370,7 @@ export const OBJ_TYPES = {
     img2d:'img2d',
     group:'group',
     particles:'particles',
+    portal:'portal',
     localanchor:'localanchor',
     imageanchor:'imageanchor',
     geoanchor:'geoanchor',
@@ -402,6 +404,7 @@ export function is3DObjectType(type) {
     if(type === OBJ_TYPES.img2d) return true
     if(type === OBJ_TYPES.group) return true
     if(type === OBJ_TYPES.particles) return true
+    if(type === OBJ_TYPES.portal) return true
     if(type === OBJ_TYPES.localanchor) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
@@ -412,6 +415,7 @@ export function is3DObjectType(type) {
 
 export function canHaveShape(type) {
     if(type === OBJ_TYPES.group) return true
+    if(type === OBJ_TYPES.portal) return true
     if(type === OBJ_TYPES.localanchor) return true
     if(type === OBJ_TYPES.imageanchor) return true
     if(type === OBJ_TYPES.geoanchor) return true
@@ -448,6 +452,7 @@ export function get3DObjectDef(type) {
     if(type === OBJ_TYPES.img2d) return new Image2DDef()
     if(type === OBJ_TYPES.group) return new GroupDef()
     if(type === OBJ_TYPES.particles) return new ParticlesDef()
+    if(type === OBJ_TYPES.portal) return new PortalDef()
     if(type === OBJ_TYPES.localanchor) return new LocalAnchorDef()
     if(type === OBJ_TYPES.imageanchor) return new ImageAnchorDef()
     if(type === OBJ_TYPES.geoanchor) return new GeoAnchorDef()
@@ -536,6 +541,7 @@ export const ITEM_ICONS = {
     video:'fas fa-file-video',
     group:'fa fa-object-group',
     particles:'fa fa-certificate',
+    portal:'fa fa-object-group',
     gltf:'fa fa-cube',
     localanchor:'fa fa-anchor',
     imageanchor:'fa fa-anchor',

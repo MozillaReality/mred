@@ -1,7 +1,7 @@
 import {fetchGraphObject} from "../../syncgraph/utils"
-import {BoxGeometry, Mesh, MeshLambertMaterial} from 'three'
 import ObjectDef from './ObjectDef'
 import {NONE_ASSET, OBJ_TYPES, PROP_DEFS} from '../Common'
+import {BoxGeometry, Mesh, MeshLambertMaterial} from 'three'
 
 let COUNTER = 0
 

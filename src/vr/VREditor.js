@@ -189,7 +189,9 @@ export default class VREditor extends SyncGraphProvider {
 
     getRendererForItem = (item) => {
         const obj = this.accessObject(item)
-        if(!obj.exists()) return <div>???</div>
+        if(!obj.exists()) {
+            return <div>???</div>
+        }
         console.log("subtype",obj.subtype)
         if(obj.type === TOTAL_OBJ_TYPES.ASSET) return <div><i className={ITEM_ICONS[obj.subtype]}/> {obj.title}</div>
         if(ITEM_ICONS[obj.type]) return <div><i className={ITEM_ICONS[obj.type]}/> {obj.title}</div>
