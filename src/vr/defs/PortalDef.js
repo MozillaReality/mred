@@ -119,7 +119,19 @@ class THREEReflector extends THREE.Mesh {
     // Rebuild the texture of the portal every frame
     let group = this
     let scope = this
-    scope.onBeforeRender = function ( renderer, portalParentGroup, camera ) {
+
+    scope.renderer = scope.camera = 0
+
+    scope.onBeforeRender = function(renderer,parent,camera) {
+    	scope.renderer = renderer
+    	scope.camera = camera
+    }
+
+    scope.repaint = function() {
+
+    	let renderer = scope.renderer
+    	let camera = scope.camera
+    	if(!renderer || !camera) return
 
         // number of bounces - may be less useful for portals than mirrors?
         if ( 'recursion' in camera.userData ) {
@@ -222,7 +234,6 @@ class THREEReflector extends THREE.Mesh {
         }
 
         // move children back into this group and make them invisible
-        // XXX the problem is that they still won't update...
         privateScene.children.slice().forEach(child=>{
         	privateScene.remove(child)
         	group.add(child)
@@ -292,6 +303,9 @@ export default class PortalDef extends ObjectDef {
         node.rotation.set(obj.rx,obj.ry,obj.rz)
         node.scale.set(obj.sx,obj.sy,obj.sz)
         node.visible = obj.visible
+        node.tick = function(evt) {
+            node.repaint()
+        }
         return node
     }
 
