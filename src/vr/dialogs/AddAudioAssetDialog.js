@@ -3,7 +3,7 @@ import {DialogManager, HBox} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
 import {ToggleButton} from '../../common/GridEditorApp'
 import {addAudioAssetFromFile, addAudioAssetFromURL} from '../AssetActions'
-import {Dialog} from '../../common/Dialog'
+import {Dialog} from 'react-visual-editor-framework'
 
 export class AddAudioAssetDialog extends Component {
     constructor(props) {

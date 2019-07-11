@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {DialogManager} from 'appy-comps'
-import {Dialog} from '../../common/Dialog'
+import {Dialog} from 'react-visual-editor-framework'
 import {Spacer} from '../../common/GridEditorApp'
 
 
