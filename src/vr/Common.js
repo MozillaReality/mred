@@ -1,4 +1,4 @@
-import {TYPES} from '../common/PropSheet'
+import {PROP_TYPES} from 'react-visual-editor-framework'
 import CubeDef from './defs/CubeDef'
 import SphereDef from './defs/SphereDef'
 import PlaneDef from './defs/PlaneDef'
@@ -26,129 +26,129 @@ export const PROP_DEFS = {
     title: {
         key:'title',
         name:'Title',
-        type:TYPES.STRING
+        type:PROP_TYPES.STRING
     },
     description: {
         key:'description',
         name:'Description',
-        type:TYPES.STRING
+        type:PROP_TYPES.STRING
     },
     width: {
         key:'width',
         name:'Width',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     height: {
         key:'height',
         name:'Height',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     depth: {
         key:'depth',
         name:'Depth',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     radius: {
         key:'radius',
         name:'Radius',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     tx: {
         key:'tx',
         name:'TX',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     ty: {
         key:'ty',
         name:'TY',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     tz: {
         key:'tz',
         name:'TZ',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     rx: {
         key:'rx',
         name:'RX',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     ry: {
         key:'ry',
         name:'RY',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     rz: {
         key:'rz',
         name:'RZ',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     sx: {
         key:'sx',
         name:'SX',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     sy: {
         key:'sy',
         name:'SY',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     sz: {
         key:'sz',
         name:'SZ',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints
     },
     color: {
         key:'color',
         name:'Color',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     defaultFloor: {
         key:'defaultFloor',
         name:'Default Floor',
-        type:TYPES.BOOLEAN
+        type:PROP_TYPES.BOOLEAN
     },
     src: {
         key:'src',
         name:'src',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         locked:true,
     },
     asset: {
         key:'asset',
         name:'asset',
-        type:TYPES.ENUM,
+        type:PROP_TYPES.ENUM,
     },
     subtype: {
         key:'subtype',
         name:'kind',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         locked:true,
     },
     format: {
         key:'format',
         name:'format',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         locked:true,
     },
     imageOffsetAngle: {
         key:'imageOffsetAngle',
         name:'Image Offset Angle',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: {
             incrementValue:0.05,
         }
@@ -156,7 +156,7 @@ export const PROP_DEFS = {
     imageCropStartAngle: {
         key:'imageCropStartAngle',
         name:'Image Crop Start Angle',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: {
             incrementValue:0.05,
         }
@@ -164,7 +164,7 @@ export const PROP_DEFS = {
     imageCropEndAngle: {
         key:'imageCropEndAngle',
         name:'Image Crop End Angle',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: {
             incrementValue:0.05,
         }
@@ -172,12 +172,12 @@ export const PROP_DEFS = {
     transparent: {
         key:'transparent',
         name:"Transparent",
-        type:TYPES.BOOLEAN
+        type:PROP_TYPES.BOOLEAN
     },
     imageRealworldWidth: {
         key:'imageRealworldWidth',
         name:'Image width in meters',
-        type: TYPES.NUMBER,
+        type: PROP_TYPES.NUMBER,
         hints: {
             incrementValue:0.01
         }
@@ -185,31 +185,31 @@ export const PROP_DEFS = {
     recType: {
         key:'recType',
         name:'Recognition Type',
-        type: TYPES.ENUM,
+        type: PROP_TYPES.ENUM,
     },
 
     targetImage: {
         key:'targetImage',
         name:'Image to Recognize',
-        type: TYPES.ENUM,
+        type: PROP_TYPES.ENUM,
     },
 
     targetGeoLocation: {
         key:'targetGeoLocation',
         name:'Target Location',
-        type: TYPES.ENUM,
+        type: PROP_TYPES.ENUM,
     },
 
     splashImage: {
         key:'splashImage',
         name:'Splash Image',
-        type: TYPES.ENUM,
+        type: PROP_TYPES.ENUM,
     },
 
     text: {
         key:'text',
         name:'Text',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         hints: {
             multiline:true
         }
@@ -217,68 +217,68 @@ export const PROP_DEFS = {
     fontSize: {
         key:'fontSize',
         name:'Font Size',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
     },
     padding: {
         key:'padding',
         name:'Padding',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
     },
     borderWidth: {
         key:'borderWidth',
         name:'Border width',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
     },
     borderRadius: {
         key:'borderRadius',
         name:'Corner Size',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
     },
     horizontalAlign: {
         key:'horizontalAlign',
         name:'H Align',
-        type:TYPES.ENUM,
+        type:PROP_TYPES.ENUM,
         locked:false,
     },
     textColor: {
         key:'textColor',
         name:'Text Color',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     backgroundColor: {
         key:'backgroundColor',
         name:'BG Color',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     borderColor: {
         key:'borderColor',
         name:'Border Color',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     startColor: {
         key:'startColor',
         name:'Start',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     endColor: {
         key:'endColor',
         name:'End',
-        type:TYPES.COLOR,
+        type:PROP_TYPES.COLOR,
         custom:true,
     },
     drawBackground: {
         key:'drawBackground',
         name:'BG?',
-        type:TYPES.BOOLEAN,
+        type:PROP_TYPES.BOOLEAN,
     },
     scriptBody: {
         key:'scriptBody',
         name:'code',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         hints: {
             multiline:true
         }
@@ -286,40 +286,40 @@ export const PROP_DEFS = {
     defaultScene: {
         key:'defaultScene',
         name:'Start Scene',
-        type:TYPES.ENUM,
+        type:PROP_TYPES.ENUM,
     },
     visible: {
         key:'visible',
         name:'Visible',
-        type:TYPES.BOOLEAN
+        type:PROP_TYPES.BOOLEAN
     },
 
     reactivate: {
         key: 'reactivate',
         name: "Reactivate Image Search",
-        type: TYPES.BOOLEAN
+        type: PROP_TYPES.BOOLEAN
     },
 
     pointSize: {
         key:'pointSize',
         name:'Point Size',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
     },
     lifetime: {
         key:'lifetime',
         name:'Lifetime',
-        type:TYPES.NUMBER,
+        type:PROP_TYPES.NUMBER,
         hints: stdhints,
     },
     texture: {
         key:'texture',
         name:'texture',
-        type:TYPES.ENUM,
+        type:PROP_TYPES.ENUM,
     },
     cssStyle: {
         key:'cssStyle',
         name:'Style',
-        type:TYPES.STRING,
+        type:PROP_TYPES.STRING,
         hints: {
             multiline:true
         }
@@ -327,33 +327,33 @@ export const PROP_DEFS = {
     latitude: {
         key:'latitude',
         name:"Latitude",
-        type:TYPES.NUMBER, //value in degrees
+        type:PROP_TYPES.NUMBER, //value in degrees
     },
     longitude: {
         key:'longitude',
         name:"Longitude",
-        type:TYPES.NUMBER, //value in degrees
+        type:PROP_TYPES.NUMBER, //value in degrees
     },
     altitude: {
         key:'altitude',
         name:"altitude",
-        type:TYPES.NUMBER, //value in meters
+        type:PROP_TYPES.NUMBER, //value in meters
     },
     useAltitude: {
         key:'useAltitude',
         name:"use altitude?",
-        type:TYPES.BOOLEAN,
+        type:PROP_TYPES.BOOLEAN,
     },
     autoRecenter: {
         key:'autoRecenter',
         name:"Recenter on Load",
-        type:TYPES.BOOLEAN
+        type:PROP_TYPES.BOOLEAN
     },
 
     cloneTarget: {
         key:'cloneTarget',
         name:'clone target',
-        type: TYPES.ENUM,
+        type: PROP_TYPES.ENUM,
     },
 }
 

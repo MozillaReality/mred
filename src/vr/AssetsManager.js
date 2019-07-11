@@ -1,7 +1,7 @@
 import {ASSET_TYPES} from './Common'
 import {TextureLoader, VideoTexture, Audio, AudioLoader} from 'three'
 import {AuthModule} from './AuthModule'
-import {getAssetsURL} from '../TreeItemProvider'
+import {getAssetsURL} from 'react-visual-editor-framework'
 import {createGIFTexture} from './GifSupport'
 import GLTFLoader from './GLTFLoader'
 import DRACOLoader from './DRACOLoader'

@@ -1,7 +1,7 @@
 import React, {Component} from "react"
 import {map, tileLayer, marker, divIcon, latLng} from "leaflet/dist/leaflet-src.js"
 import "leaflet/dist/leaflet.css"
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {TREE_ITEM_PROVIDER} from 'react-visual-editor-framework'
 import {HBox} from 'appy-comps'
 
 export default class GeoAssetView extends Component {

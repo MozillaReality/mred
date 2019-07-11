@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {DialogManager} from 'appy-comps'
-import {Dialog} from 'react-visual-editor-framework'
-import {Spacer} from '../../common/GridEditorApp'
+import {Dialog, Spacer} from 'react-visual-editor-framework'
 
 
 export class SaveDocumentAsDialog extends Component {

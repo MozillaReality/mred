@@ -1,6 +1,5 @@
-import {getAssetsURL, getInfoURL, getUserURL} from '../TreeItemProvider'
+import {getAssetsURL, getInfoURL, getUserURL, genID} from 'react-visual-editor-framework'
 import * as ToasterMananager from './ToasterManager'
-import {genID} from "../utils"
 
 export const USER_CHANGE = 'USER_CHANGE'
 export const CONNECTED = "CONNECTED"

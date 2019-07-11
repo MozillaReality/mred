@@ -1,8 +1,8 @@
 import React, {Component} from 'react'
+import {TreeItemProvider, getDocsURL, getScriptsURL, parseOptions, on} from 'react-visual-editor-framework'
+
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import TreeItemProvider, {getDocsURL, getScriptsURL} from '../TreeItemProvider'
-import {on, parseOptions} from '../utils'
-import {TweenManager} from '../common/tween'
+import {TweenManager} from './tween'
 import * as THREE from 'three'
 import {Group} from 'three'
 import {VRManager} from 'webxr-boilerplate'

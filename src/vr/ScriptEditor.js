@@ -1,6 +1,5 @@
 import React, {Component} from "react"
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import selMan, {SELECTION_MANAGER} from '../SelectionManager'
+import {SelectionManager, SELECTION_MANAGER, TREE_ITEM_PROVIDER} from 'react-visual-editor-framework'
 import {TOTAL_OBJ_TYPES} from './Common'
 import AceEditor from 'react-ace'
 import 'brace/mode/javascript'
@@ -11,7 +10,7 @@ export default class ScriptEditor extends Component {
     constructor(props) {
         super(props)
         this.refresh = () => {
-            const id = selMan.getSelection()
+            const id = SelectionManager.getSelection()
             const obj = this.props.provider.accessObject(id)
             if(obj.exists() && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
                 this.props.provider.fetchBehaviorAssetContents(id).then(text => {
@@ -28,15 +27,15 @@ export default class ScriptEditor extends Component {
     componentDidMount() {
         this.refresh()
         this.props.provider.on(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.refresh)
-        selMan.on(SELECTION_MANAGER.CHANGED,this.swap)
+        SelectionManager.on(SELECTION_MANAGER.CHANGED,this.swap)
     }
 
     componentWillUnmount() {
         this.props.provider.off(TREE_ITEM_PROVIDER.PROPERTY_CHANGED,this.refresh)
-        selMan.off(SELECTION_MANAGER.CHANGED,this.swap)
+        SelectionManager.off(SELECTION_MANAGER.CHANGED,this.swap)
     }
     swap = () => {
-        const obj = this.props.provider.accessObject(selMan.getSelection())
+        const obj = this.props.provider.accessObject(SelectionManager.getSelection())
         if(obj.exists()  && obj.type === TOTAL_OBJ_TYPES.BEHAVIOR_SCRIPT) {
             this.refresh()
         }

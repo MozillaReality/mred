@@ -13,19 +13,16 @@ import {
     WebGLRenderer
 } from 'three'
 
-// import './VREditor.css'
 
 import {Pointer, POINTER_CLICK, VR_DETECTED, VRManager, VRStats} from "webxr-boilerplate"
 
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {SelectionManager, SELECTION_MANAGER, TREE_ITEM_PROVIDER, on,parseOptions} from 'react-visual-editor-framework'
 import {TranslateControl} from './TranslateControl'
 import panel2d from "./panel2d/panel2d"
 import button2d from "./panel2d/button2d"
 import group2d from "./panel2d/group2d"
 import SceneDef from "./defs/SceneDef"
-import {on, parseOptions} from "../utils"
-import {TweenManager} from "../common/tween"
+import {TweenManager} from "./tween"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, SIMPLE_COLORS, toRad, TOTAL_OBJ_TYPES} from './Common'
 //use the oculus go controller
 import ThreeDOFController from "./3dof.js"

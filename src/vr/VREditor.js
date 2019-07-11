@@ -2,17 +2,25 @@ import '../grid.css'
 import '../components.css'
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
-import {Spacer} from '../common/GridEditorApp'
-import TreeTable from '../common/TreeTable'
-import PropSheet, {TYPES} from '../common/PropSheet'
-import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
 import {VRCanvas} from './VRCanvas'
-import {getAssetsURL, getDocsURL, getScriptsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
 import ImmersiveVREditor from './ImmersiveVREditor'
 import {fetchGraphObject, insertAsFirstChild, insertAsLastChild, listToArray} from '../syncgraph/utils'
 import CubeDef from "./defs/CubeDef"
 import SceneDef from "./defs/SceneDef"
-import InputManager from "../common/InputManager"
+import {
+    Spacer,
+    InputManager,
+    PropSheet,
+    PROP_TYPES,
+    SelectionManager,
+    SELECTION_MANAGER,
+    TreeTable,
+    getAssetsURL,
+    getDocsURL,
+    getScriptsURL,
+    TREE_ITEM_PROVIDER,
+    toQueryString,
+} from "react-visual-editor-framework"
 import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
 import {
     ASSET_TYPES,
@@ -42,7 +50,6 @@ import {UnsavedDocumentDialog} from "./dialogs/UnsavedDocumentDialog"
 import AssetView from '../metadoc/AssetView'
 import * as ToasterMananager from './ToasterManager'
 import GraphAccessor from "../syncgraph/GraphAccessor"
-import {toQueryString} from '../utils'
 import {OpenFileDialog} from './dialogs/OpenFileDialog'
 import {AuthModule, CONNECTED, USER_CHANGE} from './AuthModule'
 import {OpenAssetDialog} from './dialogs/OpenAssetDialog'
@@ -189,7 +196,6 @@ export default class VREditor extends SyncGraphProvider {
     getRendererForItem = (item) => {
         const obj = this.accessObject(item)
         if(!obj.exists()) return <div>???</div>
-        console.log("subtype",obj.subtype)
         if(obj.type === TOTAL_OBJ_TYPES.ASSET) return <div><i className={ITEM_ICONS[obj.subtype]}/> {obj.title}</div>
         if(ITEM_ICONS[obj.type]) return <div><i className={ITEM_ICONS[obj.type]}/> {obj.title}</div>
         return <div>{obj.title}</div>
@@ -209,7 +215,7 @@ export default class VREditor extends SyncGraphProvider {
         defs.push({
             key:'id',
             name:"ID",
-            type:TYPES.STRING,
+            type:PROP_TYPES.STRING,
             value:item,
             locked:true
         })
@@ -236,7 +242,7 @@ export default class VREditor extends SyncGraphProvider {
             defs.push({
                 key:'behavior',
                 name:"Script",
-                type:TYPES.STRING,
+                type:PROP_TYPES.STRING,
                 value:obj.behavior,
                 locked:true,
                 custom:true,
@@ -270,21 +276,21 @@ export default class VREditor extends SyncGraphProvider {
             defs.push({
                 key: 'scale',
                 name: 'Scale',
-                type: TYPES.GROUP,
+                type: PROP_TYPES.GROUP,
                 group: ['sx','sy','sz'],
                 custom:true,
             })
             defs.push({
                 key: 'translation',
                 name: 'Translation',
-                type: TYPES.GROUP,
+                type: PROP_TYPES.GROUP,
                 group: ['tx','ty','tz'],
                 custom:true,
             })
             defs.push({
                 key: 'rotation',
                 name: 'Rotation',
-                type: TYPES.GROUP,
+                type: PROP_TYPES.GROUP,
                 group: ['rx','ry','rz'],
                 custom:true,
             })

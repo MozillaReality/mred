@@ -1,8 +1,13 @@
-import TreeItemProvider, {getDocsURL, TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import {setQuery, toQueryString} from '../utils'
 import {UndoQueue} from './UndoQueue'
 import {EventCoalescer} from '../metadoc/EventCoalescer'
-import SelectionManager from '../SelectionManager'
+import {
+    SelectionManager,
+    TreeItemProvider,
+    getDocsURL,
+    TREE_ITEM_PROVIDER,
+    setQuery,
+    toQueryString,
+} from 'react-visual-editor-framework'
 import {PubnubSyncWrapper} from './PubnubSyncWrapper'
 import {propToArray} from "./utils";
 import * as ToasterMananager from '../vr/ToasterManager'

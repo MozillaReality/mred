@@ -1,5 +1,5 @@
 import * as ToasterManager from './ToasterManager'
-import {getAssetsURL} from '../TreeItemProvider'
+import {getAssetsURL} from 'react-visual-editor-framework'
 import {ASSET_TYPES, MIME_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import {fetchGraphObject} from '../syncgraph/utils'
 import {AuthModule} from './AuthModule'

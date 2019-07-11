@@ -1,4 +1,3 @@
-import {toFlatString} from '../utils'
 import * as ToasterManager from './ToasterManager'
 import {mat4, vec3} from "gl-matrix/dist/gl-matrix.js"
 
@@ -149,7 +148,7 @@ export class XRSupport {
     addAnchoredNode(anchor, node, logger) {
         if (!anchor || !anchor.uid) {
             console.error("not a valid anchor", anchor)
-            logger.error(`not a valid anchor ${toFlatString(anchor)}`)
+            logger.error("not a valid anchor",anchor)
             return
         }
         this._anchoredNodes.set(anchor.uid, {
@@ -341,7 +340,7 @@ logger.log(this._workingMatrix)
             }
 
             this._fetchImage(info,logger).then(image => {
-                logger.log("got the image",toFlatString(image))
+                logger.log("got the image",(image))
     
                 //info contains
                 // * callback: to call when the image is found
@@ -366,9 +365,9 @@ logger.log(this._workingMatrix)
                 try {
                     idata = context.getImageData(0, 0, image.width, image.height)
                 } catch (e) {
-                    logger.log(`error drawing image ${toFlatString(e)}`)
-                    logger.log(`name ${e.name}`)
-                    logger.log(`name ${e.message}`)
+                    logger.log("error drawing image",e)
+                    logger.log("name",e.name)
+                    logger.log("name",e.message)
                     logger.log("local url is " + document.documentURI)
                     logger.log("image url from " + image.src)
                     ToasterManager.add("error drawing image", e.toString())
@@ -542,7 +541,7 @@ logger.log(this._workingMatrix)
 
                 if (location.useAltitude) {
                     logger.log("XRGeoAnchor: Placing an object at specified lla and specified altitude")
-                    logger.log(toFlatString(lla))
+                    logger.log(lla)
                     XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                         this.geoAnchorMap[info.location.id] = {
                             anchor: anchor
@@ -557,7 +556,7 @@ logger.log(this._workingMatrix)
                     XRGeospatialAnchor.getDefaultElevation(lla).then(altitude => {
                         lla.height = altitude
                         logger.log("XRGeoAnchor: Placing an object at specified lla and estimated altitude")
-                        logger.log(toFlatString(lla))
+                        logger.log(lla)
                         XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                             this.geoAnchorMap[info.location.id] = {
                                 anchor: anchor
@@ -582,7 +581,7 @@ logger.log(this._workingMatrix)
                     XRGeospatialAnchor.getDefaultElevation().then(altitude => {
                         let lla = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, altitude)
                         logger.log("XRGeoAnchor: Placing an object at your lla")
-                        logger.log(toFlatString(lla))
+                        logger.log(lla)
                         XRGeospatialAnchor.createGeoAnchor(lla).then(anchor => {
                             this.geoAnchorMap[info.location.id] = {
                                 anchor: anchor

@@ -1,12 +1,11 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {SelectionManager, SELECTION_MANAGER, TREE_ITEM_PROVIDER} from 'react-visual-editor-framework'
 import TransformControls from './TransformControls.js'
 import SceneDef from "./defs/SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import {TweenManager} from '../common/tween'
+import {TweenManager} from './tween'
 import {XRSupport} from './XRSupport'
 import OrbitControls from './OrbitControls'
 
