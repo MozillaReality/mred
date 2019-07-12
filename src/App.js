@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 // import './App.css'
 import VREditor from './vr/VREditor'
 import {ImmersivePlayer} from './vr/ImmersivePlayer'
+import {PopupManager, PopupManagerContext} from 'appy-comps'
 
 export default class App extends Component {
     getApp() {
@@ -9,6 +10,7 @@ export default class App extends Component {
                 return <ImmersivePlayer options={this.props.options}/>
             }
             this.provider = new VREditor(this.props.options)
+            this.provider.popupManager = this.context
             return this.provider.getApp()
         }
 
@@ -16,6 +18,7 @@ export default class App extends Component {
         return this.getApp()
     }
 }
+App.contextType = PopupManagerContext
 
 
 

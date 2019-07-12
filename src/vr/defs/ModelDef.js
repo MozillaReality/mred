@@ -196,6 +196,8 @@ export default class ModelDef extends ObjectDef {
             // }
             //disable the clicker sphere
             node.userData.clicker.visible = false
+        }).catch(e => {
+            console.log("error loading GLTF")
         })
     }
 

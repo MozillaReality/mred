@@ -1,5 +1,3 @@
-import '../grid.css'
-import '../components.css'
 import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import {VRCanvas} from './VRCanvas'
@@ -21,7 +19,7 @@ import {
     TREE_ITEM_PROVIDER,
     toQueryString,
 } from "react-visual-editor-framework"
-import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, VBox} from "appy-comps"
+import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, PopupManagerContext, VBox} from "appy-comps"
 import {
     ASSET_TYPES,
     canBeDeleted,
@@ -86,6 +84,9 @@ export default class VREditor extends SyncGraphProvider {
         this.orbit_state = {}
         this.badAssets = []
         this.assetsManager = new AssetsManager(this)
+    }
+    getPopupManager() {
+        return this.popupManager
     }
     getDocType() { return "vr" }
     getApp = () => {
@@ -1213,7 +1214,7 @@ function withNone(array) {
 
 class ColorEditor extends Component {
     showPopup = (e) =>{
-        PopupManager.show(<ColorPopup onChange={this.props.onChange} value={this.props.value}/>, e.target)
+        this.context.show(<ColorPopup onChange={this.props.onChange} value={this.props.value}/>, e.target)
     }
     render() {
         return <button
@@ -1223,6 +1224,7 @@ class ColorEditor extends Component {
 
     }
 }
+ColorEditor.contextType = PopupManagerContext
 
 class ColorPopup extends Component {
     constructor(props) {
@@ -1238,7 +1240,7 @@ class ColorPopup extends Component {
     }
     done = () => {
         this.props.onChange(this.state.value)
-        PopupManager.hide()
+        this.context.hide()
     }
     render() {
         return <VBox style={{
@@ -1264,3 +1266,4 @@ class ColorPopup extends Component {
         </VBox>
     }
 }
+ColorPopup.contextType = PopupManagerContext
