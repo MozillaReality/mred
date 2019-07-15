@@ -4,7 +4,7 @@
   "private": false,
   "main": "lib/exports.js",
   "dependencies": {
-    "appy-comps": "^0.1.17",
+    "appy-comps": "^0.1.18",
     "appy-style": "0.0.7",
     "caniuse-lite": "^1.0.30000976",
     "cors": "^2.8.4",
@@ -19,7 +19,7 @@
     "react-ace": "^6.5.0",
     "react-dom": "^16.8.6",
     "react-scripts": "2.0.3",
-    "react-visual-editor-framework": "^1.0.2",
+    "react-visual-editor-framework": "^1.0.5",
     "syncing_protocol": "0.0.11",
     "three": "^0.104.0",
     "three-gltf2-loader": "^1.2.0",
