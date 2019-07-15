@@ -20,9 +20,9 @@ export class OpenFileDialog extends Component {
     generateDocUrl(doc) {
         const opts = Object.assign({},this.props.provider.options,{
             mode:'edit',
-            switcher:false,
             doc:doc.id
         })
+        delete opts.AuthModule
         const url = `./?${toQueryString(opts)}`
         return url
     }

@@ -1,6 +1,6 @@
 import PubNub from "pubnub";
 import {AuthModule} from '../vr/AuthModule'
-import inspect from "util-inspect";
+import prune from "json-prune"
 
 function short(op) {
     let str = `${op.type} ${op.uuid} |  `
@@ -137,7 +137,7 @@ export class PubnubSyncWrapper {
 //        console.log("channel is",evt.channel)
         if(evt.channel === this.calculateLoggerChannelName()) {
             if(evt.publisher !== this.pubnub.getUUID()) {
-                console.log("REMOTE LOGGER", evt.message.length, evt.message.substring(200))
+                // console.log("REMOTE LOGGER", evt.message);//.length, evt.message.substring(200))
             }
             return
         }
@@ -183,6 +183,15 @@ export class PubnubLogger {
         } else {
             this.pubnub = pubnub
         }
+        this.pubnub.addListener({
+            message: (m)=>{
+                if(m.publisher === this.pubnub.getUUID()) return
+                const msg = m.message
+                msg.remote = true
+                this.getListeners(msg.type).forEach(cb => cb(msg))
+            },
+        })
+        this.pubnub.subscribe({channels: [this.calculateLoggerChannelName()]})
     }
     addEventListener(type,cb) {
         this.getListeners(type).push(cb)
@@ -205,11 +214,10 @@ export class PubnubLogger {
     }
 
     fire(type, payload) {
-        // console.log(`LOGGER ${type} `, inspect(payload, {depth:3}))
         payload.type = type
         this.pubnub.publish({
             channel: this.calculateLoggerChannelName(),
-            message: inspect(payload,{depth:3})
+            message: JSON.parse(prune(payload))
         })
         this.getListeners(type).forEach(cb => cb(payload))
     }

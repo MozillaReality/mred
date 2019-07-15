@@ -443,7 +443,8 @@ export default class VREditor extends SyncGraphProvider {
 
     editIn2D = () => {
         this.save().then(()=>{
-            const opts = Object.assign({},this.options,{mode:'edit', switcher:false, doc:this.getDocId()})
+            const opts = Object.assign({},this.options,{mode:'edit', doc:this.getDocId()})
+            delete opts.AuthModule
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"Edit in 2D"} url={url}/>)
@@ -452,7 +453,8 @@ export default class VREditor extends SyncGraphProvider {
 
     editInVR = () => {
         this.save().then(()=>{
-            const opts = Object.assign({},this.options,{mode:'vredit', switcher:false, doc:this.getDocId()})
+            const opts = Object.assign({},this.options,{mode:'vredit', doc:this.getDocId()})
+            delete opts.AuthModule
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"Edit in AR/VR"} url={url}/>)
@@ -461,7 +463,8 @@ export default class VREditor extends SyncGraphProvider {
 
     viewInVR = () => {
         this.save().then(()=> {
-            const opts = Object.assign({}, this.options, {mode: 'play', switcher: false, doc:this.getDocId()})
+            const opts = Object.assign({}, this.options, {mode: 'play', doc:this.getDocId()})
+            delete opts.AuthModule
             const loc = document.location
             const url = `${loc.protocol}//${loc.host}${loc.pathname}?${toQueryString(opts)}`
             DialogManager.show(<QRDialog text={"View in AR/VR"} url={url}/>)

@@ -206,20 +206,6 @@ https://flatuicolors.com/palette/defo
 }
 
 
-#console ul {
-    margin:0;
-    padding:0;
-}
-#console ul li {
-    list-style: none;
-    border: 0px solid gray;
-    padding: 0.5rem;
-}
-#console .error {
-    background-color: #c0392b;
-    color: white;
-    font-weight: bold;
-}
 
 .grow {
     flex:1.0;

@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import inspect from "util-inspect"
+import "./console.css"
 
 export class ConsoleView extends Component {
     clearLog = () => {
@@ -33,8 +34,10 @@ export class ConsoleView extends Component {
             </div>
             <ul className={"message-log"}>
                 {this.state.messages.map((msg,i) => {
+                    const loc = (msg.remote?"remote":"local")
                     return <li key={i}>
-                        <b className={msg.type}>{msg.type}</b>
+                        <b className={`location ${loc}`}>{loc}</b>
+                        <b className={`type ${msg.type}`}>{msg.type}</b>
                         <i>{msg.count}</i>
                         {this.formatMessage(msg)}
                     </li>
