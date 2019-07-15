@@ -335,7 +335,7 @@ export default class VREditor extends SyncGraphProvider {
                     return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
                 }
                 if(hints.type === 'media') {
-                    return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.AUDIO || a.subtype === ASSET_TYPES.VIDEO).map(a => a.id)
+                    return this.accessObject(this.getAssetsObject()).getChildren().filter(a => a.subtype === ASSET_TYPES.AUDIO || a.subtype === ASSET_TYPES.VIDEO || a.subtype === ASSET_TYPES.IMAGE).map(a => a.id)
                 }
             }
         }

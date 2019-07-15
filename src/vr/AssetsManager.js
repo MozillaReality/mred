@@ -12,6 +12,7 @@ export class AssetsManager {
         this.assets_url_map = {}
         this.videocache = {}
         this.audiocache = {}
+        this.gifcache = {}
     }
 
     cacheAssetsList() {
@@ -80,6 +81,13 @@ export class AssetsManager {
                 video.play()
             }
         }
+        if(asset.subtype === ASSET_TYPES.IMAGE) {
+            const url = this.getAssetURL(asset)
+            const gif = this.gifcache[url]
+            if(gif) {
+                gif.playing = true
+            }
+        }
 
     }
 
@@ -98,6 +106,13 @@ export class AssetsManager {
                 video.pause()
             }
         }
+        if(asset.subtype === ASSET_TYPES.IMAGE) {
+            const url = this.getAssetURL(asset)
+            const gif = this.gifcache[url]
+            if(gif) {
+                gif.playing = false
+            }
+        }
     }
 
     isMediaAssetPlaying(asset) {
@@ -114,6 +129,13 @@ export class AssetsManager {
                 //TODO: instead we should listen for media events and track the status
                 const val = !(video.paused)
                 return val
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.IMAGE) {
+            const url = this.getAssetURL(asset)
+            const gif = this.gifcache[url]
+            if(gif) {
+                return gif.playing
             }
         }
         return false
@@ -166,7 +188,16 @@ export class AssetsManager {
         if(asset.subtype === ASSET_TYPES.IMAGE) {
             this.provider.getLogger().log("asset info",asset)
             if(asset.format === 'image/gif') {
-                return createGIFTexture(url,this.provider)
+                let gifprom
+                if(!this.gifcache[url]) {
+                    gifprom = createGIFTexture(url,this.provider).then(gif=>{
+                        this.gifcache[url]=gif
+                        return gif
+                    })
+                } else {
+                    gifprom = new Promise.resolve(this.gifcache[url])
+                }
+                return gifprom
             } else {
                 return new Promise((res,rej)=>{
                     new TextureLoader().load(url,
