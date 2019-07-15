@@ -195,7 +195,7 @@ export class AssetsManager {
                         return gif
                     })
                 } else {
-                    gifprom = new Promise.resolve(this.gifcache[url])
+                    gifprom = Promise.resolve(this.gifcache[url])
                 }
                 return gifprom
             } else {

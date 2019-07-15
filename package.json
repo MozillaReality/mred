@@ -20,7 +20,7 @@
     "react-ace": "^6.5.0",
     "react-dom": "^16.8.6",
     "react-scripts": "2.0.3",
-    "react-visual-editor-framework": "^1.0.8",
+    "react-visual-editor-framework": "^1.0.9",
     "syncing_protocol": "0.0.11",
     "three": "^0.104.0",
     "three-gltf2-loader": "^1.2.0",

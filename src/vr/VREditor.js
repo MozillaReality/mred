@@ -2,7 +2,13 @@ import SyncGraphProvider from '../syncgraph/SyncGraphProvider'
 import React, {Component} from 'react'
 import {VRCanvas} from './VRCanvas'
 import ImmersiveVREditor from './ImmersiveVREditor'
-import {fetchGraphObject, insertAsFirstChild, insertAsLastChild, listToArray} from '../syncgraph/utils'
+import {
+    fetchGraphObject,
+    insertAsFirstChild,
+    insertAsLastChild,
+    listToArray,
+    removeFromParent
+} from '../syncgraph/utils'
 import CubeDef from "./defs/CubeDef"
 import SceneDef from "./defs/SceneDef"
 import {
@@ -641,6 +647,19 @@ export default class VREditor extends SyncGraphProvider {
                 if(isGLTFFile(file)) return addGLBAssetFromFile(file,this)
             })
         }
+    }
+    moveChildToNewParent(child,parent) {
+        child = this.accessObject(child)
+        parent = this.accessObject(parent)
+        child.removeFromParent()
+        parent.insertFirstChild(child)
+    }
+    moveChildAfterSibling(child,sibling) {
+        child = this.accessObject(child)
+        sibling = this.accessObject(sibling)
+        child.removeFromParent()
+        const parent = sibling.getParent()
+        parent.insertChildAfter(child,sibling)
     }
     requestImageCache(src) {
         const img = new Image()
