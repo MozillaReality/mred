@@ -1,8 +1,7 @@
 import React, {Component} from 'react'
 import {DialogManager, HBox, VBox} from 'appy-comps'
-import {Spacer} from '../../common/GridEditorApp'
 import {AuthModule} from '../AuthModule'
-import {Dialog} from '../../common/Dialog'
+import {Dialog, Spacer} from 'react-visual-editor-framework'
 
 export class OpenScriptDialog extends Component {
     constructor(props) {

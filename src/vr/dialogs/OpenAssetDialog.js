@@ -8,7 +8,7 @@ import {
     addImageAssetFromExpandedURL,
     addVideoAssetFromURL
 } from '../AssetActions'
-import {Dialog} from '../../common/Dialog'
+import {Dialog} from 'react-visual-editor-framework'
 
 export class OpenAssetDialog extends Component {
     constructor(props) {

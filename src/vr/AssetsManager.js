@@ -1,7 +1,7 @@
 import {ASSET_TYPES} from './Common'
 import {TextureLoader, VideoTexture, Audio, AudioLoader} from 'three'
 import {AuthModule} from './AuthModule'
-import {getAssetsURL} from '../TreeItemProvider'
+import {getAssetsURL} from 'react-visual-editor-framework'
 import {createGIFTexture} from './GifSupport'
 import GLTFLoader from './GLTFLoader'
 import DRACOLoader from './DRACOLoader'
@@ -50,6 +50,10 @@ export class AssetsManager {
         if(asset.subtype === ASSET_TYPES.AUDIO) {
             lg.log("playing the audio asset",asset)
             const url = this.getAssetURL(asset)
+            if(!url) {
+                lg.error('could not find the url for the asset',asset)
+                return
+            }
             lg.log("playing the audio from the url",url)
             if(this.audiocache[asset.id]) {
                 //already loaded
@@ -69,9 +73,7 @@ export class AssetsManager {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            lg.log("playing the media asset", asset)
             const url = this.getAssetURL(asset)
-            lg.log("playing the url yaeah", url)
             const video = this.videocache[url]
             if (video) {
                 if(trusted) video.muted = false
@@ -90,10 +92,44 @@ export class AssetsManager {
             }
         }
         if(asset.subtype === ASSET_TYPES.VIDEO) {
-            if(this.videocache[asset.id]) {
-                this.videocache[asset.id].stop()
-                delete this.videocache[asset.id]
-                this.videocache[asset.id] = null
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if (video) {
+                video.pause()
+            }
+        }
+    }
+
+    isMediaAssetPlaying(asset) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.audiocache[asset.id]) {
+                return this.audiocache[asset.id].isPlaying
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if(video) {
+                //TODO: @josh this probably isn't right.
+                //TODO: instead we should listen for media events and track the status
+                const val = !(video.paused)
+                return val
+            }
+        }
+        return false
+    }
+
+    setMediaVolume(asset, vol) {
+        if(asset.subtype === ASSET_TYPES.AUDIO) {
+            if(this.audiocache[asset.id]) {
+                this.audiocache[asset.id].setVolume(vol)
+            }
+        }
+        if(asset.subtype === ASSET_TYPES.VIDEO) {
+            const url = this.getAssetURL(asset)
+            const video = this.videocache[url]
+            if (video) {
+                video.volume = vol
             }
         }
     }
@@ -107,7 +143,7 @@ export class AssetsManager {
             }
         })
         Object.keys(this.audiocache).forEach(key => {
-            if(this.audiocache[key].stop) {
+            if(this.audiocache[key] && this.audiocache[key].stop) {
                 this.audiocache[key].stop()
             }
         })

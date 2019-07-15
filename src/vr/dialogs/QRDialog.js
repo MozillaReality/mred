@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {DialogManager} from 'appy-comps'
-import QRCanvas from '../../common/QRCanvas'
-import {Dialog} from '../../common/Dialog'
+import {Dialog, QRCanvas} from 'react-visual-editor-framework'
 
 export class QRDialog extends Component {
 

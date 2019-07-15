@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
-import {DialogManager, HBox, VBox} from 'appy-comps'
-import {Dialog} from '../../common/Dialog'
+import {DialogManager} from 'appy-comps'
+import {Dialog} from 'react-visual-editor-framework'
 
 export class MakeEmbedDialog extends Component {
 

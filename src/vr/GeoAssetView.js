@@ -1,7 +1,7 @@
 import React, {Component} from "react"
 import {map, tileLayer, marker, divIcon, latLng} from "leaflet/dist/leaflet-src.js"
 import "leaflet/dist/leaflet.css"
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
+import {TREE_ITEM_PROVIDER} from 'react-visual-editor-framework'
 import {HBox} from 'appy-comps'
 
 export default class GeoAssetView extends Component {
@@ -15,8 +15,8 @@ export default class GeoAssetView extends Component {
                 lat: obj.latitude,
                 lon: obj.longitude
             })
-            this.marker.setLatLng(ll)
-            this.mymap.panTo(ll)
+            if(this.marker) this.marker.setLatLng(ll)
+            if(this.mymap)  this.mymap.panTo(ll)
         }
     }
 
@@ -42,18 +42,13 @@ export default class GeoAssetView extends Component {
             height: '400px',
             border: '1px solid black',
         }
+        this.updateLocation()
         return <div>
             <HBox>
                 <button onClick={this.loadCurrentLocation}>set to current location</button>
             </HBox>
             <div id="mapid" ref={d => this.div = d} style={style}></div>
         </div>
-    }
-
-    componentWillReceiveProps(nextProps, nextContext) {
-        if(nextProps.asset.id !== this.props.asset.id) {
-            this.updateLocation()
-        }
     }
 
     componentDidMount() {

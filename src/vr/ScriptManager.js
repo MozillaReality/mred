@@ -19,8 +19,12 @@ export class SceneGraphProvider {
     //navigate to the specified scene. id is a graph object id
     navigateScene(id) { throw new Error("navigateScene(id) not implemented")}
 
+    //media stuff
     playMediaAsset(id) { throw new Error("playMediaAsset(id) not implemented")}
     stopMediaAsset(id) { throw new Error("stopMediaAsset(id) not implemented")}
+    isMediaAssetPlaying(id) { throw new Error("isMediaAssetPlaying(id) not implemented")}
+    setMediaVolume(id,vol) { throw new Error("setMediaVolume(asset,vol) not implemented")}
+
     getGraphObjectByName(name) { throw new Error("getGraphObjectByName(name) not implemented")}
     getGraphObjectById(id) { throw new Error("getGraphObjectById(id) not implemented")}
     getCamera() { throw new Error("getCamera() not implemented")}
@@ -90,22 +94,6 @@ class SystemFacade {
     }
     getThreeObjectById(id) {
         return this.sgp.getThreeObject(id)
-    }
-    playSound(id) {
-        this.playMedia(id)
-    }
-
-    playMedia(id) {
-        const asset = this.sgp.getGraphObjectById(id)
-        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
-        let trusted = this._event && this._event.data && this._event.data.event && this._event.data.event.isTrusted
-        this.manager.sgp.playMediaAsset(asset, trusted)
-    }
-
-    stopMedia(id) {
-        const asset = this.sgp.getGraphObjectById(id)
-        if(!asset || !asset.exists()) throw new Error(`asset '${id}' not found`)
-        this.manager.sgp.stopMediaAsset(asset)
     }
 
     getCurrentScene() {
@@ -199,7 +187,7 @@ export default class ScriptManager {
     }
 
     fireSceneLifecycleEventAtChild(type,evt,child, parentId) {
-        if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
+        // if(type!=='tick') this.logger.log(`calling ${type} on ${child.type} ${child.id}`)
         if(child.type === TOTAL_OBJ_TYPES.BEHAVIOR) {
             evt.target = this.sgp.getThreeObject(parentId)
             evt.graphTarget = this.sgp.getGraphObjectById(parentId)
@@ -385,7 +373,16 @@ class AssetFacade {
     play() {
         this.manager.sgp.playMediaAsset(this.obj, this.trusted)
     }
+    isPlaying() {
+        return this.manager.sgp.isMediaAssetPlaying(this.obj)
+    }
     stop() {
         this.manager.sgp.stopMediaAsset(this.obj)
+    }
+    setVolume(vol) {
+        this.manager.sgp.setMediaVolume(this.obj, vol)
+    }
+    getType() {
+        return this.obj.subtype
     }
 }

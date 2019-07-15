@@ -1,12 +1,11 @@
 import React, {Component} from 'react'
 import * as THREE from 'three'
-import {TREE_ITEM_PROVIDER} from '../TreeItemProvider'
-import SelectionManager, {SELECTION_MANAGER} from '../SelectionManager'
+import {SelectionManager, SELECTION_MANAGER, TREE_ITEM_PROVIDER} from 'react-visual-editor-framework'
 import TransformControls from './TransformControls.js'
 import SceneDef from "./defs/SceneDef"
 import {get3DObjectDef, is3DObjectType, OBJ_TYPES, TOTAL_OBJ_TYPES} from './Common'
 import ScriptManager, {SceneGraphProvider} from './ScriptManager'
-import {TweenManager} from '../common/tween'
+import {TweenManager} from './tween'
 import {XRSupport} from './XRSupport'
 import OrbitControls from './OrbitControls'
 
@@ -73,6 +72,12 @@ class Adapter extends SceneGraphProvider {
 
     stopMediaAsset(asset) {
         this.canvas.props.provider.assetsManager.stopMediaAsset(asset)
+    }
+    setMediaVolume(asset,vol) {
+        this.canvas.props.provider.assetsManager.setMediaVolume(asset,vol)
+    }
+    isMediaAssetPlaying(asset) {
+        return this.canvas.props.provider.assetsManager.isMediaAssetPlaying(asset)
     }
     getGraphObjectByName(title) {
         const list = this.canvas.props.provider.accessObject(this.canvas.props.provider.getSceneRoot()).find((o)=>o.title === title)

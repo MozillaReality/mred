@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {DialogManager} from 'appy-comps'
 import {listToArray} from '../../syncgraph/utils'
-import {Dialog} from '../../common/Dialog'
+import {Dialog} from 'react-visual-editor-framework'
 
 export class AddGLTFAssetDialog extends Component {
     cancel = () => {

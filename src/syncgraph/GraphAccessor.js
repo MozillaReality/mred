@@ -82,6 +82,11 @@ export default class GraphAccessor {
                 const ch = this.graph.getPropertyValue(obj.id,'children')
                 this.graph.insertAfter(ch,null,child.id)
             }
+            obj.insertChildAfter = (child, prev) => {
+                this.graph.setProperty(child.id,'parent',obj.id)
+                const ch = this.graph.getPropertyValue(obj.id,'children')
+                this.graph.insertAfter(ch,prev.id,child.id)
+            }
             obj.child = (index) => this.object(obj.array('children')[index])
             obj.removeFromParent = () => {
                 const parent = this.object(obj.parent)

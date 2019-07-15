@@ -1,8 +1,7 @@
 import React, {Component} from 'react'
 import {DialogManager} from 'appy-comps'
 import {AuthModule} from '../AuthModule'
-import {getLoginURL} from '../../TreeItemProvider'
-import {Dialog} from '../../common/Dialog'
+import {Dialog, getLoginURL} from 'react-visual-editor-framework'
 
 export class GithubAuthDialog extends Component {
     constructor(props) {
