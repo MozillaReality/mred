@@ -75,6 +75,7 @@ import {BadAssetsDialog} from './dialogs/BadAssetsDialog'
 import {ToasterNotification} from './ToasterNotification'
 import preval from "preval.macro"
 import {ConsoleView} from './ConsoleView'
+import {SimpleMessageDialog} from './dialogs/SimpleMessageDialog'
 
 export default class VREditor extends SyncGraphProvider {
     constructor(options) {
@@ -300,6 +301,18 @@ export default class VREditor extends SyncGraphProvider {
         return defs
     }
     setPropertyValue(item, def, value) {
+
+        //block duplicate titles
+        if(def.key === 'title') {
+            const root = this.accessObject(this.getSceneRoot())
+            const matches = root.find(ob=> ob.title === value  && item !== ob.id)
+            if(matches.length > 0) {
+                DialogManager.show(<SimpleMessageDialog text={` You already have an object titled '${value}'. Titles must be unique.`}/>)
+                throw new Error("cannot set title to duplicate value")
+            }
+        }
+
+        //scale should update all three dimensions
         if(def.key === 'scale' || def.key === 'translation' || def.key === 'rotation') {
             def.group.forEach(key => super.setPropertyValue(item,{key:key}, value[key]))
             return
