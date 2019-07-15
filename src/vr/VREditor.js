@@ -19,7 +19,7 @@ import {
     TREE_ITEM_PROVIDER,
     toQueryString,
 } from "react-visual-editor-framework"
-import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManager, PopupManagerContext, VBox} from "appy-comps"
+import {DialogContainer, DialogManager, HBox, PopupContainer, PopupManagerContext, VBox} from "appy-comps"
 import {
     ASSET_TYPES,
     canBeDeleted,

@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 // import './App.css'
 import VREditor from './vr/VREditor'
 import {ImmersivePlayer} from './vr/ImmersivePlayer'
-import {PopupManager, PopupManagerContext} from 'appy-comps'
+import {PopupManagerContext} from 'appy-comps'
 import {AuthModule} from './vr/AuthModule'
 
 export default class App extends Component {
