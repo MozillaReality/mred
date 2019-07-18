@@ -7,7 +7,6 @@ import {
     insertAsFirstChild,
     insertAsLastChild,
     listToArray,
-    removeFromParent
 } from '../syncgraph/utils'
 import CubeDef from "./defs/CubeDef"
 import SceneDef from "./defs/SceneDef"
